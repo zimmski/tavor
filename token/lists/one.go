@@ -10,14 +10,14 @@ type One struct {
 	value  token.Token
 }
 
-func NewOne(tokens ...token.Token) *One {
-	if len(tokens) == 0 {
+func NewOne(toks ...token.Token) *One {
+	if len(toks) == 0 {
 		panic("at least one token needed")
 	}
 
 	return &One{
-		tokens: tokens,
-		value:  tokens[0],
+		tokens: toks,
+		value:  toks[0],
 	}
 }
 

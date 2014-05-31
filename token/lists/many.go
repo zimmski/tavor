@@ -12,14 +12,14 @@ type Many struct {
 	value  []token.Token
 }
 
-func NewMany(tokens ...token.Token) *Many {
-	if len(tokens) == 0 {
+func NewMany(toks ...token.Token) *Many {
+	if len(toks) == 0 {
 		panic("at least one token needed")
 	}
 
 	return &Many{
-		tokens: tokens,
-		value:  tokens,
+		tokens: toks,
+		value:  toks,
 	}
 }
 

@@ -6,7 +6,16 @@ import (
 	. "github.com/stretchr/testify/assert"
 
 	"github.com/zimmski/tavor/test"
+	"github.com/zimmski/tavor/token"
 )
+
+func TestIntTokensToBeTokens(t *testing.T) {
+	var tok *token.Token
+
+	Implements(t, tok, NewConstantInt(10))
+	Implements(t, tok, NewRandomInt())
+	Implements(t, tok, NewRangeInt(1, 10))
+}
 
 func TestConstantInt(t *testing.T) {
 	o := NewConstantInt(10)

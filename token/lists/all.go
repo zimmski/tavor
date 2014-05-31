@@ -11,13 +11,13 @@ type All struct {
 	tokens []token.Token
 }
 
-func NewAll(tokens ...token.Token) *All {
-	if len(tokens) == 0 {
+func NewAll(toks ...token.Token) *All {
+	if len(toks) == 0 {
 		panic("at least one token needed")
 	}
 
 	return &All{
-		tokens: tokens,
+		tokens: toks,
 	}
 }
 

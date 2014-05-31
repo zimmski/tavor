@@ -6,8 +6,17 @@ import (
 	. "github.com/stretchr/testify/assert"
 
 	"github.com/zimmski/tavor/test"
+	"github.com/zimmski/tavor/token"
 	"github.com/zimmski/tavor/token/primitives"
 )
+
+func TestAllTokensToBeTokens(t *testing.T) {
+	var tok *token.Token
+
+	a := primitives.NewRandomInt()
+
+	Implements(t, tok, NewAll(a))
+}
 
 func TestAll(t *testing.T) {
 	a := primitives.NewConstantInt(10)
