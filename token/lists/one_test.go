@@ -9,11 +9,11 @@ import (
 	"github.com/zimmski/tavor/token/primitives"
 )
 
-func TestXOr(t *testing.T) {
+func TestOne(t *testing.T) {
 	a := primitives.NewConstantString("a")
 	b := primitives.NewConstantString("b")
 
-	o := NewXOr(a, b)
+	o := NewOne(a, b)
 	Equal(t, "a", o.String())
 
 	r := test.NewRandTest(0)
@@ -21,7 +21,7 @@ func TestXOr(t *testing.T) {
 	Equal(t, "b", o.String())
 
 	c := primitives.NewRangeInt(5, 10)
-	o = NewXOr(c)
+	o = NewOne(c)
 	Equal(t, "5", o.String())
 
 	o.Fuzz(r)

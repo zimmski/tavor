@@ -7,23 +7,23 @@ import (
 	"github.com/zimmski/tavor/token"
 )
 
-type Or struct {
+type Many struct {
 	tokens []token.Token
 	value  []token.Token
 }
 
-func NewOr(tokens ...token.Token) *Or {
+func NewMany(tokens ...token.Token) *Many {
 	if len(tokens) == 0 {
 		panic("at least one token needed")
 	}
 
-	return &Or{
+	return &Many{
 		tokens: tokens,
 		value:  tokens,
 	}
 }
 
-func (o *Or) Fuzz(r rand.Rand) {
+func (o *Many) Fuzz(r rand.Rand) {
 	tl := len(o.tokens)
 
 	n := r.Intn(tl) + 1
@@ -48,7 +48,7 @@ func (o *Or) Fuzz(r rand.Rand) {
 	o.value = toks
 }
 
-func (o *Or) String() string {
+func (o *Many) String() string {
 	var buffer bytes.Buffer
 
 	for _, tok := range o.value {

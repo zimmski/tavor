@@ -7,27 +7,27 @@ import (
 	"github.com/zimmski/tavor/token"
 )
 
-type And struct {
+type All struct {
 	tokens []token.Token
 }
 
-func NewAnd(tokens ...token.Token) *And {
+func NewAll(tokens ...token.Token) *All {
 	if len(tokens) == 0 {
 		panic("at least one token needed")
 	}
 
-	return &And{
+	return &All{
 		tokens: tokens,
 	}
 }
 
-func (a *And) Fuzz(r rand.Rand) {
+func (a *All) Fuzz(r rand.Rand) {
 	for _, tok := range a.tokens {
 		tok.Fuzz(r)
 	}
 }
 
-func (a *And) String() string {
+func (a *All) String() string {
 	var buffer bytes.Buffer
 
 	for _, tok := range a.tokens {
