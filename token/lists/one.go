@@ -21,6 +21,19 @@ func NewOne(toks ...token.Token) *One {
 	}
 }
 
+func (o *One) Clone() token.Token {
+	c := One{
+		tokens: make([]token.Token, len(o.tokens)),
+		value:  o.value.Clone(),
+	}
+
+	for i, tok := range o.tokens {
+		c.tokens[i] = tok.Clone()
+	}
+
+	return &c
+}
+
 func (o *One) Fuzz(r rand.Rand) {
 	i := r.Intn(len(o.tokens))
 

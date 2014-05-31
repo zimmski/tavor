@@ -23,6 +23,23 @@ func NewMany(toks ...token.Token) *Many {
 	}
 }
 
+func (o *Many) Clone() token.Token {
+	c := Many{
+		tokens: make([]token.Token, len(o.tokens)),
+		value:  make([]token.Token, len(o.value)),
+	}
+
+	for i, tok := range o.tokens {
+		c.tokens[i] = tok.Clone()
+	}
+
+	for i, tok := range o.value {
+		c.value[i] = tok.Clone()
+	}
+
+	return &c
+}
+
 func (o *Many) Fuzz(r rand.Rand) {
 	tl := len(o.tokens)
 

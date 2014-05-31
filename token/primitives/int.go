@@ -4,6 +4,7 @@ import (
 	"strconv"
 
 	"github.com/zimmski/tavor/rand"
+	"github.com/zimmski/tavor/token"
 )
 
 type ConstantInt struct {
@@ -13,6 +14,12 @@ type ConstantInt struct {
 func NewConstantInt(value int) *ConstantInt {
 	return &ConstantInt{
 		value: value,
+	}
+}
+
+func (i *ConstantInt) Clone() token.Token {
+	return &ConstantInt{
+		value: i.value,
 	}
 }
 
@@ -31,6 +38,12 @@ type RandomInt struct {
 func NewRandomInt() *RandomInt {
 	return &RandomInt{
 		value: 0,
+	}
+}
+
+func (i *RandomInt) Clone() token.Token {
+	return &RandomInt{
+		value: i.value,
 	}
 }
 
@@ -54,6 +67,14 @@ func NewRangeInt(from, to int) *RangeInt {
 		from:  from,
 		to:    to,
 		value: from,
+	}
+}
+
+func (i *RangeInt) Clone() token.Token {
+	return &RangeInt{
+		from:  i.from,
+		to:    i.to,
+		value: i.value,
 	}
 }
 

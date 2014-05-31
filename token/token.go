@@ -9,5 +9,6 @@ import (
 type Token interface {
 	fmt.Stringer
 
+	Clone() Token
 	Fuzz(r rand.Rand)
 }

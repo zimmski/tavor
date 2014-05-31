@@ -35,4 +35,7 @@ func TestAll(t *testing.T) {
 
 	o.Fuzz(r)
 	Equal(t, "10abc2", o.String())
+
+	o2 := o.Clone()
+	Equal(t, o.String(), o2.String())
 }

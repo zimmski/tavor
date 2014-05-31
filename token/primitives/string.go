@@ -2,6 +2,7 @@ package primitives
 
 import (
 	"github.com/zimmski/tavor/rand"
+	"github.com/zimmski/tavor/token"
 )
 
 type ConstantString struct {
@@ -14,10 +15,16 @@ func NewConstantString(value string) *ConstantString {
 	}
 }
 
-func (i *ConstantString) Fuzz(r rand.Rand) {
+func (s *ConstantString) Clone() token.Token {
+	return &ConstantString{
+		value: s.value,
+	}
+}
+
+func (s *ConstantString) Fuzz(r rand.Rand) {
 	// do nothing
 }
 
-func (i *ConstantString) String() string {
-	return i.value
+func (s *ConstantString) String() string {
+	return s.value
 }

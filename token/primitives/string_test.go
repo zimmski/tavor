@@ -22,4 +22,7 @@ func TestConstantString(t *testing.T) {
 	r := test.NewRandTest(0)
 	o.Fuzz(r)
 	Equal(t, "abc", o.String())
+
+	o2 := o.Clone()
+	Equal(t, o.String(), o2.String())
 }

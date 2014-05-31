@@ -21,6 +21,18 @@ func NewAll(toks ...token.Token) *All {
 	}
 }
 
+func (a *All) Clone() token.Token {
+	c := All{
+		tokens: make([]token.Token, len(a.tokens)),
+	}
+
+	for i, tok := range a.tokens {
+		c.tokens[i] = tok.Clone()
+	}
+
+	return &c
+}
+
 func (a *All) Fuzz(r rand.Rand) {
 	for _, tok := range a.tokens {
 		tok.Fuzz(r)
