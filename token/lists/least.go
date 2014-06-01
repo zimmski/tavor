@@ -21,7 +21,7 @@ func NewLeast(tok token.Token, n int64) *Least {
 		value: make([]token.Token, n),
 	}
 
-	for i, _ := range l.value {
+	for i := range l.value {
 		l.value[i] = tok.Clone()
 	}
 
@@ -46,7 +46,7 @@ func (l *Least) Fuzz(r rand.Rand) {
 	n := int64(r.Intn(int(math.MaxInt64-l.n))) + l.n
 	toks := make([]token.Token, int(n))
 
-	for i, _ := range toks {
+	for i := range toks {
 		toks[i] = l.token.Clone()
 
 		toks[i].Fuzz(r)

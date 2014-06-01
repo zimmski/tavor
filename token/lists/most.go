@@ -20,7 +20,7 @@ func NewMost(tok token.Token, n int64) *Most {
 		value: make([]token.Token, n),
 	}
 
-	for i, _ := range m.value {
+	for i := range m.value {
 		m.value[i] = tok.Clone()
 	}
 
@@ -45,7 +45,7 @@ func (m *Most) Fuzz(r rand.Rand) {
 	n := r.Intn(int(m.n) + 1)
 	toks := make([]token.Token, n)
 
-	for i, _ := range toks {
+	for i := range toks {
 		toks[i] = m.token.Clone()
 
 		toks[i].Fuzz(r)

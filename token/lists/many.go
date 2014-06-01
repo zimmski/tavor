@@ -47,7 +47,7 @@ func (o *Many) Fuzz(r rand.Rand) {
 	toks := make([]token.Token, n)
 	chosen := make(map[int]struct{})
 
-	for i, _ := range toks {
+	for i := range toks {
 		for {
 			ri := r.Intn(tl)
 

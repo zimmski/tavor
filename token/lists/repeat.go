@@ -22,7 +22,7 @@ func NewRepeat(tok token.Token, from, to int64) *Repeat {
 		value: make([]token.Token, from),
 	}
 
-	for i, _ := range re.value {
+	for i := range re.value {
 		re.value[i] = tok.Clone()
 	}
 
@@ -48,7 +48,7 @@ func (re *Repeat) Fuzz(r rand.Rand) {
 	n := r.Intn(int(re.to-re.from+1)) + int(re.from)
 	toks := make([]token.Token, n)
 
-	for i, _ := range toks {
+	for i := range toks {
 		toks[i] = re.token.Clone()
 
 		toks[i].Fuzz(r)
