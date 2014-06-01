@@ -14,54 +14,54 @@ type Most struct {
 }
 
 func NewMost(tok token.Token, n int64) *Most {
-	m := &Most{
+	l := &Most{
 		n:     n,
 		token: tok,
 		value: make([]token.Token, n),
 	}
 
-	for i := range m.value {
-		m.value[i] = tok.Clone()
+	for i := range l.value {
+		l.value[i] = tok.Clone()
 	}
 
-	return m
+	return l
 }
 
-func (m *Most) Clone() token.Token {
+func (l *Most) Clone() token.Token {
 	c := Most{
-		n:     m.n,
-		token: m.token,
-		value: make([]token.Token, len(m.value)),
+		n:     l.n,
+		token: l.token,
+		value: make([]token.Token, len(l.value)),
 	}
 
-	for i, tok := range m.value {
+	for i, tok := range l.value {
 		c.value[i] = tok.Clone()
 	}
 
 	return &c
 }
 
-func (m *Most) Fuzz(r rand.Rand) {
-	n := r.Intn(int(m.n) + 1)
+func (l *Most) Fuzz(r rand.Rand) {
+	n := r.Intn(int(l.n) + 1)
 	toks := make([]token.Token, n)
 
 	for i := range toks {
-		toks[i] = m.token.Clone()
+		toks[i] = l.token.Clone()
 
 		toks[i].Fuzz(r)
 	}
 
-	m.value = toks
+	l.value = toks
 }
 
-func (m *Most) Len() int {
-	return len(m.value)
+func (l *Most) Len() int {
+	return len(l.value)
 }
 
-func (m *Most) String() string {
+func (l *Most) String() string {
 	var buffer bytes.Buffer
 
-	for _, tok := range m.value {
+	for _, tok := range l.value {
 		buffer.WriteString(tok.String())
 	}
 

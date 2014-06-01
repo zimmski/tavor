@@ -21,31 +21,31 @@ func NewOne(toks ...token.Token) *One {
 	}
 }
 
-func (o *One) Clone() token.Token {
+func (l *One) Clone() token.Token {
 	c := One{
-		tokens: make([]token.Token, len(o.tokens)),
-		value:  o.value.Clone(),
+		tokens: make([]token.Token, len(l.tokens)),
+		value:  l.value.Clone(),
 	}
 
-	for i, tok := range o.tokens {
+	for i, tok := range l.tokens {
 		c.tokens[i] = tok.Clone()
 	}
 
 	return &c
 }
 
-func (o *One) Fuzz(r rand.Rand) {
-	i := r.Intn(len(o.tokens))
+func (l *One) Fuzz(r rand.Rand) {
+	i := r.Intn(len(l.tokens))
 
-	o.value = o.tokens[i]
+	l.value = l.tokens[i]
 
-	o.value.Fuzz(r)
+	l.value.Fuzz(r)
 }
 
-func (o *One) Len() int {
+func (l *One) Len() int {
 	return 1
 }
 
-func (o *One) String() string {
-	return o.value.String()
+func (l *One) String() string {
+	return l.value.String()
 }

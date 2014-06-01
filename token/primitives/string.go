@@ -15,16 +15,16 @@ func NewConstantString(value string) *ConstantString {
 	}
 }
 
-func (s *ConstantString) Clone() token.Token {
+func (p *ConstantString) Clone() token.Token {
 	return &ConstantString{
-		value: s.value,
+		value: p.value,
 	}
 }
 
-func (s *ConstantString) Fuzz(r rand.Rand) {
+func (p *ConstantString) Fuzz(r rand.Rand) {
 	// do nothing
 }
 
-func (s *ConstantString) String() string {
-	return s.value
+func (p *ConstantString) String() string {
+	return p.value
 }

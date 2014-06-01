@@ -17,25 +17,25 @@ func NewOptional(tok token.Token) *Optional {
 	}
 }
 
-func (o *Optional) Clone() token.Token {
+func (c *Optional) Clone() token.Token {
 	return &Optional{
-		token: o.token,
-		value: o.value,
+		token: c.token,
+		value: c.value,
 	}
 }
 
-func (o *Optional) Fuzz(r rand.Rand) {
-	o.value = r.Int()%2 == 0
+func (c *Optional) Fuzz(r rand.Rand) {
+	c.value = r.Int()%2 == 0
 
-	if !o.value {
-		o.token.Fuzz(r)
+	if !c.value {
+		c.token.Fuzz(r)
 	}
 }
 
-func (o *Optional) String() string {
-	if o.value {
+func (c *Optional) String() string {
+	if c.value {
 		return ""
 	}
 
-	return o.token.String()
+	return c.token.String()
 }

@@ -17,18 +17,18 @@ func NewConstantInt(value int) *ConstantInt {
 	}
 }
 
-func (i *ConstantInt) Clone() token.Token {
+func (p *ConstantInt) Clone() token.Token {
 	return &ConstantInt{
-		value: i.value,
+		value: p.value,
 	}
 }
 
-func (i *ConstantInt) Fuzz(r rand.Rand) {
+func (p *ConstantInt) Fuzz(r rand.Rand) {
 	// do nothing
 }
 
-func (i *ConstantInt) String() string {
-	return strconv.Itoa(i.value)
+func (p *ConstantInt) String() string {
+	return strconv.Itoa(p.value)
 }
 
 type RandomInt struct {
@@ -41,18 +41,18 @@ func NewRandomInt() *RandomInt {
 	}
 }
 
-func (i *RandomInt) Clone() token.Token {
+func (p *RandomInt) Clone() token.Token {
 	return &RandomInt{
-		value: i.value,
+		value: p.value,
 	}
 }
 
-func (i *RandomInt) Fuzz(r rand.Rand) {
-	i.value = r.Int()
+func (p *RandomInt) Fuzz(r rand.Rand) {
+	p.value = r.Int()
 }
 
-func (i *RandomInt) String() string {
-	return strconv.Itoa(i.value)
+func (p *RandomInt) String() string {
+	return strconv.Itoa(p.value)
 }
 
 type RangeInt struct {
@@ -70,20 +70,20 @@ func NewRangeInt(from, to int) *RangeInt {
 	}
 }
 
-func (i *RangeInt) Clone() token.Token {
+func (p *RangeInt) Clone() token.Token {
 	return &RangeInt{
-		from:  i.from,
-		to:    i.to,
-		value: i.value,
+		from:  p.from,
+		to:    p.to,
+		value: p.value,
 	}
 }
 
-func (i *RangeInt) Fuzz(r rand.Rand) {
-	ri := r.Intn(i.to - i.from + 1)
+func (p *RangeInt) Fuzz(r rand.Rand) {
+	ri := r.Intn(p.to - p.from + 1)
 
-	i.value = i.from + ri
+	p.value = p.from + ri
 }
 
-func (i *RangeInt) String() string {
-	return strconv.Itoa(i.value)
+func (p *RangeInt) String() string {
+	return strconv.Itoa(p.value)
 }

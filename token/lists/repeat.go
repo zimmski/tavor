@@ -15,56 +15,56 @@ type Repeat struct {
 }
 
 func NewRepeat(tok token.Token, from, to int64) *Repeat {
-	re := &Repeat{
+	l := &Repeat{
 		from:  from,
 		to:    to,
 		token: tok,
 		value: make([]token.Token, from),
 	}
 
-	for i := range re.value {
-		re.value[i] = tok.Clone()
+	for i := range l.value {
+		l.value[i] = tok.Clone()
 	}
 
-	return re
+	return l
 }
 
-func (re *Repeat) Clone() token.Token {
+func (l *Repeat) Clone() token.Token {
 	c := Repeat{
-		from:  re.from,
-		to:    re.to,
-		token: re.token,
-		value: make([]token.Token, len(re.value)),
+		from:  l.from,
+		to:    l.to,
+		token: l.token,
+		value: make([]token.Token, len(l.value)),
 	}
 
-	for i, tok := range re.value {
+	for i, tok := range l.value {
 		c.value[i] = tok.Clone()
 	}
 
 	return &c
 }
 
-func (re *Repeat) Fuzz(r rand.Rand) {
-	n := r.Intn(int(re.to-re.from+1)) + int(re.from)
+func (l *Repeat) Fuzz(r rand.Rand) {
+	n := r.Intn(int(l.to-l.from+1)) + int(l.from)
 	toks := make([]token.Token, n)
 
 	for i := range toks {
-		toks[i] = re.token.Clone()
+		toks[i] = l.token.Clone()
 
 		toks[i].Fuzz(r)
 	}
 
-	re.value = toks
+	l.value = toks
 }
 
-func (re *Repeat) Len() int {
-	return len(re.value)
+func (l *Repeat) Len() int {
+	return len(l.value)
 }
 
-func (re *Repeat) String() string {
+func (l *Repeat) String() string {
 	var buffer bytes.Buffer
 
-	for _, tok := range re.value {
+	for _, tok := range l.value {
 		buffer.WriteString(tok.String())
 	}
 

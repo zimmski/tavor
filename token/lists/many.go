@@ -23,25 +23,25 @@ func NewMany(toks ...token.Token) *Many {
 	}
 }
 
-func (o *Many) Clone() token.Token {
+func (l *Many) Clone() token.Token {
 	c := Many{
-		tokens: make([]token.Token, len(o.tokens)),
-		value:  make([]token.Token, len(o.value)),
+		tokens: make([]token.Token, len(l.tokens)),
+		value:  make([]token.Token, len(l.value)),
 	}
 
-	for i, tok := range o.tokens {
+	for i, tok := range l.tokens {
 		c.tokens[i] = tok.Clone()
 	}
 
-	for i, tok := range o.value {
+	for i, tok := range l.value {
 		c.value[i] = tok.Clone()
 	}
 
 	return &c
 }
 
-func (o *Many) Fuzz(r rand.Rand) {
-	tl := len(o.tokens)
+func (l *Many) Fuzz(r rand.Rand) {
+	tl := len(l.tokens)
 
 	n := r.Intn(tl) + 1
 	toks := make([]token.Token, n)
@@ -52,7 +52,7 @@ func (o *Many) Fuzz(r rand.Rand) {
 			ri := r.Intn(tl)
 
 			if _, ok := chosen[ri]; !ok {
-				toks[i] = o.value[ri]
+				toks[i] = l.value[ri]
 				chosen[ri] = struct{}{}
 
 				toks[i].Fuzz(r)
@@ -62,17 +62,17 @@ func (o *Many) Fuzz(r rand.Rand) {
 		}
 	}
 
-	o.value = toks
+	l.value = toks
 }
 
-func (o *Many) Len() int {
-	return len(o.value)
+func (l *Many) Len() int {
+	return len(l.value)
 }
 
-func (o *Many) String() string {
+func (l *Many) String() string {
 	var buffer bytes.Buffer
 
-	for _, tok := range o.value {
+	for _, tok := range l.value {
 		buffer.WriteString(tok.String())
 	}
 

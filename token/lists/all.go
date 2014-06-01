@@ -21,32 +21,32 @@ func NewAll(toks ...token.Token) *All {
 	}
 }
 
-func (a *All) Clone() token.Token {
+func (l *All) Clone() token.Token {
 	c := All{
-		tokens: make([]token.Token, len(a.tokens)),
+		tokens: make([]token.Token, len(l.tokens)),
 	}
 
-	for i, tok := range a.tokens {
+	for i, tok := range l.tokens {
 		c.tokens[i] = tok.Clone()
 	}
 
 	return &c
 }
 
-func (a *All) Fuzz(r rand.Rand) {
-	for _, tok := range a.tokens {
+func (l *All) Fuzz(r rand.Rand) {
+	for _, tok := range l.tokens {
 		tok.Fuzz(r)
 	}
 }
 
-func (a *All) Len() int {
-	return len(a.tokens)
+func (l *All) Len() int {
+	return len(l.tokens)
 }
 
-func (a *All) String() string {
+func (l *All) String() string {
 	var buffer bytes.Buffer
 
-	for _, tok := range a.tokens {
+	for _, tok := range l.tokens {
 		buffer.WriteString(tok.String())
 	}
 
