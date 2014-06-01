@@ -1,4 +1,4 @@
-package logicals
+package lists
 
 import (
 	"bytes"

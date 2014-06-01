@@ -1,4 +1,4 @@
-package logicals
+package lists
 
 import (
 	"github.com/zimmski/tavor/rand"
