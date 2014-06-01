@@ -65,6 +65,10 @@ func (o *Many) Fuzz(r rand.Rand) {
 	o.value = toks
 }
 
+func (o *Many) Len() int {
+	return len(o.value)
+}
+
 func (o *Many) String() string {
 	var buffer bytes.Buffer
 

@@ -57,6 +57,10 @@ func (re *Repeat) Fuzz(r rand.Rand) {
 	re.value = toks
 }
 
+func (re *Repeat) Len() int {
+	return len(re.value)
+}
+
 func (re *Repeat) String() string {
 	var buffer bytes.Buffer
 

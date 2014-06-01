@@ -55,6 +55,10 @@ func (l *Least) Fuzz(r rand.Rand) {
 	l.value = toks
 }
 
+func (l *Least) Len() int {
+	return len(l.value)
+}
+
 func (l *Least) String() string {
 	var buffer bytes.Buffer
 

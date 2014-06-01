@@ -54,6 +54,10 @@ func (m *Most) Fuzz(r rand.Rand) {
 	m.value = toks
 }
 
+func (m *Most) Len() int {
+	return len(m.value)
+}
+
 func (m *Most) String() string {
 	var buffer bytes.Buffer
 

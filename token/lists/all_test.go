@@ -6,12 +6,11 @@ import (
 	. "github.com/stretchr/testify/assert"
 
 	"github.com/zimmski/tavor/test"
-	"github.com/zimmski/tavor/token"
 	"github.com/zimmski/tavor/token/primitives"
 )
 
 func TestAllTokensToBeTokens(t *testing.T) {
-	var tok *token.Token
+	var tok *List
 
 	a := primitives.NewRandomInt()
 
@@ -24,17 +23,21 @@ func TestAll(t *testing.T) {
 
 	o := NewAll(a, b)
 	Equal(t, "10abc", o.String())
+	Equal(t, 2, o.Len())
 
 	r := test.NewRandTest(0)
 	o.Fuzz(r)
 	Equal(t, "10abc", o.String())
+	Equal(t, 2, o.Len())
 
 	c := primitives.NewRangeInt(1, 2)
 	o = NewAll(a, b, c)
 	Equal(t, "10abc1", o.String())
+	Equal(t, 3, o.Len())
 
 	o.Fuzz(r)
 	Equal(t, "10abc2", o.String())
+	Equal(t, 3, o.Len())
 
 	o2 := o.Clone()
 	Equal(t, o.String(), o2.String())

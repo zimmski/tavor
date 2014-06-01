@@ -39,6 +39,10 @@ func (a *All) Fuzz(r rand.Rand) {
 	}
 }
 
+func (a *All) Len() int {
+	return len(a.tokens)
+}
+
 func (a *All) String() string {
 	var buffer bytes.Buffer
 

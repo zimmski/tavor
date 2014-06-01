@@ -42,6 +42,10 @@ func (o *One) Fuzz(r rand.Rand) {
 	o.value.Fuzz(r)
 }
 
+func (o *One) Len() int {
+	return 1
+}
+
 func (o *One) String() string {
 	return o.value.String()
 }
