@@ -12,9 +12,7 @@ import (
 func TestAllTokensToBeTokens(t *testing.T) {
 	var tok *List
 
-	a := primitives.NewRandomInt()
-
-	Implements(t, tok, NewAll(a))
+	Implements(t, tok, &All{})
 }
 
 func TestAll(t *testing.T) {

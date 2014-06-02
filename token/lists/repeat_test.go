@@ -12,9 +12,7 @@ import (
 func TestRepeatTokensToBeTokens(t *testing.T) {
 	var tok *List
 
-	a := primitives.NewRandomInt()
-
-	Implements(t, tok, NewRepeat(a, 1, 5))
+	Implements(t, tok, &Repeat{})
 }
 
 func TestRepeat(t *testing.T) {

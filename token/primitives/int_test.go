@@ -12,9 +12,9 @@ import (
 func TestIntTokensToBeTokens(t *testing.T) {
 	var tok *token.Token
 
-	Implements(t, tok, NewConstantInt(10))
-	Implements(t, tok, NewRandomInt())
-	Implements(t, tok, NewRangeInt(1, 10))
+	Implements(t, tok, &ConstantInt{})
+	Implements(t, tok, &RandomInt{})
+	Implements(t, tok, &RangeInt{})
 }
 
 func TestConstantInt(t *testing.T) {

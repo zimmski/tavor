@@ -12,9 +12,7 @@ import (
 func TestMostTokensToBeTokens(t *testing.T) {
 	var tok *List
 
-	a := primitives.NewRandomInt()
-
-	Implements(t, tok, NewMost(a, 1))
+	Implements(t, tok, &Most{})
 }
 
 func TestMost(t *testing.T) {

@@ -12,9 +12,7 @@ import (
 func TestLeastTokensToBeTokens(t *testing.T) {
 	var tok *List
 
-	a := primitives.NewRandomInt()
-
-	Implements(t, tok, NewLeast(a, 1))
+	Implements(t, tok, &Least{})
 }
 
 func TestLeast(t *testing.T) {

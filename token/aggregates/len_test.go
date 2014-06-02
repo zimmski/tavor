@@ -14,7 +14,7 @@ import (
 func TestLenTokensToBeTokens(t *testing.T) {
 	var tok *token.Token
 
-	Implements(t, tok, NewLen(lists.NewAll(primitives.NewConstantInt(1))))
+	Implements(t, tok, &Len{})
 }
 
 func TestConstantInt(t *testing.T) {

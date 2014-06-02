@@ -12,9 +12,7 @@ import (
 func TestManyTokensToBeTokens(t *testing.T) {
 	var tok *List
 
-	a := primitives.NewRandomInt()
-
-	Implements(t, tok, NewMany(a))
+	Implements(t, tok, &Many{})
 }
 
 func TestMany(t *testing.T) {

@@ -12,7 +12,7 @@ import (
 func TestStringTokensToBeTokens(t *testing.T) {
 	var tok *token.Token
 
-	Implements(t, tok, NewConstantString("a"))
+	Implements(t, tok, &ConstantString{})
 }
 
 func TestConstantString(t *testing.T) {

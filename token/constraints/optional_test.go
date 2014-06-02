@@ -13,7 +13,7 @@ import (
 func TestOptionalTokensToBeTokens(t *testing.T) {
 	var tok *token.Token
 
-	Implements(t, tok, NewOptional(primitives.NewConstantInt(1)))
+	Implements(t, tok, &Optional{})
 }
 
 func TestConstantInt(t *testing.T) {
