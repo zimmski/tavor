@@ -18,7 +18,7 @@ func TestFuncFilterTokensToBeTokens(t *testing.T) {
 }
 
 func TestFuncExpression(t *testing.T) {
-	o := NewFuncExpression(
+	o := NewFuncFilter(
 		primitives.NewConstantInt(1),
 		func(r rand.Rand, tok token.Token) interface{} {
 			c := r.Int()%2 == 0

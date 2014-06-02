@@ -12,7 +12,7 @@ type FuncFilter struct {
 	token      token.Token
 }
 
-func NewFuncExpression(
+func NewFuncFilter(
 	tok token.Token,
 	fuzzFunc func(r rand.Rand, tok token.Token) interface{},
 	stringFunc func(state interface{}, tok token.Token) string,
