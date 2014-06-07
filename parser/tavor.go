@@ -45,6 +45,45 @@ func (p *tavorParser) expectScanRune(expect rune) (rune, error) {
 	return p.expectRune(expect, got)
 }
 
+func (p *tavorParser) parseTerm(c rune) (token.Token, error) {
+	switch c {
+	case scanner.Ident:
+		n := p.scan.TokenText()
+
+		if _, ok := p.lookup[n]; !ok {
+			return nil, &ParserError{
+				Message: fmt.Sprintf("Token %s does not exists", n),
+				Type:    ParseErrorTokenDoesNotExists,
+			}
+		}
+
+		p.used[n] = struct{}{}
+
+		return p.lookup[n].Clone(), nil
+	case scanner.Int:
+		v, _ := strconv.Atoi(p.scan.TokenText())
+
+		return primitives.NewConstantInt(v), nil
+	case scanner.String:
+		s := p.scan.TokenText()
+
+		if s[0] != '"' {
+			panic("unknown " + s) // TODO remove this
+		}
+
+		if s[len(s)-1] != '"' {
+			return nil, &ParserError{
+				Message: "String is not terminated",
+				Type:    ParseErrorNonTerminatedString,
+			}
+		}
+
+		return primitives.NewConstantString(s[1 : len(s)-1]), nil
+	}
+
+	return nil, nil
+}
+
 func (p *tavorParser) parseTokenDefinition() (rune, error) {
 	name := p.scan.TokenText()
 
@@ -78,83 +117,58 @@ func (p *tavorParser) parseTokenDefinition() (rune, error) {
 	}
 
 	for {
-		switch c {
-		case scanner.Ident:
-			n := p.scan.TokenText()
-
-			if _, ok := p.lookup[n]; !ok {
+		tok, err := p.parseTerm(c)
+		if err != nil {
+			return zeroRune, err
+		} else if tok != nil {
+			tokens = append(tokens, tok)
+		} else {
+			switch c {
+			case scanner.EOF:
 				return zeroRune, &ParserError{
-					Message: fmt.Sprintf("Token %s does not exists", n),
-					Type:    ParseErrorTokenDoesNotExists,
+					Message: "New line at end of token definition needed",
+					Type:    ParseErrorNewLineNeeded,
 				}
-			}
+			case ',': // multi line token
+				if _, err := p.expectScanRune('\n'); err != nil {
+					return zeroRune, err
+				}
 
-			p.used[n] = struct{}{}
+				c = p.scan.Scan()
+				if DEBUG {
+					fmt.Printf("%d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
+				}
 
-			tokens = append(tokens, p.lookup[n].Clone())
-		case scanner.Int:
-			v, _ := strconv.Atoi(p.scan.TokenText())
-
-			tokens = append(tokens, primitives.NewConstantInt(v))
-		case scanner.String:
-			s := p.scan.TokenText()
-
-			if s[0] == '"' {
-				if s[len(s)-1] != '"' {
+				if c == '\n' {
 					return zeroRune, &ParserError{
-						Message: "String is not terminated",
-						Type:    ParseErrorNonTerminatedString,
+						Message: "Multi line token definition unexpectedly terminated",
+						Type:    ParseErrorUnexpectedTokenDefinitionTermination,
 					}
 				}
 
-				tokens = append(tokens, primitives.NewConstantString(s[1:len(s)-1]))
-			} else {
-				panic("unknown " + s) // TODO remove this
-			}
-		case scanner.EOF:
-			return zeroRune, &ParserError{
-				Message: "New line at end of token definition needed",
-				Type:    ParseErrorNewLineNeeded,
-			}
-		case ',': // multi line token
-			if _, err := p.expectScanRune('\n'); err != nil {
-				return zeroRune, err
-			}
-
-			c = p.scan.Scan()
-			if DEBUG {
-				fmt.Printf("%d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
-			}
-
-			if c == '\n' {
-				return zeroRune, &ParserError{
-					Message: "Multi line token definition unexpectedly terminated",
-					Type:    ParseErrorUnexpectedTokenDefinitionTermination,
+				continue
+			case '\n':
+				switch len(tokens) {
+				case 0:
+					return zeroRune, &ParserError{
+						Message: "Empty token definition",
+						Type:    ParseErrorEmptyTokenDefinition,
+					}
+				case 1:
+					p.lookup[name] = tokens[0]
+				default:
+					p.lookup[name] = lists.NewAll(tokens...)
 				}
-			}
 
-			continue
-		case '\n':
-			switch len(tokens) {
-			case 0:
-				return zeroRune, &ParserError{
-					Message: "Empty token definition",
-					Type:    ParseErrorEmptyTokenDefinition,
+				c = p.scan.Scan()
+				if DEBUG {
+					fmt.Printf("%d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
 				}
-			case 1:
-				p.lookup[name] = tokens[0]
+
+				return c, nil
 			default:
-				p.lookup[name] = lists.NewAll(tokens...)
+				panic("now what?") // TODO remove this
 			}
-
-			c = p.scan.Scan()
-			if DEBUG {
-				fmt.Printf("%d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
-			}
-
-			return c, nil
-		default:
-			panic("now what?") // TODO remove this
 		}
 
 		c = p.scan.Scan()
