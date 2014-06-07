@@ -45,6 +45,43 @@ func (p *tavorParser) expectScanRune(expect rune) (rune, error) {
 	return p.expectRune(expect, got)
 }
 
+func (p *tavorParser) parseGlobalScope() error {
+	var err error
+
+	c := p.scan.Scan()
+	if DEBUG {
+		fmt.Printf("%d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
+	}
+
+	for c != scanner.EOF {
+		switch c {
+		case '\n':
+			// ignore new lines in the global scope
+		case scanner.Ident:
+			c, err = p.parseTokenDefinition()
+			if err != nil {
+				return err
+			}
+
+			continue
+		case scanner.Int:
+			return &ParserError{
+				Message: "Token names have to start with a letter",
+				Type:    ParseErrorInvalidTokenName,
+			}
+		default:
+			panic("what am i to do now") // TODO remove this
+		}
+
+		c = p.scan.Scan()
+		if DEBUG {
+			fmt.Printf("%d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
+		}
+	}
+
+	return nil
+}
+
 func (p *tavorParser) parseTerm(c rune) (token.Token, error) {
 	switch c {
 	case scanner.Ident:
@@ -181,8 +218,6 @@ func (p *tavorParser) parseTokenDefinition() (rune, error) {
 }
 
 func ParseTavor(src io.Reader) (token.Token, error) {
-	var err error
-
 	p := &tavorParser{
 		lookup: make(map[string]token.Token),
 		used:   make(map[string]struct{}),
@@ -199,35 +234,8 @@ func ParseTavor(src io.Reader) (token.Token, error) {
 	}
 	p.scan.Whitespace = 1<<'\t' | 1<<' ' | 1<<'\r'
 
-	c := p.scan.Scan()
-	if DEBUG {
-		fmt.Printf("%d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
-	}
-
-	for c != scanner.EOF {
-		switch c {
-		case '\n':
-			// ignore new lines in the global scope
-		case scanner.Ident:
-			c, err = p.parseTokenDefinition()
-			if err != nil {
-				return nil, err
-			}
-
-			continue
-		case scanner.Int:
-			return nil, &ParserError{
-				Message: "Token names have to start with a letter",
-				Type:    ParseErrorInvalidTokenName,
-			}
-		default:
-			panic("what am i to do now") // TODO remove this
-		}
-
-		c = p.scan.Scan()
-		if DEBUG {
-			fmt.Printf("%d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
-		}
+	if err := p.parseGlobalScope(); err != nil {
+		return nil, err
 	}
 
 	if _, ok := p.lookup["START"]; !ok {
