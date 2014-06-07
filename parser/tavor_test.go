@@ -69,6 +69,11 @@ func TestTavorParseErrors(t *testing.T) {
 	tok, err = ParseTavor(strings.NewReader("Hello = 1,\n\n"))
 	Equal(t, ParseErrorUnexpectedTokenDefinitionTermination, err.(*ParserError).Type)
 	Nil(t, tok)
+
+	// unexpected continue of multi line token
+	tok, err = ParseTavor(strings.NewReader("Hello = 1,2\n\n"))
+	Equal(t, ParseErrorExpectRune, err.(*ParserError).Type)
+	Nil(t, tok)
 }
 
 func TestTavorParserSimple(t *testing.T) {
