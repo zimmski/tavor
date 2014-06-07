@@ -11,6 +11,9 @@ const (
 	ParseErrorUnusedToken
 	ParseErrorNonTerminatedString
 	ParseErrorTokenExists
+	ParseErrorTokenDoesNotExists
+	ParseErrorExpectRune
+	ParseErrorUnexpectedTokenDefinitionTermination
 )
 
 type ParserError struct {

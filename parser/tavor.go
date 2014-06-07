@@ -25,17 +25,24 @@ type tavorParser struct {
 	used   map[string]struct{}
 }
 
-func (p *tavorParser) expectRune(r rune) (rune, error) {
-	c := p.scan.Scan()
+func (p *tavorParser) expectRune(expect rune, got rune) (rune, error) {
+	if got != expect {
+		return got, &ParserError{
+			Message: fmt.Sprintf("Expected \"%c\" but got \"%c\"", expect, got),
+			Type:    ParseErrorExpectRune,
+		}
+	}
+
+	return got, nil
+}
+
+func (p *tavorParser) expectScanRune(expect rune) (rune, error) {
+	got := p.scan.Scan()
 	if DEBUG {
-		fmt.Printf("%d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
+		fmt.Printf("%d:%v -> %v\n", p.scan.Line, scanner.TokenString(got), p.scan.TokenText())
 	}
 
-	if c != r {
-		return c, fmt.Errorf("Expected \"%c\" but got \"%c\"", r, c)
-	}
-
-	return c, nil
+	return p.expectRune(expect, got)
 }
 
 func (p *tavorParser) parseTokenDefinition() (rune, error) {
@@ -51,7 +58,7 @@ func (p *tavorParser) parseTokenDefinition() (rune, error) {
 	// do an empty definition to allow loops
 	p.lookup[name] = nil
 
-	if c, err := p.expectRune('='); err != nil {
+	if c, err := p.expectScanRune('='); err != nil {
 		// unexpected new line?
 		if c == '\n' {
 			return zeroRune, &ParserError{
@@ -72,6 +79,19 @@ func (p *tavorParser) parseTokenDefinition() (rune, error) {
 
 	for {
 		switch c {
+		case scanner.Ident:
+			n := p.scan.TokenText()
+
+			if _, ok := p.lookup[n]; !ok {
+				return zeroRune, &ParserError{
+					Message: fmt.Sprintf("Token %s does not exists", n),
+					Type:    ParseErrorTokenDoesNotExists,
+				}
+			}
+
+			p.used[n] = struct{}{}
+
+			tokens = append(tokens, p.lookup[n].Clone())
 		case scanner.Int:
 			v, _ := strconv.Atoi(p.scan.TokenText())
 
@@ -96,6 +116,24 @@ func (p *tavorParser) parseTokenDefinition() (rune, error) {
 				Message: "New line at end of token definition needed",
 				Type:    ParseErrorNewLineNeeded,
 			}
+		case ',': // multi line token
+			if _, err := p.expectScanRune('\n'); err != nil {
+				return zeroRune, err
+			}
+
+			c = p.scan.Scan()
+			if DEBUG {
+				fmt.Printf("%d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
+			}
+
+			if c == '\n' {
+				return zeroRune, &ParserError{
+					Message: "Multi line token definition unexpectedly terminated",
+					Type:    ParseErrorUnexpectedTokenDefinitionTermination,
+				}
+			}
+
+			continue
 		case '\n':
 			switch len(tokens) {
 			case 0:
@@ -121,7 +159,7 @@ func (p *tavorParser) parseTokenDefinition() (rune, error) {
 
 		c = p.scan.Scan()
 		if DEBUG {
-			fmt.Printf("%d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
+			fmt.Printf("aa%d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
 		}
 	}
 

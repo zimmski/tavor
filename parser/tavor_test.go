@@ -30,6 +30,11 @@ func TestTavorParseErrors(t *testing.T) {
 	Equal(t, ParseErrorEarlyNewLine, err.(*ParserError).Type)
 	Nil(t, tok)
 
+	// expect =
+	tok, err = ParseTavor(strings.NewReader("START 123\n"))
+	Equal(t, ParseErrorExpectRune, err.(*ParserError).Type)
+	Nil(t, tok)
+
 	// new line after =
 	tok, err = ParseTavor(strings.NewReader("START = \n123\n"))
 	Equal(t, ParseErrorEmptyTokenDefinition, err.(*ParserError).Type)
@@ -53,6 +58,16 @@ func TestTavorParseErrors(t *testing.T) {
 	// token already exists
 	tok, err = ParseTavor(strings.NewReader("START = 123\nSTART = 456\n"))
 	Equal(t, ParseErrorTokenExists, err.(*ParserError).Type)
+	Nil(t, tok)
+
+	// token does not exists
+	tok, err = ParseTavor(strings.NewReader("START = Token\n"))
+	Equal(t, ParseErrorTokenDoesNotExists, err.(*ParserError).Type)
+	Nil(t, tok)
+
+	// unexpected multi line token termination
+	tok, err = ParseTavor(strings.NewReader("Hello = 1,\n\n"))
+	Equal(t, ParseErrorUnexpectedTokenDefinitionTermination, err.(*ParserError).Type)
 	Nil(t, tok)
 }
 
@@ -102,4 +117,28 @@ func TestTavorParserSimple(t *testing.T) {
 		primitives.NewConstantString("I am a constant string"),
 		primitives.NewConstantInt(123),
 	))
+
+	// embed token
+	tok, err = ParseTavor(strings.NewReader("Token=123\nSTART = Token\n"))
+	Nil(t, err)
+	Equal(t, tok, primitives.NewConstantInt(123))
+
+	// embed over token
+	tok, err = ParseTavor(strings.NewReader("Token=123\nAnotherToken = Token\nSTART = AnotherToken\n"))
+	Nil(t, err)
+	Equal(t, tok, primitives.NewConstantInt(123))
+
+	// multi line token
+	tok, err = ParseTavor(strings.NewReader("START = 1,\n2,\n3\n"))
+	Nil(t, err)
+	Equal(t, tok, lists.NewAll(
+		primitives.NewConstantInt(1),
+		primitives.NewConstantInt(2),
+		primitives.NewConstantInt(3),
+	))
+
+	// Umläüt
+	tok, err = ParseTavor(strings.NewReader("Umläüt=123\nSTART = Umläüt\n"))
+	Nil(t, err)
+	Equal(t, tok, primitives.NewConstantInt(123))
 }
