@@ -94,8 +94,8 @@ OUT:
 
 			if _, ok := p.lookup[n]; !ok {
 				return zeroRune, nil, &ParserError{
-					Message: fmt.Sprintf("Token %s does not exists", n),
-					Type:    ParseErrorTokenDoesNotExists,
+					Message: fmt.Sprintf("Token %s is not defined", n),
+					Type:    ParseErrorTokenNotDefined,
 				}
 			}
 
@@ -241,8 +241,8 @@ func (p *tavorParser) parseTokenDefinition() (rune, error) {
 
 	if _, ok := p.lookup[name]; ok {
 		return zeroRune, &ParserError{
-			Message: "Token already exists",
-			Type:    ParseErrorTokenExists,
+			Message: "Token already defined",
+			Type:    ParseErrorTokenAlreadyDefined,
 		}
 	}
 

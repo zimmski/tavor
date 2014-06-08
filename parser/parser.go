@@ -10,8 +10,8 @@ const (
 	ParseErrorInvalidTokenName
 	ParseErrorUnusedToken
 	ParseErrorNonTerminatedString
-	ParseErrorTokenExists
-	ParseErrorTokenDoesNotExists
+	ParseErrorTokenAlreadyDefined
+	ParseErrorTokenNotDefined
 	ParseErrorExpectRune
 	ParseErrorUnexpectedTokenDefinitionTermination
 )

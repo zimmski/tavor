@@ -58,12 +58,12 @@ func TestTavorParseErrors(t *testing.T) {
 
 	// token already exists
 	tok, err = ParseTavor(strings.NewReader("START = 123\nSTART = 456\n"))
-	Equal(t, ParseErrorTokenExists, err.(*ParserError).Type)
+	Equal(t, ParseErrorTokenAlreadyDefined, err.(*ParserError).Type)
 	Nil(t, tok)
 
 	// token does not exists
 	tok, err = ParseTavor(strings.NewReader("START = Token\n"))
-	Equal(t, ParseErrorTokenDoesNotExists, err.(*ParserError).Type)
+	Equal(t, ParseErrorTokenNotDefined, err.(*ParserError).Type)
 	Nil(t, tok)
 
 	// unexpected multi line token termination
@@ -195,4 +195,12 @@ func TestTavorParserAlternationsAndGroupings(t *testing.T) {
 		primitives.NewConstantInt(1),
 		primitives.NewConstantInt(2),
 	)))
+
+	// alternation with embedded token
+	tok, err = ParseTavor(strings.NewReader("Token = 2\nSTART = 1 | Token\n"))
+	Nil(t, err)
+	Equal(t, tok, lists.NewOne(
+		primitives.NewConstantInt(1),
+		primitives.NewConstantInt(2),
+	))
 }
