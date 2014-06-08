@@ -10,6 +10,7 @@ import (
 	"github.com/zimmski/tavor/token"
 	"github.com/zimmski/tavor/token/aggregates"
 	"github.com/zimmski/tavor/token/constraints"
+	"github.com/zimmski/tavor/token/expressions"
 	"github.com/zimmski/tavor/token/lists"
 	"github.com/zimmski/tavor/token/primitives"
 	"github.com/zimmski/tavor/token/sequences"
@@ -174,6 +175,11 @@ func TestTavorParseErrors(t *testing.T) {
 	// open expression
 	tok, err = ParseTavor(strings.NewReader("$Spec = type: Sequence\nSTART = ${Spec.Next\n"))
 	Equal(t, ParseErrorExpectRune, err.(*ParserError).Type)
+	Nil(t, tok)
+
+	// missing operator expression term
+	tok, err = ParseTavor(strings.NewReader("$Spec = type: Sequence\nSTART = ${Spec.Next +}\n"))
+	Equal(t, ParseErrorExpectedExpressionTerm, err.(*ParserError).Type)
 	Nil(t, tok)
 }
 
@@ -539,4 +545,68 @@ func TestTavorParserExpressions(t *testing.T) {
 	))
 	Nil(t, err)
 	Equal(t, tok, sequences.NewSequence(1, 1).Item())
+
+	// plus operator
+	tok, err = ParseTavor(strings.NewReader(
+		"START = ${1 + 2}\n",
+	))
+	Nil(t, err)
+	Equal(t, tok, expressions.NewAddArithmetic(
+		primitives.NewConstantInt(1),
+		primitives.NewConstantInt(2),
+	))
+
+	// sub operator
+	tok, err = ParseTavor(strings.NewReader(
+		"START = ${1 - 2}\n",
+	))
+	Nil(t, err)
+	Equal(t, tok, expressions.NewSubArithmetic(
+		primitives.NewConstantInt(1),
+		primitives.NewConstantInt(2),
+	))
+
+	// mul operator
+	tok, err = ParseTavor(strings.NewReader(
+		"START = ${1 * 2}\n",
+	))
+	Nil(t, err)
+	Equal(t, tok, expressions.NewMulArithmetic(
+		primitives.NewConstantInt(1),
+		primitives.NewConstantInt(2),
+	))
+
+	// div operator
+	tok, err = ParseTavor(strings.NewReader(
+		"START = ${1 / 2}\n",
+	))
+	Nil(t, err)
+	Equal(t, tok, expressions.NewDivArithmetic(
+		primitives.NewConstantInt(1),
+		primitives.NewConstantInt(2),
+	))
+
+	// nested operator
+	tok, err = ParseTavor(strings.NewReader(
+		"START = ${1 + 2 + 3}\n",
+	))
+	Nil(t, err)
+	Equal(t, tok, expressions.NewAddArithmetic(
+		primitives.NewConstantInt(1),
+		expressions.NewAddArithmetic(
+			primitives.NewConstantInt(2),
+			primitives.NewConstantInt(3),
+		),
+	))
+
+	// mixed operator
+	tok, err = ParseTavor(strings.NewReader(
+		"$Spec = type: Sequence\nSTART = ${Spec.Next + 1}\n",
+	))
+	Nil(t, err)
+	Equal(t, tok, expressions.NewAddArithmetic(
+		sequences.NewSequence(1, 1).Item(),
+		primitives.NewConstantInt(1),
+	))
+	Equal(t, "2", tok.String())
 }

@@ -10,6 +10,7 @@ import (
 	"github.com/zimmski/tavor/token"
 	"github.com/zimmski/tavor/token/aggregates"
 	"github.com/zimmski/tavor/token/constraints"
+	"github.com/zimmski/tavor/token/expressions"
 	"github.com/zimmski/tavor/token/lists"
 	"github.com/zimmski/tavor/token/primitives"
 	"github.com/zimmski/tavor/token/sequences"
@@ -337,33 +338,15 @@ func (p *tavorParser) parseExpression(c rune) (token.Token, error) {
 		return nil, err
 	}
 
-	var tok token.Token = nil
-
 	c = p.scan.Scan()
 	if DEBUG {
 		fmt.Printf("parseExpression after {} %d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
 	}
 
-	for {
-		t, err := p.parseExpressionTerm(c)
-		if err != nil {
-			return nil, err
-		} else if t == nil {
-			if DEBUG {
-				fmt.Println("break out Expression")
-			}
-			break
-		}
-
-		tok = t
-
-		c = p.scan.Scan()
-		if DEBUG {
-			fmt.Printf("parseExpression %d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
-		}
-	}
-
-	if tok == nil {
+	c, tok, err := p.parseExpressionTerm(c)
+	if err != nil {
+		return nil, err
+	} else if tok == nil {
 		return nil, &ParserError{
 			Message: "Empty expressions are not allowed",
 			Type:    ParseErrorEmptyExpressionIsInvalid,
@@ -382,21 +365,66 @@ func (p *tavorParser) parseExpression(c rune) (token.Token, error) {
 	return tok, nil
 }
 
-func (p *tavorParser) parseExpressionTerm(c rune) (token.Token, error) {
+func (p *tavorParser) parseExpressionTerm(c rune) (rune, token.Token, error) {
+	var tok token.Token
+	var err error
+
+	// single term
 	switch c {
 	case scanner.Ident:
-		tok, err := p.parseTokenAttribute(c)
+		tok, err = p.parseTokenAttribute(c)
 		if err != nil {
-			return nil, err
+			return zeroRune, nil, err
 		}
-		return tok, nil
 	case scanner.Int:
 		v, _ := strconv.Atoi(p.scan.TokenText())
 
-		return primitives.NewConstantInt(v), nil
+		tok = primitives.NewConstantInt(v)
 	}
 
-	return nil, nil
+	if tok == nil {
+		return zeroRune, nil, nil
+	}
+
+	c = p.scan.Scan()
+	if DEBUG {
+		fmt.Printf("parseExpressionTerm %d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
+	}
+
+	// operators
+	switch c {
+	case '+', '-', '*', '/':
+		sym := c
+
+		c = p.scan.Scan()
+		if DEBUG {
+			fmt.Printf("parseExpressionTerm operator %d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
+		}
+
+		var t token.Token
+		c, t, err = p.parseExpressionTerm(c)
+		if err != nil {
+			return zeroRune, nil, err
+		} else if t == nil {
+			return zeroRune, nil, &ParserError{
+				Message: "Expected another expression term after operator",
+				Type:    ParseErrorExpectedExpressionTerm,
+			}
+		}
+
+		switch sym {
+		case '+':
+			tok = expressions.NewAddArithmetic(tok, t)
+		case '-':
+			tok = expressions.NewSubArithmetic(tok, t)
+		case '*':
+			tok = expressions.NewMulArithmetic(tok, t)
+		case '/':
+			tok = expressions.NewDivArithmetic(tok, t)
+		}
+	}
+
+	return c, tok, nil
 }
 
 func (p *tavorParser) parseTokenAttribute(c rune) (token.Token, error) {

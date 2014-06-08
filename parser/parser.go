@@ -21,6 +21,7 @@ const (
 	ParseErrorUnknownTokenAttribute
 	ParseErrorUnknownTypeForSpecialToken
 	ParseErrorUnexpectedTokenDefinitionTermination
+	ParseErrorExpectedExpressionTerm
 )
 
 type ParserError struct {
