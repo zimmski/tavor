@@ -203,4 +203,53 @@ func TestTavorParserAlternationsAndGroupings(t *testing.T) {
 		primitives.NewConstantInt(1),
 		primitives.NewConstantInt(2),
 	))
+
+	// simple group
+	tok, err = ParseTavor(strings.NewReader("START = (1 2 3)\n"))
+	Nil(t, err)
+	Equal(t, tok, lists.NewAll(
+		primitives.NewConstantInt(1),
+		primitives.NewConstantInt(2),
+		primitives.NewConstantInt(3),
+	))
+
+	// simple embedded group
+	tok, err = ParseTavor(strings.NewReader("START = 0 (1 2 3) 4\n"))
+	Nil(t, err)
+	Equal(t, tok, lists.NewAll(
+		primitives.NewConstantInt(0),
+		lists.NewAll(
+			primitives.NewConstantInt(1),
+			primitives.NewConstantInt(2),
+			primitives.NewConstantInt(3),
+		),
+		primitives.NewConstantInt(4),
+	))
+
+	// simple embedded or group
+	tok, err = ParseTavor(strings.NewReader("START = 0 (1 | 2 | 3) 4\n"))
+	Nil(t, err)
+	Equal(t, tok, lists.NewAll(
+		primitives.NewConstantInt(0),
+		lists.NewOne(
+			primitives.NewConstantInt(1),
+			primitives.NewConstantInt(2),
+			primitives.NewConstantInt(3),
+		),
+		primitives.NewConstantInt(4),
+	))
+
+	// Yo dog, I heard you like groups? so here is a group in a group
+	tok, err = ParseTavor(strings.NewReader("START = (1 | (2 | 3)) | 4\n"))
+	Nil(t, err)
+	Equal(t, tok, lists.NewOne(
+		lists.NewOne(
+			primitives.NewConstantInt(1),
+			lists.NewOne(
+				primitives.NewConstantInt(2),
+				primitives.NewConstantInt(3),
+			),
+		),
+		primitives.NewConstantInt(4),
+	))
 }

@@ -121,6 +121,33 @@ OUT:
 			}
 
 			tokens = append(tokens, primitives.NewConstantString(s[1:len(s)-1]))
+		case '(':
+			if DEBUG {
+				fmt.Println("NEW group")
+			}
+			c = p.scan.Scan()
+			if DEBUG {
+				fmt.Printf("parseScope Group %d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
+			}
+
+			c, toks, err := p.parseScope(c)
+			if err != nil {
+				return zeroRune, nil, err
+			}
+
+			p.expectRune(')', c)
+
+			switch len(toks) {
+			case 0:
+				// ignore
+			case 1:
+				tokens = append(tokens, toks[0])
+			default:
+				tokens = append(tokens, lists.NewAll(toks...))
+			}
+			if DEBUG {
+				fmt.Println("END group")
+			}
 		case ',': // multi line token
 			if _, err := p.expectScanRune('\n'); err != nil {
 				return zeroRune, nil, err
@@ -174,9 +201,12 @@ OUT:
 			}
 		}
 
-		// alternations and groupings
+		// alternations
 		switch c {
 		case '|':
+			if DEBUG {
+				fmt.Println("NEW or")
+			}
 			var orTerms []token.Token
 			optional := false
 
@@ -217,6 +247,10 @@ OUT:
 				tokens = []token.Token{constraints.NewOptional(or)}
 			} else {
 				tokens = []token.Token{or}
+			}
+
+			if DEBUG {
+				fmt.Println("END or")
 			}
 
 			continue
