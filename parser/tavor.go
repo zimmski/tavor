@@ -180,12 +180,22 @@ OUT:
 			if DEBUG {
 				fmt.Println("END optional")
 			}
-		case '+':
+		case '+', '*':
 			if DEBUG {
 				fmt.Println("NEW repeat")
 			}
 
-			var from, to int64 = 1, math.MaxInt64
+			var from, to int64
+
+			if c == '*' {
+				from, to = 0, math.MaxInt64
+			} else {
+				from, to = 1, math.MaxInt64
+			}
+
+			if DEBUG {
+				fmt.Printf("repeat from %v to %v\n", from, to)
+			}
 
 			p.expectScanRune('(')
 
