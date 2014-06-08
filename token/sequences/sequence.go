@@ -39,10 +39,10 @@ func (s *Sequence) existing(r rand.Rand) int {
 }
 
 func (s *Sequence) ExistingItem() *sequenceExistingItem {
-	v := 0
+	v := -1 // TODO there should be some kind of real nil value
 
-	if s.value == s.start {
-		v = s.value
+	if s.value != s.start {
+		v = s.start
 	}
 
 	return &sequenceExistingItem{
