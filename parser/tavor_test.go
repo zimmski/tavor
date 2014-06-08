@@ -313,4 +313,44 @@ func TestTavorParserAlternationsAndGroupings(t *testing.T) {
 		), 0, math.MaxInt64),
 		primitives.NewConstantInt(4),
 	))
+
+	// simple optional repeat
+	tok, err = ParseTavor(strings.NewReader("START = 1 *(2)\n"))
+	Nil(t, err)
+	Equal(t, tok, lists.NewAll(
+		primitives.NewConstantInt(1),
+		lists.NewRepeat(primitives.NewConstantInt(2), 0, math.MaxInt64),
+	))
+
+	// exact repeat
+	tok, err = ParseTavor(strings.NewReader("START = 1 +3(2)\n"))
+	Nil(t, err)
+	Equal(t, tok, lists.NewAll(
+		primitives.NewConstantInt(1),
+		lists.NewRepeat(primitives.NewConstantInt(2), 3, 3),
+	))
+
+	// at least repeat
+	tok, err = ParseTavor(strings.NewReader("START = 1 +3,(2)\n"))
+	Nil(t, err)
+	Equal(t, tok, lists.NewAll(
+		primitives.NewConstantInt(1),
+		lists.NewRepeat(primitives.NewConstantInt(2), 3, math.MaxInt64),
+	))
+
+	// at most repeat
+	tok, err = ParseTavor(strings.NewReader("START = 1 +,3(2)\n"))
+	Nil(t, err)
+	Equal(t, tok, lists.NewAll(
+		primitives.NewConstantInt(1),
+		lists.NewRepeat(primitives.NewConstantInt(2), 1, 3),
+	))
+
+	// range repeat
+	tok, err = ParseTavor(strings.NewReader("START = 1 +2,3(2)\n"))
+	Nil(t, err)
+	Equal(t, tok, lists.NewAll(
+		primitives.NewConstantInt(1),
+		lists.NewRepeat(primitives.NewConstantInt(2), 2, 3),
+	))
 }

@@ -185,23 +185,60 @@ OUT:
 				fmt.Println("NEW repeat")
 			}
 
-			var from, to int64
+			sym := c
 
-			if c == '*' {
+			c = p.scan.Scan()
+			if DEBUG {
+				fmt.Printf("parseTerm repeat before ( %d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
+			}
+
+			var from, to int
+
+			if sym == '*' {
 				from, to = 0, math.MaxInt64
 			} else {
-				from, to = 1, math.MaxInt64
+				if c == scanner.Int {
+					from, _ = strconv.Atoi(p.scan.TokenText())
+
+					c = p.scan.Scan()
+					if DEBUG {
+						fmt.Printf("parseTerm repeat after from ( %d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
+					}
+
+					// until there is an explicit "to" we can assume to==from
+					to = from
+				} else {
+					from, to = 1, math.MaxInt64
+				}
+
+				if c == ',' {
+					c = p.scan.Scan()
+					if DEBUG {
+						fmt.Printf("parseTerm repeat after , ( %d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
+					}
+
+					if c == scanner.Int {
+						to, _ = strconv.Atoi(p.scan.TokenText())
+
+						c = p.scan.Scan()
+						if DEBUG {
+							fmt.Printf("parseTerm repeat after to ( %d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
+						}
+					} else {
+						to = math.MaxInt64
+					}
+				}
 			}
+
+			p.expectRune('(', c)
 
 			if DEBUG {
 				fmt.Printf("repeat from %v to %v\n", from, to)
 			}
 
-			p.expectScanRune('(')
-
 			c = p.scan.Scan()
 			if DEBUG {
-				fmt.Printf("parseTerm optional after ( %d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
+				fmt.Printf("parseTerm repeat after ( %d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
 			}
 
 			c, toks, err := p.parseScope(c)
@@ -215,9 +252,9 @@ OUT:
 			case 0:
 				// ignore
 			case 1:
-				tokens = append(tokens, lists.NewRepeat(toks[0], from, to))
+				tokens = append(tokens, lists.NewRepeat(toks[0], int64(from), int64(to)))
 			default:
-				tokens = append(tokens, lists.NewRepeat(lists.NewAll(toks...), from, to))
+				tokens = append(tokens, lists.NewRepeat(lists.NewAll(toks...), int64(from), int64(to)))
 			}
 
 			if DEBUG {
