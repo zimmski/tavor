@@ -3,11 +3,12 @@ package parser
 import (
 	"fmt"
 	"io"
-	"math"
+	"reflect"
 	"strconv"
 	"text/scanner"
 
 	"github.com/zimmski/tavor/token"
+	"github.com/zimmski/tavor/token/aggregates"
 	"github.com/zimmski/tavor/token/constraints"
 	"github.com/zimmski/tavor/token/lists"
 	"github.com/zimmski/tavor/token/primitives"
@@ -17,6 +18,10 @@ import (
 var DEBUG = false
 
 const zeroRune = 0
+
+const (
+	MaxRepeat = 2
+)
 
 type tavorParser struct {
 	scan scanner.Scanner
@@ -102,7 +107,7 @@ OUT:
 
 			p.used[n] = struct{}{}
 
-			tokens = append(tokens, p.lookup[n].Clone())
+			tokens = append(tokens, p.lookup[n])
 		case scanner.Int:
 			v, _ := strconv.Atoi(p.scan.TokenText())
 
@@ -195,7 +200,7 @@ OUT:
 			var from, to int
 
 			if sym == '*' {
-				from, to = 0, math.MaxInt64
+				from, to = 0, MaxRepeat
 			} else {
 				if c == scanner.Int {
 					from, _ = strconv.Atoi(p.scan.TokenText())
@@ -208,7 +213,7 @@ OUT:
 					// until there is an explicit "to" we can assume to==from
 					to = from
 				} else {
-					from, to = 1, math.MaxInt64
+					from, to = 1, MaxRepeat
 				}
 
 				if c == ',' {
@@ -225,7 +230,7 @@ OUT:
 							fmt.Printf("parseTerm repeat after to ( %d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
 						}
 					} else {
-						to = math.MaxInt64
+						to = MaxRepeat
 					}
 				}
 			}
@@ -260,6 +265,20 @@ OUT:
 			if DEBUG {
 				fmt.Println("END repeat")
 			}
+		case '$':
+			if DEBUG {
+				fmt.Println("START token attribute")
+			}
+
+			if tok, err := p.parseTokenAttribute(); err != nil {
+				return zeroRune, nil, err
+			} else {
+				tokens = append(tokens, tok)
+			}
+
+			if DEBUG {
+				fmt.Println("END token attribute")
+			}
 		case ',': // multi line token
 			if _, err := p.expectScanRune('\n'); err != nil {
 				return zeroRune, nil, err
@@ -292,6 +311,48 @@ OUT:
 	}
 
 	return c, tokens, nil
+}
+
+func (p *tavorParser) parseTokenAttribute() (token.Token, error) {
+	_, err := p.expectScanRune(scanner.Ident)
+	if err != nil {
+		return nil, err
+	}
+
+	name := p.scan.TokenText()
+
+	_, err = p.expectScanRune('.')
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = p.expectScanRune(scanner.Ident)
+	if err != nil {
+		return nil, err
+	}
+
+	attribute := p.scan.TokenText()
+
+	tok, ok := p.lookup[name]
+	if !ok {
+		return nil, &ParserError{
+			Message: fmt.Sprintf("Token %s is not defined", name),
+			Type:    ParseErrorTokenNotDefined,
+		}
+	}
+
+	switch i := tok.(type) {
+	case lists.List:
+		switch attribute {
+		case "Count":
+			return aggregates.NewLen(i), nil
+		}
+	}
+
+	return nil, &ParserError{
+		Message: fmt.Sprintf("Unknown token attribute %s for token type %s", attribute, reflect.TypeOf(tok)),
+		Type:    ParseErrorUnknownTokenAttribute,
+	}
 }
 
 func (p *tavorParser) parseScope(c rune) (rune, []token.Token, error) {

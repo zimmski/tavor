@@ -13,6 +13,7 @@ const (
 	ParseErrorTokenAlreadyDefined
 	ParseErrorTokenNotDefined
 	ParseErrorExpectRune
+	ParseErrorUnknownTokenAttribute
 	ParseErrorUnexpectedTokenDefinitionTermination
 )
 

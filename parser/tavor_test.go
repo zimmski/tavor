@@ -1,13 +1,14 @@
 package parser
 
 import (
-	"math"
 	"strings"
 	"testing"
 
 	. "github.com/stretchr/testify/assert"
 
+	"github.com/zimmski/tavor/test"
 	"github.com/zimmski/tavor/token"
+	"github.com/zimmski/tavor/token/aggregates"
 	"github.com/zimmski/tavor/token/constraints"
 	"github.com/zimmski/tavor/token/lists"
 	"github.com/zimmski/tavor/token/primitives"
@@ -73,8 +74,18 @@ func TestTavorParseErrors(t *testing.T) {
 	Nil(t, tok)
 
 	// unexpected continue of multi line token
-	tok, err = ParseTavor(strings.NewReader("Hello = 1,2\n\n"))
+	tok, err = ParseTavor(strings.NewReader("Hello = 1,2\n"))
 	Equal(t, ParseErrorExpectRune, err.(*ParserError).Type)
+	Nil(t, tok)
+
+	// unknown token attribute
+	tok, err = ParseTavor(strings.NewReader("Token = 123\nSTART = $Token.yeah\n"))
+	Equal(t, ParseErrorUnknownTokenAttribute, err.(*ParserError).Type)
+	Nil(t, tok)
+
+	// unknown token attribute
+	tok, err = ParseTavor(strings.NewReader("Token = 123\nSTART = Token $Token.Count\n"))
+	Equal(t, ParseErrorUnknownTokenAttribute, err.(*ParserError).Type)
 	Nil(t, tok)
 }
 
@@ -279,7 +290,7 @@ func TestTavorParserAlternationsAndGroupings(t *testing.T) {
 	Nil(t, err)
 	Equal(t, tok, lists.NewAll(
 		primitives.NewConstantInt(1),
-		lists.NewRepeat(primitives.NewConstantInt(2), 1, math.MaxInt64),
+		lists.NewRepeat(primitives.NewConstantInt(2), 1, MaxRepeat),
 	))
 
 	// or repeat
@@ -290,7 +301,7 @@ func TestTavorParserAlternationsAndGroupings(t *testing.T) {
 		lists.NewRepeat(lists.NewOne(
 			primitives.NewConstantInt(2),
 			primitives.NewConstantInt(3),
-		), 1, math.MaxInt64),
+		), 1, MaxRepeat),
 		primitives.NewConstantInt(4),
 	))
 
@@ -299,7 +310,7 @@ func TestTavorParserAlternationsAndGroupings(t *testing.T) {
 	Nil(t, err)
 	Equal(t, tok, lists.NewAll(
 		primitives.NewConstantInt(1),
-		lists.NewRepeat(primitives.NewConstantInt(2), 0, math.MaxInt64),
+		lists.NewRepeat(primitives.NewConstantInt(2), 0, MaxRepeat),
 	))
 
 	// or optional repeat
@@ -310,7 +321,7 @@ func TestTavorParserAlternationsAndGroupings(t *testing.T) {
 		lists.NewRepeat(lists.NewOne(
 			primitives.NewConstantInt(2),
 			primitives.NewConstantInt(3),
-		), 0, math.MaxInt64),
+		), 0, MaxRepeat),
 		primitives.NewConstantInt(4),
 	))
 
@@ -319,7 +330,7 @@ func TestTavorParserAlternationsAndGroupings(t *testing.T) {
 	Nil(t, err)
 	Equal(t, tok, lists.NewAll(
 		primitives.NewConstantInt(1),
-		lists.NewRepeat(primitives.NewConstantInt(2), 0, math.MaxInt64),
+		lists.NewRepeat(primitives.NewConstantInt(2), 0, MaxRepeat),
 	))
 
 	// exact repeat
@@ -335,7 +346,7 @@ func TestTavorParserAlternationsAndGroupings(t *testing.T) {
 	Nil(t, err)
 	Equal(t, tok, lists.NewAll(
 		primitives.NewConstantInt(1),
-		lists.NewRepeat(primitives.NewConstantInt(2), 3, math.MaxInt64),
+		lists.NewRepeat(primitives.NewConstantInt(2), 3, MaxRepeat),
 	))
 
 	// at most repeat
@@ -353,4 +364,35 @@ func TestTavorParserAlternationsAndGroupings(t *testing.T) {
 		primitives.NewConstantInt(1),
 		lists.NewRepeat(primitives.NewConstantInt(2), 2, 3),
 	))
+}
+
+func TestTavorParserTokenAttributes(t *testing.T) {
+	var tok token.Token
+	var err error
+
+	// token attribute List.Count
+	tok, err = ParseTavor(strings.NewReader(
+		"Digit = 1 | 2 | 3\n" +
+			"Digits = *(Digit)\n" +
+			"START = Digits \"->\" $Digits.Count\n",
+	))
+	Nil(t, err)
+	{
+		v, _ := tok.(*lists.All).Get(0)
+		list := v.(*lists.Repeat)
+
+		Equal(t, tok, lists.NewAll(
+			lists.NewRepeat(lists.NewOne(
+				primitives.NewConstantInt(1),
+				primitives.NewConstantInt(2),
+				primitives.NewConstantInt(3),
+			), 0, MaxRepeat),
+			primitives.NewConstantString("->"),
+			aggregates.NewLen(list),
+		))
+
+		r := test.NewRandTest(1)
+		tok.Fuzz(r)
+		Equal(t, "12->2", tok.String())
+	}
 }
