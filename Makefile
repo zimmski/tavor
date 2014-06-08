@@ -11,3 +11,8 @@ lint: clean
 	golint $(GOPATH)/src/github.com/zimmski/tavor
 test: clean
 	go test ./...
+tools:
+	go get code.google.com/p/go.tools/cmd/godoc
+	go get -u code.google.com/p/go.tools/cmd/vet
+	go get -u github.com/golang/lint
+
