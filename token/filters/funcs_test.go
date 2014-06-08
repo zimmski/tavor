@@ -34,9 +34,9 @@ func TestFuncExpression(t *testing.T) {
 			case bool:
 				if i {
 					return tok.String()
-				} else {
-					return ""
 				}
+
+				return ""
 			case nil:
 				return tok.String()
 			}

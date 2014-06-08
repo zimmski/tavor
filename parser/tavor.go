@@ -85,7 +85,7 @@ func (p *tavorParser) parseGlobalScope() error {
 }
 
 func (p *tavorParser) parseTerm(c rune) (rune, []token.Token, error) {
-	tokens := make([]token.Token, 0)
+	var tokens []token.Token
 
 OUT:
 	for {
@@ -260,7 +260,7 @@ OUT:
 func (p *tavorParser) parseScope(c rune) (rune, []token.Token, error) {
 	var err error
 
-	tokens := make([]token.Token, 0)
+	var tokens []token.Token
 
 OUT:
 	for {
