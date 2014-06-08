@@ -98,6 +98,7 @@ func (p *tavorParser) parseGlobalScope() error {
 }
 
 func (p *tavorParser) parseTerm(c rune) (rune, []token.Token, error) {
+	var err error
 	var tokens []token.Token
 
 OUT:
@@ -274,18 +275,23 @@ OUT:
 				fmt.Println("END repeat")
 			}
 		case '$':
+			c = p.scan.Scan()
 			if DEBUG {
-				fmt.Println("START token attribute")
+				fmt.Printf("parseTerm after $ ( %d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
 			}
 
-			if tok, err := p.parseTokenAttribute(); err != nil {
+			var tok token.Token
+
+			if c == '{' {
+				tok, err = p.parseExpression(c)
+			} else {
+				tok, err = p.parseTokenAttribute(c)
+			}
+
+			if err != nil {
 				return zeroRune, nil, err
 			} else {
 				tokens = append(tokens, tok)
-			}
-
-			if DEBUG {
-				fmt.Println("END token attribute")
 			}
 		case ',': // multi line token
 			if _, err := p.expectScanRune('\n'); err != nil {
@@ -321,8 +327,84 @@ OUT:
 	return c, tokens, nil
 }
 
-func (p *tavorParser) parseTokenAttribute() (token.Token, error) {
-	_, err := p.expectScanRune(scanner.Ident)
+func (p *tavorParser) parseExpression(c rune) (token.Token, error) {
+	if DEBUG {
+		fmt.Println("START expression")
+	}
+
+	_, err := p.expectRune('{', c)
+	if err != nil {
+		return nil, err
+	}
+
+	var tok token.Token = nil
+
+	c = p.scan.Scan()
+	if DEBUG {
+		fmt.Printf("parseExpression after {} %d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
+	}
+
+	for {
+		t, err := p.parseExpressionTerm(c)
+		if err != nil {
+			return nil, err
+		} else if t == nil {
+			if DEBUG {
+				fmt.Println("break out Expression")
+			}
+			break
+		}
+
+		tok = t
+
+		c = p.scan.Scan()
+		if DEBUG {
+			fmt.Printf("parseExpression %d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
+		}
+	}
+
+	if tok == nil {
+		return nil, &ParserError{
+			Message: "Empty expressions are not allowed",
+			Type:    ParseErrorEmptyExpressionIsInvalid,
+		}
+	}
+
+	_, err = p.expectRune('}', c)
+	if err != nil {
+		return nil, err
+	}
+
+	if DEBUG {
+		fmt.Println("END expression")
+	}
+
+	return tok, nil
+}
+
+func (p *tavorParser) parseExpressionTerm(c rune) (token.Token, error) {
+	switch c {
+	case scanner.Ident:
+		tok, err := p.parseTokenAttribute(c)
+		if err != nil {
+			return nil, err
+		}
+		return tok, nil
+	case scanner.Int:
+		v, _ := strconv.Atoi(p.scan.TokenText())
+
+		return primitives.NewConstantInt(v), nil
+	}
+
+	return nil, nil
+}
+
+func (p *tavorParser) parseTokenAttribute(c rune) (token.Token, error) {
+	if DEBUG {
+		fmt.Println("START token attribute")
+	}
+
+	_, err := p.expectRune(scanner.Ident, c)
 	if err != nil {
 		return nil, err
 	}
@@ -350,6 +432,10 @@ func (p *tavorParser) parseTokenAttribute() (token.Token, error) {
 	}
 
 	p.used[name] = struct{}{}
+
+	if DEBUG {
+		fmt.Println("END token attribute (or will be unknown token attribute)")
+	}
 
 	switch i := tok.(type) {
 	case lists.List:

@@ -6,6 +6,7 @@ const (
 	ParseErrorNoStart ParserErrorType = iota
 	ParseErrorNewLineNeeded
 	ParseErrorEarlyNewLine
+	ParseErrorEmptyExpressionIsInvalid
 	ParseErrorEmptyTokenDefinition
 	ParseErrorInvalidArgumentValue
 	ParseErrorInvalidTokenName

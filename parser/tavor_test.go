@@ -165,6 +165,16 @@ func TestTavorParseErrors(t *testing.T) {
 	tok, err = ParseTavor(strings.NewReader("$START = type: Sequence,\nstep:abc\n"))
 	Equal(t, ParseErrorInvalidArgumentValue, err.(*ParserError).Type)
 	Nil(t, tok)
+
+	// empty expression
+	tok, err = ParseTavor(strings.NewReader("START = ${}\n"))
+	Equal(t, ParseErrorEmptyExpressionIsInvalid, err.(*ParserError).Type)
+	Nil(t, tok)
+
+	// open expression
+	tok, err = ParseTavor(strings.NewReader("$Spec = type: Sequence\nSTART = ${Spec.Next\n"))
+	Equal(t, ParseErrorExpectRune, err.(*ParserError).Type)
+	Nil(t, tok)
 }
 
 func TestTavorParserSimple(t *testing.T) {
@@ -517,4 +527,16 @@ func TestTavorParserSpecialTokens(t *testing.T) {
 	))
 	Nil(t, err)
 	Equal(t, tok, sequences.NewSequence(1, 1).ExistingItem())
+}
+
+func TestTavorParserExpressions(t *testing.T) {
+	var tok token.Token
+	var err error
+
+	// simple expression
+	tok, err = ParseTavor(strings.NewReader(
+		"$Spec = type: Sequence\nSTART = ${Spec.Next}\n",
+	))
+	Nil(t, err)
+	Equal(t, tok, sequences.NewSequence(1, 1).Item())
 }
