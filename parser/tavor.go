@@ -86,7 +86,7 @@ func (p *tavorParser) parseGlobalScope() error {
 func (p *tavorParser) parseTerm(c rune) (rune, []token.Token, error) {
 	tokens := make([]token.Token, 0)
 
-Out:
+OUT:
 	for {
 		switch c {
 		case scanner.Ident:
@@ -121,13 +121,112 @@ Out:
 			}
 
 			tokens = append(tokens, primitives.NewConstantString(s[1:len(s)-1]))
+		case ',': // multi line token
+			if _, err := p.expectScanRune('\n'); err != nil {
+				return zeroRune, nil, err
+			}
+
+			c = p.scan.Scan()
+			if DEBUG {
+				fmt.Printf("parseTerm multiline %d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
+			}
+
+			if c == '\n' {
+				return zeroRune, nil, &ParserError{
+					Message: "Multi line token definition unexpectedly terminated",
+					Type:    ParseErrorUnexpectedTokenDefinitionTermination,
+				}
+			}
+
+			continue
 		default:
-			break Out
+			if DEBUG {
+				fmt.Println("break out parseTerm")
+			}
+			break OUT
 		}
 
 		c = p.scan.Scan()
 		if DEBUG {
-			fmt.Printf("%d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
+			fmt.Printf("parseTerm %d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
+		}
+	}
+
+	return c, tokens, nil
+}
+
+func (p *tavorParser) parseScope(c rune) (rune, []token.Token, error) {
+	var err error
+
+	tokens := make([]token.Token, 0)
+
+OUT:
+	for {
+		// identifier and literals
+		var toks []token.Token
+		c, toks, err = p.parseTerm(c)
+		if err != nil {
+			return zeroRune, nil, err
+		} else if toks != nil {
+			tokens = append(tokens, toks...)
+			if DEBUG {
+				fmt.Println("add these tokens in parseScope")
+			}
+		}
+
+		// alternations and groupings
+		switch c {
+		case '|':
+			var orTerms []token.Token
+			optional := false
+
+			toks = tokens
+
+		OR:
+			for {
+				switch len(toks) {
+				case 0:
+					optional = true
+				case 1:
+					orTerms = append(orTerms, toks[0])
+				default:
+					orTerms = append(orTerms, lists.NewAll(toks...))
+				}
+
+				if c == '|' {
+					c = p.scan.Scan()
+					if DEBUG {
+						fmt.Printf("parseScope Or %d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
+					}
+				} else {
+					if DEBUG {
+						fmt.Println("parseScope break out or")
+					}
+					break OR
+				}
+
+				c, toks, err = p.parseTerm(c)
+				if err != nil {
+					return zeroRune, nil, err
+				}
+			}
+
+			or := lists.NewOne(orTerms...)
+
+			if optional {
+				tokens = []token.Token{constraints.NewOptional(or)}
+			} else {
+				tokens = []token.Token{or}
+			}
+
+			continue
+		default:
+			break OUT
+		}
+
+		c = p.scan.Scan()
+		if DEBUG {
+			fmt.Printf("parseScope %d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
 		}
 	}
 
@@ -162,118 +261,47 @@ func (p *tavorParser) parseTokenDefinition() (rune, error) {
 		return zeroRune, err
 	}
 
-	tokens := make([]token.Token, 0)
+	c = p.scan.Scan()
+	if DEBUG {
+		fmt.Printf("parseTokenDefinition after = %d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
+	}
+
+	c, tokens, err := p.parseScope(c)
+	if err != nil {
+		return zeroRune, err
+	}
+
+	if DEBUG {
+		fmt.Printf("back to token definition with c=%c\n", c)
+	}
+
+	// we always want a new line at the end of the file
+	if c == scanner.EOF {
+		return zeroRune, &ParserError{
+			Message: "New line at end of token definition needed",
+			Type:    ParseErrorNewLineNeeded,
+		}
+	}
+
+	if c, err = p.expectRune('\n', c); err != nil {
+		return zeroRune, err
+	}
+
+	switch len(tokens) {
+	case 0:
+		return zeroRune, &ParserError{
+			Message: "Empty token definition",
+			Type:    ParseErrorEmptyTokenDefinition,
+		}
+	case 1:
+		p.lookup[name] = tokens[0]
+	default:
+		p.lookup[name] = lists.NewAll(tokens...)
+	}
 
 	c = p.scan.Scan()
 	if DEBUG {
-		fmt.Printf("%d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
-	}
-
-OUT:
-	for {
-		// identifier and literals
-		var toks []token.Token
-		c, toks, err = p.parseTerm(c)
-		if err != nil {
-			return zeroRune, err
-		} else if toks != nil {
-			tokens = append(tokens, toks...)
-		}
-
-		// alternations and groupings
-		switch c {
-		case '|':
-			var orTerms []token.Token
-			optional := false
-
-			toks = tokens
-
-			for {
-				switch len(toks) {
-				case 0:
-					optional = true
-				case 1:
-					orTerms = append(orTerms, toks[0])
-				default:
-					orTerms = append(orTerms, lists.NewAll(toks...))
-				}
-
-				if c == '|' {
-					c = p.scan.Scan()
-					if DEBUG {
-						fmt.Printf("%d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
-					}
-				} else {
-					break
-				}
-
-				c, toks, err = p.parseTerm(c)
-				if err != nil {
-					return zeroRune, err
-				}
-			}
-
-			or := lists.NewOne(orTerms...)
-
-			if optional {
-				tokens = []token.Token{constraints.NewOptional(or)}
-			} else {
-				tokens = []token.Token{or}
-			}
-		}
-
-		// endings
-		switch c {
-		case scanner.EOF:
-			return zeroRune, &ParserError{
-				Message: "New line at end of token definition needed",
-				Type:    ParseErrorNewLineNeeded,
-			}
-		case ',': // multi line token
-			if _, err := p.expectScanRune('\n'); err != nil {
-				return zeroRune, err
-			}
-
-			c = p.scan.Scan()
-			if DEBUG {
-				fmt.Printf("%d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
-			}
-
-			if c == '\n' {
-				return zeroRune, &ParserError{
-					Message: "Multi line token definition unexpectedly terminated",
-					Type:    ParseErrorUnexpectedTokenDefinitionTermination,
-				}
-			}
-
-			continue
-		case '\n':
-			switch len(tokens) {
-			case 0:
-				return zeroRune, &ParserError{
-					Message: "Empty token definition",
-					Type:    ParseErrorEmptyTokenDefinition,
-				}
-			case 1:
-				p.lookup[name] = tokens[0]
-			default:
-				p.lookup[name] = lists.NewAll(tokens...)
-			}
-
-			c = p.scan.Scan()
-			if DEBUG {
-				fmt.Printf("%d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
-			}
-
-			break OUT
-		default:
-			panic("now what?") // TODO remove this
-		}
-
-		c = p.scan.Scan()
-		if DEBUG {
-			fmt.Printf("%d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
-		}
+		fmt.Printf("parseTokenDefinition after newline %d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
 	}
 
 	return c, nil
