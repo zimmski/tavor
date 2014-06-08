@@ -12,6 +12,7 @@ import (
 	"github.com/zimmski/tavor/token/constraints"
 	"github.com/zimmski/tavor/token/lists"
 	"github.com/zimmski/tavor/token/primitives"
+	"github.com/zimmski/tavor/token/sequences"
 )
 
 //TODO remove this
@@ -356,6 +357,13 @@ func (p *tavorParser) parseTokenAttribute() (token.Token, error) {
 		case "Count":
 			return aggregates.NewLen(i), nil
 		}
+	case *sequences.Sequence:
+		switch attribute {
+		case "Existing":
+			return i.ExistingItem(), nil
+		case "Next":
+			return i.Item(), nil
+		}
 	}
 
 	return nil, &ParserError{
@@ -635,7 +643,7 @@ func (p *tavorParser) parseSpecialTokenDefinition() (rune, error) {
 			from, err := strconv.Atoi(rawFrom)
 			if err != nil {
 				return zeroRune, &ParserError{
-					Message: "\"from\" needs integer value",
+					Message: "\"from\" needs an integer value",
 					Type:    ParseErrorInvalidArgumentValue,
 				}
 			}
@@ -643,7 +651,7 @@ func (p *tavorParser) parseSpecialTokenDefinition() (rune, error) {
 			to, err := strconv.Atoi(rawTo)
 			if err != nil {
 				return zeroRune, &ParserError{
-					Message: "\"to\" needs integer value",
+					Message: "\"to\" needs an integer value",
 					Type:    ParseErrorInvalidArgumentValue,
 				}
 			}
@@ -655,6 +663,34 @@ func (p *tavorParser) parseSpecialTokenDefinition() (rune, error) {
 		} else {
 			tok = primitives.NewRandomInt()
 		}
+	case "Sequence":
+		start := 1
+		step := 1
+
+		if raw, ok := arguments["start"]; ok {
+			start, err = strconv.Atoi(raw)
+			if err != nil {
+				return zeroRune, &ParserError{
+					Message: "\"start\" needs an integer value",
+					Type:    ParseErrorInvalidArgumentValue,
+				}
+			}
+		}
+
+		if raw, ok := arguments["step"]; ok {
+			step, err = strconv.Atoi(raw)
+			if err != nil {
+				return zeroRune, &ParserError{
+					Message: "\"step\" needs an integer value",
+					Type:    ParseErrorInvalidArgumentValue,
+				}
+			}
+		}
+
+		usedArguments["start"] = struct{}{}
+		usedArguments["step"] = struct{}{}
+
+		tok = sequences.NewSequence(start, step)
 	default:
 		return zeroRune, &ParserError{
 			Message: fmt.Sprintf("Unknown special token type %s", typ),

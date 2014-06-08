@@ -12,6 +12,7 @@ import (
 	"github.com/zimmski/tavor/token/constraints"
 	"github.com/zimmski/tavor/token/lists"
 	"github.com/zimmski/tavor/token/primitives"
+	"github.com/zimmski/tavor/token/sequences"
 )
 
 func TestTavorParseErrors(t *testing.T) {
@@ -153,6 +154,15 @@ func TestTavorParseErrors(t *testing.T) {
 	Nil(t, tok)
 
 	tok, err = ParseTavor(strings.NewReader("$START = type: Int,\nfrom:123,\nto:abc\n"))
+	Equal(t, ParseErrorInvalidArgumentValue, err.(*ParserError).Type)
+	Nil(t, tok)
+
+	// invalid arguments for special token Sequence
+	tok, err = ParseTavor(strings.NewReader("$START = type: Sequence,\nstart:abc\n"))
+	Equal(t, ParseErrorInvalidArgumentValue, err.(*ParserError).Type)
+	Nil(t, tok)
+
+	tok, err = ParseTavor(strings.NewReader("$START = type: Sequence,\nstep:abc\n"))
 	Equal(t, ParseErrorInvalidArgumentValue, err.(*ParserError).Type)
 	Nil(t, tok)
 }
@@ -482,4 +492,29 @@ func TestTavorParserSpecialTokens(t *testing.T) {
 	))
 	Nil(t, err)
 	Equal(t, tok, primitives.NewRangeInt(2, 10))
+
+	// Sequence
+	tok, err = ParseTavor(strings.NewReader(
+		"$Spec = type: Sequence\nSTART = $Spec.Next\n",
+	))
+	Nil(t, err)
+	Equal(t, tok, sequences.NewSequence(1, 1).Item())
+
+	tok, err = ParseTavor(strings.NewReader(
+		"$Spec = type: Sequence,\nstart: 2\nSTART = $Spec.Next\n",
+	))
+	Nil(t, err)
+	Equal(t, tok, sequences.NewSequence(2, 1).Item())
+
+	tok, err = ParseTavor(strings.NewReader(
+		"$Spec = type: Sequence,\nstep: 3\nSTART = $Spec.Next\n",
+	))
+	Nil(t, err)
+	Equal(t, tok, sequences.NewSequence(1, 3).Item())
+
+	tok, err = ParseTavor(strings.NewReader(
+		"$Spec = type: Sequence\nSTART = $Spec.Existing\n",
+	))
+	Nil(t, err)
+	Equal(t, tok, sequences.NewSequence(1, 1).ExistingItem())
 }
