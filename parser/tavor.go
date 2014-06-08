@@ -348,6 +348,8 @@ func (p *tavorParser) parseTokenAttribute() (token.Token, error) {
 		}
 	}
 
+	p.used[name] = struct{}{}
+
 	switch i := tok.(type) {
 	case lists.List:
 		switch attribute {
