@@ -7,13 +7,18 @@ const (
 	ParseErrorNewLineNeeded
 	ParseErrorEarlyNewLine
 	ParseErrorEmptyTokenDefinition
+	ParseErrorInvalidArgumentValue
 	ParseErrorInvalidTokenName
 	ParseErrorUnusedToken
+	ParseErrorMissingSpecialTokenArgument
 	ParseErrorNonTerminatedString
 	ParseErrorTokenAlreadyDefined
 	ParseErrorTokenNotDefined
 	ParseErrorExpectRune
+	ParseErrorUnknownSpecialTokenArgument
+	ParseErrorUnknownSpecialTokenType
 	ParseErrorUnknownTokenAttribute
+	ParseErrorUnknownTypeForSpecialToken
 	ParseErrorUnexpectedTokenDefinitionTermination
 )
 

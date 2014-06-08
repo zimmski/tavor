@@ -71,6 +71,13 @@ func (p *tavorParser) parseGlobalScope() error {
 			}
 
 			continue
+		case '$':
+			c, err = p.parseSpecialTokenDefinition()
+			if err != nil {
+				return err
+			}
+
+			continue
 		case scanner.Int:
 			return &ParserError{
 				Message: "Token names have to start with a letter",
@@ -506,6 +513,171 @@ func (p *tavorParser) parseTokenDefinition() (rune, error) {
 	c = p.scan.Scan()
 	if DEBUG {
 		fmt.Printf("parseTokenDefinition after newline %d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
+	}
+
+	return c, nil
+}
+
+func (p *tavorParser) parseSpecialTokenDefinition() (rune, error) {
+	var c rune
+	var err error
+
+	if DEBUG {
+		fmt.Println("START special token")
+	}
+
+	c = p.scan.Scan()
+	if DEBUG {
+		fmt.Printf("parseSpecialTokenDefinition after $ %d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
+	}
+
+	name := p.scan.TokenText()
+	if _, ok := p.lookup[name]; ok {
+		return zeroRune, &ParserError{
+			Message: "Token already defined",
+			Type:    ParseErrorTokenAlreadyDefined,
+		}
+	}
+
+	if c, err = p.expectScanRune('='); err != nil {
+		return zeroRune, err
+	}
+
+	arguments := make(map[string]string)
+
+	for {
+		c, err = p.expectScanRune(scanner.Ident)
+		if err != nil {
+			return zeroRune, err
+		}
+
+		arg := p.scan.TokenText()
+
+		_, err = p.expectScanRune(':')
+		if err != nil {
+			return zeroRune, err
+		}
+
+		c = p.scan.Scan()
+		if DEBUG {
+			fmt.Printf("parseSpecialTokenDefinition argument value %d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
+		}
+
+		switch c {
+		case scanner.Ident, scanner.String, scanner.Int:
+			arguments[arg] = p.scan.TokenText()
+		default:
+			return zeroRune, &ParserError{
+				Message: fmt.Sprintf("Invalid argument value %v", c),
+				Type:    ParseErrorInvalidArgumentValue,
+			}
+		}
+
+		c = p.scan.Scan()
+		if DEBUG {
+			fmt.Printf("parseSpecialTokenDefinition after argument value %d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
+		}
+
+		if c != ',' {
+			break
+		}
+
+		if c, err = p.expectScanRune('\n'); err != nil {
+			return zeroRune, err
+		}
+	}
+
+	// we always want a new line at the end of the file
+	if c == scanner.EOF {
+		return zeroRune, &ParserError{
+			Message: "New line at end of token definition needed",
+			Type:    ParseErrorNewLineNeeded,
+		}
+	}
+
+	if c, err = p.expectRune('\n', c); err != nil {
+		return zeroRune, err
+	}
+
+	typ, ok := arguments["type"]
+	if !ok {
+		return zeroRune, &ParserError{
+			Message: "Special token has no type argument",
+			Type:    ParseErrorUnknownTypeForSpecialToken,
+		}
+	}
+
+	var tok token.Token
+	usedArguments := map[string]struct{}{
+		"type": struct{}{},
+	}
+
+	switch typ {
+	case "Int":
+		rawFrom, okFrom := arguments["from"]
+		rawTo, okTo := arguments["to"]
+
+		if okFrom || okTo {
+			if okFrom && !okTo {
+				return zeroRune, &ParserError{
+					Message: "Argument \"to\" is missing",
+					Type:    ParseErrorMissingSpecialTokenArgument,
+				}
+			} else if !okFrom && okTo {
+				return zeroRune, &ParserError{
+					Message: "Argument \"from\" is missing",
+					Type:    ParseErrorMissingSpecialTokenArgument,
+				}
+			}
+
+			from, err := strconv.Atoi(rawFrom)
+			if err != nil {
+				return zeroRune, &ParserError{
+					Message: "\"from\" needs integer value",
+					Type:    ParseErrorInvalidArgumentValue,
+				}
+			}
+
+			to, err := strconv.Atoi(rawTo)
+			if err != nil {
+				return zeroRune, &ParserError{
+					Message: "\"to\" needs integer value",
+					Type:    ParseErrorInvalidArgumentValue,
+				}
+			}
+
+			usedArguments["from"] = struct{}{}
+			usedArguments["to"] = struct{}{}
+
+			tok = primitives.NewRangeInt(from, to)
+		} else {
+			tok = primitives.NewRandomInt()
+		}
+	default:
+		return zeroRune, &ParserError{
+			Message: fmt.Sprintf("Unknown special token type %s", typ),
+			Type:    ParseErrorUnknownSpecialTokenType,
+		}
+	}
+
+	for arg, _ := range arguments {
+		if _, ok := usedArguments[arg]; !ok {
+			return zeroRune, &ParserError{
+				Message: fmt.Sprintf("Unknown special token argument %s", arg),
+				Type:    ParseErrorUnknownSpecialTokenArgument,
+			}
+		}
+	}
+
+	p.lookup[name] = tok
+
+	c = p.scan.Scan()
+	if DEBUG {
+		fmt.Printf("parseSpecialTokenDefinition after newline %d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
+	}
+
+	if DEBUG {
+		fmt.Println("END special token")
 	}
 
 	return c, nil

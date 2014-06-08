@@ -58,12 +58,12 @@ func TestTavorParseErrors(t *testing.T) {
 	Equal(t, ParseErrorNonTerminatedString, err.(*ParserError).Type)
 	Nil(t, tok)
 
-	// token already exists
+	// token already defined
 	tok, err = ParseTavor(strings.NewReader("START = 123\nSTART = 456\n"))
 	Equal(t, ParseErrorTokenAlreadyDefined, err.(*ParserError).Type)
 	Nil(t, tok)
 
-	// token does not exists
+	// token is not defined
 	tok, err = ParseTavor(strings.NewReader("START = Token\n"))
 	Equal(t, ParseErrorTokenNotDefined, err.(*ParserError).Type)
 	Nil(t, tok)
@@ -86,6 +86,74 @@ func TestTavorParseErrors(t *testing.T) {
 	// unknown token attribute
 	tok, err = ParseTavor(strings.NewReader("Token = 123\nSTART = Token $Token.Count\n"))
 	Equal(t, ParseErrorUnknownTokenAttribute, err.(*ParserError).Type)
+	Nil(t, tok)
+
+	// special token already defined
+	tok, err = ParseTavor(strings.NewReader("START = 123\n$START = 456\n"))
+	Equal(t, ParseErrorTokenAlreadyDefined, err.(*ParserError).Type)
+	Nil(t, tok)
+
+	// expect = in special token
+	tok, err = ParseTavor(strings.NewReader("$START 123\n"))
+	Equal(t, ParseErrorExpectRune, err.(*ParserError).Type)
+	Nil(t, tok)
+
+	// expect identifier in special token
+	tok, err = ParseTavor(strings.NewReader("$START = 123\n"))
+	Equal(t, ParseErrorExpectRune, err.(*ParserError).Type)
+	Nil(t, tok)
+
+	// expect : in special token
+	tok, err = ParseTavor(strings.NewReader("$START = argument\n"))
+	Equal(t, ParseErrorExpectRune, err.(*ParserError).Type)
+	Nil(t, tok)
+
+	// expect valid argument value in special token
+	tok, err = ParseTavor(strings.NewReader("$START = argument:\n"))
+	Equal(t, ParseErrorInvalidArgumentValue, err.(*ParserError).Type)
+	Nil(t, tok)
+
+	// expect no eof after argument value in special token
+	tok, err = ParseTavor(strings.NewReader("$START = argument:value"))
+	Equal(t, ParseErrorNewLineNeeded, err.(*ParserError).Type)
+	Nil(t, tok)
+
+	// expect new line in special token
+	tok, err = ParseTavor(strings.NewReader("$START = argument:value$"))
+	Equal(t, ParseErrorExpectRune, err.(*ParserError).Type)
+	Nil(t, tok)
+
+	// undefined type argument special token
+	tok, err = ParseTavor(strings.NewReader("$START = hey: ok\n"))
+	Equal(t, ParseErrorUnknownTypeForSpecialToken, err.(*ParserError).Type)
+	Nil(t, tok)
+
+	// unknown type argument special token
+	tok, err = ParseTavor(strings.NewReader("$START = type: ok\n"))
+	Equal(t, ParseErrorUnknownSpecialTokenType, err.(*ParserError).Type)
+	Nil(t, tok)
+
+	// unknown special token argument
+	tok, err = ParseTavor(strings.NewReader("$START = type: Int,\nok: value\n"))
+	Equal(t, ParseErrorUnknownSpecialTokenArgument, err.(*ParserError).Type)
+	Nil(t, tok)
+
+	// missing arguments for special token Int
+	tok, err = ParseTavor(strings.NewReader("$START = type: Int,\nto:123\n"))
+	Equal(t, ParseErrorMissingSpecialTokenArgument, err.(*ParserError).Type)
+	Nil(t, tok)
+
+	tok, err = ParseTavor(strings.NewReader("$START = type: Int,\nfrom:123\n"))
+	Equal(t, ParseErrorMissingSpecialTokenArgument, err.(*ParserError).Type)
+	Nil(t, tok)
+
+	// invalid arguments for special token Int
+	tok, err = ParseTavor(strings.NewReader("$START = type: Int,\nfrom:abc,\nto:123\n"))
+	Equal(t, ParseErrorInvalidArgumentValue, err.(*ParserError).Type)
+	Nil(t, tok)
+
+	tok, err = ParseTavor(strings.NewReader("$START = type: Int,\nfrom:123,\nto:abc\n"))
+	Equal(t, ParseErrorInvalidArgumentValue, err.(*ParserError).Type)
 	Nil(t, tok)
 }
 
@@ -395,4 +463,23 @@ func TestTavorParserTokenAttributes(t *testing.T) {
 		tok.Fuzz(r)
 		Equal(t, "12->2", tok.String())
 	}
+}
+
+func TestTavorParserSpecialTokens(t *testing.T) {
+	var tok token.Token
+	var err error
+
+	// RandomInt
+	tok, err = ParseTavor(strings.NewReader(
+		"$Spec = type: Int\nSTART = Spec\n",
+	))
+	Nil(t, err)
+	Equal(t, tok, primitives.NewRandomInt())
+
+	// RangeInt
+	tok, err = ParseTavor(strings.NewReader(
+		"$Spec = type: Int,\nfrom: 2,\nto: 10\nSTART = Spec\n",
+	))
+	Nil(t, err)
+	Equal(t, tok, primitives.NewRangeInt(2, 10))
 }
