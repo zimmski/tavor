@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"math"
 	"strings"
 	"testing"
 
@@ -270,6 +271,26 @@ func TestTavorParserAlternationsAndGroupings(t *testing.T) {
 			primitives.NewConstantInt(2),
 			primitives.NewConstantInt(3),
 		)),
+		primitives.NewConstantInt(4),
+	))
+
+	// simple repeat
+	tok, err = ParseTavor(strings.NewReader("START = 1 +(2)\n"))
+	Nil(t, err)
+	Equal(t, tok, lists.NewAll(
+		primitives.NewConstantInt(1),
+		lists.NewRepeat(primitives.NewConstantInt(2), 1, math.MaxInt64),
+	))
+
+	// or repeat
+	tok, err = ParseTavor(strings.NewReader("START = 1 +(2 | 3) 4\n"))
+	Nil(t, err)
+	Equal(t, tok, lists.NewAll(
+		primitives.NewConstantInt(1),
+		lists.NewRepeat(lists.NewOne(
+			primitives.NewConstantInt(2),
+			primitives.NewConstantInt(3),
+		), 1, math.MaxInt64),
 		primitives.NewConstantInt(4),
 	))
 }

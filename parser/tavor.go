@@ -3,6 +3,7 @@ package parser
 import (
 	"fmt"
 	"io"
+	"math"
 	"strconv"
 	"text/scanner"
 
@@ -178,6 +179,39 @@ OUT:
 
 			if DEBUG {
 				fmt.Println("END optional")
+			}
+		case '+':
+			if DEBUG {
+				fmt.Println("NEW repeat")
+			}
+
+			var from, to int64 = 1, math.MaxInt64
+
+			p.expectScanRune('(')
+
+			c = p.scan.Scan()
+			if DEBUG {
+				fmt.Printf("parseTerm optional after ( %d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
+			}
+
+			c, toks, err := p.parseScope(c)
+			if err != nil {
+				return zeroRune, nil, err
+			}
+
+			p.expectRune(')', c)
+
+			switch len(toks) {
+			case 0:
+				// ignore
+			case 1:
+				tokens = append(tokens, lists.NewRepeat(toks[0], from, to))
+			default:
+				tokens = append(tokens, lists.NewRepeat(lists.NewAll(toks...), from, to))
+			}
+
+			if DEBUG {
+				fmt.Println("END repeat")
 			}
 		case ',': // multi line token
 			if _, err := p.expectScanRune('\n'); err != nil {
