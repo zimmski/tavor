@@ -23,6 +23,16 @@ func TestAll(t *testing.T) {
 	Equal(t, "10abc", o.String())
 	Equal(t, 2, o.Len())
 
+	i, err := o.Get(0)
+	Nil(t, err)
+	Equal(t, a, i)
+	i, err = o.Get(1)
+	Nil(t, err)
+	Equal(t, b, i)
+	i, err = o.Get(2)
+	Equal(t, err.(*ListError).Type, ListErrorOutOfBound)
+	Nil(t, i)
+
 	r := test.NewRandTest(0)
 	o.Fuzz(r)
 	Equal(t, "10abc", o.String())

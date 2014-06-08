@@ -54,6 +54,14 @@ func (l *Most) Fuzz(r rand.Rand) {
 	l.value = toks
 }
 
+func (l *Most) Get(i int) (token.Token, error) {
+	if i < 0 || i >= 1 {
+		return nil, &ListError{ListErrorOutOfBound}
+	}
+
+	return l.token, nil
+}
+
 func (l *Most) Len() int {
 	return len(l.value)
 }

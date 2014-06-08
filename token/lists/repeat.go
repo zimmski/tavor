@@ -57,6 +57,14 @@ func (l *Repeat) Fuzz(r rand.Rand) {
 	l.value = toks
 }
 
+func (l *Repeat) Get(i int) (token.Token, error) {
+	if i < 0 || i >= 1 {
+		return nil, &ListError{ListErrorOutOfBound}
+	}
+
+	return l.token, nil
+}
+
 func (l *Repeat) Len() int {
 	return len(l.value)
 }

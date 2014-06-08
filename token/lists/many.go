@@ -65,6 +65,14 @@ func (l *Many) Fuzz(r rand.Rand) {
 	l.value = toks
 }
 
+func (l *Many) Get(i int) (token.Token, error) {
+	if i < 0 || i >= len(l.tokens) {
+		return nil, &ListError{ListErrorOutOfBound}
+	}
+
+	return l.tokens[i], nil
+}
+
 func (l *Many) Len() int {
 	return len(l.value)
 }

@@ -22,6 +22,13 @@ func TestRepeat(t *testing.T) {
 	Equal(t, "aaaaa", o.String())
 	Equal(t, 5, o.Len())
 
+	i, err := o.Get(0)
+	Nil(t, err)
+	Equal(t, a, i)
+	i, err = o.Get(1)
+	Equal(t, err.(*ListError).Type, ListErrorOutOfBound)
+	Nil(t, i)
+
 	r := test.NewRandTest(1)
 	o.Fuzz(r)
 	Equal(t, "aaaaaaa", o.String())

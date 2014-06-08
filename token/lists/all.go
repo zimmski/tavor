@@ -39,6 +39,14 @@ func (l *All) Fuzz(r rand.Rand) {
 	}
 }
 
+func (l *All) Get(i int) (token.Token, error) {
+	if i < 0 || i >= len(l.tokens) {
+		return nil, &ListError{ListErrorOutOfBound}
+	}
+
+	return l.tokens[i], nil
+}
+
 func (l *All) Len() int {
 	return len(l.tokens)
 }
