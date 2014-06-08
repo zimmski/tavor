@@ -127,7 +127,7 @@ OUT:
 			}
 			c = p.scan.Scan()
 			if DEBUG {
-				fmt.Printf("parseScope Group %d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
+				fmt.Printf("parseTerm Group %d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
 			}
 
 			c, toks, err := p.parseScope(c)
@@ -145,8 +145,39 @@ OUT:
 			default:
 				tokens = append(tokens, lists.NewAll(toks...))
 			}
+
 			if DEBUG {
 				fmt.Println("END group")
+			}
+		case '?':
+			if DEBUG {
+				fmt.Println("NEW optional")
+			}
+			p.expectScanRune('(')
+
+			c = p.scan.Scan()
+			if DEBUG {
+				fmt.Printf("parseTerm optional after ( %d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
+			}
+
+			c, toks, err := p.parseScope(c)
+			if err != nil {
+				return zeroRune, nil, err
+			}
+
+			p.expectRune(')', c)
+
+			switch len(toks) {
+			case 0:
+				// ignore
+			case 1:
+				tokens = append(tokens, constraints.NewOptional(toks[0]))
+			default:
+				tokens = append(tokens, constraints.NewOptional(lists.NewAll(toks...)))
+			}
+
+			if DEBUG {
+				fmt.Println("END optional")
 			}
 		case ',': // multi line token
 			if _, err := p.expectScanRune('\n'); err != nil {
@@ -196,9 +227,6 @@ OUT:
 			return zeroRune, nil, err
 		} else if toks != nil {
 			tokens = append(tokens, toks...)
-			if DEBUG {
-				fmt.Println("add these tokens in parseScope")
-			}
 		}
 
 		// alternations
