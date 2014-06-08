@@ -7,6 +7,7 @@ import (
 	"text/scanner"
 
 	"github.com/zimmski/tavor/token"
+	"github.com/zimmski/tavor/token/constraints"
 	"github.com/zimmski/tavor/token/lists"
 	"github.com/zimmski/tavor/token/primitives"
 )
@@ -170,6 +171,7 @@ func (p *tavorParser) parseTokenDefinition() (rune, error) {
 
 OUT:
 	for {
+		// identifier and literals
 		var toks []token.Token
 		c, toks, err = p.parseTerm(c)
 		if err != nil {
@@ -178,6 +180,49 @@ OUT:
 			tokens = append(tokens, toks...)
 		}
 
+		// alternations and groupings
+		switch c {
+		case '|':
+			var orTerms []token.Token
+			optional := false
+
+			toks = tokens
+
+			for {
+				switch len(toks) {
+				case 0:
+					optional = true
+				case 1:
+					orTerms = append(orTerms, toks[0])
+				default:
+					orTerms = append(orTerms, lists.NewAll(toks...))
+				}
+
+				if c == '|' {
+					c = p.scan.Scan()
+					if DEBUG {
+						fmt.Printf("%d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
+					}
+				} else {
+					break
+				}
+
+				c, toks, err = p.parseTerm(c)
+				if err != nil {
+					return zeroRune, err
+				}
+			}
+
+			or := lists.NewOne(orTerms...)
+
+			if optional {
+				tokens = []token.Token{constraints.NewOptional(or)}
+			} else {
+				tokens = []token.Token{or}
+			}
+		}
+
+		// endings
 		switch c {
 		case scanner.EOF:
 			return zeroRune, &ParserError{

@@ -7,6 +7,7 @@ import (
 	. "github.com/stretchr/testify/assert"
 
 	"github.com/zimmski/tavor/token"
+	"github.com/zimmski/tavor/token/constraints"
 	"github.com/zimmski/tavor/token/lists"
 	"github.com/zimmski/tavor/token/primitives"
 )
@@ -146,4 +147,52 @@ func TestTavorParserSimple(t *testing.T) {
 	tok, err = ParseTavor(strings.NewReader("Umläüt=123\nSTART = Umläüt\n"))
 	Nil(t, err)
 	Equal(t, tok, primitives.NewConstantInt(123))
+}
+
+func TestTavorParserAlternationsAndGroupings(t *testing.T) {
+	var tok token.Token
+	var err error
+
+	// simple alternation
+	tok, err = ParseTavor(strings.NewReader("START = 1 | 2 | 3\n"))
+	Nil(t, err)
+	Equal(t, tok, lists.NewOne(
+		primitives.NewConstantInt(1),
+		primitives.NewConstantInt(2),
+		primitives.NewConstantInt(3),
+	))
+
+	// concatinated alternation
+	tok, err = ParseTavor(strings.NewReader("START = 1 | 2 3 | 4\n"))
+	Nil(t, err)
+	Equal(t, tok, lists.NewOne(
+		primitives.NewConstantInt(1),
+		lists.NewAll(
+			primitives.NewConstantInt(2),
+			primitives.NewConstantInt(3),
+		),
+		primitives.NewConstantInt(4),
+	))
+
+	// optional alternation
+	tok, err = ParseTavor(strings.NewReader("START = | 2 | 3\n"))
+	Nil(t, err)
+	Equal(t, tok, constraints.NewOptional(lists.NewOne(
+		primitives.NewConstantInt(2),
+		primitives.NewConstantInt(3),
+	)))
+
+	tok, err = ParseTavor(strings.NewReader("START = 1 | | 3\n"))
+	Nil(t, err)
+	Equal(t, tok, constraints.NewOptional(lists.NewOne(
+		primitives.NewConstantInt(1),
+		primitives.NewConstantInt(3),
+	)))
+
+	tok, err = ParseTavor(strings.NewReader("START = 1 | 2 |\n"))
+	Nil(t, err)
+	Equal(t, tok, constraints.NewOptional(lists.NewOne(
+		primitives.NewConstantInt(1),
+		primitives.NewConstantInt(2),
+	)))
 }
