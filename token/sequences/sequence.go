@@ -21,11 +21,6 @@ func NewSequence(start, step int) *Sequence {
 	}
 }
 
-// Sequence is an unusable token
-func (s *Sequence) Clone() token.Token { panic("unusable token") }
-func (s *Sequence) Fuzz(r rand.Rand)   { panic("unusable token") }
-func (s *Sequence) String() string     { panic("unusable token") }
-
 func (s *Sequence) existing(r rand.Rand) int {
 	n := s.value - s.start
 
@@ -69,6 +64,12 @@ func (s *Sequence) Next() int {
 func (s *Sequence) Reset() {
 	s.value = s.start
 }
+
+// Sequence is an unusable token
+
+func (s *Sequence) Clone() token.Token { panic("unusable token") }
+func (s *Sequence) Fuzz(r rand.Rand)   { panic("unusable token") }
+func (s *Sequence) String() string     { panic("unusable token") }
 
 type sequenceItem struct {
 	sequence *Sequence

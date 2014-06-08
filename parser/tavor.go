@@ -291,9 +291,9 @@ OUT:
 
 			if err != nil {
 				return zeroRune, nil, err
-			} else {
-				tokens = append(tokens, tok)
 			}
+
+			tokens = append(tokens, tok)
 		case ',': // multi line token
 			if _, err := p.expectScanRune('\n'); err != nil {
 				return zeroRune, nil, err
@@ -812,7 +812,7 @@ func (p *tavorParser) parseSpecialTokenDefinition() (rune, error) {
 		}
 	}
 
-	for arg, _ := range arguments {
+	for arg := range arguments {
 		if _, ok := usedArguments[arg]; !ok {
 			return zeroRune, &ParserError{
 				Message: fmt.Sprintf("Unknown special token argument %s", arg),
