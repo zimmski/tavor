@@ -110,7 +110,7 @@ OUT:
 
 			if _, ok := p.lookup[n]; !ok {
 				return zeroRune, nil, &ParserError{
-					Message: fmt.Sprintf("Token %s is not defined", n),
+					Message: fmt.Sprintf("Token \"%s\" is not defined", n),
 					Type:    ParseErrorTokenNotDefined,
 				}
 			}
@@ -454,7 +454,7 @@ func (p *tavorParser) parseTokenAttribute(c rune) (token.Token, error) {
 	tok, ok := p.lookup[name]
 	if !ok {
 		return nil, &ParserError{
-			Message: fmt.Sprintf("Token %s is not defined", name),
+			Message: fmt.Sprintf("Token \"%s\" is not defined", name),
 			Type:    ParseErrorTokenNotDefined,
 		}
 	}
@@ -481,7 +481,7 @@ func (p *tavorParser) parseTokenAttribute(c rune) (token.Token, error) {
 	}
 
 	return nil, &ParserError{
-		Message: fmt.Sprintf("Unknown token attribute %s for token type %s", attribute, reflect.TypeOf(tok)),
+		Message: fmt.Sprintf("Unknown token attribute \"%s\" for token type \"%s\"", attribute, reflect.TypeOf(tok)),
 		Type:    ParseErrorUnknownTokenAttribute,
 	}
 }
@@ -807,7 +807,7 @@ func (p *tavorParser) parseSpecialTokenDefinition() (rune, error) {
 		tok = sequences.NewSequence(start, step)
 	default:
 		return zeroRune, &ParserError{
-			Message: fmt.Sprintf("Unknown special token type %s", typ),
+			Message: fmt.Sprintf("Unknown special token type \"%s\"", typ),
 			Type:    ParseErrorUnknownSpecialTokenType,
 		}
 	}
@@ -815,7 +815,7 @@ func (p *tavorParser) parseSpecialTokenDefinition() (rune, error) {
 	for arg := range arguments {
 		if _, ok := usedArguments[arg]; !ok {
 			return zeroRune, &ParserError{
-				Message: fmt.Sprintf("Unknown special token argument %s", arg),
+				Message: fmt.Sprintf("Unknown special token argument \"%s\"", arg),
 				Type:    ParseErrorUnknownSpecialTokenArgument,
 			}
 		}
@@ -868,7 +868,7 @@ func ParseTavor(src io.Reader) (token.Token, error) {
 	for key := range p.lookup {
 		if _, ok := p.used[key]; !ok {
 			return nil, &ParserError{
-				Message: fmt.Sprintf("Token %s declared but not used", key),
+				Message: fmt.Sprintf("Token \"%s\" declared but not used", key),
 				Type:    ParseErrorUnusedToken,
 			}
 		}
