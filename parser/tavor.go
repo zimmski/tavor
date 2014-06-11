@@ -511,6 +511,8 @@ func (p *tavorParser) parseTokenAttribute(c rune) (token.Token, error) {
 			return i.ExistingItem(), nil
 		case "Next":
 			return i.Item(), nil
+		case "Reset":
+			return i.ResetItem(), nil
 		}
 	}
 

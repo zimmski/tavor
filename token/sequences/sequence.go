@@ -65,6 +65,12 @@ func (s *Sequence) Reset() {
 	s.value = s.start
 }
 
+func (s *Sequence) ResetItem() *sequenceResetItem {
+	return &sequenceResetItem{
+		sequence: s,
+	}
+}
+
 // Sequence is an unusable token
 
 func (s *Sequence) Clone() token.Token { panic("unusable token") }
@@ -109,4 +115,22 @@ func (s *sequenceExistingItem) Fuzz(r rand.Rand) {
 
 func (s *sequenceExistingItem) String() string {
 	return strconv.Itoa(s.value)
+}
+
+type sequenceResetItem struct {
+	sequence *Sequence
+}
+
+func (s *sequenceResetItem) Clone() token.Token {
+	return &sequenceResetItem{
+		sequence: s.sequence,
+	}
+}
+
+func (s *sequenceResetItem) Fuzz(r rand.Rand) {
+	s.sequence.Reset()
+}
+
+func (s *sequenceResetItem) String() string {
+	return ""
 }

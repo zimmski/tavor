@@ -69,3 +69,17 @@ func TestExistingSequenceItem(t *testing.T) {
 	o.Fuzz(r)
 	Equal(t, "10", o.String())
 }
+
+func TestResetSequenceItem(t *testing.T) {
+	s := NewSequence(10, 2)
+
+	Equal(t, 10, s.Next())
+	Equal(t, 12, s.Next())
+	Equal(t, 14, s.Next())
+
+	s.ResetItem().String()
+
+	Equal(t, 10, s.Next())
+	Equal(t, 12, s.Next())
+	Equal(t, 14, s.Next())
+}

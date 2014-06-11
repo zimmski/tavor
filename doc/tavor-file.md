@@ -104,6 +104,7 @@ Possible attributes for each type are:
 * "Sequence"
     * Next - Indicates the next value of the sequence.
     * Existing - Indicates an available value of the sequence in the whole data.
+    * Reset - The sequence is reseted when this token is reached.
 
 ```
 $Id = type: Sequence,
