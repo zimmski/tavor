@@ -610,3 +610,26 @@ func TestTavorParserExpressions(t *testing.T) {
 	))
 	Equal(t, "2", tok.String())
 }
+
+func TestTavorParserAndCuriousCaseOfFuzzing(t *testing.T) {
+	var tok token.Token
+	var err error
+
+	// loop term (use a term in its definition)
+	tok, err = ParseTavor(strings.NewReader(
+		"Input = 123\nInputs = Inputs Input | 456\nSTART = Inputs\n",
+	))
+	Nil(t, err)
+	{
+		or, _ := tok.(*lists.One).Get(0)
+		inputs, _ := or.(*lists.All).Get(0)
+
+		Equal(t, tok, lists.NewOne(
+			lists.NewAll(
+				inputs,
+				primitives.NewConstantInt(123),
+			),
+			primitives.NewConstantInt(456),
+		))
+	}
+}

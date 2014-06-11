@@ -19,9 +19,7 @@ import (
 /*
 	TODO
 
-	loops
-		Inputs = Inputs Input
-		Input = 123
+	detect endless loops
 
 	Eliminate Forward Declaration
 		START = Token
