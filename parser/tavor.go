@@ -16,6 +16,23 @@ import (
 	"github.com/zimmski/tavor/token/sequences"
 )
 
+/*
+	TODO
+
+	loops
+		Inputs = Inputs Input
+		Input = 123
+
+	Eliminate Forward Declaration
+		START = Token
+		Token = 123
+
+	Token names can only consist of letters, digits and "_"
+
+	ShortAlternation = [123]
+
+*/
+
 //TODO remove this
 var DEBUG = false
 
