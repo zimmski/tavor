@@ -1,30 +1,37 @@
 package primitives
 
 import (
+	"fmt"
 	"github.com/zimmski/tavor/rand"
 	"github.com/zimmski/tavor/token"
+	"reflect"
 )
 
 type Pointer struct {
-	Tok    token.Token
+	tok token.Token
+	typ reflect.Type
+
 	cloned bool
 }
 
 func NewPointer(tok token.Token) *Pointer {
 	return &Pointer{
-		Tok: tok,
+		tok: tok,
+		typ: reflect.TypeOf(tok).Elem(),
 	}
 }
 
-func NewEmptyPointer() *Pointer {
+func NewEmptyPointer(typ interface{}) *Pointer {
 	return &Pointer{
-		Tok: nil,
+		tok: nil,
+		typ: reflect.TypeOf(typ).Elem(),
 	}
 }
 
 func (p *Pointer) Clone() token.Token {
 	return &Pointer{
-		Tok:    p.Tok, // do not clone further
+		tok:    p.tok, // do not clone further
+		typ:    p.typ,
 		cloned: false,
 	}
 }
@@ -32,7 +39,7 @@ func (p *Pointer) Clone() token.Token {
 func (p *Pointer) cloneOnFirstUse() {
 	if !p.cloned {
 		// clone everything on first use until we hit pointers
-		p.Tok = p.Tok.Clone()
+		p.tok = p.tok.Clone()
 
 		p.cloned = true
 	}
@@ -42,9 +49,23 @@ func (p *Pointer) Fuzz(r rand.Rand) {
 	p.cloneOnFirstUse()
 
 	// fuzz with the clone not the original token
-	p.Tok.Fuzz(r)
+	p.tok.Fuzz(r)
+}
+
+func (p *Pointer) Get() token.Token {
+	return p.tok
+}
+
+func (p *Pointer) Set(o token.Token) error {
+	if !reflect.TypeOf(o).Implements(p.typ) {
+		return fmt.Errorf("Does not implement type %s", p.typ)
+	}
+
+	p.tok = o
+
+	return nil
 }
 
 func (p *Pointer) String() string {
-	return p.Tok.String()
+	return p.tok.String()
 }

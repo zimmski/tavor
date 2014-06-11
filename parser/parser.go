@@ -10,6 +10,7 @@ const (
 	ParseErrorEmptyTokenDefinition
 	ParseErrorInvalidArgumentValue
 	ParseErrorInvalidTokenName
+	ParseErrorInvalidTokenType
 	ParseErrorUnusedToken
 	ParseErrorMissingSpecialTokenArgument
 	ParseErrorNonTerminatedString

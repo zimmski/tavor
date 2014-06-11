@@ -128,7 +128,9 @@ OUT:
 					fmt.Printf("parseTerm use empty pointer for %s\n", n)
 				}
 
-				p.lookup[n] = primitives.NewEmptyPointer()
+				var tokenInterface *token.Token
+
+				p.lookup[n] = primitives.NewEmptyPointer(tokenInterface)
 				p.earlyUse[n] = p.lookup[n]
 			}
 
@@ -681,7 +683,13 @@ func (p *tavorParser) parseTokenDefinition() (rune, error) {
 			fmt.Printf("parseTokenDefinition fill empty pointer for %s\n", name)
 		}
 
-		pointer.(*primitives.Pointer).Tok = tok
+		err = pointer.(*primitives.Pointer).Set(tok)
+		if err != nil {
+			return zeroRune, &ParserError{
+				Message: fmt.Sprintf("Wrong token type for %s because of earlier usage: %s", name, err),
+				Type:    ParseErrorInvalidTokenType,
+			}
+		}
 	}
 
 	// check for endless loop
@@ -981,7 +989,7 @@ func ParseTavor(src io.Reader) (token.Token, error) {
 	p.used["START"] = struct{}{}
 
 	for name, tok := range p.earlyUse {
-		if tok.(*primitives.Pointer).Tok == nil {
+		if tok.(*primitives.Pointer).Get() == nil {
 			return nil, &ParserError{
 				Message: fmt.Sprintf("Token \"%s\" is not defined", name),
 				Type:    ParseErrorTokenNotDefined,

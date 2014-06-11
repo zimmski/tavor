@@ -1,12 +1,13 @@
 package primitives
 
 import (
-	"github.com/zimmski/tavor/token"
 	"testing"
 
 	. "github.com/stretchr/testify/assert"
 
 	"github.com/zimmski/tavor/test"
+	"github.com/zimmski/tavor/token"
+	"github.com/zimmski/tavor/token/lists"
 )
 
 func TestPointerTokensToBeTokens(t *testing.T) {
@@ -43,6 +44,27 @@ func TestPointer(t *testing.T) {
 	Equal(t, "7", o2.String())
 
 	// empty pointers should have a nil token
-	o = NewEmptyPointer()
-	Nil(t, o.Tok)
+	{
+		var tok *token.Token
+
+		o = NewEmptyPointer(tok)
+		Nil(t, o.Get())
+
+		err := o.Set(a)
+		Nil(t, err)
+		Equal(t, a, o.Get())
+
+		var list *lists.List
+		o = NewEmptyPointer(list)
+
+		err = o.Set(a)
+		NotNil(t, err)
+		Nil(t, o.Get())
+
+		l := lists.NewAll(a)
+
+		err = o.Set(l)
+		Nil(t, err)
+		Equal(t, l, o.Get())
+	}
 }

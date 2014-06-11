@@ -90,6 +90,11 @@ func TestTavorParseErrors(t *testing.T) {
 	Equal(t, ParseErrorUnknownTokenAttribute, err.(*ParserError).Type)
 	Nil(t, tok)
 
+	// token not defined for token attribute
+	tok, err = ParseTavor(strings.NewReader("START = $Token.Count\n"))
+	Equal(t, ParseErrorTokenNotDefined, err.(*ParserError).Type)
+	Nil(t, tok)
+
 	// special token already defined
 	tok, err = ParseTavor(strings.NewReader("START = 123\n$START = 456\n"))
 	Equal(t, ParseErrorTokenAlreadyDefined, err.(*ParserError).Type)
@@ -620,14 +625,19 @@ func TestTavorParserAndCuriousCaseOfFuzzing(t *testing.T) {
 		"B = 123\nA = B A | 456\nSTART = A\n",
 	))
 	Nil(t, err)
-	Equal(t, tok, lists.NewOne(
-		lists.NewAll(
-			primitives.NewConstantInt(123),
-			primitives.NewPointer(tok),
-		),
-		primitives.NewConstantInt(456),
-	))
 	{
+		a, _ := tok.(*lists.One).Get(0)
+		p, _ := a.(*lists.All).Get(1)
+
+		Equal(t, tok, p.(*primitives.Pointer).Get())
+
+		Equal(t, tok, lists.NewOne(
+			lists.NewAll(
+				primitives.NewConstantInt(123),
+				p,
+			),
+			primitives.NewConstantInt(456),
+		))
 		r := test.NewRandTest(1)
 		tok.Fuzz(r)
 		Equal(t, "123456", tok.String())
@@ -650,13 +660,20 @@ func TestTavorParserAndCuriousCaseOfFuzzing(t *testing.T) {
 		"B = 123\nA = B A | B\nSTART = A\n",
 	))
 	Nil(t, err)
-	Equal(t, tok, lists.NewOne(
-		lists.NewAll(
+	{
+		a, _ := tok.(*lists.One).Get(0)
+		p, _ := a.(*lists.All).Get(1)
+
+		Equal(t, tok, p.(*primitives.Pointer).Get())
+
+		Equal(t, tok, lists.NewOne(
+			lists.NewAll(
+				primitives.NewConstantInt(123),
+				p,
+			),
 			primitives.NewConstantInt(123),
-			primitives.NewPointer(tok),
-		),
-		primitives.NewConstantInt(123),
-	))
+		))
+	}
 
 	tok, err = ParseTavor(strings.NewReader(
 		"B = A\nA = B A | B\nSTART = A\n",
@@ -674,24 +691,31 @@ func TestTavorParserAndCuriousCaseOfFuzzing(t *testing.T) {
 		"C = A\nB = C\nA = (B | 1)(B | 2) ?(B)\nSTART = A\n",
 	))
 	Nil(t, err)
-	Equal(t, tok, lists.NewAll(
-		lists.NewOne(
-			primitives.NewPointer(tok),
-			primitives.NewConstantInt(1),
-		),
-		lists.NewOne(
-			primitives.NewPointer(tok),
-			primitives.NewConstantInt(2),
-		),
-		constraints.NewOptional(
-			primitives.NewPointer(tok),
-		),
-	))
+	{
+		o, _ := tok.(*lists.All).Get(0)
+		p, _ := o.(*lists.One).Get(0)
+
+		Equal(t, tok, p.(*primitives.Pointer).Get())
+
+		Equal(t, tok, lists.NewAll(
+			lists.NewOne(
+				p,
+				primitives.NewConstantInt(1),
+			),
+			lists.NewOne(
+				p,
+				primitives.NewConstantInt(2),
+			),
+			constraints.NewOptional(
+				p,
+			),
+		))
+	}
 
 	// Additional forward declaration check
 	tok, err = ParseTavor(strings.NewReader(
 		"START = Token\nToken = 123\n",
 	))
 	Nil(t, err)
-	Equal(t, tok, primitives.NewPointer(primitives.NewConstantInt(123)))
+	Equal(t, tok.(*primitives.Pointer).Get(), primitives.NewConstantInt(123))
 }
