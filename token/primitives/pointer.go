@@ -6,7 +6,8 @@ import (
 )
 
 type Pointer struct {
-	Tok token.Token
+	Tok    token.Token
+	cloned bool
 }
 
 func NewPointer(tok token.Token) *Pointer {
@@ -23,13 +24,22 @@ func NewEmptyPointer() *Pointer {
 
 func (p *Pointer) Clone() token.Token {
 	return &Pointer{
-		Tok: p.Tok, // do not clone further
+		Tok:    p.Tok, // do not clone further
+		cloned: false,
+	}
+}
+
+func (p *Pointer) cloneOnFirstUse() {
+	if !p.cloned {
+		// clone everything on first use until we hit pointers
+		p.Tok = p.Tok.Clone()
+
+		p.cloned = true
 	}
 }
 
 func (p *Pointer) Fuzz(r rand.Rand) {
-	// clone everything until we hit pointers
-	p.Tok = p.Tok.Clone()
+	p.cloneOnFirstUse()
 
 	// fuzz with the clone not the original token
 	p.Tok.Fuzz(r)

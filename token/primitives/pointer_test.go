@@ -29,8 +29,20 @@ func TestPointer(t *testing.T) {
 	Equal(t, "4", a.String())
 
 	o2 := o.Clone()
-	Equal(t, o.String(), o2.String())
 
+	// cloned pointers are always different to their original one
+
+	o.Fuzz(r)
+	o2.Fuzz(r)
+
+	// original token still untouched
+	Equal(t, "4", a.String())
+	// first cloned token
+	Equal(t, "6", o.String())
+	// second cloned token
+	Equal(t, "7", o2.String())
+
+	// empty pointers should have a nil token
 	o = NewEmptyPointer()
 	Nil(t, o.Tok)
 }
