@@ -617,20 +617,81 @@ func TestTavorParserAndCuriousCaseOfFuzzing(t *testing.T) {
 
 	// loop term (use a term in its definition)
 	tok, err = ParseTavor(strings.NewReader(
-		"Input = 123\nInputs = Input Inputs | 456\nSTART = Inputs\n",
+		"B = 123\nA = B A | 456\nSTART = A\n",
 	))
 	Nil(t, err)
+	Equal(t, tok, lists.NewOne(
+		lists.NewAll(
+			primitives.NewConstantInt(123),
+			primitives.NewPointer(tok),
+		),
+		primitives.NewConstantInt(456),
+	))
 	{
-		Equal(t, tok, lists.NewOne(
-			lists.NewAll(
-				primitives.NewConstantInt(123),
-				primitives.NewPointer(tok),
-			),
-			primitives.NewConstantInt(456),
-		))
-
 		r := test.NewRandTest(1)
 		tok.Fuzz(r)
 		Equal(t, "123456", tok.String())
 	}
+
+	// detect endless loops
+	tok, err = ParseTavor(strings.NewReader(
+		"B = 123\nA = A B\nSTART = A\n",
+	))
+	Equal(t, ParseErrorEndlessLoopDetected, err.(*ParserError).Type)
+	Nil(t, tok)
+
+	tok, err = ParseTavor(strings.NewReader(
+		"A = B\nB = A\nSTART = A\n",
+	))
+	Equal(t, ParseErrorEndlessLoopDetected, err.(*ParserError).Type)
+	Nil(t, tok)
+
+	tok, err = ParseTavor(strings.NewReader(
+		"B = 123\nA = B A | B\nSTART = A\n",
+	))
+	Nil(t, err)
+	Equal(t, tok, lists.NewOne(
+		lists.NewAll(
+			primitives.NewConstantInt(123),
+			primitives.NewPointer(tok),
+		),
+		primitives.NewConstantInt(123),
+	))
+
+	tok, err = ParseTavor(strings.NewReader(
+		"B = A\nA = B A | B\nSTART = A\n",
+	))
+	Equal(t, ParseErrorEndlessLoopDetected, err.(*ParserError).Type)
+	Nil(t, tok)
+
+	tok, err = ParseTavor(strings.NewReader(
+		"B = A\nA = (A | 1)(B | 2) A\nSTART = A\n",
+	))
+	Equal(t, ParseErrorEndlessLoopDetected, err.(*ParserError).Type)
+	Nil(t, tok)
+
+	tok, err = ParseTavor(strings.NewReader(
+		"C = A\nB = C\nA = (B | 1)(B | 2) ?(B)\nSTART = A\n",
+	))
+	Nil(t, err)
+	Equal(t, tok, lists.NewAll(
+		lists.NewOne(
+			primitives.NewPointer(tok),
+			primitives.NewConstantInt(1),
+		),
+		lists.NewOne(
+			primitives.NewPointer(tok),
+			primitives.NewConstantInt(2),
+		),
+		constraints.NewOptional(
+			primitives.NewPointer(tok),
+		),
+	))
+
+	// Additional forward declaration check
+	tok, err = ParseTavor(strings.NewReader(
+		"START = Token\nToken = 123\n",
+	))
+	Nil(t, err)
+	Equal(t, tok, primitives.NewPointer(primitives.NewConstantInt(123)))
 }
