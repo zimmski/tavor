@@ -186,6 +186,17 @@ func TestTavorParseErrors(t *testing.T) {
 	tok, err = ParseTavor(strings.NewReader("$Spec = type: Sequence\nSTART = ${Spec.Next +}\n"))
 	Equal(t, ParseErrorExpectedExpressionTerm, err.(*ParserError).Type)
 	Nil(t, tok)
+
+	/*
+		TODO this can maybe never happen as we do everything in one pass
+		so we do not know that $List must implement lists.List
+
+		// wrong token type because of earlier usage
+		tok, err = ParseTavor(strings.NewReader("START = $List.Count\nList = 123"))
+		panic(err)
+		Equal(t, ParseErrorExpectedExpressionTerm, err.(*ParserError).Type)
+		Nil(t, tok)
+	*/
 }
 
 func TestTavorParserSimple(t *testing.T) {
