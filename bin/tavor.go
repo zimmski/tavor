@@ -93,7 +93,7 @@ func main() {
 
 	file, err := os.Open(opts.InputFile)
 	if err != nil {
-		panic(fmt.Errorf("Cannot open tavor file %s: %v", opts.InputFile, err))
+		panic(fmt.Errorf("cannot open tavor file %s: %v", opts.InputFile, err))
 	}
 	defer file.Close()
 
@@ -103,7 +103,7 @@ func main() {
 
 	doc, err := parser.ParseTavor(file)
 	if err != nil {
-		panic(fmt.Errorf("Cannot parse tavor file: %v", err))
+		panic(fmt.Errorf("cannot parse tavor file: %v", err))
 	}
 
 	if opts.Verbose {
@@ -114,5 +114,5 @@ func main() {
 
 	doc.Fuzz(r)
 
-	fmt.Println(doc.String())
+	fmt.Print(doc.String())
 }
