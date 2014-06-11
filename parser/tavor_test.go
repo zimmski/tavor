@@ -617,19 +617,20 @@ func TestTavorParserAndCuriousCaseOfFuzzing(t *testing.T) {
 
 	// loop term (use a term in its definition)
 	tok, err = ParseTavor(strings.NewReader(
-		"Input = 123\nInputs = Inputs Input | 456\nSTART = Inputs\n",
+		"Input = 123\nInputs = Input Inputs | 456\nSTART = Inputs\n",
 	))
 	Nil(t, err)
 	{
-		or, _ := tok.(*lists.One).Get(0)
-		inputs, _ := or.(*lists.All).Get(0)
-
 		Equal(t, tok, lists.NewOne(
 			lists.NewAll(
-				inputs,
 				primitives.NewConstantInt(123),
+				primitives.NewPointer(tok),
 			),
 			primitives.NewConstantInt(456),
 		))
+
+		r := test.NewRandTest(1)
+		tok.Fuzz(r)
+		Equal(t, "123456", tok.String())
 	}
 }

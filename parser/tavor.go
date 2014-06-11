@@ -45,8 +45,9 @@ type tavorParser struct {
 
 	err string
 
-	lookup map[string]token.Token
-	used   map[string]struct{}
+	earlyUse map[string]token.Token
+	lookup   map[string]token.Token
+	used     map[string]struct{}
 }
 
 func (p *tavorParser) expectRune(expect rune, got rune) (rune, error) {
@@ -124,10 +125,12 @@ OUT:
 			n := p.scan.TokenText()
 
 			if _, ok := p.lookup[n]; !ok {
-				return zeroRune, nil, &ParserError{
-					Message: fmt.Sprintf("Token \"%s\" is not defined", n),
-					Type:    ParseErrorTokenNotDefined,
+				if DEBUG {
+					fmt.Printf("parseTerm use empty pointer for %s\n", n)
 				}
+
+				p.lookup[n] = primitives.NewEmptyPointer()
+				p.earlyUse[n] = p.lookup[n]
 			}
 
 			p.used[n] = struct{}{}
@@ -596,9 +599,6 @@ func (p *tavorParser) parseTokenDefinition() (rune, error) {
 		}
 	}
 
-	// do an empty definition to allow loops
-	p.lookup[name] = nil
-
 	if c, err = p.expectScanRune('='); err != nil {
 		// unexpected new line?
 		if c == '\n' {
@@ -637,6 +637,8 @@ func (p *tavorParser) parseTokenDefinition() (rune, error) {
 		return zeroRune, err
 	}
 
+	var tok token.Token
+
 	switch len(tokens) {
 	case 0:
 		return zeroRune, &ParserError{
@@ -644,10 +646,21 @@ func (p *tavorParser) parseTokenDefinition() (rune, error) {
 			Type:    ParseErrorEmptyTokenDefinition,
 		}
 	case 1:
-		p.lookup[name] = tokens[0]
+		tok = tokens[0]
 	default:
-		p.lookup[name] = lists.NewAll(tokens...)
+		tok = lists.NewAll(tokens...)
 	}
+
+	// self loop?
+	if pointer, ok := p.lookup[name]; ok {
+		if DEBUG {
+			fmt.Printf("parseTokenDefinition fill empty pointer for %s\n", name)
+		}
+
+		pointer.(*primitives.Pointer).Tok = tok
+	}
+
+	p.lookup[name] = tok
 
 	c = p.scan.Scan()
 	if DEBUG {
@@ -852,8 +865,9 @@ func (p *tavorParser) parseSpecialTokenDefinition() (rune, error) {
 
 func ParseTavor(src io.Reader) (token.Token, error) {
 	p := &tavorParser{
-		lookup: make(map[string]token.Token),
-		used:   make(map[string]struct{}),
+		earlyUse: make(map[string]token.Token),
+		lookup:   make(map[string]token.Token),
+		used:     make(map[string]struct{}),
 	}
 
 	if DEBUG {
@@ -880,10 +894,19 @@ func ParseTavor(src io.Reader) (token.Token, error) {
 
 	p.used["START"] = struct{}{}
 
-	for key := range p.lookup {
-		if _, ok := p.used[key]; !ok {
+	for name, tok := range p.earlyUse {
+		if tok.(*primitives.Pointer).Tok == nil {
 			return nil, &ParserError{
-				Message: fmt.Sprintf("Token \"%s\" declared but not used", key),
+				Message: fmt.Sprintf("Token \"%s\" is not defined", name),
+				Type:    ParseErrorTokenNotDefined,
+			}
+		}
+	}
+
+	for name := range p.lookup {
+		if _, ok := p.used[name]; !ok {
+			return nil, &ParserError{
+				Message: fmt.Sprintf("Token \"%s\" declared but not used", name),
 				Type:    ParseErrorUnusedToken,
 			}
 		}
