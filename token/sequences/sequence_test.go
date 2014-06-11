@@ -77,7 +77,8 @@ func TestResetSequenceItem(t *testing.T) {
 	Equal(t, 12, s.Next())
 	Equal(t, 14, s.Next())
 
-	s.ResetItem().String()
+	r := test.NewRandTest(0)
+	s.ResetItem().Fuzz(r)
 
 	Equal(t, 10, s.Next())
 	Equal(t, 12, s.Next())
