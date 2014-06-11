@@ -1,5 +1,7 @@
 .PHONY: fmt install lint
 
+binaries:
+	go install $(GOPATH)/src/github.com/zimmski/tavor/bin/tavor.go
 clean:
 	go clean ./...
 fmt:
