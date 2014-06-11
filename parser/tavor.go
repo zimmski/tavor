@@ -156,7 +156,9 @@ OUT:
 				}
 			}
 
-			tokens = append(tokens, primitives.NewConstantString(s[1:len(s)-1]))
+			s, _ = strconv.Unquote(s)
+
+			tokens = append(tokens, primitives.NewConstantString(s))
 		case '(':
 			if DEBUG {
 				fmt.Println("NEW group")

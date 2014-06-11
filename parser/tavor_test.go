@@ -234,9 +234,9 @@ func TestTavorParserSimple(t *testing.T) {
 	Equal(t, tok, primitives.NewConstantString("abc"))
 
 	// constant string with whitespaces and epic chars
-	tok, err = ParseTavor(strings.NewReader("START = \"a b c !\\\"$%&/\"\n"))
+	tok, err = ParseTavor(strings.NewReader("START = \"a b c !\\n\\\"$%&/\"\n"))
 	Nil(t, err)
-	Equal(t, tok, primitives.NewConstantString("a b c !\\\"$%&/"))
+	Equal(t, tok, primitives.NewConstantString("a b c !\n\"$%&/"))
 
 	// concatination
 	tok, err = ParseTavor(strings.NewReader("START = \"I am a constant string\" 123\n"))
