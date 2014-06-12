@@ -38,6 +38,10 @@ func (f *FuncFilter) Fuzz(r rand.Rand) {
 	f.state = f.fuzzFunc(r, f.token)
 }
 
+func (f *FuncFilter) Permutations() int {
+	return 1 // TODO this depends on the function
+}
+
 func (f *FuncFilter) String() string {
 	return f.stringFunc(f.state, f.token)
 }

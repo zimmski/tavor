@@ -21,6 +21,7 @@ func TestMost(t *testing.T) {
 	o := NewMost(a, 5)
 	Equal(t, "aaaaa", o.String())
 	Equal(t, 5, o.Len())
+	Equal(t, 6, o.Permutations())
 
 	i, err := o.Get(0)
 	Nil(t, err)
@@ -38,6 +39,7 @@ func TestMost(t *testing.T) {
 	o = NewMost(b, 4)
 	Equal(t, "1111", o.String())
 	Equal(t, 4, o.Len())
+	Equal(t, 13, o.Permutations())
 
 	r.Seed(2)
 	o.Fuzz(r)

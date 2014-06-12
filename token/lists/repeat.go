@@ -69,6 +69,14 @@ func (l *Repeat) Len() int {
 	return len(l.value)
 }
 
+func (l *Repeat) Permutations() int {
+	if l.from == 0 {
+		return int(l.to-l.from)*l.token.Permutations() + 1
+	}
+
+	return int(l.to-l.from+1) * l.token.Permutations()
+}
+
 func (l *Repeat) String() string {
 	var buffer bytes.Buffer
 

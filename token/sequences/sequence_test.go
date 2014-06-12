@@ -44,6 +44,8 @@ func TestSequenceItem(t *testing.T) {
 
 	o2 := o.Clone()
 	Equal(t, o.String(), o2.String())
+
+	Equal(t, 1, o.Permutations())
 }
 
 func TestExistingSequenceItem(t *testing.T) {
@@ -68,6 +70,8 @@ func TestExistingSequenceItem(t *testing.T) {
 
 	o.Fuzz(r)
 	Equal(t, "10", o.String())
+
+	Equal(t, 1, o.Permutations())
 }
 
 func TestResetSequenceItem(t *testing.T) {
@@ -78,9 +82,12 @@ func TestResetSequenceItem(t *testing.T) {
 	Equal(t, 14, s.Next())
 
 	r := test.NewRandTest(0)
-	s.ResetItem().Fuzz(r)
+	o := s.ResetItem()
+	o.Fuzz(r)
 
 	Equal(t, 10, s.Next())
 	Equal(t, 12, s.Next())
 	Equal(t, 14, s.Next())
+
+	Equal(t, 1, o.Permutations())
 }

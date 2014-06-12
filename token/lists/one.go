@@ -54,6 +54,16 @@ func (l *One) Len() int {
 	return 1
 }
 
+func (l *One) Permutations() int {
+	sum := 0
+
+	for _, tok := range l.tokens {
+		sum += tok.Permutations()
+	}
+
+	return sum
+}
+
 func (l *One) String() string {
 	return l.value.String()
 }

@@ -25,6 +25,8 @@ import (
 
 	ShortAlternation = [123]
 
+	Allow forward usage of token attributes
+
 */
 
 //TODO remove this
@@ -746,7 +748,7 @@ func (p *tavorParser) parseTokenDefinition() (rune, error) {
 
 		if !foundExit {
 			if DEBUG {
-				fmt.Println("There is no loop exit for this token, I'll through an error.")
+				fmt.Println("There is no loop exit for this token, I'll throw an error.")
 			}
 
 			return zeroRune, &ParserError{

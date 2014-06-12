@@ -28,6 +28,10 @@ func (a *Len) Fuzz(r rand.Rand) {
 	// do nothing
 }
 
+func (a *Len) Permutations() int {
+	return 1
+}
+
 func (a *Len) String() string {
 	return strconv.Itoa(a.list.Len())
 }

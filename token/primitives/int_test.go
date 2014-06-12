@@ -27,6 +27,8 @@ func TestConstantInt(t *testing.T) {
 
 	o2 := o.Clone()
 	Equal(t, o.String(), o2.String())
+
+	Equal(t, 1, o.Permutations())
 }
 
 func TestRandomInt(t *testing.T) {
@@ -39,6 +41,8 @@ func TestRandomInt(t *testing.T) {
 
 	o2 := o.Clone()
 	Equal(t, o.String(), o2.String())
+
+	Equal(t, 1, o.Permutations())
 }
 
 func TestRangeInt(t *testing.T) {
@@ -55,4 +59,6 @@ func TestRangeInt(t *testing.T) {
 
 	o2 := o.Clone()
 	Equal(t, o.String(), o2.String())
+
+	Equal(t, 3, o.Permutations())
 }

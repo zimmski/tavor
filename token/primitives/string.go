@@ -25,6 +25,10 @@ func (p *ConstantString) Fuzz(r rand.Rand) {
 	// do nothing
 }
 
+func (p *ConstantString) Permutations() int {
+	return 1
+}
+
 func (p *ConstantString) String() string {
 	return p.value
 }

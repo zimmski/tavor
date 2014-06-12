@@ -11,4 +11,5 @@ type Token interface {
 
 	Clone() Token
 	Fuzz(r rand.Rand)
+	Permutations() int
 }

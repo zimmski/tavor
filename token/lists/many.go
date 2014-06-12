@@ -77,6 +77,10 @@ func (l *Many) Len() int {
 	return len(l.value)
 }
 
+func (l *Many) Permutations() int {
+	panic("TODO make this precise")
+}
+
 func (l *Many) String() string {
 	var buffer bytes.Buffer
 

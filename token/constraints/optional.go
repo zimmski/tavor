@@ -32,6 +32,10 @@ func (c *Optional) Fuzz(r rand.Rand) {
 	}
 }
 
+func (c *Optional) Permutations() int {
+	return 2
+}
+
 func (c *Optional) String() string {
 	if c.value {
 		return ""

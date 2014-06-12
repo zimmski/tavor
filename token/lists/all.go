@@ -51,6 +51,16 @@ func (l *All) Len() int {
 	return len(l.tokens)
 }
 
+func (l *All) Permutations() int {
+	sum := 1
+
+	for _, tok := range l.tokens {
+		sum *= tok.Permutations()
+	}
+
+	return sum
+}
+
 func (l *All) String() string {
 	var buffer bytes.Buffer
 

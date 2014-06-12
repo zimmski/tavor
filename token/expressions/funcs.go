@@ -25,6 +25,10 @@ func (e *FuncExpression) Fuzz(r rand.Rand) {
 	// do nothing
 }
 
+func (e *FuncExpression) Permutations() int {
+	return 1 // TODO this depends on the function
+}
+
 func (e *FuncExpression) String() string {
 	return e.function()
 }

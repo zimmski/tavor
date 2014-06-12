@@ -66,6 +66,10 @@ func (l *Most) Len() int {
 	return len(l.value)
 }
 
+func (l *Most) Permutations() int {
+	return int(l.n)*l.token.Permutations() + 1
+}
+
 func (l *Most) String() string {
 	var buffer bytes.Buffer
 

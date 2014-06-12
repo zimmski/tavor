@@ -31,6 +31,10 @@ func (e *AddArithmetic) Fuzz(r rand.Rand) {
 	e.b.Fuzz(r)
 }
 
+func (e *AddArithmetic) Permutations() int {
+	return 1
+}
+
 func (e *AddArithmetic) String() string {
 	a, err := strconv.Atoi(e.a.String())
 	if err != nil {
@@ -66,6 +70,10 @@ func (e *SubArithmetic) Clone() token.Token {
 func (e *SubArithmetic) Fuzz(r rand.Rand) {
 	e.a.Fuzz(r)
 	e.b.Fuzz(r)
+}
+
+func (e *SubArithmetic) Permutations() int {
+	return 1
 }
 
 func (e *SubArithmetic) String() string {
@@ -105,6 +113,10 @@ func (e *MulArithmetic) Fuzz(r rand.Rand) {
 	e.b.Fuzz(r)
 }
 
+func (e *MulArithmetic) Permutations() int {
+	return 1
+}
+
 func (e *MulArithmetic) String() string {
 	a, err := strconv.Atoi(e.a.String())
 	if err != nil {
@@ -140,6 +152,10 @@ func (e *DivArithmetic) Clone() token.Token {
 func (e *DivArithmetic) Fuzz(r rand.Rand) {
 	e.a.Fuzz(r)
 	e.b.Fuzz(r)
+}
+
+func (e *DivArithmetic) Permutations() int {
+	return 1
 }
 
 func (e *DivArithmetic) String() string {

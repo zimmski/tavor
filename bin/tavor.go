@@ -110,6 +110,10 @@ func main() {
 		V("Using seed %d", opts.Seed)
 	}
 
+	if opts.Verbose {
+		V("Counted %d permutations", doc.Permutations())
+	}
+
 	r := rand.New(rand.NewSource(opts.Seed))
 
 	doc.Fuzz(r)

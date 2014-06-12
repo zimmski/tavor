@@ -32,6 +32,8 @@ func TestAddArithmetic(t *testing.T) {
 
 	o2 := o.Clone()
 	Equal(t, o.String(), o2.String())
+
+	Equal(t, 1, o.Permutations())
 }
 
 func TestSubArithmetic(t *testing.T) {
@@ -47,6 +49,8 @@ func TestSubArithmetic(t *testing.T) {
 
 	o2 := o.Clone()
 	Equal(t, o.String(), o2.String())
+
+	Equal(t, 1, o.Permutations())
 }
 
 func TestMulArithmetic(t *testing.T) {
@@ -62,6 +66,8 @@ func TestMulArithmetic(t *testing.T) {
 
 	o2 := o.Clone()
 	Equal(t, o.String(), o2.String())
+
+	Equal(t, 1, o.Permutations())
 }
 
 func TestDivArithmetic(t *testing.T) {
@@ -77,4 +83,6 @@ func TestDivArithmetic(t *testing.T) {
 
 	o2 := o.Clone()
 	Equal(t, o.String(), o2.String())
+
+	Equal(t, 1, o.Permutations())
 }

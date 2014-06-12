@@ -21,6 +21,7 @@ func TestPointer(t *testing.T) {
 
 	o := NewPointer(a)
 	Equal(t, "4", o.String())
+	Equal(t, 1, o.Permutations())
 
 	r := test.NewRandTest(0)
 	o.Fuzz(r)

@@ -22,6 +22,7 @@ func TestOne(t *testing.T) {
 	o := NewOne(a, b)
 	Equal(t, "a", o.String())
 	Equal(t, 1, o.Len())
+	Equal(t, 2, o.Permutations())
 
 	i, err := o.Get(0)
 	Nil(t, err)
@@ -42,6 +43,7 @@ func TestOne(t *testing.T) {
 	o = NewOne(c)
 	Equal(t, "5", o.String())
 	Equal(t, 1, o.Len())
+	Equal(t, 6, o.Permutations())
 
 	o.Fuzz(r)
 	Equal(t, "6", o.String())

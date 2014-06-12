@@ -67,6 +67,10 @@ func (l *Least) Len() int {
 	return len(l.value)
 }
 
+func (l *Least) Permutations() int {
+	panic("TODO this might be hard to fit in 64bit")
+}
+
 func (l *Least) String() string {
 	var buffer bytes.Buffer
 

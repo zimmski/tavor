@@ -56,6 +56,10 @@ func (p *Pointer) Get() token.Token {
 	return p.tok
 }
 
+func (p *Pointer) Permutations() int {
+	return 1 // TODO this could run forever if there is a loop so just return 1 for now
+}
+
 func (p *Pointer) Set(o token.Token) error {
 	if !reflect.TypeOf(o).Implements(p.typ) {
 		return fmt.Errorf("Does not implement type %s", p.typ)

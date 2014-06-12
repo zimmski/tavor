@@ -25,4 +25,6 @@ func TestConstantString(t *testing.T) {
 
 	o2 := o.Clone()
 	Equal(t, o.String(), o2.String())
+
+	Equal(t, 1, o.Permutations())
 }

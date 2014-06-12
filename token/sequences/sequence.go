@@ -75,6 +75,7 @@ func (s *Sequence) ResetItem() *sequenceResetItem {
 
 func (s *Sequence) Clone() token.Token { panic("unusable token") }
 func (s *Sequence) Fuzz(r rand.Rand)   { panic("unusable token") }
+func (s *Sequence) Permutations() int  { panic("unusable token") }
 func (s *Sequence) String() string     { panic("unusable token") }
 
 type sequenceItem struct {
@@ -91,6 +92,10 @@ func (s *sequenceItem) Clone() token.Token {
 
 func (s *sequenceItem) Fuzz(r rand.Rand) {
 	s.value = s.sequence.Next()
+}
+
+func (s *sequenceItem) Permutations() int {
+	return 1
 }
 
 func (s *sequenceItem) String() string {
@@ -113,6 +118,10 @@ func (s *sequenceExistingItem) Fuzz(r rand.Rand) {
 	s.value = s.sequence.existing(r)
 }
 
+func (s *sequenceExistingItem) Permutations() int {
+	return 1
+}
+
 func (s *sequenceExistingItem) String() string {
 	return strconv.Itoa(s.value)
 }
@@ -129,6 +138,10 @@ func (s *sequenceResetItem) Clone() token.Token {
 
 func (s *sequenceResetItem) Fuzz(r rand.Rand) {
 	s.sequence.Reset()
+}
+
+func (s *sequenceResetItem) Permutations() int {
+	return 1
 }
 
 func (s *sequenceResetItem) String() string {

@@ -21,6 +21,7 @@ func TestRepeat(t *testing.T) {
 	o := NewRepeat(a, 5, 10)
 	Equal(t, "aaaaa", o.String())
 	Equal(t, 5, o.Len())
+	Equal(t, 6, o.Permutations())
 
 	i, err := o.Get(0)
 	Nil(t, err)
@@ -38,6 +39,7 @@ func TestRepeat(t *testing.T) {
 	o = NewRepeat(b, 2, 10)
 	Equal(t, "11", o.String())
 	Equal(t, 2, o.Len())
+	Equal(t, 27, o.Permutations())
 
 	r.Seed(2)
 	o.Fuzz(r)
