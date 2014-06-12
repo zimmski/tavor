@@ -13,6 +13,12 @@ func NewRandomStrategy() *RandomStrategy {
 	return &RandomStrategy{}
 }
 
+func init() {
+	Register("random", func() Strategy {
+		return NewRandomStrategy()
+	})
+}
+
 func (s *RandomStrategy) Fuzz(tok token.Token, r rand.Rand) {
 	tok.Fuzz(r)
 

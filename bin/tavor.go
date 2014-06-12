@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
-	"sort"
 	"time"
 
 	"github.com/jessevdk/go-flags"
@@ -36,10 +35,6 @@ var opts struct {
 	configFile string
 }
 
-var strategies = map[string]struct{}{
-	"random": struct{}{},
-}
-
 func V(msg string, args ...interface{}) {
 	fmt.Fprintf(os.Stderr, "[VERBOSE] "+msg+"\n", args...)
 }
@@ -64,16 +59,8 @@ func checkArguments() {
 
 			os.Exit(returnOk)
 		} else if opts.ListStrategies {
-			keyStrategies := make([]string, 0)
-
-			for key := range strategies {
-				keyStrategies = append(keyStrategies, key)
-			}
-
-			sort.Strings(keyStrategies)
-
-			for _, key := range keyStrategies {
-				fmt.Println(key)
+			for _, name := range strategy.List() {
+				fmt.Println(name)
 			}
 
 			os.Exit(returnOk)
@@ -139,13 +126,9 @@ func main() {
 
 	r := rand.New(rand.NewSource(opts.Seed))
 
-	var strat strategy.Strategy
-
-	switch opts.Strategy {
-	case "random":
-		strat = strategy.NewRandomStrategy()
-	default:
-		panic(fmt.Errorf("unknown fuzzing strategy \"%s\"", opts.Strategy))
+	strat, err := strategy.New(opts.Strategy)
+	if err != nil {
+		panic(err)
 	}
 
 	if opts.Verbose {
