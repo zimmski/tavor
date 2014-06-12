@@ -16,9 +16,12 @@ func TestOptionalTokensToBeTokens(t *testing.T) {
 	Implements(t, tok, &Optional{})
 }
 
-func TestConstantInt(t *testing.T) {
-	o := NewOptional(primitives.NewConstantInt(1))
+func TestOptional(t *testing.T) {
+	a := primitives.NewConstantInt(1)
+
+	o := NewOptional(a)
 	Equal(t, "1", o.String())
+	Exactly(t, a, o.Get())
 
 	r := test.NewRandTest(1)
 	o.FuzzAll(r)

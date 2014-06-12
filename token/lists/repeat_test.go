@@ -26,7 +26,7 @@ func TestRepeat(t *testing.T) {
 	i, err := o.Get(0)
 	Nil(t, err)
 	Equal(t, a, i)
-	i, err = o.Get(1)
+	i, err = o.Get(6)
 	Equal(t, err.(*ListError).Type, ListErrorOutOfBound)
 	Nil(t, i)
 

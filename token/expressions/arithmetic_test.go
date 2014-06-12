@@ -7,6 +7,7 @@ import (
 
 	"github.com/zimmski/tavor/test"
 	"github.com/zimmski/tavor/token"
+	"github.com/zimmski/tavor/token/lists"
 	"github.com/zimmski/tavor/token/primitives"
 )
 
@@ -20,11 +21,21 @@ func TestArithmeticExpressionTokensToBeTokens(t *testing.T) {
 }
 
 func TestAddArithmetic(t *testing.T) {
-	o := NewAddArithmetic(
-		primitives.NewRangeInt(1, 10),
-		primitives.NewConstantInt(2),
-	)
+	a := primitives.NewRangeInt(1, 10)
+	b := primitives.NewConstantInt(2)
+
+	o := NewAddArithmetic(a, b)
 	Equal(t, "3", o.String())
+
+	i, err := o.Get(0)
+	Nil(t, err)
+	Exactly(t, a, i)
+	i, err = o.Get(1)
+	Nil(t, err)
+	Exactly(t, b, i)
+	i, err = o.Get(2)
+	Equal(t, err.(*lists.ListError).Type, lists.ListErrorOutOfBound)
+	Nil(t, i)
 
 	r := test.NewRandTest(1)
 	o.FuzzAll(r)
@@ -37,11 +48,21 @@ func TestAddArithmetic(t *testing.T) {
 }
 
 func TestSubArithmetic(t *testing.T) {
-	o := NewSubArithmetic(
-		primitives.NewRangeInt(1, 10),
-		primitives.NewConstantInt(2),
-	)
+	a := primitives.NewRangeInt(1, 10)
+	b := primitives.NewConstantInt(2)
+
+	o := NewSubArithmetic(a, b)
 	Equal(t, "-1", o.String())
+
+	i, err := o.Get(0)
+	Nil(t, err)
+	Exactly(t, a, i)
+	i, err = o.Get(1)
+	Nil(t, err)
+	Exactly(t, b, i)
+	i, err = o.Get(2)
+	Equal(t, err.(*lists.ListError).Type, lists.ListErrorOutOfBound)
+	Nil(t, i)
 
 	r := test.NewRandTest(1)
 	o.FuzzAll(r)
@@ -54,11 +75,21 @@ func TestSubArithmetic(t *testing.T) {
 }
 
 func TestMulArithmetic(t *testing.T) {
-	o := NewMulArithmetic(
-		primitives.NewRangeInt(1, 10),
-		primitives.NewConstantInt(2),
-	)
+	a := primitives.NewRangeInt(1, 10)
+	b := primitives.NewConstantInt(2)
+
+	o := NewMulArithmetic(a, b)
 	Equal(t, "2", o.String())
+
+	i, err := o.Get(0)
+	Nil(t, err)
+	Exactly(t, a, i)
+	i, err = o.Get(1)
+	Nil(t, err)
+	Exactly(t, b, i)
+	i, err = o.Get(2)
+	Equal(t, err.(*lists.ListError).Type, lists.ListErrorOutOfBound)
+	Nil(t, i)
 
 	r := test.NewRandTest(1)
 	o.FuzzAll(r)
@@ -71,11 +102,21 @@ func TestMulArithmetic(t *testing.T) {
 }
 
 func TestDivArithmetic(t *testing.T) {
-	o := NewDivArithmetic(
-		primitives.NewRangeInt(6, 10),
-		primitives.NewConstantInt(2),
-	)
+	a := primitives.NewRangeInt(6, 10)
+	b := primitives.NewConstantInt(2)
+
+	o := NewDivArithmetic(a, b)
 	Equal(t, "3", o.String())
+
+	i, err := o.Get(0)
+	Nil(t, err)
+	Exactly(t, a, i)
+	i, err = o.Get(1)
+	Nil(t, err)
+	Exactly(t, b, i)
+	i, err = o.Get(2)
+	Equal(t, err.(*lists.ListError).Type, lists.ListErrorOutOfBound)
+	Nil(t, i)
 
 	r := test.NewRandTest(2)
 	o.FuzzAll(r)

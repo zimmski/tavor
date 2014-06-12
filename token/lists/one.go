@@ -47,11 +47,11 @@ func (l *One) FuzzAll(r rand.Rand) {
 }
 
 func (l *One) Get(i int) (token.Token, error) {
-	if i < 0 || i >= len(l.tokens) {
+	if i != 0 {
 		return nil, &ListError{ListErrorOutOfBound}
 	}
 
-	return l.tokens[i], nil
+	return l.value, nil
 }
 
 func (l *One) Len() int {

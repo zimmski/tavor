@@ -36,6 +36,10 @@ func (c *Optional) FuzzAll(r rand.Rand) {
 	}
 }
 
+func (c *Optional) Get() token.Token {
+	return c.token
+}
+
 func (c *Optional) Permutations() int {
 	return 2 * c.token.Permutations()
 }

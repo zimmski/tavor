@@ -5,6 +5,7 @@ import (
 
 	"github.com/zimmski/tavor/rand"
 	"github.com/zimmski/tavor/token"
+	"github.com/zimmski/tavor/token/lists"
 )
 
 type AddArithmetic struct {
@@ -35,6 +36,21 @@ func (e *AddArithmetic) FuzzAll(r rand.Rand) {
 
 	e.a.FuzzAll(r)
 	e.b.FuzzAll(r)
+}
+
+func (e *AddArithmetic) Get(i int) (token.Token, error) {
+	switch i {
+	case 0:
+		return e.a, nil
+	case 1:
+		return e.b, nil
+	default:
+		return nil, &lists.ListError{lists.ListErrorOutOfBound}
+	}
+}
+
+func (e *AddArithmetic) Len() int {
+	return 2
 }
 
 func (e *AddArithmetic) Permutations() int {
@@ -84,6 +100,21 @@ func (e *SubArithmetic) FuzzAll(r rand.Rand) {
 	e.b.FuzzAll(r)
 }
 
+func (e *SubArithmetic) Get(i int) (token.Token, error) {
+	switch i {
+	case 0:
+		return e.a, nil
+	case 1:
+		return e.b, nil
+	default:
+		return nil, &lists.ListError{lists.ListErrorOutOfBound}
+	}
+}
+
+func (e *SubArithmetic) Len() int {
+	return 2
+}
+
 func (e *SubArithmetic) Permutations() int {
 	return e.a.Permutations() * e.b.Permutations()
 }
@@ -131,6 +162,21 @@ func (e *MulArithmetic) FuzzAll(r rand.Rand) {
 	e.b.FuzzAll(r)
 }
 
+func (e *MulArithmetic) Get(i int) (token.Token, error) {
+	switch i {
+	case 0:
+		return e.a, nil
+	case 1:
+		return e.b, nil
+	default:
+		return nil, &lists.ListError{lists.ListErrorOutOfBound}
+	}
+}
+
+func (e *MulArithmetic) Len() int {
+	return 2
+}
+
 func (e *MulArithmetic) Permutations() int {
 	return e.a.Permutations() * e.b.Permutations()
 }
@@ -176,6 +222,21 @@ func (e *DivArithmetic) FuzzAll(r rand.Rand) {
 
 	e.a.FuzzAll(r)
 	e.b.FuzzAll(r)
+}
+
+func (e *DivArithmetic) Get(i int) (token.Token, error) {
+	switch i {
+	case 0:
+		return e.a, nil
+	case 1:
+		return e.b, nil
+	default:
+		return nil, &lists.ListError{lists.ListErrorOutOfBound}
+	}
+}
+
+func (e *DivArithmetic) Len() int {
+	return 2
 }
 
 func (e *DivArithmetic) Permutations() int {

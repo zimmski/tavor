@@ -26,7 +26,7 @@ func TestMost(t *testing.T) {
 	i, err := o.Get(0)
 	Nil(t, err)
 	Equal(t, a, i)
-	i, err = o.Get(1)
+	i, err = o.Get(5)
 	Equal(t, err.(*ListError).Type, ListErrorOutOfBound)
 	Nil(t, i)
 

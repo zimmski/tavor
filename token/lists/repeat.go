@@ -64,11 +64,11 @@ func (l *Repeat) FuzzAll(r rand.Rand) {
 }
 
 func (l *Repeat) Get(i int) (token.Token, error) {
-	if i < 0 || i >= 1 {
+	if i < 0 || i >= len(l.value) {
 		return nil, &ListError{ListErrorOutOfBound}
 	}
 
-	return l.token, nil
+	return l.value[i], nil
 }
 
 func (l *Repeat) Len() int {

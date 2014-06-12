@@ -14,3 +14,7 @@ type Token interface {
 	FuzzAll(r rand.Rand)
 	Permutations() int
 }
+
+type ForwardToken interface {
+	Get() Token
+}

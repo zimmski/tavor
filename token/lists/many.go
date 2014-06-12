@@ -72,11 +72,11 @@ func (l *Many) FuzzAll(r rand.Rand) {
 }
 
 func (l *Many) Get(i int) (token.Token, error) {
-	if i < 0 || i >= len(l.tokens) {
+	if i < 0 || i >= len(l.value) {
 		return nil, &ListError{ListErrorOutOfBound}
 	}
 
-	return l.tokens[i], nil
+	return l.value[i], nil
 }
 
 func (l *Many) Len() int {

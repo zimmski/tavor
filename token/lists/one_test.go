@@ -28,9 +28,6 @@ func TestOne(t *testing.T) {
 	Nil(t, err)
 	Equal(t, a, i)
 	i, err = o.Get(1)
-	Nil(t, err)
-	Equal(t, b, i)
-	i, err = o.Get(2)
 	Equal(t, err.(*ListError).Type, ListErrorOutOfBound)
 	Nil(t, i)
 
