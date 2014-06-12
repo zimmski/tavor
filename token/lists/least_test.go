@@ -40,6 +40,11 @@ func TestLeast(t *testing.T) {
 	Equal(t, 2, o.Len())
 
 	r.Seed(2)
+	o.Fuzz(r)
+	Equal(t, "11111", o.String())
+	Equal(t, 5, o.Len())
+
+	r.Seed(2)
 	o.FuzzAll(r)
 	Equal(t, "12312", o.String())
 	Equal(t, 5, o.Len())

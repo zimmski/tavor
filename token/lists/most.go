@@ -41,17 +41,23 @@ func (l *Most) Clone() token.Token {
 	return &c
 }
 
-func (l *Most) FuzzAll(r rand.Rand) {
+func (l *Most) Fuzz(r rand.Rand) {
 	n := r.Intn(int(l.n) + 1)
 	toks := make([]token.Token, n)
 
 	for i := range toks {
 		toks[i] = l.token.Clone()
-
-		toks[i].FuzzAll(r)
 	}
 
 	l.value = toks
+}
+
+func (l *Most) FuzzAll(r rand.Rand) {
+	l.Fuzz(r)
+
+	for _, tok := range l.value {
+		tok.FuzzAll(r)
+	}
 }
 
 func (l *Most) Get(i int) (token.Token, error) {

@@ -40,7 +40,7 @@ func (l *Many) Clone() token.Token {
 	return &c
 }
 
-func (l *Many) FuzzAll(r rand.Rand) {
+func (l *Many) Fuzz(r rand.Rand) {
 	tl := len(l.tokens)
 
 	n := r.Intn(tl) + 1
@@ -55,14 +55,20 @@ func (l *Many) FuzzAll(r rand.Rand) {
 				toks[i] = l.value[ri]
 				chosen[ri] = struct{}{}
 
-				toks[i].FuzzAll(r)
-
 				break
 			}
 		}
 	}
 
 	l.value = toks
+}
+
+func (l *Many) FuzzAll(r rand.Rand) {
+	l.Fuzz(r)
+
+	for _, tok := range l.value {
+		tok.FuzzAll(r)
+	}
 }
 
 func (l *Many) Get(i int) (token.Token, error) {

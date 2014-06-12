@@ -33,7 +33,13 @@ func (l *All) Clone() token.Token {
 	return &c
 }
 
+func (l *All) Fuzz(r rand.Rand) {
+	// do nothing
+}
+
 func (l *All) FuzzAll(r rand.Rand) {
+	l.Fuzz(r)
+
 	for _, tok := range l.tokens {
 		tok.FuzzAll(r)
 	}

@@ -24,8 +24,12 @@ func (a *Len) Clone() token.Token {
 	}
 }
 
-func (a *Len) FuzzAll(r rand.Rand) {
+func (a *Len) Fuzz(r rand.Rand) {
 	// do nothing
+}
+
+func (a *Len) FuzzAll(r rand.Rand) {
+	a.Fuzz(r)
 }
 
 func (a *Len) Permutations() int {

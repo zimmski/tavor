@@ -21,8 +21,12 @@ func (p *ConstantString) Clone() token.Token {
 	}
 }
 
-func (p *ConstantString) FuzzAll(r rand.Rand) {
+func (p *ConstantString) Fuzz(r rand.Rand) {
 	// do nothing
+}
+
+func (p *ConstantString) FuzzAll(r rand.Rand) {
+	p.Fuzz(r)
 }
 
 func (p *ConstantString) Permutations() int {

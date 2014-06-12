@@ -27,6 +27,9 @@ func TestConstantInt(t *testing.T) {
 	o.FuzzAll(r)
 	Equal(t, "1", o.String())
 
+	o.Fuzz(r)
+	Equal(t, "", o.String())
+
 	o2 := o.Clone()
 	Equal(t, o.String(), o2.String())
 

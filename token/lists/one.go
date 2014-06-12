@@ -34,10 +34,14 @@ func (l *One) Clone() token.Token {
 	return &c
 }
 
-func (l *One) FuzzAll(r rand.Rand) {
+func (l *One) Fuzz(r rand.Rand) {
 	i := r.Intn(len(l.tokens))
 
 	l.value = l.tokens[i]
+}
+
+func (l *One) FuzzAll(r rand.Rand) {
+	l.Fuzz(r)
 
 	l.value.FuzzAll(r)
 }

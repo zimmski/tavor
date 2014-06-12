@@ -21,8 +21,12 @@ func (e *FuncExpression) Clone() token.Token {
 	}
 }
 
-func (e *FuncExpression) FuzzAll(r rand.Rand) {
+func (e *FuncExpression) Fuzz(r rand.Rand) {
 	// do nothing
+}
+
+func (e *FuncExpression) FuzzAll(r rand.Rand) {
+	e.Fuzz(r)
 }
 
 func (e *FuncExpression) Permutations() int {

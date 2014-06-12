@@ -34,8 +34,12 @@ func (f *FuncFilter) Clone() token.Token {
 	}
 }
 
-func (f *FuncFilter) FuzzAll(r rand.Rand) {
+func (f *FuncFilter) Fuzz(r rand.Rand) {
 	f.state = f.fuzzFunc(r, f.token)
+}
+
+func (f *FuncFilter) FuzzAll(r rand.Rand) {
+	f.Fuzz(r)
 }
 
 func (f *FuncFilter) Permutations() int {

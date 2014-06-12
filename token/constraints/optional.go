@@ -24,8 +24,12 @@ func (c *Optional) Clone() token.Token {
 	}
 }
 
-func (c *Optional) FuzzAll(r rand.Rand) {
+func (c *Optional) Fuzz(r rand.Rand) {
 	c.value = r.Int()%2 == 0
+}
+
+func (c *Optional) FuzzAll(r rand.Rand) {
+	c.Fuzz(r)
 
 	if !c.value {
 		c.token.FuzzAll(r)

@@ -45,8 +45,12 @@ func (p *Pointer) cloneOnFirstUse() {
 	}
 }
 
-func (p *Pointer) FuzzAll(r rand.Rand) {
+func (p *Pointer) Fuzz(r rand.Rand) {
 	p.cloneOnFirstUse()
+}
+
+func (p *Pointer) FuzzAll(r rand.Rand) {
+	p.Fuzz(r)
 
 	// fuzz with the clone not the original token
 	p.tok.FuzzAll(r)
