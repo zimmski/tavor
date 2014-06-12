@@ -21,7 +21,7 @@ func (p *ConstantString) Clone() token.Token {
 	}
 }
 
-func (p *ConstantString) Fuzz(r rand.Rand) {
+func (p *ConstantString) FuzzAll(r rand.Rand) {
 	// do nothing
 }
 

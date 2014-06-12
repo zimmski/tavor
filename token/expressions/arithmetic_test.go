@@ -27,7 +27,7 @@ func TestAddArithmetic(t *testing.T) {
 	Equal(t, "3", o.String())
 
 	r := test.NewRandTest(1)
-	o.Fuzz(r)
+	o.FuzzAll(r)
 	Equal(t, "5", o.String())
 
 	o2 := o.Clone()
@@ -44,7 +44,7 @@ func TestSubArithmetic(t *testing.T) {
 	Equal(t, "-1", o.String())
 
 	r := test.NewRandTest(1)
-	o.Fuzz(r)
+	o.FuzzAll(r)
 	Equal(t, "1", o.String())
 
 	o2 := o.Clone()
@@ -61,7 +61,7 @@ func TestMulArithmetic(t *testing.T) {
 	Equal(t, "2", o.String())
 
 	r := test.NewRandTest(1)
-	o.Fuzz(r)
+	o.FuzzAll(r)
 	Equal(t, "6", o.String())
 
 	o2 := o.Clone()
@@ -78,7 +78,7 @@ func TestDivArithmetic(t *testing.T) {
 	Equal(t, "3", o.String())
 
 	r := test.NewRandTest(2)
-	o.Fuzz(r)
+	o.FuzzAll(r)
 	Equal(t, "4", o.String())
 
 	o2 := o.Clone()

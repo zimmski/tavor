@@ -35,7 +35,7 @@ func TestAll(t *testing.T) {
 	Nil(t, i)
 
 	r := test.NewRandTest(0)
-	o.Fuzz(r)
+	o.FuzzAll(r)
 	Equal(t, "10abc", o.String())
 	Equal(t, 2, o.Len())
 
@@ -45,7 +45,7 @@ func TestAll(t *testing.T) {
 	Equal(t, 3, o.Len())
 	Equal(t, 2, o.Permutations())
 
-	o.Fuzz(r)
+	o.FuzzAll(r)
 	Equal(t, "10abc2", o.String())
 	Equal(t, 3, o.Len())
 

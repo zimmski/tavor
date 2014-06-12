@@ -31,7 +31,7 @@ func TestMost(t *testing.T) {
 	Nil(t, i)
 
 	r := test.NewRandTest(1)
-	o.Fuzz(r)
+	o.FuzzAll(r)
 	Equal(t, "aa", o.String())
 	Equal(t, 2, o.Len())
 
@@ -42,7 +42,7 @@ func TestMost(t *testing.T) {
 	Equal(t, 13, o.Permutations())
 
 	r.Seed(2)
-	o.Fuzz(r)
+	o.FuzzAll(r)
 	Equal(t, "123", o.String())
 	Equal(t, 3, o.Len())
 

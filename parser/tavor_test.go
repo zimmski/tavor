@@ -502,7 +502,7 @@ func TestTavorParserTokenAttributes(t *testing.T) {
 		))
 
 		r := test.NewRandTest(1)
-		tok.Fuzz(r)
+		tok.FuzzAll(r)
 		Equal(t, "12->2", tok.String())
 	}
 }
@@ -656,7 +656,7 @@ func TestTavorParserAndCuriousCaseOfFuzzing(t *testing.T) {
 			primitives.NewConstantInt(456),
 		))
 		r := test.NewRandTest(1)
-		tok.Fuzz(r)
+		tok.FuzzAll(r)
 		Equal(t, "123456", tok.String())
 	}
 

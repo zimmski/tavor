@@ -24,7 +24,7 @@ func TestPointer(t *testing.T) {
 	Equal(t, 1, o.Permutations())
 
 	r := test.NewRandTest(0)
-	o.Fuzz(r)
+	o.FuzzAll(r)
 	// this uses a clone
 	Equal(t, "5", o.String())
 	// this is the original one which must be untouched
@@ -34,8 +34,8 @@ func TestPointer(t *testing.T) {
 
 	// cloned pointers are always different to their original one
 
-	o.Fuzz(r)
-	o2.Fuzz(r)
+	o.FuzzAll(r)
+	o2.FuzzAll(r)
 
 	// original token still untouched
 	Equal(t, "4", a.String())

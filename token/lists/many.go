@@ -40,7 +40,7 @@ func (l *Many) Clone() token.Token {
 	return &c
 }
 
-func (l *Many) Fuzz(r rand.Rand) {
+func (l *Many) FuzzAll(r rand.Rand) {
 	tl := len(l.tokens)
 
 	n := r.Intn(tl) + 1
@@ -55,7 +55,7 @@ func (l *Many) Fuzz(r rand.Rand) {
 				toks[i] = l.value[ri]
 				chosen[ri] = struct{}{}
 
-				toks[i].Fuzz(r)
+				toks[i].FuzzAll(r)
 
 				break
 			}

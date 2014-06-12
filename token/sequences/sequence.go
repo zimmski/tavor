@@ -74,7 +74,7 @@ func (s *Sequence) ResetItem() *sequenceResetItem {
 // Sequence is an unusable token
 
 func (s *Sequence) Clone() token.Token { panic("unusable token") }
-func (s *Sequence) Fuzz(r rand.Rand)   { panic("unusable token") }
+func (s *Sequence) FuzzAll(r rand.Rand)   { panic("unusable token") }
 func (s *Sequence) Permutations() int  { panic("unusable token") }
 func (s *Sequence) String() string     { panic("unusable token") }
 
@@ -90,7 +90,7 @@ func (s *sequenceItem) Clone() token.Token {
 	}
 }
 
-func (s *sequenceItem) Fuzz(r rand.Rand) {
+func (s *sequenceItem) FuzzAll(r rand.Rand) {
 	s.value = s.sequence.Next()
 }
 
@@ -114,7 +114,7 @@ func (s *sequenceExistingItem) Clone() token.Token {
 	}
 }
 
-func (s *sequenceExistingItem) Fuzz(r rand.Rand) {
+func (s *sequenceExistingItem) FuzzAll(r rand.Rand) {
 	s.value = s.sequence.existing(r)
 }
 
@@ -136,7 +136,7 @@ func (s *sequenceResetItem) Clone() token.Token {
 	}
 }
 
-func (s *sequenceResetItem) Fuzz(r rand.Rand) {
+func (s *sequenceResetItem) FuzzAll(r rand.Rand) {
 	s.sequence.Reset()
 }
 

@@ -24,7 +24,7 @@ func TestFuncExpression(t *testing.T) {
 			c := r.Int()%2 == 0
 
 			if c {
-				tok.Fuzz(r)
+				tok.FuzzAll(r)
 			}
 
 			return c
@@ -47,10 +47,10 @@ func TestFuncExpression(t *testing.T) {
 	Equal(t, "1", o.String())
 
 	r := test.NewRandTest(0)
-	o.Fuzz(r)
+	o.FuzzAll(r)
 	Equal(t, "", o.String())
 
-	o.Fuzz(r)
+	o.FuzzAll(r)
 	Equal(t, "1", o.String())
 
 	o2 := o.Clone()

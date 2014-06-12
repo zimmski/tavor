@@ -44,14 +44,14 @@ func (l *Repeat) Clone() token.Token {
 	return &c
 }
 
-func (l *Repeat) Fuzz(r rand.Rand) {
+func (l *Repeat) FuzzAll(r rand.Rand) {
 	n := r.Intn(int(l.to-l.from+1)) + int(l.from)
 	toks := make([]token.Token, n)
 
 	for i := range toks {
 		toks[i] = l.token.Clone()
 
-		toks[i].Fuzz(r)
+		toks[i].FuzzAll(r)
 	}
 
 	l.value = toks

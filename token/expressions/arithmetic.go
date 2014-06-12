@@ -26,9 +26,9 @@ func (e *AddArithmetic) Clone() token.Token {
 	}
 }
 
-func (e *AddArithmetic) Fuzz(r rand.Rand) {
-	e.a.Fuzz(r)
-	e.b.Fuzz(r)
+func (e *AddArithmetic) FuzzAll(r rand.Rand) {
+	e.a.FuzzAll(r)
+	e.b.FuzzAll(r)
 }
 
 func (e *AddArithmetic) Permutations() int {
@@ -67,9 +67,9 @@ func (e *SubArithmetic) Clone() token.Token {
 	}
 }
 
-func (e *SubArithmetic) Fuzz(r rand.Rand) {
-	e.a.Fuzz(r)
-	e.b.Fuzz(r)
+func (e *SubArithmetic) FuzzAll(r rand.Rand) {
+	e.a.FuzzAll(r)
+	e.b.FuzzAll(r)
 }
 
 func (e *SubArithmetic) Permutations() int {
@@ -108,9 +108,9 @@ func (e *MulArithmetic) Clone() token.Token {
 	}
 }
 
-func (e *MulArithmetic) Fuzz(r rand.Rand) {
-	e.a.Fuzz(r)
-	e.b.Fuzz(r)
+func (e *MulArithmetic) FuzzAll(r rand.Rand) {
+	e.a.FuzzAll(r)
+	e.b.FuzzAll(r)
 }
 
 func (e *MulArithmetic) Permutations() int {
@@ -149,9 +149,9 @@ func (e *DivArithmetic) Clone() token.Token {
 	}
 }
 
-func (e *DivArithmetic) Fuzz(r rand.Rand) {
-	e.a.Fuzz(r)
-	e.b.Fuzz(r)
+func (e *DivArithmetic) FuzzAll(r rand.Rand) {
+	e.a.FuzzAll(r)
+	e.b.FuzzAll(r)
 }
 
 func (e *DivArithmetic) Permutations() int {

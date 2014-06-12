@@ -20,7 +20,7 @@ func TestConstantString(t *testing.T) {
 	Equal(t, "abc", o.String())
 
 	r := test.NewRandTest(0)
-	o.Fuzz(r)
+	o.FuzzAll(r)
 	Equal(t, "abc", o.String())
 
 	o2 := o.Clone()

@@ -31,7 +31,7 @@ func TestRepeat(t *testing.T) {
 	Nil(t, i)
 
 	r := test.NewRandTest(1)
-	o.Fuzz(r)
+	o.FuzzAll(r)
 	Equal(t, "aaaaaaa", o.String())
 	Equal(t, 7, o.Len())
 
@@ -42,7 +42,7 @@ func TestRepeat(t *testing.T) {
 	Equal(t, 27, o.Permutations())
 
 	r.Seed(2)
-	o.Fuzz(r)
+	o.FuzzAll(r)
 	Equal(t, "12312", o.String())
 	Equal(t, 5, o.Len())
 

@@ -116,7 +116,7 @@ func main() {
 
 	r := rand.New(rand.NewSource(opts.Seed))
 
-	doc.Fuzz(r)
+	doc.FuzzAll(r)
 
 	fmt.Print(doc.String())
 }

@@ -22,7 +22,7 @@ func TestConstantInt(t *testing.T) {
 	Equal(t, "10", o.String())
 
 	r := test.NewRandTest(0)
-	o.Fuzz(r)
+	o.FuzzAll(r)
 	Equal(t, "10", o.String())
 
 	o2 := o.Clone()
@@ -36,7 +36,7 @@ func TestRandomInt(t *testing.T) {
 	Equal(t, "0", o.String())
 
 	r := test.NewRandTest(0)
-	o.Fuzz(r)
+	o.FuzzAll(r)
 	Equal(t, "1", o.String())
 
 	o2 := o.Clone()
@@ -50,11 +50,11 @@ func TestRangeInt(t *testing.T) {
 	Equal(t, "2", o.String())
 
 	r := test.NewRandTest(0)
-	o.Fuzz(r)
+	o.FuzzAll(r)
 	Equal(t, "3", o.String())
-	o.Fuzz(r)
+	o.FuzzAll(r)
 	Equal(t, "4", o.String())
-	o.Fuzz(r)
+	o.FuzzAll(r)
 	Equal(t, "2", o.String())
 
 	o2 := o.Clone()

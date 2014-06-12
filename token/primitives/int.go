@@ -23,7 +23,7 @@ func (p *ConstantInt) Clone() token.Token {
 	}
 }
 
-func (p *ConstantInt) Fuzz(r rand.Rand) {
+func (p *ConstantInt) FuzzAll(r rand.Rand) {
 	// do nothing
 }
 
@@ -51,7 +51,7 @@ func (p *RandomInt) Clone() token.Token {
 	}
 }
 
-func (p *RandomInt) Fuzz(r rand.Rand) {
+func (p *RandomInt) FuzzAll(r rand.Rand) {
 	p.value = r.Int()
 }
 
@@ -86,7 +86,7 @@ func (p *RangeInt) Clone() token.Token {
 	}
 }
 
-func (p *RangeInt) Fuzz(r rand.Rand) {
+func (p *RangeInt) FuzzAll(r rand.Rand) {
 	ri := r.Intn(p.Permutations())
 
 	p.value = p.from + ri

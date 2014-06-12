@@ -21,7 +21,7 @@ func (e *FuncExpression) Clone() token.Token {
 	}
 }
 
-func (e *FuncExpression) Fuzz(r rand.Rand) {
+func (e *FuncExpression) FuzzAll(r rand.Rand) {
 	// do nothing
 }
 

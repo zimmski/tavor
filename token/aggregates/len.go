@@ -24,7 +24,7 @@ func (a *Len) Clone() token.Token {
 	}
 }
 
-func (a *Len) Fuzz(r rand.Rand) {
+func (a *Len) FuzzAll(r rand.Rand) {
 	// do nothing
 }
 

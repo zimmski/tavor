@@ -34,12 +34,12 @@ func TestMany(t *testing.T) {
 	Nil(t, i)
 
 	r := test.NewRandTest(0)
-	o.Fuzz(r)
+	o.FuzzAll(r)
 	Equal(t, "ab", o.String())
 	Equal(t, 2, o.Len())
 
 	r.Seed(100)
-	o.Fuzz(r)
+	o.FuzzAll(r)
 	Equal(t, "b", o.String())
 	Equal(t, 1, o.Len())
 
@@ -48,7 +48,7 @@ func TestMany(t *testing.T) {
 	Equal(t, "5", o.String())
 	Equal(t, 1, o.Len())
 
-	o.Fuzz(r)
+	o.FuzzAll(r)
 	Equal(t, "6", o.String())
 	Equal(t, 1, o.Len())
 

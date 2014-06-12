@@ -25,15 +25,15 @@ func TestConstantInt(t *testing.T) {
 	Equal(t, "1", o.String())
 
 	r := test.NewRandTest(0)
-	list.Fuzz(r)
+	list.FuzzAll(r)
 	Equal(t, "11", list.String())
 	Equal(t, "2", o.String())
 
-	list.Fuzz(r)
+	list.FuzzAll(r)
 	Equal(t, "111", list.String())
 	Equal(t, "3", o.String())
 
-	o.Fuzz(r)
+	o.FuzzAll(r)
 
 	o2 := o.Clone()
 	Equal(t, o.String(), o2.String())
