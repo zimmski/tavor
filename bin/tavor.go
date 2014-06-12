@@ -4,11 +4,13 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"sort"
 	"time"
 
 	"github.com/jessevdk/go-flags"
 
 	"github.com/zimmski/tavor"
+	"github.com/zimmski/tavor/fuzz/strategy"
 	"github.com/zimmski/tavor/parser"
 )
 
@@ -19,16 +21,23 @@ const (
 
 var opts struct {
 	Config      func(s string) error `long:"config" description:"INI config file" no-ini:"true"`
-	ConfigWrite string               `long:"config-write" description:"Write all arguments to an INI config file or to STDOUT with \"-\" as argument" no-ini:"true"`
+	ConfigWrite string               `long:"config-write" description:"Write all arguments to an INI config file or to STDOUT with \"-\" as argument." no-ini:"true"`
+
+	ListStrategies bool `long:"list-strategies" description:"List all available strategies." no-ini:"true"`
 
 	InputFile string `long:"input-file" description:"Input tavor file" required:"true" no-ini:"true"`
 	Seed      int64  `long:"seed" description:"Seed for all the randomness"`
-	Verbose   bool   `long:"verbose" description:"Do verbose output"`
-	Version   bool   `long:"version" description:"Print the version of this program" no-ini:"true"`
+	Strategy  string `long:"strategy" description:"The fuzzing strategy" default:"random"`
+	Verbose   bool   `long:"verbose" description:"Do verbose output."`
+	Version   bool   `long:"version" description:"Print the version of this program." no-ini:"true"`
 
 	Debug bool `long:"debug" description:"Temporary debugging argument"`
 
 	configFile string
+}
+
+var strategies = map[string]struct{}{
+	"random": struct{}{},
 }
 
 func V(msg string, args ...interface{}) {
@@ -52,6 +61,20 @@ func checkArguments() {
 	if _, err := p.ParseArgs(os.Args); err != nil {
 		if opts.Version {
 			fmt.Printf("Tavor v%s\n", tavor.Version)
+
+			os.Exit(returnOk)
+		} else if opts.ListStrategies {
+			keyStrategies := make([]string, 0)
+
+			for key := range strategies {
+				keyStrategies = append(keyStrategies, key)
+			}
+
+			sort.Strings(keyStrategies)
+
+			for _, key := range keyStrategies {
+				fmt.Println(key)
+			}
 
 			os.Exit(returnOk)
 		}
@@ -116,7 +139,20 @@ func main() {
 
 	r := rand.New(rand.NewSource(opts.Seed))
 
-	doc.FuzzAll(r)
+	var strat strategy.Strategy
+
+	switch opts.Strategy {
+	case "random":
+		strat = strategy.NewRandomStrategy()
+	default:
+		panic(fmt.Errorf("unknown fuzzing strategy \"%s\"", opts.Strategy))
+	}
+
+	if opts.Verbose {
+		V("Using %s strategy", opts.Strategy)
+	}
+
+	strat.Fuzz(doc, r)
 
 	fmt.Print(doc.String())
 }
