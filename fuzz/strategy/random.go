@@ -7,30 +7,37 @@ import (
 )
 
 type RandomStrategy struct {
+	root token.Token
 }
 
-func NewRandomStrategy() *RandomStrategy {
-	return &RandomStrategy{}
+func NewRandomStrategy(tok token.Token) *RandomStrategy {
+	return &RandomStrategy{
+		root: tok,
+	}
 }
 
 func init() {
-	Register("random", func() Strategy {
-		return NewRandomStrategy()
+	Register("random", func(tok token.Token) Strategy {
+		return NewRandomStrategy(tok)
 	})
 }
 
-func (s *RandomStrategy) Fuzz(tok token.Token, r rand.Rand) {
+func (s *RandomStrategy) Fuzz(r rand.Rand) {
+	s.fuzz(s.root, r)
+}
+
+func (s *RandomStrategy) fuzz(tok token.Token, r rand.Rand) {
 	tok.Fuzz(r)
 
 	switch t := tok.(type) {
 	case token.ForwardToken:
-		s.Fuzz(t.Get(), r)
+		s.fuzz(t.Get(), r)
 	case lists.List:
 		l := t.Len()
 
 		for i := 0; i < l; i++ {
 			c, _ := t.Get(i)
-			s.Fuzz(c, r)
+			s.fuzz(c, r)
 		}
 	}
 }

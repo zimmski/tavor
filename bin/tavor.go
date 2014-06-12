@@ -126,7 +126,7 @@ func main() {
 
 	r := rand.New(rand.NewSource(opts.Seed))
 
-	strat, err := strategy.New(opts.Strategy)
+	strat, err := strategy.New(opts.Strategy, doc)
 	if err != nil {
 		panic(err)
 	}
@@ -135,7 +135,7 @@ func main() {
 		V("Using %s strategy", opts.Strategy)
 	}
 
-	strat.Fuzz(doc, r)
+	strat.Fuzz(r)
 
 	fmt.Print(doc.String())
 }

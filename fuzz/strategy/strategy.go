@@ -9,14 +9,14 @@ import (
 )
 
 type Strategy interface {
-	Fuzz(tok token.Token, r rand.Rand)
+	Fuzz(r rand.Rand)
 }
 
-var strategies = make(map[string]func() Strategy)
+var strategies = make(map[string]func(tok token.Token) Strategy)
 
-func New(name string) (Strategy, error) {
+func New(name string, tok token.Token) (Strategy, error) {
 	if strat, ok := strategies[name]; ok {
-		return strat(), nil
+		return strat(tok), nil
 	} else {
 		return nil, fmt.Errorf("Unknown fuzzing strategy \"%s\"", name)
 	}
@@ -34,7 +34,7 @@ func List() []string {
 	return keyStrategies
 }
 
-func Register(name string, strat func() Strategy) {
+func Register(name string, strat func(tok token.Token) Strategy) {
 	if strat == nil {
 		panic("Register fuzzing strategy is nil")
 	}
