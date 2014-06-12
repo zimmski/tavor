@@ -33,7 +33,7 @@ func (c *Optional) Fuzz(r rand.Rand) {
 }
 
 func (c *Optional) Permutations() int {
-	return 2
+	return 2 * c.token.Permutations()
 }
 
 func (c *Optional) String() string {
