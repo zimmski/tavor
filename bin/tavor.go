@@ -108,7 +108,7 @@ func main() {
 	defer file.Close()
 
 	if opts.Debug {
-		parser.DEBUG = true
+		tavor.DEBUG = true
 	}
 
 	doc, err := parser.ParseTavor(file)

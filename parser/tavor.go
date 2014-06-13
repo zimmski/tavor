@@ -9,6 +9,7 @@ import (
 
 	"github.com/zimmski/container/list/linkedlist"
 
+	"github.com/zimmski/tavor"
 	"github.com/zimmski/tavor/token"
 	"github.com/zimmski/tavor/token/aggregates"
 	"github.com/zimmski/tavor/token/constraints"
@@ -28,9 +29,6 @@ import (
 	Allow forward usage of token attributes
 
 */
-
-//TODO remove this
-var DEBUG = false
 
 const zeroRune = 0
 
@@ -62,7 +60,7 @@ func (p *tavorParser) expectRune(expect rune, got rune) (rune, error) {
 
 func (p *tavorParser) expectScanRune(expect rune) (rune, error) {
 	got := p.scan.Scan()
-	if DEBUG {
+	if tavor.DEBUG {
 		fmt.Printf("%d:%v -> %v\n", p.scan.Line, scanner.TokenString(got), p.scan.TokenText())
 	}
 
@@ -73,7 +71,7 @@ func (p *tavorParser) parseGlobalScope() error {
 	var err error
 
 	c := p.scan.Scan()
-	if DEBUG {
+	if tavor.DEBUG {
 		fmt.Printf("%d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
 	}
 
@@ -105,7 +103,7 @@ func (p *tavorParser) parseGlobalScope() error {
 		}
 
 		c = p.scan.Scan()
-		if DEBUG {
+		if tavor.DEBUG {
 			fmt.Printf("%d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
 		}
 	}
@@ -126,7 +124,7 @@ OUT:
 			n := p.scan.TokenText()
 
 			if _, ok := p.lookup[n]; !ok {
-				if DEBUG {
+				if tavor.DEBUG {
 					fmt.Printf("parseTerm use empty pointer for %s\n", n)
 				}
 
@@ -162,11 +160,11 @@ OUT:
 
 			tokens = append(tokens, primitives.NewConstantString(s))
 		case '(':
-			if DEBUG {
+			if tavor.DEBUG {
 				fmt.Println("NEW group")
 			}
 			c = p.scan.Scan()
-			if DEBUG {
+			if tavor.DEBUG {
 				fmt.Printf("parseTerm Group %d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
 			}
 
@@ -190,17 +188,17 @@ OUT:
 				embeddedTokens = append(embeddedTokens, embeddedToks...)
 			}
 
-			if DEBUG {
+			if tavor.DEBUG {
 				fmt.Println("END group")
 			}
 		case '?':
-			if DEBUG {
+			if tavor.DEBUG {
 				fmt.Println("NEW optional")
 			}
 			p.expectScanRune('(')
 
 			c = p.scan.Scan()
-			if DEBUG {
+			if tavor.DEBUG {
 				fmt.Printf("parseTerm optional after ( %d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
 			}
 
@@ -220,18 +218,18 @@ OUT:
 				tokens = append(tokens, constraints.NewOptional(lists.NewAll(toks...)))
 			}
 
-			if DEBUG {
+			if tavor.DEBUG {
 				fmt.Println("END optional")
 			}
 		case '+', '*':
-			if DEBUG {
+			if tavor.DEBUG {
 				fmt.Println("NEW repeat")
 			}
 
 			sym := c
 
 			c = p.scan.Scan()
-			if DEBUG {
+			if tavor.DEBUG {
 				fmt.Printf("parseTerm repeat before ( %d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
 			}
 
@@ -244,7 +242,7 @@ OUT:
 					from, _ = strconv.Atoi(p.scan.TokenText())
 
 					c = p.scan.Scan()
-					if DEBUG {
+					if tavor.DEBUG {
 						fmt.Printf("parseTerm repeat after from ( %d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
 					}
 
@@ -256,7 +254,7 @@ OUT:
 
 				if c == ',' {
 					c = p.scan.Scan()
-					if DEBUG {
+					if tavor.DEBUG {
 						fmt.Printf("parseTerm repeat after , ( %d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
 					}
 
@@ -264,7 +262,7 @@ OUT:
 						to, _ = strconv.Atoi(p.scan.TokenText())
 
 						c = p.scan.Scan()
-						if DEBUG {
+						if tavor.DEBUG {
 							fmt.Printf("parseTerm repeat after to ( %d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
 						}
 					} else {
@@ -275,12 +273,12 @@ OUT:
 
 			p.expectRune('(', c)
 
-			if DEBUG {
+			if tavor.DEBUG {
 				fmt.Printf("repeat from %v to %v\n", from, to)
 			}
 
 			c = p.scan.Scan()
-			if DEBUG {
+			if tavor.DEBUG {
 				fmt.Printf("parseTerm repeat after ( %d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
 			}
 
@@ -304,12 +302,12 @@ OUT:
 				embeddedTokens = append(embeddedTokens, embeddedToks...)
 			}
 
-			if DEBUG {
+			if tavor.DEBUG {
 				fmt.Println("END repeat")
 			}
 		case '$':
 			c = p.scan.Scan()
-			if DEBUG {
+			if tavor.DEBUG {
 				fmt.Printf("parseTerm after $ ( %d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
 			}
 
@@ -332,7 +330,7 @@ OUT:
 			}
 
 			c = p.scan.Scan()
-			if DEBUG {
+			if tavor.DEBUG {
 				fmt.Printf("parseTerm multiline %d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
 			}
 
@@ -345,14 +343,14 @@ OUT:
 
 			continue
 		default:
-			if DEBUG {
+			if tavor.DEBUG {
 				fmt.Println("break out parseTerm")
 			}
 			break OUT
 		}
 
 		c = p.scan.Scan()
-		if DEBUG {
+		if tavor.DEBUG {
 			fmt.Printf("parseTerm %d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
 		}
 	}
@@ -365,7 +363,7 @@ OUT:
 }
 
 func (p *tavorParser) parseExpression(c rune) (token.Token, error) {
-	if DEBUG {
+	if tavor.DEBUG {
 		fmt.Println("START expression")
 	}
 
@@ -375,7 +373,7 @@ func (p *tavorParser) parseExpression(c rune) (token.Token, error) {
 	}
 
 	c = p.scan.Scan()
-	if DEBUG {
+	if tavor.DEBUG {
 		fmt.Printf("parseExpression after {} %d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
 	}
 
@@ -394,7 +392,7 @@ func (p *tavorParser) parseExpression(c rune) (token.Token, error) {
 		return nil, err
 	}
 
-	if DEBUG {
+	if tavor.DEBUG {
 		fmt.Println("END expression")
 	}
 
@@ -423,7 +421,7 @@ func (p *tavorParser) parseExpressionTerm(c rune) (rune, token.Token, error) {
 	}
 
 	c = p.scan.Scan()
-	if DEBUG {
+	if tavor.DEBUG {
 		fmt.Printf("parseExpressionTerm %d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
 	}
 
@@ -433,7 +431,7 @@ func (p *tavorParser) parseExpressionTerm(c rune) (rune, token.Token, error) {
 		sym := c
 
 		c = p.scan.Scan()
-		if DEBUG {
+		if tavor.DEBUG {
 			fmt.Printf("parseExpressionTerm operator %d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
 		}
 
@@ -464,7 +462,7 @@ func (p *tavorParser) parseExpressionTerm(c rune) (rune, token.Token, error) {
 }
 
 func (p *tavorParser) parseTokenAttribute(c rune) (token.Token, error) {
-	if DEBUG {
+	if tavor.DEBUG {
 		fmt.Println("START token attribute")
 	}
 
@@ -497,7 +495,7 @@ func (p *tavorParser) parseTokenAttribute(c rune) (token.Token, error) {
 
 	p.used[name] = struct{}{}
 
-	if DEBUG {
+	if tavor.DEBUG {
 		fmt.Println("END token attribute (or will be unknown token attribute)")
 	}
 
@@ -540,7 +538,7 @@ func (p *tavorParser) parseScope(c rune) (rune, []token.Token, []map[string]stru
 	}
 
 	if c == '|' {
-		if DEBUG {
+		if tavor.DEBUG {
 			fmt.Println("NEW or")
 		}
 		var orTerms []token.Token
@@ -571,11 +569,11 @@ func (p *tavorParser) parseScope(c rune) (rune, []token.Token, []map[string]stru
 
 			if c == '|' {
 				c = p.scan.Scan()
-				if DEBUG {
+				if tavor.DEBUG {
 					fmt.Printf("parseScope Or %d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
 				}
 			} else {
-				if DEBUG {
+				if tavor.DEBUG {
 					fmt.Println("parseScope break out or")
 				}
 				break OR
@@ -597,7 +595,7 @@ func (p *tavorParser) parseScope(c rune) (rune, []token.Token, []map[string]stru
 			tokens = []token.Token{or}
 		}
 
-		if DEBUG {
+		if tavor.DEBUG {
 			fmt.Println("END or")
 		}
 	} else {
@@ -638,7 +636,7 @@ func (p *tavorParser) parseTokenDefinition() (rune, error) {
 	}
 
 	c = p.scan.Scan()
-	if DEBUG {
+	if tavor.DEBUG {
 		fmt.Printf("parseTokenDefinition after = %d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
 	}
 
@@ -649,11 +647,11 @@ func (p *tavorParser) parseTokenDefinition() (rune, error) {
 
 	p.embeddedTokensInTerm[name] = embeddedToks
 
-	if DEBUG {
+	if tavor.DEBUG {
 		fmt.Printf("Token %s embeds %+v\n", name, embeddedToks)
 	}
 
-	if DEBUG {
+	if tavor.DEBUG {
 		fmt.Printf("back to token definition with c=%c\n", c)
 	}
 
@@ -685,7 +683,7 @@ func (p *tavorParser) parseTokenDefinition() (rune, error) {
 
 	// self loop?
 	if pointer, ok := p.lookup[name]; ok {
-		if DEBUG {
+		if tavor.DEBUG {
 			fmt.Printf("parseTokenDefinition fill empty pointer for %s\n", name)
 		}
 
@@ -702,7 +700,7 @@ func (p *tavorParser) parseTokenDefinition() (rune, error) {
 	if len(embeddedToks) != 0 {
 		foundExit := false
 
-		if DEBUG {
+		if tavor.DEBUG {
 			fmt.Println("Need to check for loops")
 		}
 
@@ -720,7 +718,7 @@ func (p *tavorParser) parseTokenDefinition() (rune, error) {
 				n := i.(string)
 
 				if name == n {
-					if DEBUG {
+					if tavor.DEBUG {
 						fmt.Println("Found one loop")
 					}
 
@@ -737,7 +735,7 @@ func (p *tavorParser) parseTokenDefinition() (rune, error) {
 					}
 				}
 			}
-			if DEBUG {
+			if tavor.DEBUG {
 				fmt.Println("Found exit, everything is fine.")
 			}
 
@@ -747,7 +745,7 @@ func (p *tavorParser) parseTokenDefinition() (rune, error) {
 		}
 
 		if !foundExit {
-			if DEBUG {
+			if tavor.DEBUG {
 				fmt.Println("There is no loop exit for this token, I'll throw an error.")
 			}
 
@@ -761,7 +759,7 @@ func (p *tavorParser) parseTokenDefinition() (rune, error) {
 	p.lookup[name] = tok
 
 	c = p.scan.Scan()
-	if DEBUG {
+	if tavor.DEBUG {
 		fmt.Printf("parseTokenDefinition after newline %d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
 	}
 
@@ -772,12 +770,12 @@ func (p *tavorParser) parseSpecialTokenDefinition() (rune, error) {
 	var c rune
 	var err error
 
-	if DEBUG {
+	if tavor.DEBUG {
 		fmt.Println("START special token")
 	}
 
 	c = p.scan.Scan()
-	if DEBUG {
+	if tavor.DEBUG {
 		fmt.Printf("parseSpecialTokenDefinition after $ %d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
 	}
 
@@ -809,7 +807,7 @@ func (p *tavorParser) parseSpecialTokenDefinition() (rune, error) {
 		}
 
 		c = p.scan.Scan()
-		if DEBUG {
+		if tavor.DEBUG {
 			fmt.Printf("parseSpecialTokenDefinition argument value %d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
 		}
 
@@ -824,7 +822,7 @@ func (p *tavorParser) parseSpecialTokenDefinition() (rune, error) {
 		}
 
 		c = p.scan.Scan()
-		if DEBUG {
+		if tavor.DEBUG {
 			fmt.Printf("parseSpecialTokenDefinition after argument value %d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
 		}
 
@@ -950,11 +948,11 @@ func (p *tavorParser) parseSpecialTokenDefinition() (rune, error) {
 	p.lookup[name] = tok
 
 	c = p.scan.Scan()
-	if DEBUG {
+	if tavor.DEBUG {
 		fmt.Printf("parseSpecialTokenDefinition after newline %d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
 	}
 
-	if DEBUG {
+	if tavor.DEBUG {
 		fmt.Println("END special token")
 	}
 
@@ -970,7 +968,7 @@ func ParseTavor(src io.Reader) (token.Token, error) {
 		used:                 make(map[string]struct{}),
 	}
 
-	if DEBUG {
+	if tavor.DEBUG {
 		fmt.Println("INIT")
 	}
 
