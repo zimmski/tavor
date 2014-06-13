@@ -54,17 +54,7 @@ func checkArguments() {
 	p.AddGroup("Tavor", "Tavor arguments", &opts)
 
 	if _, err := p.ParseArgs(os.Args); err != nil {
-		if opts.Version {
-			fmt.Printf("Tavor v%s\n", tavor.Version)
-
-			os.Exit(returnOk)
-		} else if opts.ListStrategies {
-			for _, name := range strategy.List() {
-				fmt.Println(name)
-			}
-
-			os.Exit(returnOk)
-		}
+		doListArguments()
 
 		if e, ok := err.(*flags.Error); !ok || e.Type != flags.ErrHelp {
 			panic(err)
@@ -74,6 +64,8 @@ func checkArguments() {
 			os.Exit(returnHelp)
 		}
 	}
+
+	doListArguments()
 
 	if opts.ConfigWrite != "" {
 		ini := flags.NewIniParser(p)
@@ -91,6 +83,20 @@ func checkArguments() {
 
 	if opts.Seed == 0 {
 		opts.Seed = time.Now().UTC().UnixNano()
+	}
+}
+
+func doListArguments() {
+	if opts.Version {
+		fmt.Printf("Tavor v%s\n", tavor.Version)
+
+		os.Exit(returnOk)
+	} else if opts.ListStrategies {
+		for _, name := range strategy.List() {
+			fmt.Println(name)
+		}
+
+		os.Exit(returnOk)
 	}
 }
 
