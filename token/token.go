@@ -28,3 +28,9 @@ type OptionalToken interface {
 	Activate()
 	Deactivate()
 }
+
+type ResetToken interface {
+	Token
+
+	Reset()
+}
