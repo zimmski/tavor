@@ -141,7 +141,23 @@ func main() {
 		V("Using %s strategy", opts.Strategy)
 	}
 
-	strat.Fuzz(r)
+	ch := strat.Fuzz(r)
+	another := false
+	for i := range ch {
+		if !tavor.DEBUG {
+			if another {
+				fmt.Println()
+			} else {
+				another = true
+			}
+		}
 
-	fmt.Print(doc.String())
+		if tavor.DEBUG {
+			fmt.Printf("Result:\n%s\n", doc.String())
+		} else {
+			fmt.Print(doc.String())
+		}
+
+		ch <- i
+	}
 }

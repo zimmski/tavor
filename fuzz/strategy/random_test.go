@@ -30,16 +30,44 @@ func TestRandomStrategy(t *testing.T) {
 	Nil(t, err)
 
 	r := test.NewRandTest(0)
-	o.Fuzz(r)
+
+	ch := o.Fuzz(r)
+
+	_, ok := <-ch
+	True(t, ok)
+
 	Equal(t, "78", c.String())
 	Equal(t, "7", a.String())
 	Equal(t, "8", b.String())
 
-	// optional should be off but since we fuzz everything no matter
-	// what, a and b should still get fuzzed
+	ch <- struct{}{}
+
+	_, ok = <-ch
+	False(t, ok)
+
+	// rerun
 	r.Seed(1)
-	o.Fuzz(r)
+
+	ch = o.Fuzz(r)
+
+	_, ok = <-ch
+	True(t, ok)
+
 	Equal(t, "", c.String())
 	Equal(t, "8", a.String())
 	Equal(t, "9", b.String())
+
+	close(ch)
+
+	// run with range
+	r.Seed(0)
+
+	ch = o.Fuzz(r)
+	for i := range ch {
+		Equal(t, "78", c.String())
+		Equal(t, "7", a.String())
+		Equal(t, "8", b.String())
+
+		ch <- i
+	}
 }

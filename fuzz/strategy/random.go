@@ -1,6 +1,9 @@
 package strategy
 
 import (
+	"fmt"
+
+	"github.com/zimmski/tavor"
 	"github.com/zimmski/tavor/rand"
 	"github.com/zimmski/tavor/token"
 	"github.com/zimmski/tavor/token/lists"
@@ -22,8 +25,37 @@ func init() {
 	})
 }
 
-func (s *RandomStrategy) Fuzz(r rand.Rand) {
-	s.fuzz(s.root, r)
+func (s *RandomStrategy) Fuzz(r rand.Rand) chan struct{} {
+	continueFuzzing := make(chan struct{})
+
+	go func() {
+		if tavor.DEBUG {
+			fmt.Println("Start random fuzzing routine")
+		}
+
+		s.fuzz(s.root, r)
+
+		if tavor.DEBUG {
+			fmt.Println("Done with fuzzing step")
+		}
+
+		// done with the last fuzzing step
+		continueFuzzing <- struct{}{}
+
+		if tavor.DEBUG {
+			fmt.Println("Finished fuzzing. Wait till the outside is ready to close.")
+		}
+
+		if _, ok := <-continueFuzzing; ok {
+			if tavor.DEBUG {
+				fmt.Println("Close fuzzing channel")
+			}
+
+			close(continueFuzzing)
+		}
+	}()
+
+	return continueFuzzing
 }
 
 func (s *RandomStrategy) fuzz(tok token.Token, r rand.Rand) {

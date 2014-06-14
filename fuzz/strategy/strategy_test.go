@@ -14,8 +14,10 @@ type mockStrategy struct {
 	root token.Token
 }
 
-func (s *mockStrategy) Fuzz(r rand.Rand) {
+func (s *mockStrategy) Fuzz(r rand.Rand) chan struct{} {
 	// do nothing
+
+	return nil
 }
 
 func TestStrategy(t *testing.T) {

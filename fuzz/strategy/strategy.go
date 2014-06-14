@@ -9,7 +9,7 @@ import (
 )
 
 type Strategy interface {
-	Fuzz(r rand.Rand)
+	Fuzz(r rand.Rand) chan struct{}
 }
 
 var strategies = make(map[string]func(tok token.Token) Strategy)
