@@ -62,6 +62,16 @@ func (s *PermuteOptionalsStrategy) findOptionals(root token.Token, fromChilds bo
 
 		switch t := tok.(type) {
 		case token.OptionalToken:
+			if !t.IsOptional() {
+				opts := s.findOptionals(t, true)
+
+				if len(opts) != 0 {
+					optionals = append(optionals, opts...)
+				}
+
+				continue
+			}
+
 			if tavor.DEBUG {
 				fmt.Printf("Found optional %#v\n", t)
 			}

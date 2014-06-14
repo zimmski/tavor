@@ -72,7 +72,25 @@ func TestPermuteOptionalsfindOptionals(t *testing.T) {
 			},
 		})
 	}
-	// TODO test list optional
+	{
+		a := lists.NewRepeat(primitives.NewConstantInt(1), 0, 10)
+
+		optionals := o.findOptionals(a, false)
+
+		Equal(t, optionals, []optionalLookup{
+			optionalLookup{
+				token:  a,
+				childs: nil,
+			},
+		})
+
+		b := lists.NewRepeat(primitives.NewConstantInt(1), 1, 10)
+
+		optionals = o.findOptionals(b, false)
+
+		var nilOpts []optionalLookup
+		Equal(t, optionals, nilOpts)
+	}
 }
 
 func TestPermuteOptionalsStrategy(t *testing.T) {
@@ -195,6 +213,32 @@ func TestPermuteOptionalsStrategy(t *testing.T) {
 			"1abc",
 			"11abc",
 			"111abc",
+		})
+	}
+	{
+		a := lists.NewAll(
+			constraints.NewOptional(primitives.NewConstantInt(1)),
+			constraints.NewOptional(primitives.NewConstantInt(2)),
+		)
+		b := lists.NewRepeat(a, 0, 10)
+
+		o := NewPermuteOptionalsStrategy(b)
+
+		var got []string
+
+		ch := o.Fuzz(r)
+		for i := range ch {
+			got = append(got, b.String())
+
+			ch <- i
+		}
+
+		Equal(t, got, []string{
+			"",
+			"",
+			"1",
+			"2",
+			"12",
 		})
 	}
 }

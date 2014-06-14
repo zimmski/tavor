@@ -53,5 +53,6 @@ func (c *Optional) String() string {
 }
 
 // OptionalToken interface methods
-func (c *Optional) Activate()   { c.value = false }
-func (c *Optional) Deactivate() { c.value = true }
+func (c *Optional) IsOptional() bool { return true }
+func (c *Optional) Activate()        { c.value = false }
+func (c *Optional) Deactivate()      { c.value = true }

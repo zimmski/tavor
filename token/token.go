@@ -24,6 +24,7 @@ type ForwardToken interface {
 type OptionalToken interface {
 	Token
 
+	IsOptional() bool
 	Activate()
 	Deactivate()
 }

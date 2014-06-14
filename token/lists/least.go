@@ -86,3 +86,22 @@ func (l *Least) String() string {
 
 	return buffer.String()
 }
+
+// OptionalToken interface methods
+func (l *Least) IsOptional() bool { return l.n == 0 }
+func (l *Least) Activate() {
+	if l.n != 0 {
+		return
+	}
+
+	l.value = []token.Token{
+		l.token.Clone(),
+	}
+}
+func (l *Least) Deactivate() {
+	if l.n != 0 {
+		return
+	}
+
+	l.value = []token.Token{}
+}

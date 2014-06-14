@@ -85,3 +85,14 @@ func (l *Most) String() string {
 
 	return buffer.String()
 }
+
+// OptionalToken interface methods
+func (l *Most) IsOptional() bool { return true }
+func (l *Most) Activate() {
+	l.value = []token.Token{
+		l.token.Clone(),
+	}
+}
+func (l *Most) Deactivate() {
+	l.value = []token.Token{}
+}
