@@ -133,6 +133,7 @@ func (s *PermuteOptionalsStrategy) fuzz(continueFuzzing chan struct{}, optionals
 
 	// TODO make this WAYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY smarter
 	// since we can only fuzz 64 optionals at max
+	// https://en.wikipedia.org/wiki/Steinhaus%E2%80%93Johnson%E2%80%93Trotter_algorithm
 	p := 0
 	maxSteps := int(math.Pow(2, float64(len(optionals))))
 
