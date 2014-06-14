@@ -12,11 +12,6 @@ import (
 	"github.com/zimmski/tavor/token/lists"
 )
 
-type optionalLookup struct {
-	token  token.OptionalToken
-	childs []optionalLookup
-}
-
 type PermuteOptionalsStrategy struct {
 	root token.Token
 
@@ -37,8 +32,8 @@ func init() {
 	})
 }
 
-func (s *PermuteOptionalsStrategy) findOptionals(r rand.Rand, root token.Token, fromChilds bool) ([]optionalLookup, map[token.ResetToken]struct{}) {
-	var optionals []optionalLookup
+func (s *PermuteOptionalsStrategy) findOptionals(r rand.Rand, root token.Token, fromChilds bool) ([]token.OptionalToken, map[token.ResetToken]struct{}) {
+	var optionals []token.OptionalToken
 	var queue = linkedlist.New()
 	var resets = make(map[token.ResetToken]struct{})
 
@@ -89,10 +84,7 @@ func (s *PermuteOptionalsStrategy) findOptionals(r rand.Rand, root token.Token, 
 
 			t.Deactivate()
 
-			optionals = append(optionals, optionalLookup{
-				token:  t,
-				childs: nil,
-			})
+			optionals = append(optionals, t)
 		case token.ForwardToken:
 			c := t.Get()
 
@@ -158,7 +150,7 @@ func (s *PermuteOptionalsStrategy) Fuzz(r rand.Rand) chan struct{} {
 	return continueFuzzing
 }
 
-func (s *PermuteOptionalsStrategy) fuzz(r rand.Rand, continueFuzzing chan struct{}, optionals []optionalLookup, resets map[token.ResetToken]struct{}) bool {
+func (s *PermuteOptionalsStrategy) fuzz(r rand.Rand, continueFuzzing chan struct{}, optionals []token.OptionalToken, resets map[token.ResetToken]struct{}) bool {
 	if tavor.DEBUG {
 		fmt.Printf("Fuzzing optionals %#v\n", optionals)
 	}
@@ -178,13 +170,11 @@ func (s *PermuteOptionalsStrategy) fuzz(r rand.Rand, continueFuzzing chan struct
 
 		for i := range optionals {
 			if p&ith == 0 {
-				optionals[i].token.Deactivate()
-				optionals[i].childs = nil
+				optionals[i].Deactivate()
 			} else {
-				optionals[i].token.Activate()
+				optionals[i].Activate()
 
-				var rets map[token.ResetToken]struct{}
-				optionals[i].childs, rets = s.findOptionals(r, optionals[i].token, true)
+				childs, rets := s.findOptionals(r, optionals[i], true)
 
 				if len(rets) != 0 {
 					for t := range rets {
@@ -192,8 +182,8 @@ func (s *PermuteOptionalsStrategy) fuzz(r rand.Rand, continueFuzzing chan struct
 					}
 				}
 
-				if len(optionals[i].childs) != 0 {
-					if !s.fuzz(r, continueFuzzing, optionals[i].childs, resets) {
+				if len(childs) != 0 {
+					if !s.fuzz(r, continueFuzzing, childs, resets) {
 						return false
 					}
 				}

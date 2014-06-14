@@ -32,11 +32,8 @@ func TestPermuteOptionalsfindOptionals(t *testing.T) {
 
 		optionals, _ := o.findOptionals(r, d, false)
 
-		Equal(t, optionals, []optionalLookup{
-			optionalLookup{
-				token:  b,
-				childs: nil,
-			},
+		Equal(t, optionals, []token.OptionalToken{
+			b,
 		})
 	}
 	{
@@ -47,32 +44,16 @@ func TestPermuteOptionalsfindOptionals(t *testing.T) {
 
 		optionals, _ := o.findOptionals(r, d, false)
 
-		Equal(t, optionals, []optionalLookup{
-			optionalLookup{
-				token:  d,
-				childs: nil,
-			},
+		Equal(t, optionals, []token.OptionalToken{
+			d,
 		})
 
-		for i := range optionals {
-			optionals[i].token.(token.OptionalToken).Activate()
-			optionals[i].childs, _ = o.findOptionals(r, optionals[i].token, true)
-		}
+		optionals[0].(token.OptionalToken).Activate()
+		childs, _ := o.findOptionals(r, optionals[0], true)
 
-		Equal(t, optionals, []optionalLookup{
-			optionalLookup{
-				token: d,
-				childs: []optionalLookup{
-					optionalLookup{
-						token:  a,
-						childs: nil,
-					},
-					optionalLookup{
-						token:  b,
-						childs: nil,
-					},
-				},
-			},
+		Equal(t, childs, []token.OptionalToken{
+			a,
+			b,
 		})
 	}
 	{
@@ -80,18 +61,15 @@ func TestPermuteOptionalsfindOptionals(t *testing.T) {
 
 		optionals, _ := o.findOptionals(r, a, false)
 
-		Equal(t, optionals, []optionalLookup{
-			optionalLookup{
-				token:  a,
-				childs: nil,
-			},
+		Equal(t, optionals, []token.OptionalToken{
+			a,
 		})
 
 		b := lists.NewRepeat(primitives.NewConstantInt(1), 1, 10)
 
 		optionals, _ = o.findOptionals(r, b, false)
 
-		var nilOpts []optionalLookup
+		var nilOpts []token.OptionalToken
 		Equal(t, optionals, nilOpts)
 	}
 }
