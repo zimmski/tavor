@@ -10,6 +10,7 @@ import (
 	"github.com/zimmski/tavor/token/constraints"
 	"github.com/zimmski/tavor/token/lists"
 	"github.com/zimmski/tavor/token/primitives"
+	"github.com/zimmski/tavor/token/sequences"
 )
 
 func TestPermuteOptionalsStrategyToBeStrategy(t *testing.T) {
@@ -19,6 +20,8 @@ func TestPermuteOptionalsStrategyToBeStrategy(t *testing.T) {
 }
 
 func TestPermuteOptionalsfindOptionals(t *testing.T) {
+	r := test.NewRandTest(1)
+
 	o := NewPermuteOptionalsStrategy(nil)
 
 	{
@@ -27,7 +30,7 @@ func TestPermuteOptionalsfindOptionals(t *testing.T) {
 		c := primitives.NewPointer(primitives.NewConstantInt(3))
 		d := lists.NewAll(a, b, c)
 
-		optionals := o.findOptionals(d, false)
+		optionals, _ := o.findOptionals(r, d, false)
 
 		Equal(t, optionals, []optionalLookup{
 			optionalLookup{
@@ -42,7 +45,7 @@ func TestPermuteOptionalsfindOptionals(t *testing.T) {
 		c := lists.NewAll(a, b)
 		d := constraints.NewOptional(c)
 
-		optionals := o.findOptionals(d, false)
+		optionals, _ := o.findOptionals(r, d, false)
 
 		Equal(t, optionals, []optionalLookup{
 			optionalLookup{
@@ -53,7 +56,7 @@ func TestPermuteOptionalsfindOptionals(t *testing.T) {
 
 		for i := range optionals {
 			optionals[i].token.(token.OptionalToken).Activate()
-			optionals[i].childs = o.findOptionals(optionals[i].token, true)
+			optionals[i].childs, _ = o.findOptionals(r, optionals[i].token, true)
 		}
 
 		Equal(t, optionals, []optionalLookup{
@@ -75,7 +78,7 @@ func TestPermuteOptionalsfindOptionals(t *testing.T) {
 	{
 		a := lists.NewRepeat(primitives.NewConstantInt(1), 0, 10)
 
-		optionals := o.findOptionals(a, false)
+		optionals, _ := o.findOptionals(r, a, false)
 
 		Equal(t, optionals, []optionalLookup{
 			optionalLookup{
@@ -86,7 +89,7 @@ func TestPermuteOptionalsfindOptionals(t *testing.T) {
 
 		b := lists.NewRepeat(primitives.NewConstantInt(1), 1, 10)
 
-		optionals = o.findOptionals(b, false)
+		optionals, _ = o.findOptionals(r, b, false)
 
 		var nilOpts []optionalLookup
 		Equal(t, optionals, nilOpts)
@@ -94,8 +97,6 @@ func TestPermuteOptionalsfindOptionals(t *testing.T) {
 }
 
 func TestPermuteOptionalsStrategy(t *testing.T) {
-	// this random generator will never be touched since
-	// this strategy is not bound to randomness
 	r := test.NewRandTest(1)
 
 	{
@@ -239,6 +240,40 @@ func TestPermuteOptionalsStrategy(t *testing.T) {
 			"1",
 			"2",
 			"12",
+		})
+	}
+	{
+		s := sequences.NewSequence(10, 2)
+
+		Equal(t, 10, s.Next())
+		Equal(t, 12, s.Next())
+
+		a := lists.NewAll(
+			constraints.NewOptional(primitives.NewConstantString("a")),
+			constraints.NewOptional(primitives.NewConstantString("b")),
+			s.ResetItem(),
+			s.Item(),
+			s.ExistingItem(),
+		)
+		b := lists.NewRepeat(a, 0, 10)
+
+		o := NewPermuteOptionalsStrategy(b)
+
+		var got []string
+
+		ch := o.Fuzz(r)
+		for i := range ch {
+			got = append(got, b.String())
+
+			ch <- i
+		}
+
+		Equal(t, got, []string{
+			"",
+			"1010",
+			"a1010",
+			"b1010",
+			"ab1010",
 		})
 	}
 }

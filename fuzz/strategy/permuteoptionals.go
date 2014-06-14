@@ -37,9 +37,10 @@ func init() {
 	})
 }
 
-func (s *PermuteOptionalsStrategy) findOptionals(root token.Token, fromChilds bool) []optionalLookup {
+func (s *PermuteOptionalsStrategy) findOptionals(r rand.Rand, root token.Token, fromChilds bool) ([]optionalLookup, map[token.ResetToken]struct{}) {
 	var optionals []optionalLookup
 	var queue = linkedlist.New()
+	var resets = make(map[token.ResetToken]struct{})
 
 	if fromChilds {
 		switch t := root.(type) {
@@ -61,12 +62,22 @@ func (s *PermuteOptionalsStrategy) findOptionals(root token.Token, fromChilds bo
 		tok, _ := queue.Shift()
 
 		switch t := tok.(type) {
+		case token.ResetToken:
+			resets[t] = struct{}{}
+		}
+
+		switch t := tok.(type) {
 		case token.OptionalToken:
 			if !t.IsOptional() {
-				opts := s.findOptionals(t, true)
+				opts, rets := s.findOptionals(r, t, true)
 
 				if len(opts) != 0 {
 					optionals = append(optionals, opts...)
+				}
+				if len(rets) != 0 {
+					for t := range rets {
+						resets[t] = struct{}{}
+					}
 				}
 
 				continue
@@ -83,18 +94,25 @@ func (s *PermuteOptionalsStrategy) findOptionals(root token.Token, fromChilds bo
 				childs: nil,
 			})
 		case token.ForwardToken:
-			queue.Push(t.Get())
+			c := t.Get()
+
+			c.Fuzz(r)
+
+			queue.Push(c)
 		case lists.List:
 			l := t.Len()
 
 			for i := 0; i < l; i++ {
 				c, _ := t.Get(i)
+
+				c.Fuzz(r)
+
 				queue.Push(c)
 			}
 		}
 	}
 
-	return optionals
+	return optionals, resets
 }
 
 func (s *PermuteOptionalsStrategy) Fuzz(r rand.Rand) chan struct{} {
@@ -105,16 +123,20 @@ func (s *PermuteOptionalsStrategy) Fuzz(r rand.Rand) chan struct{} {
 			fmt.Println("Start permute optionals routine")
 		}
 
-		optionals := s.findOptionals(s.root, false)
+		optionals, resets := s.findOptionals(r, s.root, false)
 
 		if len(optionals) != 0 {
-			if !s.fuzz(continueFuzzing, optionals) {
+			if !s.fuzz(r, continueFuzzing, optionals, resets) {
 				return
 			}
 		}
 
 		if tavor.DEBUG {
 			fmt.Println("Done with fuzzing step")
+		}
+
+		for t := range resets {
+			t.Reset()
 		}
 
 		// done with the last fuzzing step
@@ -136,7 +158,7 @@ func (s *PermuteOptionalsStrategy) Fuzz(r rand.Rand) chan struct{} {
 	return continueFuzzing
 }
 
-func (s *PermuteOptionalsStrategy) fuzz(continueFuzzing chan struct{}, optionals []optionalLookup) bool {
+func (s *PermuteOptionalsStrategy) fuzz(r rand.Rand, continueFuzzing chan struct{}, optionals []optionalLookup, resets map[token.ResetToken]struct{}) bool {
 	if tavor.DEBUG {
 		fmt.Printf("Fuzzing optionals %#v\n", optionals)
 	}
@@ -160,10 +182,18 @@ func (s *PermuteOptionalsStrategy) fuzz(continueFuzzing chan struct{}, optionals
 				optionals[i].childs = nil
 			} else {
 				optionals[i].token.Activate()
-				optionals[i].childs = s.findOptionals(optionals[i].token, true)
+
+				var rets map[token.ResetToken]struct{}
+				optionals[i].childs, rets = s.findOptionals(r, optionals[i].token, true)
+
+				if len(rets) != 0 {
+					for t := range rets {
+						resets[t] = struct{}{}
+					}
+				}
 
 				if len(optionals[i].childs) != 0 {
-					if !s.fuzz(continueFuzzing, optionals[i].childs) {
+					if !s.fuzz(r, continueFuzzing, optionals[i].childs, resets) {
 						return false
 					}
 				}
@@ -184,6 +214,10 @@ func (s *PermuteOptionalsStrategy) fuzz(continueFuzzing chan struct{}, optionals
 
 		if tavor.DEBUG {
 			fmt.Println("Done with fuzzing step")
+		}
+
+		for t := range resets {
+			t.Reset()
 		}
 
 		// done with this fuzzing step
