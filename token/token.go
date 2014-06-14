@@ -16,5 +16,14 @@ type Token interface {
 }
 
 type ForwardToken interface {
+	Token
+
 	Get() Token
+}
+
+type OptionalToken interface {
+	Token
+
+	Activate()
+	Deactivate()
 }

@@ -38,3 +38,19 @@ func TestOptional(t *testing.T) {
 
 	Equal(t, 2, o.Permutations())
 }
+
+func TestOptionalOptionalTokenInterface(t *testing.T) {
+	o := NewOptional(primitives.NewConstantInt(1))
+
+	var optionalTok *token.OptionalToken
+
+	Implements(t, optionalTok, o)
+
+	Equal(t, "1", o.String())
+
+	o.Deactivate()
+	Equal(t, "", o.String())
+
+	o.Activate()
+	Equal(t, "1", o.String())
+}

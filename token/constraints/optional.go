@@ -41,7 +41,7 @@ func (c *Optional) Get() token.Token {
 }
 
 func (c *Optional) Permutations() int {
-	return 2 * c.token.Permutations()
+	return 1 + c.token.Permutations()
 }
 
 func (c *Optional) String() string {
@@ -51,3 +51,7 @@ func (c *Optional) String() string {
 
 	return c.token.String()
 }
+
+// OptionalToken interface methods
+func (c *Optional) Activate()   { c.value = false }
+func (c *Optional) Deactivate() { c.value = true }
