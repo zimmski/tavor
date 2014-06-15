@@ -14,8 +14,6 @@ import (
 
 type PermuteOptionalsStrategy struct {
 	root token.Token
-
-	continueFuzzing chan struct{}
 }
 
 func NewPermuteOptionalsStrategy(tok token.Token) *PermuteOptionalsStrategy {

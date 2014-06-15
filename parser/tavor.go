@@ -23,11 +23,9 @@ import (
 	TODO
 
 	Token names can only consist of letters, digits and "_"
-
 	ShortAlternation = [123]
-
 	Allow forward usage of token attributes
-
+	Allow correct forward usage of ExistingSequenceItems
 */
 
 const zeroRune = 0
