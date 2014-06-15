@@ -29,8 +29,16 @@ func (e *FuncExpression) FuzzAll(r rand.Rand) {
 	e.Fuzz(r)
 }
 
+func (e *FuncExpression) Permutation(i int) error {
+	panic("Not implemented")
+}
+
 func (e *FuncExpression) Permutations() int {
 	return 1 // TODO this depends on the function
+}
+
+func (e *FuncExpression) PermutationsAll() int {
+	return e.Permutations()
 }
 
 func (e *FuncExpression) String() string {

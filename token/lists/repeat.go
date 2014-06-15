@@ -45,14 +45,9 @@ func (l *Repeat) Clone() token.Token {
 }
 
 func (l *Repeat) Fuzz(r rand.Rand) {
-	n := r.Intn(int(l.to-l.from+1)) + int(l.from)
-	toks := make([]token.Token, n)
+	i := r.Intn(int(l.to - l.from + 1))
 
-	for i := range toks {
-		toks[i] = l.token.Clone()
-	}
-
-	l.value = toks
+	l.permutation(i)
 }
 
 func (l *Repeat) FuzzAll(r rand.Rand) {
@@ -75,12 +70,44 @@ func (l *Repeat) Len() int {
 	return len(l.value)
 }
 
-func (l *Repeat) Permutations() int {
-	if l.from == 0 {
-		return int(l.to-l.from)*l.token.Permutations() + 1
+func (l *Repeat) permutation(i int) {
+	toks := make([]token.Token, i+int(l.from))
+
+	for i := range toks {
+		toks[i] = l.token.Clone()
 	}
 
-	return int(l.to-l.from+1) * l.token.Permutations()
+	l.value = toks
+}
+
+func (l *Repeat) Permutation(i int) error {
+	permutations := l.Permutations()
+
+	if i < 1 || i > permutations {
+		return &token.PermutationError{
+			Type: token.PermutationErrorIndexOutOfBound,
+		}
+	}
+
+	l.permutation(i - 1)
+
+	return nil
+}
+
+func (l *Repeat) Permutations() int {
+	if l.from == 0 {
+		return int(l.to-l.from) + 1
+	}
+
+	return int(l.to - l.from + 1)
+}
+
+func (l *Repeat) PermutationsAll() int {
+	if l.from == 0 {
+		return int(l.to-l.from)*l.token.PermutationsAll() + 1
+	}
+
+	return int(l.to-l.from+1) * l.token.PermutationsAll()
 }
 
 func (l *Repeat) String() string {

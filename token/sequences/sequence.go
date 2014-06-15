@@ -72,11 +72,13 @@ func (s *Sequence) ResetItem() *sequenceResetItem {
 }
 
 // Sequence is an unusable token
-func (s *Sequence) Clone() token.Token  { panic("unusable token") }
-func (s *Sequence) Fuzz(r rand.Rand)    { panic("unusable token") }
-func (s *Sequence) FuzzAll(r rand.Rand) { panic("unusable token") }
-func (s *Sequence) Permutations() int   { panic("unusable token") }
-func (s *Sequence) String() string      { panic("unusable token") }
+func (s *Sequence) Clone() token.Token      { panic("unusable token") }
+func (s *Sequence) Fuzz(r rand.Rand)        { panic("unusable token") }
+func (s *Sequence) FuzzAll(r rand.Rand)     { panic("unusable token") }
+func (s *Sequence) Permutation(i int) error { panic("unusable token") }
+func (s *Sequence) Permutations() int       { panic("unusable token") }
+func (s *Sequence) PermutationsAll() int    { panic("unusable token") }
+func (s *Sequence) String() string          { panic("unusable token") }
 
 type sequenceItem struct {
 	sequence *Sequence
@@ -91,15 +93,37 @@ func (s *sequenceItem) Clone() token.Token {
 }
 
 func (s *sequenceItem) Fuzz(r rand.Rand) {
-	s.value = s.sequence.Next()
+	s.permutation(0)
 }
 
 func (s *sequenceItem) FuzzAll(r rand.Rand) {
 	s.Fuzz(r)
 }
 
+func (s *sequenceItem) permutation(i int) {
+	s.value = s.sequence.Next()
+}
+
+func (s *sequenceItem) Permutation(i int) error {
+	permutations := s.Permutations()
+
+	if i < 1 || i > permutations {
+		return &token.PermutationError{
+			Type: token.PermutationErrorIndexOutOfBound,
+		}
+	}
+
+	s.permutation(i - 1)
+
+	return nil
+}
+
 func (s *sequenceItem) Permutations() int {
 	return 1
+}
+
+func (s *sequenceItem) PermutationsAll() int {
+	return s.Permutations()
 }
 
 func (s *sequenceItem) String() string {
@@ -119,15 +143,37 @@ func (s *sequenceExistingItem) Clone() token.Token {
 }
 
 func (s *sequenceExistingItem) Fuzz(r rand.Rand) {
-	s.value = s.sequence.existing(r)
+	s.permutation(r)
 }
 
 func (s *sequenceExistingItem) FuzzAll(r rand.Rand) {
 	s.Fuzz(r)
 }
 
+func (s *sequenceExistingItem) permutation(r rand.Rand) {
+	s.value = s.sequence.existing(r)
+}
+
+func (s *sequenceExistingItem) Permutation(i int) error {
+	permutations := s.Permutations()
+
+	if i < 1 || i > permutations {
+		return &token.PermutationError{
+			Type: token.PermutationErrorIndexOutOfBound,
+		}
+	}
+
+	s.permutation(rand.NewConstantRand(0))
+
+	return nil
+}
+
 func (s *sequenceExistingItem) Permutations() int {
 	return 1
+}
+
+func (s *sequenceExistingItem) PermutationsAll() int {
+	return s.Permutations()
 }
 
 func (s *sequenceExistingItem) String() string {
@@ -145,15 +191,37 @@ func (s *sequenceResetItem) Clone() token.Token {
 }
 
 func (s *sequenceResetItem) Fuzz(r rand.Rand) {
-	s.sequence.Reset()
+	s.permutation(0)
 }
 
 func (s *sequenceResetItem) FuzzAll(r rand.Rand) {
 	s.Fuzz(r)
 }
 
+func (s *sequenceResetItem) permutation(i int) {
+	s.sequence.Reset()
+}
+
+func (s *sequenceResetItem) Permutation(i int) error {
+	permutations := s.Permutations()
+
+	if i < 1 || i > permutations {
+		return &token.PermutationError{
+			Type: token.PermutationErrorIndexOutOfBound,
+		}
+	}
+
+	s.permutation(i - 1)
+
+	return nil
+}
+
 func (s *sequenceResetItem) Permutations() int {
 	return 1
+}
+
+func (s *sequenceResetItem) PermutationsAll() int {
+	return s.Permutations()
 }
 
 func (s *sequenceResetItem) String() string {

@@ -23,6 +23,10 @@ func TestAll(t *testing.T) {
 	Equal(t, "10abc", o.String())
 	Equal(t, 2, o.Len())
 	Equal(t, 1, o.Permutations())
+	Equal(t, 1, o.PermutationsAll())
+
+	Nil(t, o.Permutation(1))
+	Equal(t, "10abc", o.String())
 
 	i, err := o.Get(0)
 	Nil(t, err)
@@ -43,7 +47,11 @@ func TestAll(t *testing.T) {
 	o = NewAll(a, b, c)
 	Equal(t, "10abc1", o.String())
 	Equal(t, 3, o.Len())
-	Equal(t, 2, o.Permutations())
+	Equal(t, 1, o.Permutations())
+	Equal(t, 2, o.PermutationsAll())
+
+	Nil(t, o.Permutation(1))
+	Equal(t, "10abc1", o.String())
 
 	o.FuzzAll(r)
 	Equal(t, "10abc2", o.String())

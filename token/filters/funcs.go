@@ -42,8 +42,16 @@ func (f *FuncFilter) FuzzAll(r rand.Rand) {
 	f.Fuzz(r)
 }
 
+func (f *FuncFilter) Permutation(i int) error {
+	panic("Not implemented")
+}
+
 func (f *FuncFilter) Permutations() int {
 	return 1 // TODO this depends on the function
+}
+
+func (f *FuncFilter) PermutationsAll() int {
+	return f.Permutations()
 }
 
 func (f *FuncFilter) String() string {

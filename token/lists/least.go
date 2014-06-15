@@ -73,7 +73,15 @@ func (l *Least) Len() int {
 	return len(l.value)
 }
 
+func (l *Least) Permutation(i int) error {
+	panic("TODO not implemented")
+}
+
 func (l *Least) Permutations() int {
+	panic("TODO this might be hard to fit in 64bit")
+}
+
+func (l *Least) PermutationsAll() int {
 	panic("TODO this might be hard to fit in 64bit")
 }
 

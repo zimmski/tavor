@@ -25,7 +25,7 @@ func (c *Optional) Clone() token.Token {
 }
 
 func (c *Optional) Fuzz(r rand.Rand) {
-	c.value = r.Int()%2 == 0
+	c.permutation(r.Int() % 2)
 }
 
 func (c *Optional) FuzzAll(r rand.Rand) {
@@ -40,8 +40,30 @@ func (c *Optional) Get() token.Token {
 	return c.token
 }
 
+func (c *Optional) permutation(i int) {
+	c.value = i == 0
+}
+
+func (c *Optional) Permutation(i int) error {
+	permutations := c.Permutations()
+
+	if i < 1 || i > permutations {
+		return &token.PermutationError{
+			Type: token.PermutationErrorIndexOutOfBound,
+		}
+	}
+
+	c.permutation(i - 1)
+
+	return nil
+}
+
 func (c *Optional) Permutations() int {
-	return 1 + c.token.Permutations()
+	return 2
+}
+
+func (c *Optional) PermutationsAll() int {
+	return 1 + c.token.PermutationsAll()
 }
 
 func (c *Optional) String() string {

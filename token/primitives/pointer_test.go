@@ -44,6 +44,11 @@ func TestPointer(t *testing.T) {
 	// second cloned token
 	Equal(t, "7", o2.String())
 
+	Nil(t, o.Permutation(1))
+	Equal(t, "6", o.String())
+
+	Equal(t, o.Permutation(2).(*token.PermutationError).Type, token.PermutationErrorIndexOutOfBound)
+
 	// empty pointers should have a nil token
 	{
 		var tok *token.Token

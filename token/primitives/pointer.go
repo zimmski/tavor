@@ -2,9 +2,10 @@ package primitives
 
 import (
 	"fmt"
+	"reflect"
+
 	"github.com/zimmski/tavor/rand"
 	"github.com/zimmski/tavor/token"
-	"reflect"
 )
 
 type Pointer struct {
@@ -60,8 +61,26 @@ func (p *Pointer) Get() token.Token {
 	return p.tok
 }
 
+func (p *Pointer) Permutation(i int) error {
+	permutations := p.Permutations()
+
+	if i < 1 || i > permutations {
+		return &token.PermutationError{
+			Type: token.PermutationErrorIndexOutOfBound,
+		}
+	}
+
+	// do nothing
+
+	return nil
+}
+
 func (p *Pointer) Permutations() int {
 	return 1 // TODO this could run forever if there is a loop so just return 1 for now
+}
+
+func (p *Pointer) PermutationsAll() int {
+	return p.Permutations()
 }
 
 func (p *Pointer) Set(o token.Token) error {

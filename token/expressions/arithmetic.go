@@ -53,8 +53,25 @@ func (e *AddArithmetic) Len() int {
 	return 2
 }
 
+func (e *AddArithmetic) Permutation(i int) error {
+	permutations := e.Permutations()
+
+	if i < 1 || i > permutations {
+		return &token.PermutationError{
+			Type: token.PermutationErrorIndexOutOfBound,
+		}
+	}
+	// do nothing
+
+	return nil
+}
+
 func (e *AddArithmetic) Permutations() int {
-	return e.a.Permutations() * e.b.Permutations()
+	return 1
+}
+
+func (e *AddArithmetic) PermutationsAll() int {
+	return e.a.PermutationsAll() * e.b.PermutationsAll()
 }
 
 func (e *AddArithmetic) String() string {
@@ -115,8 +132,25 @@ func (e *SubArithmetic) Len() int {
 	return 2
 }
 
+func (e *SubArithmetic) Permutation(i int) error {
+	permutations := e.Permutations()
+
+	if i < 1 || i > permutations {
+		return &token.PermutationError{
+			Type: token.PermutationErrorIndexOutOfBound,
+		}
+	}
+	// do nothing
+
+	return nil
+}
+
 func (e *SubArithmetic) Permutations() int {
-	return e.a.Permutations() * e.b.Permutations()
+	return 1
+}
+
+func (e *SubArithmetic) PermutationsAll() int {
+	return e.a.PermutationsAll() * e.b.PermutationsAll()
 }
 
 func (e *SubArithmetic) String() string {
@@ -177,8 +211,25 @@ func (e *MulArithmetic) Len() int {
 	return 2
 }
 
+func (e *MulArithmetic) Permutation(i int) error {
+	permutations := e.Permutations()
+
+	if i < 1 || i > permutations {
+		return &token.PermutationError{
+			Type: token.PermutationErrorIndexOutOfBound,
+		}
+	}
+	// do nothing
+
+	return nil
+}
+
 func (e *MulArithmetic) Permutations() int {
-	return e.a.Permutations() * e.b.Permutations()
+	return 1
+}
+
+func (e *MulArithmetic) PermutationsAll() int {
+	return e.a.PermutationsAll() * e.b.PermutationsAll()
 }
 
 func (e *MulArithmetic) String() string {
@@ -239,8 +290,25 @@ func (e *DivArithmetic) Len() int {
 	return 2
 }
 
+func (e *DivArithmetic) Permutation(i int) error {
+	permutations := e.Permutations()
+
+	if i < 1 || i > permutations {
+		return &token.PermutationError{
+			Type: token.PermutationErrorIndexOutOfBound,
+		}
+	}
+	// do nothing
+
+	return nil
+}
+
 func (e *DivArithmetic) Permutations() int {
-	return e.a.Permutations() * e.b.Permutations()
+	return 1
+}
+
+func (e *DivArithmetic) PermutationsAll() int {
+	return e.a.PermutationsAll() * e.b.PermutationsAll()
 }
 
 func (e *DivArithmetic) String() string {

@@ -57,11 +57,29 @@ func (l *All) Len() int {
 	return len(l.tokens)
 }
 
+func (l *All) Permutation(i int) error {
+	permutations := l.Permutations()
+
+	if i < 1 || i > permutations {
+		return &token.PermutationError{
+			Type: token.PermutationErrorIndexOutOfBound,
+		}
+	}
+
+	// do nothing
+
+	return nil
+}
+
 func (l *All) Permutations() int {
+	return 1
+}
+
+func (l *All) PermutationsAll() int {
 	sum := 1
 
 	for _, tok := range l.tokens {
-		sum *= tok.Permutations()
+		sum *= tok.PermutationsAll()
 	}
 
 	return sum

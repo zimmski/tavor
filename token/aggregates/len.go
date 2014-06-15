@@ -32,8 +32,26 @@ func (a *Len) FuzzAll(r rand.Rand) {
 	a.Fuzz(r)
 }
 
+func (a *Len) Permutation(i int) error {
+	permutations := a.Permutations()
+
+	if i < 1 || i > permutations {
+		return &token.PermutationError{
+			Type: token.PermutationErrorIndexOutOfBound,
+		}
+	}
+
+	// do nothing
+
+	return nil
+}
+
 func (a *Len) Permutations() int {
 	return 1
+}
+
+func (a *Len) PermutationsAll() int {
+	return a.Permutations()
 }
 
 func (a *Len) String() string {

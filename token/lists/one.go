@@ -37,7 +37,7 @@ func (l *One) Clone() token.Token {
 func (l *One) Fuzz(r rand.Rand) {
 	i := r.Intn(len(l.tokens))
 
-	l.value = l.tokens[i]
+	l.permutation(i)
 }
 
 func (l *One) FuzzAll(r rand.Rand) {
@@ -58,11 +58,33 @@ func (l *One) Len() int {
 	return 1
 }
 
+func (l *One) permutation(i int) {
+	l.value = l.tokens[i]
+}
+
+func (l *One) Permutation(i int) error {
+	permutations := l.Permutations()
+
+	if i < 1 || i > permutations {
+		return &token.PermutationError{
+			Type: token.PermutationErrorIndexOutOfBound,
+		}
+	}
+
+	l.permutation(i - 1)
+
+	return nil
+}
+
 func (l *One) Permutations() int {
+	return len(l.tokens)
+}
+
+func (l *One) PermutationsAll() int {
 	sum := 0
 
 	for _, tok := range l.tokens {
-		sum += tok.Permutations()
+		sum += tok.PermutationsAll()
 	}
 
 	return sum

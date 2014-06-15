@@ -31,8 +31,26 @@ func (p *ConstantInt) FuzzAll(r rand.Rand) {
 	p.Fuzz(r)
 }
 
+func (p *ConstantInt) Permutation(i int) error {
+	permutations := p.Permutations()
+
+	if i < 1 || i > permutations {
+		return &token.PermutationError{
+			Type: token.PermutationErrorIndexOutOfBound,
+		}
+	}
+
+	// do nothing
+
+	return nil
+}
+
 func (p *ConstantInt) Permutations() int {
 	return 1
+}
+
+func (p *ConstantInt) PermutationsAll() int {
+	return p.Permutations()
 }
 
 func (p *ConstantInt) String() string {
@@ -63,8 +81,27 @@ func (p *RandomInt) FuzzAll(r rand.Rand) {
 	p.Fuzz(r)
 }
 
+func (p *RandomInt) Permutation(i int) error {
+	permutations := p.Permutations()
+
+	if i < 1 || i > permutations {
+		return &token.PermutationError{
+			Type: token.PermutationErrorIndexOutOfBound,
+		}
+	}
+
+	// TODO this could be done MUCH better
+	p.value = 0
+
+	return nil
+}
+
 func (p *RandomInt) Permutations() int {
 	return 1 // TODO maybe this should be like RangeInt
+}
+
+func (p *RandomInt) PermutationsAll() int {
+	return p.Permutations()
 }
 
 func (p *RandomInt) String() string {
@@ -95,17 +132,39 @@ func (p *RangeInt) Clone() token.Token {
 }
 
 func (p *RangeInt) Fuzz(r rand.Rand) {
-	ri := r.Intn(p.Permutations())
+	i := r.Intn(p.Permutations())
 
-	p.value = p.from + ri
+	p.permutation(i)
 }
 
 func (p *RangeInt) FuzzAll(r rand.Rand) {
 	p.Fuzz(r)
 }
 
+func (p *RangeInt) permutation(i int) {
+	p.value = p.from + i
+}
+
+func (p *RangeInt) Permutation(i int) error {
+	permutations := p.Permutations()
+
+	if i < 1 || i > permutations {
+		return &token.PermutationError{
+			Type: token.PermutationErrorIndexOutOfBound,
+		}
+	}
+
+	p.permutation(i - 1)
+
+	return nil
+}
+
 func (p *RangeInt) Permutations() int {
 	return p.to - p.from + 1
+}
+
+func (p *RangeInt) PermutationsAll() int {
+	return p.Permutations()
 }
 
 func (p *RangeInt) String() string {

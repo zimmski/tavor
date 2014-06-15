@@ -83,7 +83,15 @@ func (l *Many) Len() int {
 	return len(l.value)
 }
 
+func (l *Many) Permutation(i int) error {
+	panic("TODO not implemented")
+}
+
 func (l *Many) Permutations() int {
+	panic("TODO make this precise")
+}
+
+func (l *Many) PermutationsAll() int {
 	panic("TODO make this precise")
 }
 

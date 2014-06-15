@@ -47,4 +47,9 @@ func TestConstantInt(t *testing.T) {
 	Equal(t, o.String(), o2.String())
 
 	Equal(t, 1, o.Permutations())
+
+	Nil(t, o.Permutation(1))
+	Equal(t, "5", o.String())
+
+	Equal(t, o.Permutation(2).(*token.PermutationError).Type, token.PermutationErrorIndexOutOfBound)
 }

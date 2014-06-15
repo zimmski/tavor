@@ -127,7 +127,7 @@ func main() {
 	}
 
 	if opts.Verbose {
-		V("Counted %d overall permutations", doc.Permutations())
+		V("Counted %d overall permutations", doc.PermutationsAll())
 	}
 
 	r := rand.New(rand.NewSource(opts.Seed))

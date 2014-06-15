@@ -42,14 +42,9 @@ func (l *Most) Clone() token.Token {
 }
 
 func (l *Most) Fuzz(r rand.Rand) {
-	n := r.Intn(int(l.n) + 1)
-	toks := make([]token.Token, n)
+	i := r.Intn(int(l.n) + 1)
 
-	for i := range toks {
-		toks[i] = l.token.Clone()
-	}
-
-	l.value = toks
+	l.permutation(i)
 }
 
 func (l *Most) FuzzAll(r rand.Rand) {
@@ -72,8 +67,36 @@ func (l *Most) Len() int {
 	return len(l.value)
 }
 
+func (l *Most) permutation(i int) {
+	toks := make([]token.Token, i)
+
+	for i := range toks {
+		toks[i] = l.token.Clone()
+	}
+
+	l.value = toks
+}
+
+func (l *Most) Permutation(i int) error {
+	permutations := l.Permutations()
+
+	if i < 1 || i > permutations {
+		return &token.PermutationError{
+			Type: token.PermutationErrorIndexOutOfBound,
+		}
+	}
+
+	l.permutation(i - 1)
+
+	return nil
+}
+
 func (l *Most) Permutations() int {
-	return int(l.n)*l.token.Permutations() + 1
+	return int(l.n) + 1
+}
+
+func (l *Most) PermutationsAll() int {
+	return int(l.n)*l.token.PermutationsAll() + 1
 }
 
 func (l *Most) String() string {

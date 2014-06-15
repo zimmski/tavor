@@ -6,6 +6,7 @@ import (
 	. "github.com/stretchr/testify/assert"
 
 	"github.com/zimmski/tavor/test"
+	"github.com/zimmski/tavor/token"
 	"github.com/zimmski/tavor/token/primitives"
 )
 
@@ -22,6 +23,16 @@ func TestMost(t *testing.T) {
 	Equal(t, "aaaaa", o.String())
 	Equal(t, 5, o.Len())
 	Equal(t, 6, o.Permutations())
+	Equal(t, 6, o.PermutationsAll())
+
+	Nil(t, o.Permutation(1))
+	Equal(t, "", o.String())
+	Nil(t, o.Permutation(2))
+	Equal(t, "a", o.String())
+	Nil(t, o.Permutation(3))
+	Equal(t, "aa", o.String())
+
+	Equal(t, o.Permutation(7).(*token.PermutationError).Type, token.PermutationErrorIndexOutOfBound)
 
 	i, err := o.Get(0)
 	Nil(t, err)
@@ -39,7 +50,17 @@ func TestMost(t *testing.T) {
 	o = NewMost(b, 4)
 	Equal(t, "1111", o.String())
 	Equal(t, 4, o.Len())
-	Equal(t, 13, o.Permutations())
+	Equal(t, 5, o.Permutations())
+	Equal(t, 13, o.PermutationsAll())
+
+	Nil(t, o.Permutation(1))
+	Equal(t, "", o.String())
+	Nil(t, o.Permutation(2))
+	Equal(t, "1", o.String())
+	Nil(t, o.Permutation(3))
+	Equal(t, "11", o.String())
+
+	Equal(t, o.Permutation(6).(*token.PermutationError).Type, token.PermutationErrorIndexOutOfBound)
 
 	r.Seed(2)
 	o.FuzzAll(r)
