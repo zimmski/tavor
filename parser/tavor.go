@@ -91,13 +91,11 @@ func (p *tavorParser) parseGlobalScope() error {
 			}
 
 			continue
-		case scanner.Int:
+		default:
 			return &ParserError{
-				Message: "Token names have to start with a letter",
+				Message: fmt.Sprintf("Token names have to start with a letter and not with %s", scanner.TokenString(c)),
 				Type:    ParseErrorInvalidTokenName,
 			}
-		default:
-			panic("what am i to do now") // TODO remove this
 		}
 
 		c = p.scan.Scan()

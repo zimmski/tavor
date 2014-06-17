@@ -50,6 +50,10 @@ func TestTavorParseErrors(t *testing.T) {
 	Equal(t, ParseErrorInvalidTokenName, err.(*ParserError).Type)
 	Nil(t, tok)
 
+	tok, err = ParseTavor(strings.NewReader("+0,2(1)\n"))
+	Equal(t, ParseErrorInvalidTokenName, err.(*ParserError).Type)
+	Nil(t, tok)
+
 	// unused token
 	tok, err = ParseTavor(strings.NewReader("START = 123\nNumber = 123\n"))
 	Equal(t, ParseErrorUnusedToken, err.(*ParserError).Type)
