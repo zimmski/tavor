@@ -1,4 +1,4 @@
-.PHONY: fmt install lint
+.PHONY: binaries clean fmt install lint test tools
 
 binaries:
 	go install -race $(GOPATH)/src/github.com/zimmski/tavor/bin/tavor.go
@@ -17,4 +17,3 @@ tools:
 	go get code.google.com/p/go.tools/cmd/godoc
 	go get -u code.google.com/p/go.tools/cmd/vet
 	go get -u github.com/golang/lint
-
