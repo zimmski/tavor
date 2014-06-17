@@ -121,6 +121,7 @@ func (l *Repeat) String() string {
 }
 
 // OptionalToken interface methods
+
 func (l *Repeat) IsOptional() bool { return l.from == 0 }
 func (l *Repeat) Activate() {
 	if l.from != 0 {

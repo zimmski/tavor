@@ -96,6 +96,7 @@ func (l *Least) String() string {
 }
 
 // OptionalToken interface methods
+
 func (l *Least) IsOptional() bool { return l.n == 0 }
 func (l *Least) Activate() {
 	if l.n != 0 {

@@ -72,6 +72,7 @@ func (s *Sequence) ResetItem() *sequenceResetItem {
 }
 
 // Sequence is an unusable token
+
 func (s *Sequence) Clone() token.Token      { panic("unusable token") }
 func (s *Sequence) Fuzz(r rand.Rand)        { panic("unusable token") }
 func (s *Sequence) FuzzAll(r rand.Rand)     { panic("unusable token") }

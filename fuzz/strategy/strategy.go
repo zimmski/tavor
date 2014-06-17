@@ -15,11 +15,12 @@ type Strategy interface {
 var strategies = make(map[string]func(tok token.Token) Strategy)
 
 func New(name string, tok token.Token) (Strategy, error) {
-	if strat, ok := strategies[name]; ok {
-		return strat(tok), nil
-	} else {
-		return nil, fmt.Errorf("Unknown fuzzing strategy \"%s\"", name)
+	strat, ok := strategies[name]
+	if !ok {
+		return nil, fmt.Errorf("unknown fuzzing strategy \"%s\"", name)
 	}
+
+	return strat(tok), nil
 }
 
 func List() []string {
@@ -36,11 +37,11 @@ func List() []string {
 
 func Register(name string, strat func(tok token.Token) Strategy) {
 	if strat == nil {
-		panic("Register fuzzing strategy is nil")
+		panic("register fuzzing strategy is nil")
 	}
 
 	if _, ok := strategies[name]; ok {
-		panic("Fuzzing strategy " + name + " already registered")
+		panic("fuzzing strategy " + name + " already registered")
 	}
 
 	strategies[name] = strat

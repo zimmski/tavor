@@ -45,7 +45,9 @@ func (e *AddArithmetic) Get(i int) (token.Token, error) {
 	case 1:
 		return e.b, nil
 	default:
-		return nil, &lists.ListError{lists.ListErrorOutOfBound}
+		return nil, &lists.ListError{
+			Type: lists.ListErrorOutOfBound,
+		}
 	}
 }
 
@@ -124,7 +126,9 @@ func (e *SubArithmetic) Get(i int) (token.Token, error) {
 	case 1:
 		return e.b, nil
 	default:
-		return nil, &lists.ListError{lists.ListErrorOutOfBound}
+		return nil, &lists.ListError{
+			Type: lists.ListErrorOutOfBound,
+		}
 	}
 }
 
@@ -203,7 +207,9 @@ func (e *MulArithmetic) Get(i int) (token.Token, error) {
 	case 1:
 		return e.b, nil
 	default:
-		return nil, &lists.ListError{lists.ListErrorOutOfBound}
+		return nil, &lists.ListError{
+			Type: lists.ListErrorOutOfBound,
+		}
 	}
 }
 
@@ -282,7 +288,9 @@ func (e *DivArithmetic) Get(i int) (token.Token, error) {
 	case 1:
 		return e.b, nil
 	default:
-		return nil, &lists.ListError{lists.ListErrorOutOfBound}
+		return nil, &lists.ListError{
+			Type: lists.ListErrorOutOfBound,
+		}
 	}
 }
 

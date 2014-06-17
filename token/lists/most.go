@@ -110,6 +110,7 @@ func (l *Most) String() string {
 }
 
 // OptionalToken interface methods
+
 func (l *Most) IsOptional() bool { return true }
 func (l *Most) Activate() {
 	l.value = []token.Token{
