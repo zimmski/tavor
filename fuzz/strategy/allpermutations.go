@@ -19,11 +19,15 @@ type allPermutationsLevel struct {
 
 type AllPermutationsStrategy struct {
 	root token.Token
+
+	resetedLookup map[token.Token]int
 }
 
 func NewAllPermutationsStrategy(tok token.Token) *AllPermutationsStrategy {
 	s := &AllPermutationsStrategy{
 		root: tok,
+
+		resetedLookup: make(map[token.Token]int),
 	}
 
 	return s
@@ -65,7 +69,7 @@ func (s *AllPermutationsStrategy) getLevel(root token.Token, fromChilds bool) ([
 			resets[t] = struct{}{}
 		}
 
-		tok.Permutation(1)
+		s.setTokenPermutation(tok, 1)
 
 		level = append(level, allPermutationsLevel{
 			token:           tok,
@@ -101,10 +105,6 @@ func (s *AllPermutationsStrategy) Fuzz(r rand.Rand) chan struct{} {
 			fmt.Println("Done with fuzzing step")
 		}
 
-		for t := range resets {
-			t.Reset()
-		}
-
 		// done with the last fuzzing step
 		continueFuzzing <- struct{}{}
 
@@ -113,6 +113,11 @@ func (s *AllPermutationsStrategy) Fuzz(r rand.Rand) chan struct{} {
 		}
 
 		if _, ok := <-continueFuzzing; ok {
+			for t := range resets {
+				fmt.Printf("Reset %#v\n", t)
+				t.Reset()
+			}
+
 			if tavor.DEBUG {
 				fmt.Println("Close fuzzing channel")
 			}
@@ -122,6 +127,16 @@ func (s *AllPermutationsStrategy) Fuzz(r rand.Rand) chan struct{} {
 	}()
 
 	return continueFuzzing
+}
+
+func (s *AllPermutationsStrategy) setTokenPermutation(tok token.Token, permutation int) {
+	if per, ok := s.resetedLookup[tok]; ok && per == permutation {
+		// Permutation already set in this step
+	} else {
+		tok.Permutation(permutation)
+
+		s.resetedLookup[tok] = permutation
+	}
 }
 
 func (s *AllPermutationsStrategy) fuzz(continueFuzzing chan struct{}, level []allPermutationsLevel, resets map[token.ResetToken]struct{}) bool {
@@ -141,13 +156,13 @@ STEP:
 					}
 
 					level[i+1].permutation++
-					level[i+1].token.Permutation(level[i+1].permutation)
+					s.setTokenPermutation(level[i+1].token, level[i+1].permutation)
 					s.getLevel(level[i+1].token, true) // set all children to permutation 1
 				}
 
 				for k := 0; k <= i; k++ {
 					level[k].permutation = 1
-					level[k].token.Permutation(1)
+					s.setTokenPermutation(level[k].token, 1)
 					s.getLevel(level[k].token, true) // set all children to permutation 1
 				}
 
@@ -158,7 +173,7 @@ STEP:
 				fmt.Printf("Permute %d->%#v\n", i, level[i])
 			}
 
-			level[i].token.Permutation(level[i].permutation)
+			s.setTokenPermutation(level[i].token, level[i].permutation)
 
 			if t, ok := level[i].token.(token.OptionalToken); !ok || !t.IsOptional() || level[i].permutation != 1 {
 				childs, rets := s.getLevel(level[i].token, true) // set all children to permutation 1
@@ -203,10 +218,6 @@ STEP:
 			fmt.Println("Done with fuzzing step")
 		}
 
-		for t := range resets {
-			t.Reset()
-		}
-
 		// done with this fuzzing step
 		continueFuzzing <- struct{}{}
 
@@ -221,6 +232,16 @@ STEP:
 
 		if tavor.DEBUG {
 			fmt.Println("Start fuzzing step")
+		}
+
+		s.resetedLookup = make(map[token.Token]int)
+
+		for t := range resets {
+			if tavor.DEBUG {
+				fmt.Printf("Reset %#v\n", t)
+			}
+
+			t.Reset()
 		}
 	}
 
