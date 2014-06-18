@@ -62,6 +62,8 @@ func (p *Pointer) Get() token.Token {
 }
 
 func (p *Pointer) Permutation(i int) error {
+	p.cloneOnFirstUse()
+
 	permutations := p.Permutations()
 
 	if i < 1 || i > permutations {
@@ -76,10 +78,14 @@ func (p *Pointer) Permutation(i int) error {
 }
 
 func (p *Pointer) Permutations() int {
+	p.cloneOnFirstUse()
+
 	return 1
 }
 
 func (p *Pointer) PermutationsAll() int {
+	p.cloneOnFirstUse()
+
 	return p.tok.PermutationsAll()
 }
 

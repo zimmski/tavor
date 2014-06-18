@@ -114,7 +114,10 @@ func (s *AllPermutationsStrategy) Fuzz(r rand.Rand) chan struct{} {
 
 		if _, ok := <-continueFuzzing; ok {
 			for t := range resets {
-				fmt.Printf("Reset %#v\n", t)
+				if tavor.DEBUG {
+					fmt.Printf("Reset %#v\n", t)
+				}
+
 				t.Reset()
 			}
 

@@ -383,4 +383,36 @@ func TestAllPermutationsStrategy(t *testing.T) {
 			"2 3 3",
 		})
 	}
+	{
+		// Correct list pointer behaviour
+
+		o, err := parser.ParseTavor(strings.NewReader(`
+			$Id = type: Sequence,
+				start: 2,
+				step: 2
+
+			Inputs = *(Input)
+			Input = $Id.Next
+
+			START = $Id.Reset Inputs
+		`))
+		Nil(t, err)
+
+		s := NewAllPermutationsStrategy(o)
+
+		var got []string
+
+		ch := s.Fuzz(r)
+		for i := range ch {
+			got = append(got, o.String())
+
+			ch <- i
+		}
+
+		Equal(t, got, []string{
+			"",
+			"2",
+			"24",
+		})
+	}
 }
