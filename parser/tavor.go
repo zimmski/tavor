@@ -133,6 +133,47 @@ OUT:
 			embeddedToks[n] = struct{}{}
 			p.used[n] = struct{}{}
 
+			/*
+
+				THIS IS A TERRIBLE HACK THIS SHOULD BE REMOVED ASAP
+
+				but let me explain
+
+				B = 1 | 2
+				A = B B
+
+				This should result in 4 permutations 11 21 12 and 22
+				but without this condition this would result in only
+				11s and 22s. The clone alone would be fine but this
+				leads to more problems if the clone is not saved back
+				into the lookup.
+
+				For example
+
+				Bs = +(1)
+				A = $Bs.Count Bs
+
+				would not work without saving back.
+
+				But what if somebody writes
+
+				Cs = +(1)
+				B = $Cs.Count Cs
+				A = +(B)
+
+				or even
+
+				Cs = +(1)
+				B = $Cs.Count Cs
+				A = $Cs.Count +(B)
+
+				So TODO and FIXME all over this
+
+			*/
+			if _, ok := p.lookup[n].(*primitives.Pointer); !ok {
+				p.lookup[n] = p.lookup[n].Clone()
+			}
+
 			tokens = append(tokens, p.lookup[n])
 		case scanner.Int:
 			v, _ := strconv.Atoi(p.scan.TokenText())

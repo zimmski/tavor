@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 
@@ -739,4 +740,24 @@ func TestTavorParserAndCuriousCaseOfFuzzing(t *testing.T) {
 	))
 	Nil(t, err)
 	Equal(t, tok.(*primitives.Pointer).Get(), primitives.NewConstantInt(123))
+
+	// Tokens should be cloned so they are different internally
+	{
+		tok, err = ParseTavor(strings.NewReader(
+			"Token = 1 | 2\nSTART = Token Token\n",
+		))
+		Nil(t, err)
+		Equal(t, tok, lists.NewAll(
+			lists.NewOne(primitives.NewConstantInt(1), primitives.NewConstantInt(2)),
+			lists.NewOne(primitives.NewConstantInt(1), primitives.NewConstantInt(2)),
+		))
+
+		va, _ := tok.(lists.List).Get(0)
+		a := va.(*lists.One)
+		vb, _ := tok.(lists.List).Get(1)
+		b := vb.(*lists.One)
+
+		True(t, Exactly(t, a, b))
+		NotEqual(t, fmt.Sprintf("%p", a), fmt.Sprintf("%p", b))
+	}
 }

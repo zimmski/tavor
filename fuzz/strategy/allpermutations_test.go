@@ -1,10 +1,12 @@
 package strategy
 
 import (
+	"strings"
 	"testing"
 
 	. "github.com/stretchr/testify/assert"
 
+	"github.com/zimmski/tavor/parser"
 	"github.com/zimmski/tavor/test"
 	"github.com/zimmski/tavor/token/constraints"
 	"github.com/zimmski/tavor/token/lists"
@@ -338,6 +340,47 @@ func TestAllPermutationsStrategy(t *testing.T) {
 			"a1010",
 			"b1010",
 			"ab1010",
+		})
+	}
+	{
+		// correct sequence and multi-OR token behaviour
+
+		o, err := parser.ParseTavor(strings.NewReader(`
+			$Id = type: Sequence,
+				start: 2,
+				step: 2
+
+			ExistingLiteral = 1,
+				| $Id.Existing,
+				| ${Id.Existing + 1}
+
+			And = $Id.Next " " ExistingLiteral " " ExistingLiteral
+
+			START = $Id.Reset And
+		`))
+		Nil(t, err)
+
+		s := NewAllPermutationsStrategy(o)
+
+		var got []string
+
+		ch := s.Fuzz(r)
+		for i := range ch {
+			got = append(got, o.String())
+
+			ch <- i
+		}
+
+		Equal(t, got, []string{
+			"2 1 1",
+			"2 2 1",
+			"2 3 1",
+			"2 1 2",
+			"2 2 2",
+			"2 3 2",
+			"2 1 3",
+			"2 2 3",
+			"2 3 3",
 		})
 	}
 }
