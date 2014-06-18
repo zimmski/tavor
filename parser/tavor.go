@@ -42,6 +42,7 @@ type tavorParser struct {
 	earlyUse             map[string]token.Token
 	embeddedTokensInTerm map[string][]map[string]struct{}
 	lookup               map[string]token.Token
+	lookupUsage          map[token.Token]struct{}
 	used                 map[string]struct{}
 }
 
@@ -117,21 +118,22 @@ OUT:
 	for {
 		switch c {
 		case scanner.Ident:
-			n := p.scan.TokenText()
+			name := p.scan.TokenText()
 
-			if _, ok := p.lookup[n]; !ok {
+			tok, ok := p.lookup[name]
+			if !ok {
 				if tavor.DEBUG {
-					fmt.Printf("parseTerm use empty pointer for %s\n", n)
+					fmt.Printf("parseTerm use empty pointer for %s\n", name)
 				}
 
 				var tokenInterface *token.Token
 
-				p.lookup[n] = primitives.NewEmptyPointer(tokenInterface)
-				p.earlyUse[n] = p.lookup[n]
+				p.lookup[name] = primitives.NewEmptyPointer(tokenInterface)
+				p.earlyUse[name] = p.lookup[name]
 			}
 
-			embeddedToks[n] = struct{}{}
-			p.used[n] = struct{}{}
+			embeddedToks[name] = struct{}{}
+			p.used[name] = struct{}{}
 
 			/*
 
@@ -170,11 +172,26 @@ OUT:
 				So TODO and FIXME all over this
 
 			*/
-			if _, ok := p.lookup[n].(*primitives.Pointer); !ok {
-				p.lookup[n] = p.lookup[n].Clone()
+			tok = p.lookup[name]
+
+			if _, ok := p.lookupUsage[tok]; ok {
+				ntok := tok.Clone()
+
+				if tavor.DEBUG {
+					fmt.Printf("token %s %#v(%p) was already used once. Cloned as %#v(%p)\n", name, tok, tok, ntok, ntok)
+				}
+
+				p.lookup[name] = ntok
+				tok = ntok
+			} else {
+				if tavor.DEBUG {
+					fmt.Printf("Use token %#v(%p)\n", tok, tok)
+				}
 			}
 
-			tokens = append(tokens, p.lookup[n])
+			p.lookupUsage[tok] = struct{}{}
+
+			tokens = append(tokens, tok)
 		case scanner.Int:
 			v, _ := strconv.Atoi(p.scan.TokenText())
 
@@ -1014,6 +1031,7 @@ func ParseTavor(src io.Reader) (token.Token, error) {
 		earlyUse:             make(map[string]token.Token),
 		embeddedTokensInTerm: make(map[string][]map[string]struct{}),
 		lookup:               make(map[string]token.Token),
+		lookupUsage:          make(map[token.Token]struct{}),
 		used:                 make(map[string]struct{}),
 	}
 

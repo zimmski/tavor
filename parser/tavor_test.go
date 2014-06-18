@@ -709,31 +709,6 @@ func TestTavorParserAndCuriousCaseOfFuzzing(t *testing.T) {
 	Equal(t, ParseErrorEndlessLoopDetected, err.(*ParserError).Type)
 	Nil(t, tok)
 
-	tok, err = ParseTavor(strings.NewReader(
-		"C = A\nB = C\nA = (B | 1)(B | 2) ?(B)\nSTART = A\n",
-	))
-	Nil(t, err)
-	{
-		o, _ := tok.(*lists.All).Get(0)
-		p, _ := o.(*lists.One).Get(0)
-
-		Equal(t, tok, p.(*primitives.Pointer).Get())
-
-		Equal(t, tok, lists.NewAll(
-			lists.NewOne(
-				p,
-				primitives.NewConstantInt(1),
-			),
-			lists.NewOne(
-				p,
-				primitives.NewConstantInt(2),
-			),
-			constraints.NewOptional(
-				p,
-			),
-		))
-	}
-
 	// Additional forward declaration check
 	tok, err = ParseTavor(strings.NewReader(
 		"START = Token\nToken = 123\n",
@@ -759,5 +734,39 @@ func TestTavorParserAndCuriousCaseOfFuzzing(t *testing.T) {
 
 		True(t, Exactly(t, a, b))
 		NotEqual(t, fmt.Sprintf("%p", a), fmt.Sprintf("%p", b))
+	}
+
+	// Correct sequence behaviour
+	{
+		tok, err = ParseTavor(strings.NewReader(`
+			$Id = type: Sequence,
+				start: 2,
+				step: 2
+
+			START = $Id.Reset $Id.Next $Id.Existing
+		`))
+		Nil(t, err)
+
+		r := test.NewRandTest(1)
+
+		tok.FuzzAll(r)
+
+		Equal(t, "22", tok.String())
+	}
+
+	// Correct list behaviour
+	{
+		tok, err = ParseTavor(strings.NewReader(`
+			A = *2(1)
+
+			START = $A.Count A
+		`))
+		Nil(t, err)
+
+		r := test.NewRandTest(1)
+
+		tok.FuzzAll(r)
+
+		Equal(t, "211", tok.String())
 	}
 }
