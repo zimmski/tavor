@@ -76,11 +76,11 @@ func (p *Pointer) Permutation(i int) error {
 }
 
 func (p *Pointer) Permutations() int {
-	return 1 // TODO this could run forever if there is a loop so just return 1 for now
+	return 1
 }
 
 func (p *Pointer) PermutationsAll() int {
-	return p.Permutations()
+	return p.tok.PermutationsAll()
 }
 
 func (p *Pointer) Set(o token.Token) error {

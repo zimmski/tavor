@@ -22,6 +22,7 @@ func TestPointer(t *testing.T) {
 	o := NewPointer(a)
 	Equal(t, "4", o.String())
 	Equal(t, 1, o.Permutations())
+	Equal(t, 7, o.PermutationsAll())
 
 	r := test.NewRandTest(0)
 	o.FuzzAll(r)
@@ -47,7 +48,7 @@ func TestPointer(t *testing.T) {
 	Nil(t, o.Permutation(1))
 	Equal(t, "6", o.String())
 
-	Equal(t, o.Permutation(2).(*token.PermutationError).Type, token.PermutationErrorIndexOutOfBound)
+	Equal(t, o.Permutation(8).(*token.PermutationError).Type, token.PermutationErrorIndexOutOfBound)
 
 	// empty pointers should have a nil token
 	{
