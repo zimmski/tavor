@@ -530,6 +530,10 @@ func (p *tavorParser) parseTokenAttribute(c rune) (token.Token, error) {
 		}
 	}
 
+	if tavor.DEBUG {
+		fmt.Printf("Use %#v(%p) as token\n", tok, tok)
+	}
+
 	p.used[name] = struct{}{}
 
 	if tavor.DEBUG {
@@ -795,6 +799,10 @@ func (p *tavorParser) parseTokenDefinition() (rune, error) {
 
 	p.lookup[name] = tok
 
+	if tavor.DEBUG {
+		fmt.Printf("Added %#v(%p) as token %s\n", tok, tok, name)
+	}
+
 	c = p.scan.Scan()
 	if tavor.DEBUG {
 		fmt.Printf("parseTokenDefinition after newline %d:%v -> %v\n", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
@@ -983,6 +991,10 @@ func (p *tavorParser) parseSpecialTokenDefinition() (rune, error) {
 	}
 
 	p.lookup[name] = tok
+
+	if tavor.DEBUG {
+		fmt.Printf("Added %#v(%p) as token %s\n", tok, tok, name)
+	}
 
 	c = p.scan.Scan()
 	if tavor.DEBUG {
