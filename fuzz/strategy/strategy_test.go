@@ -54,7 +54,7 @@ func TestStrategy(t *testing.T) {
 
 	stat, err = New("mock", a)
 	NotNil(t, stat)
-	Exactly(t, a, stat.(*mockStrategy).root)
+	True(t, Exactly(t, a, stat.(*mockStrategy).root))
 	Nil(t, err)
 
 	// register mock a second time

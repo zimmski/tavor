@@ -21,7 +21,7 @@ func TestOptional(t *testing.T) {
 
 	o := NewOptional(a)
 	Equal(t, "1", o.String())
-	Exactly(t, a, o.Get())
+	True(t, Exactly(t, a, o.Get()))
 
 	r := test.NewRandTest(1)
 	o.FuzzAll(r)
