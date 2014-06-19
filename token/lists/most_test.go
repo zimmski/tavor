@@ -46,12 +46,24 @@ func TestMost(t *testing.T) {
 	Equal(t, "aa", o.String())
 	Equal(t, 2, o.Len())
 
+	o = NewMost(primitives.NewRangeInt(1, 2), 2)
+	Equal(t, "11", o.String())
+	Equal(t, 2, o.Len())
+	Equal(t, 3, o.Permutations())
+	Equal(t, 7, o.PermutationsAll())
+
+	o = NewMost(primitives.NewRangeInt(1, 2), 3)
+	Equal(t, "111", o.String())
+	Equal(t, 3, o.Len())
+	Equal(t, 4, o.Permutations())
+	Equal(t, 15, o.PermutationsAll())
+
 	b := primitives.NewRangeInt(1, 3)
 	o = NewMost(b, 4)
 	Equal(t, "1111", o.String())
 	Equal(t, 4, o.Len())
 	Equal(t, 5, o.Permutations())
-	Equal(t, 13, o.PermutationsAll())
+	Equal(t, 121, o.PermutationsAll())
 
 	Nil(t, o.Permutation(1))
 	Equal(t, "", o.String())

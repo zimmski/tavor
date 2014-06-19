@@ -2,6 +2,7 @@ package lists
 
 import (
 	"bytes"
+	"math"
 
 	"github.com/zimmski/tavor/rand"
 	"github.com/zimmski/tavor/token"
@@ -95,19 +96,25 @@ func (l *Repeat) Permutation(i int) error {
 }
 
 func (l *Repeat) Permutations() int {
-	if l.from == 0 {
-		return int(l.to-l.from) + 1
-	}
-
 	return int(l.to - l.from + 1)
 }
 
 func (l *Repeat) PermutationsAll() int {
+	sum := 0
+	rep := int(l.to - l.from + 1)
+
 	if l.from == 0 {
-		return int(l.to-l.from)*l.token.PermutationsAll() + 1
+		sum++
+		rep--
 	}
 
-	return int(l.to-l.from+1) * l.token.PermutationsAll()
+	tokenPermutations := l.token.PermutationsAll()
+
+	for i := 1; i <= rep; i++ {
+		sum += int(math.Pow(float64(tokenPermutations), float64(i)))
+	}
+
+	return sum
 }
 
 func (l *Repeat) String() string {

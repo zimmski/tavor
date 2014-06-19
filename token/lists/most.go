@@ -2,6 +2,7 @@ package lists
 
 import (
 	"bytes"
+	"math"
 
 	"github.com/zimmski/tavor/rand"
 	"github.com/zimmski/tavor/token"
@@ -96,7 +97,15 @@ func (l *Most) Permutations() int {
 }
 
 func (l *Most) PermutationsAll() int {
-	return int(l.n)*l.token.PermutationsAll() + 1
+	sum := 1
+
+	tokenPermutations := l.token.PermutationsAll()
+
+	for i := 1; i <= int(l.n); i++ {
+		sum += int(math.Pow(float64(tokenPermutations), float64(i)))
+	}
+
+	return sum
 }
 
 func (l *Most) String() string {

@@ -46,12 +46,36 @@ func TestRepeat(t *testing.T) {
 	Equal(t, "aaaaaaa", o.String())
 	Equal(t, 7, o.Len())
 
+	o = NewRepeat(primitives.NewRangeInt(1, 2), 0, 2)
+	Equal(t, "", o.String())
+	Equal(t, 0, o.Len())
+	Equal(t, 3, o.Permutations())
+	Equal(t, 7, o.PermutationsAll())
+
+	o = NewRepeat(primitives.NewRangeInt(1, 2), 1, 2)
+	Equal(t, "1", o.String())
+	Equal(t, 1, o.Len())
+	Equal(t, 2, o.Permutations())
+	Equal(t, 6, o.PermutationsAll())
+
+	o = NewRepeat(primitives.NewRangeInt(1, 2), 0, 3)
+	Equal(t, "", o.String())
+	Equal(t, 0, o.Len())
+	Equal(t, 4, o.Permutations())
+	Equal(t, 15, o.PermutationsAll())
+
+	o = NewRepeat(primitives.NewRangeInt(1, 2), 1, 3)
+	Equal(t, "1", o.String())
+	Equal(t, 1, o.Len())
+	Equal(t, 3, o.Permutations())
+	Equal(t, 14, o.PermutationsAll())
+
 	b := primitives.NewRangeInt(1, 3)
 	o = NewRepeat(b, 2, 10)
 	Equal(t, "11", o.String())
 	Equal(t, 2, o.Len())
 	Equal(t, 9, o.Permutations())
-	Equal(t, 27, o.PermutationsAll())
+	Equal(t, 29523, o.PermutationsAll())
 
 	Nil(t, o.Permutation(1))
 	Equal(t, "11", o.String())
