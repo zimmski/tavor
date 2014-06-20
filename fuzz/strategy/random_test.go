@@ -54,8 +54,8 @@ func TestRandomStrategy(t *testing.T) {
 	True(t, ok)
 
 	Equal(t, "", c.String())
-	Equal(t, "8", a.String())
-	Equal(t, "9", b.String())
+	Equal(t, "7", a.String())
+	Equal(t, "8", b.String())
 
 	close(ch)
 

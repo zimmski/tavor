@@ -48,7 +48,9 @@ func TestOptional(t *testing.T) {
 }
 
 func TestOptionalOptionalTokenInterface(t *testing.T) {
-	o := NewOptional(primitives.NewConstantInt(1))
+	a := primitives.NewConstantInt(1)
+
+	o := NewOptional(a)
 
 	var optionalTok *token.OptionalToken
 
@@ -57,8 +59,10 @@ func TestOptionalOptionalTokenInterface(t *testing.T) {
 	Equal(t, "1", o.String())
 
 	o.Deactivate()
+	Nil(t, o.Get())
 	Equal(t, "", o.String())
 
 	o.Activate()
+	Equal(t, o.Get(), a)
 	Equal(t, "1", o.String())
 }

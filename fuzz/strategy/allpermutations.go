@@ -46,7 +46,9 @@ func (s *AllPermutationsStrategy) getLevel(root token.Token, fromChilds bool) []
 	if fromChilds {
 		switch t := root.(type) {
 		case token.ForwardToken:
-			queue.Push(t.Get())
+			if v := t.Get(); v != nil {
+				queue.Push(v)
+			}
 		case lists.List:
 			l := t.Len()
 
@@ -139,15 +141,15 @@ func (s *AllPermutationsStrategy) resetResetTokens() {
 			tok.Reset()
 		}
 
-		if t, ok := v.(token.OptionalToken); !ok || !t.IsOptional() {
-			switch tok := v.(type) {
-			case token.ForwardToken:
-				queue.Push(tok.Get())
-			case lists.List:
-				for i := 0; i < tok.Len(); i++ {
-					c, _ := tok.Get(i)
-					queue.Push(c)
-				}
+		switch tok := v.(type) {
+		case token.ForwardToken:
+			if v := tok.Get(); v != nil {
+				queue.Push(v)
+			}
+		case lists.List:
+			for i := 0; i < tok.Len(); i++ {
+				c, _ := tok.Get(i)
+				queue.Push(c)
 			}
 		}
 	}

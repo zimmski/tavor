@@ -37,6 +37,10 @@ func (c *Optional) FuzzAll(r rand.Rand) {
 }
 
 func (c *Optional) Get() token.Token {
+	if c.value {
+		return nil
+	}
+
 	return c.token
 }
 

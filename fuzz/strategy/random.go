@@ -63,7 +63,9 @@ func (s *RandomStrategy) fuzz(tok token.Token, r rand.Rand) {
 
 	switch t := tok.(type) {
 	case token.ForwardToken:
-		s.fuzz(t.Get(), r)
+		if v := t.Get(); v != nil {
+			s.fuzz(v, r)
+		}
 	case lists.List:
 		l := t.Len()
 
