@@ -131,6 +131,12 @@ func (s *sequenceItem) String() string {
 	return strconv.Itoa(s.value)
 }
 
+// ResetToken interface methods
+
+func (s *sequenceItem) Reset() {
+	s.permutation(0)
+}
+
 type sequenceExistingItem struct {
 	sequence *Sequence
 	value    int
@@ -179,6 +185,12 @@ func (s *sequenceExistingItem) PermutationsAll() int {
 
 func (s *sequenceExistingItem) String() string {
 	return strconv.Itoa(s.value)
+}
+
+// ResetToken interface methods
+
+func (s *sequenceExistingItem) Reset() {
+	s.permutation(rand.NewConstantRand(0))
 }
 
 type sequenceResetItem struct {
@@ -230,6 +242,7 @@ func (s *sequenceResetItem) String() string {
 }
 
 // ResetToken interface methods
+
 func (s *sequenceResetItem) Reset() {
-	s.sequence.Reset()
+	s.permutation(0)
 }

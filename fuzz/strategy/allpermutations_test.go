@@ -415,4 +415,36 @@ func TestAllPermutationsStrategy(t *testing.T) {
 			"24",
 		})
 	}
+	{
+		// Correct sequence deep or behaviour
+
+		o, err := parser.ParseTavor(strings.NewReader(`
+			$Id = type: Sequence,
+				start: 2,
+				step: 2
+
+			A = $Id.Next
+			B = $Id.Next (1 | 2 | 3)
+
+			START = $Id.Reset A B
+		`))
+		Nil(t, err)
+
+		s := NewAllPermutationsStrategy(o)
+
+		var got []string
+
+		ch := s.Fuzz(r)
+		for i := range ch {
+			got = append(got, o.String())
+
+			ch <- i
+		}
+
+		Equal(t, got, []string{
+			"241",
+			"242",
+			"243",
+		})
+	}
 }
