@@ -39,10 +39,9 @@ func init() {
 	})
 }
 
-func (s *AllPermutationsStrategy) getLevel(root token.Token, fromChilds bool) ([]allPermutationsLevel, map[token.ResetToken]struct{}) {
+func (s *AllPermutationsStrategy) getLevel(root token.Token, fromChilds bool) []allPermutationsLevel {
 	var level []allPermutationsLevel
 	var queue = linkedlist.New()
-	var resets = make(map[token.ResetToken]struct{})
 
 	if fromChilds {
 		switch t := root.(type) {
@@ -64,11 +63,6 @@ func (s *AllPermutationsStrategy) getLevel(root token.Token, fromChilds bool) ([
 		v, _ := queue.Shift()
 		tok, _ := v.(token.Token)
 
-		switch t := tok.(type) {
-		case token.ResetToken:
-			resets[t] = struct{}{}
-		}
-
 		s.setTokenPermutation(tok, 1)
 
 		level = append(level, allPermutationsLevel{
@@ -78,28 +72,32 @@ func (s *AllPermutationsStrategy) getLevel(root token.Token, fromChilds bool) ([
 		})
 	}
 
-	return level, resets
+	return level
 }
 
 func (s *AllPermutationsStrategy) Fuzz(r rand.Rand) chan struct{} {
 	continueFuzzing := make(chan struct{})
+
+	s.resetedLookup = make(map[token.Token]int)
 
 	go func() {
 		if tavor.DEBUG {
 			fmt.Println("Start all permutations routine")
 		}
 
-		level, resets := s.getLevel(s.root, false)
+		level := s.getLevel(s.root, false)
 
 		if len(level) != 0 {
 			if tavor.DEBUG {
 				fmt.Println("Start fuzzing step")
 			}
 
-			if !s.fuzz(continueFuzzing, level, resets) {
+			if !s.fuzz(continueFuzzing, level) {
 				return
 			}
 		}
+
+		s.resetResetTokens()
 
 		if tavor.DEBUG {
 			fmt.Println("Done with fuzzing step")
@@ -113,14 +111,6 @@ func (s *AllPermutationsStrategy) Fuzz(r rand.Rand) chan struct{} {
 		}
 
 		if _, ok := <-continueFuzzing; ok {
-			for t := range resets {
-				if tavor.DEBUG {
-					fmt.Printf("Reset %#v\n", t)
-				}
-
-				t.Reset()
-			}
-
 			if tavor.DEBUG {
 				fmt.Println("Close fuzzing channel")
 			}
@@ -130,6 +120,37 @@ func (s *AllPermutationsStrategy) Fuzz(r rand.Rand) chan struct{} {
 	}()
 
 	return continueFuzzing
+}
+
+func (s *AllPermutationsStrategy) resetResetTokens() {
+	var queue = linkedlist.New()
+
+	queue.Push(s.root)
+
+	for !queue.Empty() {
+		v, _ := queue.Shift()
+
+		switch tok := v.(type) {
+		case token.ResetToken:
+			if tavor.DEBUG {
+				fmt.Printf("Reset %#v(%p)\n", tok, tok)
+			}
+
+			tok.Reset()
+		}
+
+		if t, ok := v.(token.OptionalToken); !ok || !t.IsOptional() {
+			switch tok := v.(type) {
+			case token.ForwardToken:
+				queue.Push(tok.Get())
+			case lists.List:
+				for i := 0; i < tok.Len(); i++ {
+					c, _ := tok.Get(i)
+					queue.Push(c)
+				}
+			}
+		}
+	}
 }
 
 func (s *AllPermutationsStrategy) setTokenPermutation(tok token.Token, permutation int) {
@@ -142,7 +163,7 @@ func (s *AllPermutationsStrategy) setTokenPermutation(tok token.Token, permutati
 	}
 }
 
-func (s *AllPermutationsStrategy) fuzz(continueFuzzing chan struct{}, level []allPermutationsLevel, resets map[token.ResetToken]struct{}) bool {
+func (s *AllPermutationsStrategy) fuzz(continueFuzzing chan struct{}, level []allPermutationsLevel) bool {
 	if tavor.DEBUG {
 		fmt.Printf("Fuzzing level %d->%#v\n", len(level), level)
 	}
@@ -179,16 +200,10 @@ STEP:
 			s.setTokenPermutation(level[i].token, level[i].permutation)
 
 			if t, ok := level[i].token.(token.OptionalToken); !ok || !t.IsOptional() || level[i].permutation != 1 {
-				childs, rets := s.getLevel(level[i].token, true) // set all children to permutation 1
-
-				if len(rets) != 0 {
-					for t := range rets {
-						resets[t] = struct{}{}
-					}
-				}
+				childs := s.getLevel(level[i].token, true) // set all children to permutation 1
 
 				if len(childs) != 0 {
-					if !s.fuzz(continueFuzzing, childs, resets) {
+					if !s.fuzz(continueFuzzing, childs) {
 						return false
 					}
 				}
@@ -217,6 +232,8 @@ STEP:
 			}
 		}
 
+		s.resetResetTokens()
+
 		if tavor.DEBUG {
 			fmt.Println("Done with fuzzing step")
 		}
@@ -238,14 +255,6 @@ STEP:
 		}
 
 		s.resetedLookup = make(map[token.Token]int)
-
-		for t := range resets {
-			if tavor.DEBUG {
-				fmt.Printf("Reset %#v\n", t)
-			}
-
-			t.Reset()
-		}
 	}
 
 	return true

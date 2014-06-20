@@ -29,7 +29,7 @@ func TestAllPermutationsStrategygetLevel(t *testing.T) {
 		c := primitives.NewPointer(primitives.NewConstantInt(3))
 		d := lists.NewAll(a, b, c)
 
-		level, _ := o.getLevel(d, false)
+		level := o.getLevel(d, false)
 
 		Equal(t, level, []allPermutationsLevel{
 			allPermutationsLevel{
@@ -39,7 +39,7 @@ func TestAllPermutationsStrategygetLevel(t *testing.T) {
 			},
 		})
 
-		level, _ = o.getLevel(d, true)
+		level = o.getLevel(d, true)
 
 		Equal(t, level, []allPermutationsLevel{
 			allPermutationsLevel{
