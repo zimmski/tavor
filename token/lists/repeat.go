@@ -101,16 +101,16 @@ func (l *Repeat) Permutations() int {
 
 func (l *Repeat) PermutationsAll() int {
 	sum := 0
-	rep := int(l.to - l.from + 1)
+	from := l.from
 
 	if l.from == 0 {
 		sum++
-		rep--
+		from++
 	}
 
 	tokenPermutations := l.token.PermutationsAll()
 
-	for i := 1; i <= rep; i++ {
+	for i := from; i <= l.to; i++ {
 		sum += int(math.Pow(float64(tokenPermutations), float64(i)))
 	}
 

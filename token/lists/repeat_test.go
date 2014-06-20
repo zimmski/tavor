@@ -70,12 +70,18 @@ func TestRepeat(t *testing.T) {
 	Equal(t, 3, o.Permutations())
 	Equal(t, 14, o.PermutationsAll())
 
+	o = NewRepeat(primitives.NewRangeInt(1, 2), 3, 3)
+	Equal(t, "111", o.String())
+	Equal(t, 3, o.Len())
+	Equal(t, 1, o.Permutations())
+	Equal(t, 8, o.PermutationsAll())
+
 	b := primitives.NewRangeInt(1, 3)
 	o = NewRepeat(b, 2, 10)
 	Equal(t, "11", o.String())
 	Equal(t, 2, o.Len())
 	Equal(t, 9, o.Permutations())
-	Equal(t, 29523, o.PermutationsAll())
+	Equal(t, 88569, o.PermutationsAll())
 
 	Nil(t, o.Permutation(1))
 	Equal(t, "11", o.String())
