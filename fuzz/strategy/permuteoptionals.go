@@ -105,6 +105,37 @@ func (s *PermuteOptionalsStrategy) findOptionals(r rand.Rand, root token.Token, 
 	return optionals, resets
 }
 
+func (s *PermuteOptionalsStrategy) resetResetTokens() {
+	var queue = linkedlist.New()
+
+	queue.Push(s.root)
+
+	for !queue.Empty() {
+		v, _ := queue.Shift()
+
+		switch tok := v.(type) {
+		case token.ResetToken:
+			if tavor.DEBUG {
+				fmt.Printf("Reset %#v(%p)\n", tok, tok)
+			}
+
+			tok.Reset()
+		}
+
+		switch tok := v.(type) {
+		case token.ForwardToken:
+			if v := tok.Get(); v != nil {
+				queue.Push(v)
+			}
+		case lists.List:
+			for i := 0; i < tok.Len(); i++ {
+				c, _ := tok.Get(i)
+				queue.Push(c)
+			}
+		}
+	}
+}
+
 func (s *PermuteOptionalsStrategy) Fuzz(r rand.Rand) chan struct{} {
 	continueFuzzing := make(chan struct{})
 
@@ -120,6 +151,8 @@ func (s *PermuteOptionalsStrategy) Fuzz(r rand.Rand) chan struct{} {
 				return
 			}
 		}
+
+		s.resetResetTokens()
 
 		if tavor.DEBUG {
 			fmt.Println("Done with fuzzing step")
@@ -199,6 +232,8 @@ func (s *PermuteOptionalsStrategy) fuzz(r rand.Rand, continueFuzzing chan struct
 
 			break
 		}
+
+		s.resetResetTokens()
 
 		if tavor.DEBUG {
 			fmt.Println("Done with fuzzing step")
