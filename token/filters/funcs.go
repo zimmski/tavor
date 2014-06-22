@@ -30,7 +30,7 @@ func (f *FuncFilter) Clone() token.Token {
 		fuzzFunc:   f.fuzzFunc,
 		stringFunc: f.stringFunc,
 		state:      f.state,
-		token:      f.token,
+		token:      f.token.Clone(),
 	}
 }
 

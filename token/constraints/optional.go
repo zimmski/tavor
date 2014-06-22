@@ -19,7 +19,7 @@ func NewOptional(tok token.Token) *Optional {
 
 func (c *Optional) Clone() token.Token {
 	return &Optional{
-		token: c.token,
+		token: c.token.Clone(),
 		value: c.value,
 	}
 }

@@ -34,7 +34,7 @@ func (l *Repeat) Clone() token.Token {
 	c := Repeat{
 		from:  l.from,
 		to:    l.to,
-		token: l.token,
+		token: l.token.Clone(),
 		value: make([]token.Token, len(l.value)),
 	}
 

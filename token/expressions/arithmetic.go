@@ -22,8 +22,8 @@ func NewAddArithmetic(a, b token.Token) *AddArithmetic {
 
 func (e *AddArithmetic) Clone() token.Token {
 	return &AddArithmetic{
-		a: e.a,
-		b: e.b,
+		a: e.a.Clone(),
+		b: e.b.Clone(),
 	}
 }
 
@@ -103,8 +103,8 @@ func NewSubArithmetic(a, b token.Token) *SubArithmetic {
 
 func (e *SubArithmetic) Clone() token.Token {
 	return &SubArithmetic{
-		a: e.a,
-		b: e.b,
+		a: e.a.Clone(),
+		b: e.b.Clone(),
 	}
 }
 
@@ -184,8 +184,8 @@ func NewMulArithmetic(a, b token.Token) *MulArithmetic {
 
 func (e *MulArithmetic) Clone() token.Token {
 	return &MulArithmetic{
-		a: e.a,
-		b: e.b,
+		a: e.a.Clone(),
+		b: e.b.Clone(),
 	}
 }
 
@@ -265,8 +265,8 @@ func NewDivArithmetic(a, b token.Token) *DivArithmetic {
 
 func (e *DivArithmetic) Clone() token.Token {
 	return &DivArithmetic{
-		a: e.a,
-		b: e.b,
+		a: e.a.Clone(),
+		b: e.b.Clone(),
 	}
 }
 

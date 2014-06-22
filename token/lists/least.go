@@ -31,7 +31,7 @@ func NewLeast(tok token.Token, n int64) *Least {
 func (l *Least) Clone() token.Token {
 	c := Least{
 		n:     l.n,
-		token: l.token,
+		token: l.token.Clone(),
 		value: make([]token.Token, len(l.value)),
 	}
 
