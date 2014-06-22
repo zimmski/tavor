@@ -1,31 +1,18 @@
 package strategy
 
 import (
-	"fmt"
-	"github.com/zimmski/tavor"
-	"github.com/zimmski/tavor/parser"
-	"github.com/zimmski/tavor/token/sequences"
 	"strings"
 	"testing"
 
 	. "github.com/stretchr/testify/assert"
 
+	"github.com/zimmski/tavor/parser"
 	"github.com/zimmski/tavor/test"
 	"github.com/zimmski/tavor/token/constraints"
 	"github.com/zimmski/tavor/token/lists"
 	"github.com/zimmski/tavor/token/primitives"
+	"github.com/zimmski/tavor/token/sequences"
 )
-
-func dummy() {
-	tavor.DEBUG = true
-	fmt.Println("abc")
-
-	/*
-		tavor.DEBUG = true
-			fmt.Println("GOT", got[len(got)-1])
-		tavor.DEBUG = false
-	*/
-}
 
 func TestAllPermutationsStrategyToBeStrategy(t *testing.T) {
 	var strat *Strategy
@@ -516,6 +503,34 @@ func TestAllPermutationsStrategy(t *testing.T) {
 			"241",
 			"242",
 			"243",
+		})
+	}
+	{
+		// bug
+		s := sequences.NewSequence(10, 2)
+
+		a := lists.NewAll(
+			s.ResetItem(),
+			lists.NewRepeat(lists.NewOne(
+				primitives.NewConstantInt(1),
+				primitives.NewConstantInt(2),
+			), 1, 1),
+		)
+
+		o := NewAllPermutationsStrategy(a)
+
+		var got []string
+
+		ch := o.Fuzz(r)
+		for i := range ch {
+			got = append(got, a.String())
+
+			ch <- i
+		}
+
+		Equal(t, got, []string{
+			"1",
+			"2",
 		})
 	}
 }
