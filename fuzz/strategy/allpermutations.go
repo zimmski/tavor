@@ -15,19 +15,17 @@ type allPermutationsLevel struct {
 	token           token.Token
 	permutation     int
 	maxPermutations int
+
+	childs []allPermutationsLevel
 }
 
 type AllPermutationsStrategy struct {
 	root token.Token
-
-	resetedLookup map[token.Token]int
 }
 
 func NewAllPermutationsStrategy(tok token.Token) *AllPermutationsStrategy {
 	s := &AllPermutationsStrategy{
 		root: tok,
-
-		resetedLookup: make(map[token.Token]int),
 	}
 
 	return s
@@ -39,90 +37,410 @@ func init() {
 	})
 }
 
-func (s *AllPermutationsStrategy) getLevel(root token.Token, fromChilds bool) []allPermutationsLevel {
-	var level []allPermutationsLevel
-	var queue = linkedlist.New()
+func (s *AllPermutationsStrategy) getTree(root token.Token, fromChilds bool) []allPermutationsLevel {
+	var tree []allPermutationsLevel
+
+	add := func(tok token.Token) {
+		s.setPermutation(tok, 1)
+
+		tree = append(tree, allPermutationsLevel{
+			token:           tok,
+			permutation:     1,
+			maxPermutations: tok.Permutations(),
+
+			childs: s.getTree(tok, true),
+		})
+	}
 
 	if fromChilds {
 		switch t := root.(type) {
 		case token.ForwardToken:
 			if v := t.Get(); v != nil {
-				queue.Push(v)
+				add(v)
 			}
 		case lists.List:
-			l := t.Len()
-
-			for i := 0; i < l; i++ {
+			for i := 0; i < t.Len(); i++ {
 				c, _ := t.Get(i)
-				queue.Push(c)
+
+				add(c)
 			}
 		}
 	} else {
-		queue.Push(root)
+		add(root)
 	}
 
-	for !queue.Empty() {
-		v, _ := queue.Shift()
-		tok, _ := v.(token.Token)
+	return tree
+}
 
-		s.setTokenPermutation(tok, 1)
-
-		level = append(level, allPermutationsLevel{
-			token:           tok,
-			permutation:     1,
-			maxPermutations: tok.Permutations(),
-		})
+func (s *AllPermutationsStrategy) setPermutation(tok token.Token, permutation int) {
+	if tavor.DEBUG {
+		fmt.Printf("Set %#v(%p) to permutation %d\n", tok, tok, permutation)
 	}
 
-	return level
+	if err := tok.Permutation(permutation); err != nil {
+		panic(err)
+	}
 }
 
 func (s *AllPermutationsStrategy) Fuzz(r rand.Rand) chan struct{} {
 	continueFuzzing := make(chan struct{})
-
-	s.resetedLookup = make(map[token.Token]int)
 
 	go func() {
 		if tavor.DEBUG {
 			fmt.Println("Start all permutations routine")
 		}
 
-		level := s.getLevel(s.root, false)
+		tree := s.getTree(s.root, false)
 
-		if len(level) != 0 {
+		if len(tree) != 0 {
 			if tavor.DEBUG {
 				fmt.Println("Start fuzzing step")
 			}
 
-			if !s.fuzz(continueFuzzing, level) {
+			if contin, _ := s.fuzz(continueFuzzing, tree, false); !contin {
 				return
+			}
+
+			if tavor.DEBUG {
+				fmt.Println("Finished fuzzing.")
+			}
+
+			close(continueFuzzing)
+		} else {
+			s.resetResetTokens()
+
+			if tavor.DEBUG {
+				fmt.Println("Done with fuzzing step")
+			}
+
+			// done with the last fuzzing step
+			continueFuzzing <- struct{}{}
+
+			if tavor.DEBUG {
+				fmt.Println("Finished fuzzing. Wait till the outside is ready to close.")
+			}
+
+			if _, ok := <-continueFuzzing; ok {
+				if tavor.DEBUG {
+					fmt.Println("Close fuzzing channel")
+				}
+
+				close(continueFuzzing)
+			}
+		}
+	}()
+
+	return continueFuzzing
+}
+
+func (s *AllPermutationsStrategy) fuzz(continueFuzzing chan struct{}, tree []allPermutationsLevel, justastep bool) (bool, bool) {
+	if tavor.DEBUG {
+		fmt.Printf("Fuzzing level %d->%#v\n", len(tree), tree)
+	}
+
+STEP:
+	for {
+		if justastep && len(tree[0].childs) != 0 {
+			if tavor.DEBUG {
+				fmt.Printf("STEP FURTHER INTO %#v\n", tree[0])
+			}
+
+			if contin, step := s.fuzz(continueFuzzing, tree[0].childs, justastep); !contin {
+				return false, false
+			} else if step {
+				if tavor.DEBUG {
+					fmt.Printf("CONTINUE after child step\n")
+				}
+
+				return true, true
+			}
+		} else {
+			if tavor.DEBUG {
+				fmt.Printf("Permute %d->%#v\n", 0, tree[0])
+			}
+
+			if tree[0].permutation != 1 {
+				s.setPermutation(tree[0].token, tree[0].permutation)
+				tree[0].childs = s.getTree(tree[0].token, true)
+
+				if justastep {
+					if tavor.DEBUG {
+						fmt.Printf("CONTINUE after permutate\n")
+					}
+
+					return true, true
+				}
+			}
+
+			if len(tree[0].childs) != 0 {
+				if contin, step := s.fuzz(continueFuzzing, tree[0].childs, justastep); !contin {
+					return false, false
+				} else if step {
+					if tavor.DEBUG {
+						fmt.Printf("CONTINUE after child step\n")
+					}
+
+					return true, true
+				}
+			} else {
+				if !justastep && (tree[0].token != s.root || tree[0].permutation <= tree[0].maxPermutations) && !s.nextStep(continueFuzzing) {
+					return false, false
+				}
+			}
+		}
+
+		tree[0].permutation++
+
+		if tree[0].permutation > tree[0].maxPermutations {
+			/*if tavor.DEBUG {
+				for i := 1; i < len(tree); i++ {
+					fmt.Printf("Check %d vs %d for %#v\n", tree[i].permutation, tree[i].maxPermutations, tree[i])
+				}
+			}
+			found := false
+			for i := 1; i < len(tree); i++ {
+				if tavor.DEBUG {
+					fmt.Printf("%d vs %d for %#v\n", tree[i].permutation, tree[i].maxPermutations, tree[i])
+				}
+				if tree[i].permutation < tree[i].maxPermutations {
+					found = true
+
+					break
+				}
+			}
+			if !found {
+				if tavor.DEBUG {
+					fmt.Printf("Done with fuzzing this level because %#v\n", tree)
+				}
+
+				break STEP
+			}*/
+
+			if tavor.DEBUG {
+				for i := 0; i < len(tree); i++ {
+					fmt.Printf("Check %d vs %d for %#v\n", tree[i].permutation, tree[i].maxPermutations, tree[i])
+				}
+			}
+
+			i := 0
+
+			for {
+				if i == len(tree)-1 {
+					if tavor.DEBUG {
+						fmt.Printf("Done with fuzzing this level because %#v\n", tree)
+					}
+
+					break STEP
+				}
+
+				i++
+
+				if len(tree[i].childs) != 0 {
+					if tavor.DEBUG {
+						fmt.Printf("CHECK children %#v\n", tree[i])
+					}
+
+					if contin, step := s.fuzz(continueFuzzing, tree[i].childs, true); !contin {
+						return false, false
+					} else if step {
+						for j := 0; j < i; j++ {
+							tree[j].permutation = 1
+							s.setPermutation(tree[j].token, tree[j].permutation)
+							tree[j].childs = s.getTree(tree[j].token, true)
+						}
+
+						if justastep {
+							return true, true
+						}
+
+						if tavor.DEBUG {
+							fmt.Printf("STEP continue\n")
+						}
+						continue STEP
+					}
+					if tavor.DEBUG {
+						fmt.Printf("PERMUTATE continue\n")
+					}
+				}
+
+				tree[i].permutation++
+
+				if tree[i].permutation <= tree[i].maxPermutations {
+					for j := 0; j < i; j++ {
+						tree[j].permutation = 1
+						s.setPermutation(tree[j].token, tree[j].permutation)
+						tree[j].childs = s.getTree(tree[j].token, true)
+					}
+
+					if tavor.DEBUG {
+						fmt.Printf("Permute %d->%#v\n", i, tree[i])
+					}
+
+					s.setPermutation(tree[i].token, tree[i].permutation)
+					tree[i].childs = s.getTree(tree[i].token, true)
+
+					if justastep {
+						return true, true
+					}
+
+					continue STEP
+				}
+			}
+		}
+	}
+
+	return true, false
+}
+
+func (s *AllPermutationsStrategy) nextStep(continueFuzzing chan struct{}) bool {
+	s.resetResetTokens()
+
+	if tavor.DEBUG {
+		fmt.Println("Done with fuzzing step")
+	}
+
+	// done with this fuzzing step
+	continueFuzzing <- struct{}{}
+
+	// wait until we are allowed to continue
+	if _, ok := <-continueFuzzing; !ok {
+		if tavor.DEBUG {
+			fmt.Println("Fuzzing channel closed from outside")
+		}
+
+		return false
+	}
+
+	if tavor.DEBUG {
+		fmt.Println("Start fuzzing step")
+	}
+
+	return true
+}
+
+/*func (s *AllPermutationsStrategy) fuzz(continueFuzzing chan struct{}, tree []allPermutationsLevel) bool {
+	if tavor.DEBUG {
+		fmt.Printf("Fuzzing level %d->%#v\n", len(tree), tree)
+	}
+
+STEP:
+	for {
+		if tavor.DEBUG {
+			fmt.Printf("Permute %d->%#v\n", 0, tree[0])
+		}
+
+		if tree[0].permutation != 1 {
+			s.setPermutation(tree[0].token, tree[0].permutation)
+			tree[0].childs = s.getTree(tree[0].token, true)
+		}
+
+		if len(tree[0].childs) != 0 {
+			if !s.fuzz(continueFuzzing, tree[0].childs) {
+				return false
+			}
+		}
+
+		tree[0].permutation++
+
+		if tree[0].permutation > tree[0].maxPermutations {
+			found := false
+			for i := 1; i < len(tree); i++ {
+				if tavor.DEBUG {
+					fmt.Printf("%d vs %d for %#v\n", tree[i].permutation, tree[i].maxPermutations, tree[i])
+				}
+				if tree[i].permutation < tree[i].maxPermutations {
+					found = true
+
+					break
+				}
+			}
+			if !found {
+				if tavor.DEBUG {
+					fmt.Printf("Done with fuzzing this level because %#v\n", tree)
+				}
+
+				break STEP
+			}
+
+			i := 0
+
+			if i < len(tree)-1 {
+				s.resetResetTokens()
+
+				if tavor.DEBUG {
+					fmt.Println("Done with fuzzing step INNER")
+				}
+
+				// done with this fuzzing step
+				continueFuzzing <- struct{}{}
+
+				// wait until we are allowed to continue
+				if _, ok := <-continueFuzzing; !ok {
+					if tavor.DEBUG {
+						fmt.Println("Fuzzing channel closed from outside")
+					}
+
+					return false
+				}
+
+				if tavor.DEBUG {
+					fmt.Println("Start fuzzing step")
+				}
+			}
+
+			for {
+				tree[i].permutation = 1
+				s.setPermutation(tree[i].token, tree[i].permutation)
+				tree[i].childs = s.getTree(tree[i].token, true)
+
+				i++
+
+				tree[i].permutation++
+
+				if tree[i].permutation <= tree[i].maxPermutations {
+					if tavor.DEBUG {
+						fmt.Printf("Permute %d->%#v\n", i, tree[i])
+					}
+
+					s.setPermutation(tree[i].token, tree[i].permutation)
+					tree[i].childs = s.getTree(tree[i].token, true)
+
+					if len(tree[i].childs) != 0 {
+						if !s.fuzz(continueFuzzing, tree[i].childs) {
+							return false
+						}
+					}
+
+					continue STEP
+				}
 			}
 		}
 
 		s.resetResetTokens()
 
 		if tavor.DEBUG {
-			fmt.Println("Done with fuzzing step")
+			fmt.Println("Done with fuzzing step OUTER")
 		}
 
-		// done with the last fuzzing step
+		// done with this fuzzing step
 		continueFuzzing <- struct{}{}
 
-		if tavor.DEBUG {
-			fmt.Println("Finished fuzzing. Wait till the outside is ready to close.")
-		}
-
-		if _, ok := <-continueFuzzing; ok {
+		// wait until we are allowed to continue
+		if _, ok := <-continueFuzzing; !ok {
 			if tavor.DEBUG {
-				fmt.Println("Close fuzzing channel")
+				fmt.Println("Fuzzing channel closed from outside")
 			}
 
-			close(continueFuzzing)
+			return false
 		}
-	}()
 
-	return continueFuzzing
-}
+		if tavor.DEBUG {
+			fmt.Println("Start fuzzing step")
+		}
+	}
+
+	return true
+}*/
 
 func (s *AllPermutationsStrategy) resetResetTokens() {
 	var queue = linkedlist.New()
@@ -153,111 +471,4 @@ func (s *AllPermutationsStrategy) resetResetTokens() {
 			}
 		}
 	}
-}
-
-func (s *AllPermutationsStrategy) setTokenPermutation(tok token.Token, permutation int) {
-	if per, ok := s.resetedLookup[tok]; ok && per == permutation {
-		// Permutation already set in this step
-	} else {
-		tok.Permutation(permutation)
-
-		s.resetedLookup[tok] = permutation
-	}
-}
-
-func (s *AllPermutationsStrategy) fuzz(continueFuzzing chan struct{}, level []allPermutationsLevel) bool {
-	if tavor.DEBUG {
-		fmt.Printf("Fuzzing level %d->%#v\n", len(level), level)
-	}
-
-	last := len(level) - 1
-
-STEP:
-	for {
-		for i := range level {
-			if level[i].permutation > level[i].maxPermutations {
-				if i <= last {
-					if tavor.DEBUG {
-						fmt.Printf("Max reached redo everything <= %d and increment next\n", i)
-					}
-
-					level[i+1].permutation++
-					s.setTokenPermutation(level[i+1].token, level[i+1].permutation)
-					s.getLevel(level[i+1].token, true) // set all children to permutation 1
-				}
-
-				for k := 0; k <= i; k++ {
-					level[k].permutation = 1
-					s.setTokenPermutation(level[k].token, 1)
-					s.getLevel(level[k].token, true) // set all children to permutation 1
-				}
-
-				continue STEP
-			}
-
-			if tavor.DEBUG {
-				fmt.Printf("Permute %d->%#v\n", i, level[i])
-			}
-
-			s.setTokenPermutation(level[i].token, level[i].permutation)
-
-			if t, ok := level[i].token.(token.OptionalToken); !ok || !t.IsOptional() || level[i].permutation != 1 {
-				childs := s.getLevel(level[i].token, true) // set all children to permutation 1
-
-				if len(childs) != 0 {
-					if !s.fuzz(continueFuzzing, childs) {
-						return false
-					}
-				}
-			}
-
-			if i == 0 {
-				level[i].permutation++
-			}
-		}
-
-		if level[0].permutation > level[0].maxPermutations {
-			found := false
-			for i := 1; i < len(level); i++ {
-				if level[i].permutation < level[i].maxPermutations {
-					found = true
-
-					break
-				}
-			}
-			if !found {
-				if tavor.DEBUG {
-					fmt.Println("Done with fuzzing this level")
-				}
-
-				break STEP
-			}
-		}
-
-		s.resetResetTokens()
-
-		if tavor.DEBUG {
-			fmt.Println("Done with fuzzing step")
-		}
-
-		// done with this fuzzing step
-		continueFuzzing <- struct{}{}
-
-		// wait until we are allowed to continue
-		if _, ok := <-continueFuzzing; !ok {
-			if tavor.DEBUG {
-				fmt.Println("Fuzzing channel closed from outside")
-			}
-
-			return false
-		}
-
-		if tavor.DEBUG {
-			fmt.Println("Start fuzzing step")
-		}
-
-		s.resetedLookup = make(map[token.Token]int)
-	}
-
-	return true
 }

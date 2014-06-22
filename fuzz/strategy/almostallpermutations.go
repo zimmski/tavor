@@ -94,7 +94,7 @@ func (s *AlmostAllPermutationsStrategy) Fuzz(r rand.Rand) chan struct{} {
 
 	go func() {
 		if tavor.DEBUG {
-			fmt.Println("Start all permutations routine")
+			fmt.Println("Start almost all permutations routine")
 		}
 
 		level := s.getLevel(s.root, false)

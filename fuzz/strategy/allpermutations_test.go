@@ -1,18 +1,31 @@
 package strategy
 
 import (
+	"fmt"
+	"github.com/zimmski/tavor"
+	"github.com/zimmski/tavor/parser"
+	"github.com/zimmski/tavor/token/sequences"
 	"strings"
 	"testing"
 
 	. "github.com/stretchr/testify/assert"
 
-	"github.com/zimmski/tavor/parser"
 	"github.com/zimmski/tavor/test"
 	"github.com/zimmski/tavor/token/constraints"
 	"github.com/zimmski/tavor/token/lists"
 	"github.com/zimmski/tavor/token/primitives"
-	"github.com/zimmski/tavor/token/sequences"
 )
+
+func dummy() {
+	tavor.DEBUG = true
+	fmt.Println("abc")
+
+	/*
+		tavor.DEBUG = true
+			fmt.Println("GOT", got[len(got)-1])
+		tavor.DEBUG = false
+	*/
+}
 
 func TestAllPermutationsStrategyToBeStrategy(t *testing.T) {
 	var strat *Strategy
@@ -23,39 +36,89 @@ func TestAllPermutationsStrategyToBeStrategy(t *testing.T) {
 func TestAllPermutationsStrategygetLevel(t *testing.T) {
 	o := NewAllPermutationsStrategy(nil)
 
+	var nilChilds []allPermutationsLevel
+
 	{
 		a := primitives.NewConstantInt(1)
-		b := constraints.NewOptional(primitives.NewConstantInt(2))
-		c := primitives.NewPointer(primitives.NewConstantInt(3))
+		b1 := primitives.NewConstantInt(2)
+		b := constraints.NewOptional(b1)
+		c1 := primitives.NewConstantInt(3)
+		c := primitives.NewPointer(c1)
 		d := lists.NewAll(a, b, c)
 
-		level := o.getLevel(d, false)
+		tree := o.getTree(d, false)
 
-		Equal(t, level, []allPermutationsLevel{
+		Equal(t, tree, []allPermutationsLevel{
 			allPermutationsLevel{
 				token:           d,
 				permutation:     1,
 				maxPermutations: 1,
+
+				childs: []allPermutationsLevel{
+					allPermutationsLevel{
+						token:           a,
+						permutation:     1,
+						maxPermutations: 1,
+
+						childs: nilChilds,
+					},
+					allPermutationsLevel{
+						token:           b,
+						permutation:     1,
+						maxPermutations: 2,
+
+						childs: nilChilds,
+					},
+					allPermutationsLevel{
+						token:           c,
+						permutation:     1,
+						maxPermutations: 1,
+
+						childs: []allPermutationsLevel{
+							allPermutationsLevel{
+								token:           c1,
+								permutation:     1,
+								maxPermutations: 1,
+
+								childs: nilChilds,
+							},
+						},
+					},
+				},
 			},
 		})
 
-		level = o.getLevel(d, true)
+		tree = o.getTree(d, true)
 
-		Equal(t, level, []allPermutationsLevel{
+		Equal(t, tree, []allPermutationsLevel{
 			allPermutationsLevel{
 				token:           a,
 				permutation:     1,
 				maxPermutations: 1,
+
+				childs: nilChilds,
 			},
 			allPermutationsLevel{
 				token:           b,
 				permutation:     1,
 				maxPermutations: 2,
+
+				childs: nilChilds,
 			},
 			allPermutationsLevel{
 				token:           c,
 				permutation:     1,
 				maxPermutations: 1,
+
+				childs: []allPermutationsLevel{
+					allPermutationsLevel{
+						token:           c1,
+						permutation:     1,
+						maxPermutations: 1,
+
+						childs: nilChilds,
+					},
+				},
 			},
 		})
 	}
@@ -294,17 +357,26 @@ func TestAllPermutationsStrategy(t *testing.T) {
 		}
 
 		Equal(t, got, []string{
-			"",
-			"",
+			"", // 0x
+			"", // 1x
 			"1",
 			"2",
 			"12",
+			"", // 2x
+			"1",
+			"2",
+			"12",
+			"1",
+			"11",
+			"21",
+			"121",
+			"2",
+			"12",
+			"22",
+			"122",
 			"12",
 			"112",
 			"212",
-			"12",
-			"121",
-			"122",
 			"1212",
 		})
 	}
@@ -417,7 +489,6 @@ func TestAllPermutationsStrategy(t *testing.T) {
 	}
 	{
 		// Correct sequence deep or behaviour
-
 		o, err := parser.ParseTavor(strings.NewReader(`
 			$Id = type: Sequence,
 				start: 2,
