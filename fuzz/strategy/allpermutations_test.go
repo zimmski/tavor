@@ -23,7 +23,7 @@ func TestAllPermutationsStrategyToBeStrategy(t *testing.T) {
 func TestAllPermutationsStrategygetLevel(t *testing.T) {
 	o := NewAllPermutationsStrategy(nil)
 
-	var nilChilds []allPermutationsLevel
+	var nilChildren []allPermutationsLevel
 
 	{
 		a := primitives.NewConstantInt(1)
@@ -41,33 +41,33 @@ func TestAllPermutationsStrategygetLevel(t *testing.T) {
 				permutation:     1,
 				maxPermutations: 1,
 
-				childs: []allPermutationsLevel{
+				children: []allPermutationsLevel{
 					allPermutationsLevel{
 						token:           a,
 						permutation:     1,
 						maxPermutations: 1,
 
-						childs: nilChilds,
+						children: nilChildren,
 					},
 					allPermutationsLevel{
 						token:           b,
 						permutation:     1,
 						maxPermutations: 2,
 
-						childs: nilChilds,
+						children: nilChildren,
 					},
 					allPermutationsLevel{
 						token:           c,
 						permutation:     1,
 						maxPermutations: 1,
 
-						childs: []allPermutationsLevel{
+						children: []allPermutationsLevel{
 							allPermutationsLevel{
 								token:           c1,
 								permutation:     1,
 								maxPermutations: 1,
 
-								childs: nilChilds,
+								children: nilChildren,
 							},
 						},
 					},
@@ -83,27 +83,27 @@ func TestAllPermutationsStrategygetLevel(t *testing.T) {
 				permutation:     1,
 				maxPermutations: 1,
 
-				childs: nilChilds,
+				children: nilChildren,
 			},
 			allPermutationsLevel{
 				token:           b,
 				permutation:     1,
 				maxPermutations: 2,
 
-				childs: nilChilds,
+				children: nilChildren,
 			},
 			allPermutationsLevel{
 				token:           c,
 				permutation:     1,
 				maxPermutations: 1,
 
-				childs: []allPermutationsLevel{
+				children: []allPermutationsLevel{
 					allPermutationsLevel{
 						token:           c1,
 						permutation:     1,
 						maxPermutations: 1,
 
-						childs: nilChilds,
+						children: nilChildren,
 					},
 				},
 			},

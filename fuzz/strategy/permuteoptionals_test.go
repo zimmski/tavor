@@ -49,9 +49,9 @@ func TestPermuteOptionalsfindOptionals(t *testing.T) {
 		})
 
 		optionals[0].(token.OptionalToken).Activate()
-		childs, _ := o.findOptionals(r, optionals[0], true)
+		children, _ := o.findOptionals(r, optionals[0], true)
 
-		Equal(t, childs, []token.OptionalToken{
+		Equal(t, children, []token.OptionalToken{
 			a,
 			b,
 		})

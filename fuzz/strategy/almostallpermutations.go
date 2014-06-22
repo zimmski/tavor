@@ -49,11 +49,11 @@ func init() {
 	})
 }
 
-func (s *AlmostAllPermutationsStrategy) getLevel(root token.Token, fromChilds bool) []almostAllPermutationsLevel {
+func (s *AlmostAllPermutationsStrategy) getLevel(root token.Token, fromChildren bool) []almostAllPermutationsLevel {
 	var level []almostAllPermutationsLevel
 	var queue = linkedlist.New()
 
-	if fromChilds {
+	if fromChildren {
 		switch t := root.(type) {
 		case token.ForwardToken:
 			if v := t.Get(); v != nil {
@@ -212,10 +212,10 @@ STEP:
 			s.setTokenPermutation(level[i].token, level[i].permutation)
 
 			if t, ok := level[i].token.(token.OptionalToken); !ok || !t.IsOptional() || level[i].permutation != 1 {
-				childs := s.getLevel(level[i].token, true) // set all children to permutation 1
+				children := s.getLevel(level[i].token, true) // set all children to permutation 1
 
-				if len(childs) != 0 {
-					if !s.fuzz(continueFuzzing, childs) {
+				if len(children) != 0 {
+					if !s.fuzz(continueFuzzing, children) {
 						return false
 					}
 				}

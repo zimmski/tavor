@@ -15,7 +15,7 @@ type allPermutationsLevel struct {
 	permutation     int
 	maxPermutations int
 
-	childs []allPermutationsLevel
+	children []allPermutationsLevel
 }
 
 type AllPermutationsStrategy struct {
@@ -36,7 +36,7 @@ func init() {
 	})
 }
 
-func (s *AllPermutationsStrategy) getTree(root token.Token, fromChilds bool) []allPermutationsLevel {
+func (s *AllPermutationsStrategy) getTree(root token.Token, fromChildren bool) []allPermutationsLevel {
 	var tree []allPermutationsLevel
 
 	add := func(tok token.Token) {
@@ -47,11 +47,11 @@ func (s *AllPermutationsStrategy) getTree(root token.Token, fromChilds bool) []a
 			permutation:     1,
 			maxPermutations: tok.Permutations(),
 
-			childs: s.getTree(tok, true),
+			children: s.getTree(tok, true),
 		})
 	}
 
-	if fromChilds {
+	if fromChildren {
 		switch t := root.(type) {
 		case token.ForwardToken:
 			if v := t.Get(); v != nil {
@@ -116,12 +116,12 @@ func (s *AllPermutationsStrategy) fuzz(continueFuzzing chan struct{}, tree []all
 
 STEP:
 	for {
-		if justastep && len(tree[0].childs) != 0 {
+		if justastep && len(tree[0].children) != 0 {
 			if tavor.DEBUG {
 				fmt.Printf("STEP FURTHER INTO\n")
 			}
 
-			if contin, step := s.fuzz(continueFuzzing, tree[0].childs, justastep); !contin {
+			if contin, step := s.fuzz(continueFuzzing, tree[0].children, justastep); !contin {
 				return false, false
 			} else if step {
 				if tavor.DEBUG {
@@ -141,7 +141,7 @@ STEP:
 
 			if tree[0].permutation != 1 {
 				s.setPermutation(tree[0].token, tree[0].permutation)
-				tree[0].childs = s.getTree(tree[0].token, true)
+				tree[0].children = s.getTree(tree[0].token, true)
 
 				if justastep {
 					if tavor.DEBUG {
@@ -152,8 +152,8 @@ STEP:
 				}
 			}
 
-			if len(tree[0].childs) != 0 {
-				if contin, step := s.fuzz(continueFuzzing, tree[0].childs, justastep); !contin {
+			if len(tree[0].children) != 0 {
+				if contin, step := s.fuzz(continueFuzzing, tree[0].children, justastep); !contin {
 					return false, false
 				} else if step {
 					if tavor.DEBUG {
@@ -191,18 +191,18 @@ STEP:
 
 				i++
 
-				if len(tree[i].childs) != 0 {
+				if len(tree[i].children) != 0 {
 					if tavor.DEBUG {
 						fmt.Printf("CHECK children %#v\n", tree[i])
 					}
 
-					if contin, step := s.fuzz(continueFuzzing, tree[i].childs, true); !contin {
+					if contin, step := s.fuzz(continueFuzzing, tree[i].children, true); !contin {
 						return false, false
 					} else if step {
 						for j := 0; j < i; j++ {
 							tree[j].permutation = 1
 							s.setPermutation(tree[j].token, tree[j].permutation)
-							tree[j].childs = s.getTree(tree[j].token, true)
+							tree[j].children = s.getTree(tree[j].token, true)
 						}
 
 						if justastep {
@@ -225,7 +225,7 @@ STEP:
 					for j := 0; j < i; j++ {
 						tree[j].permutation = 1
 						s.setPermutation(tree[j].token, tree[j].permutation)
-						tree[j].childs = s.getTree(tree[j].token, true)
+						tree[j].children = s.getTree(tree[j].token, true)
 					}
 
 					if tavor.DEBUG {
@@ -233,7 +233,7 @@ STEP:
 					}
 
 					s.setPermutation(tree[i].token, tree[i].permutation)
-					tree[i].childs = s.getTree(tree[i].token, true)
+					tree[i].children = s.getTree(tree[i].token, true)
 
 					if justastep {
 						return true, true
@@ -244,7 +244,7 @@ STEP:
 			}
 		} else if justastep {
 			s.setPermutation(tree[0].token, tree[0].permutation)
-			tree[0].childs = s.getTree(tree[0].token, true)
+			tree[0].children = s.getTree(tree[0].token, true)
 
 			if tavor.DEBUG {
 				fmt.Printf("CONTINUE after permutate\n")

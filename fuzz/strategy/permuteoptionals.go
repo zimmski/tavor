@@ -30,12 +30,12 @@ func init() {
 	})
 }
 
-func (s *PermuteOptionalsStrategy) findOptionals(r rand.Rand, root token.Token, fromChilds bool) ([]token.OptionalToken, map[token.ResetToken]struct{}) {
+func (s *PermuteOptionalsStrategy) findOptionals(r rand.Rand, root token.Token, fromChildren bool) ([]token.OptionalToken, map[token.ResetToken]struct{}) {
 	var optionals []token.OptionalToken
 	var queue = linkedlist.New()
 	var resets = make(map[token.ResetToken]struct{})
 
-	if fromChilds {
+	if fromChildren {
 		switch t := root.(type) {
 		case token.ForwardToken:
 			queue.Push(t.Get())
@@ -205,7 +205,7 @@ func (s *PermuteOptionalsStrategy) fuzz(r rand.Rand, continueFuzzing chan struct
 			} else {
 				optionals[i].Activate()
 
-				childs, rets := s.findOptionals(r, optionals[i], true)
+				children, rets := s.findOptionals(r, optionals[i], true)
 
 				if len(rets) != 0 {
 					for t := range rets {
@@ -213,8 +213,8 @@ func (s *PermuteOptionalsStrategy) fuzz(r rand.Rand, continueFuzzing chan struct
 					}
 				}
 
-				if len(childs) != 0 {
-					if !s.fuzz(r, continueFuzzing, childs, resets) {
+				if len(children) != 0 {
+					if !s.fuzz(r, continueFuzzing, children, resets) {
 						return false
 					}
 				}
