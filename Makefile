@@ -1,4 +1,6 @@
-.PHONY: binaries clean fmt install lint test tools
+.PHONY: all binaries clean fmt install lint test tools
+
+all: clean install test install binaries
 
 binaries:
 	go install -race $(GOPATH)/src/github.com/zimmski/tavor/bin/tavor.go
