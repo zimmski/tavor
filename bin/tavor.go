@@ -27,6 +27,7 @@ var opts struct {
 	InputFile string `long:"input-file" description:"Input tavor file" required:"true" no-ini:"true"`
 	Seed      int64  `long:"seed" description:"Seed for all the randomness"`
 	Strategy  string `long:"strategy" description:"The fuzzing strategy" default:"random"`
+	Validate  bool   `long:"validate" description:"Just validates the input file"`
 	Verbose   bool   `long:"verbose" description:"Do verbose output."`
 	Version   bool   `long:"version" description:"Print the version of this program." no-ini:"true"`
 
@@ -120,6 +121,14 @@ func main() {
 	doc, err := parser.ParseTavor(file)
 	if err != nil {
 		panic(fmt.Errorf("cannot parse tavor file: %v", err))
+	}
+
+	if opts.Verbose {
+		V("File is ok")
+	}
+
+	if opts.Validate {
+		os.Exit(returnOk)
 	}
 
 	if opts.Verbose {
