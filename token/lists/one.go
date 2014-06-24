@@ -21,6 +21,8 @@ func NewOne(toks ...token.Token) *One {
 	}
 }
 
+// Token interface methods
+
 func (l *One) Clone() token.Token {
 	c := One{
 		tokens: make([]token.Token, len(l.tokens)),
@@ -44,18 +46,6 @@ func (l *One) FuzzAll(r rand.Rand) {
 	l.Fuzz(r)
 
 	l.tokens[l.value].FuzzAll(r)
-}
-
-func (l *One) Get(i int) (token.Token, error) {
-	if i != 0 {
-		return nil, &ListError{ListErrorOutOfBound}
-	}
-
-	return l.tokens[l.value], nil
-}
-
-func (l *One) Len() int {
-	return 1
 }
 
 func (l *One) permutation(i int) {
@@ -92,4 +82,54 @@ func (l *One) PermutationsAll() int {
 
 func (l *One) String() string {
 	return l.tokens[l.value].String()
+}
+
+// List interface methods
+
+func (l *One) Get(i int) (token.Token, error) {
+	if i != 0 {
+		return nil, &ListError{ListErrorOutOfBound}
+	}
+
+	return l.tokens[l.value], nil
+}
+
+func (l *One) Len() int {
+	return 1
+}
+
+func (l *One) LogicalRemove(tok token.Token) token.Token {
+	for i := 0; i < len(l.tokens); i++ {
+		if l.tokens[i] == tok {
+			if l.value == i {
+				l.value--
+			}
+
+			if i == len(l.tokens)-1 {
+				l.tokens = l.tokens[:i]
+			} else {
+				l.tokens = append(l.tokens[:i], l.tokens[i+1:]...)
+			}
+
+			i--
+		}
+	}
+
+	if len(l.tokens) == 0 {
+		return nil
+	}
+
+	if l.value == -1 {
+		l.value = 0
+	}
+
+	return l
+}
+
+func (l *One) Replace(oldToken, newToken token.Token) {
+	for i := 0; i < len(l.tokens); i++ {
+		if l.tokens[i] == oldToken {
+			l.tokens[i] = newToken
+		}
+	}
 }

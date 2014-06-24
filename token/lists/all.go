@@ -21,6 +21,8 @@ func NewAll(toks ...token.Token) *All {
 	}
 }
 
+// Token interface methods
+
 func (l *All) Clone() token.Token {
 	c := All{
 		tokens: make([]token.Token, len(l.tokens)),
@@ -43,18 +45,6 @@ func (l *All) FuzzAll(r rand.Rand) {
 	for _, tok := range l.tokens {
 		tok.FuzzAll(r)
 	}
-}
-
-func (l *All) Get(i int) (token.Token, error) {
-	if i < 0 || i >= len(l.tokens) {
-		return nil, &ListError{ListErrorOutOfBound}
-	}
-
-	return l.tokens[i], nil
-}
-
-func (l *All) Len() int {
-	return len(l.tokens)
 }
 
 func (l *All) Permutation(i int) error {
@@ -93,4 +83,46 @@ func (l *All) String() string {
 	}
 
 	return buffer.String()
+}
+
+// List interface methods
+
+func (l *All) Get(i int) (token.Token, error) {
+	if i < 0 || i >= len(l.tokens) {
+		return nil, &ListError{ListErrorOutOfBound}
+	}
+
+	return l.tokens[i], nil
+}
+
+func (l *All) Len() int {
+	return len(l.tokens)
+}
+
+func (l *All) LogicalRemove(tok token.Token) token.Token {
+	for i := 0; i < len(l.tokens); i++ {
+		if l.tokens[i] == tok {
+			switch tok.(type) {
+			case token.OptionalToken:
+				if i == len(l.tokens)-1 {
+					l.tokens = l.tokens[:i]
+				} else {
+					l.tokens = append(l.tokens[:i], l.tokens[i+1:]...)
+				}
+			default:
+				// if we remove one token from an All list we have to remove everything
+				return nil
+			}
+		}
+	}
+
+	return l
+}
+
+func (l *All) Replace(oldToken, newToken token.Token) {
+	for i := 0; i < len(l.tokens); i++ {
+		if l.tokens[i] == oldToken {
+			l.tokens[i] = newToken
+		}
+	}
 }

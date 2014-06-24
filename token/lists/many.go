@@ -108,3 +108,43 @@ func (l *Many) Get(i int) (token.Token, error) {
 func (l *Many) Len() int {
 	return len(l.value)
 }
+
+func (l *Many) LogicalRemove(tok token.Token) token.Token {
+	for i := 0; i < len(l.tokens); i++ {
+		if l.tokens[i] == tok {
+			for i, v := range l.value {
+				if v == -1 {
+					l.value[i]--
+				}
+			}
+
+			if i == len(l.tokens)-1 {
+				l.tokens = l.tokens[:i]
+			} else {
+				l.tokens = append(l.tokens[:i], l.tokens[i+1:]...)
+			}
+
+			i--
+		}
+	}
+
+	if len(l.tokens) == 0 {
+		return nil
+	}
+
+	for i, v := range l.value {
+		if v == -1 {
+			l.value[i] = 0
+		}
+	}
+
+	return l
+}
+
+func (l *Many) Replace(oldToken, newToken token.Token) {
+	for i := 0; i < len(l.tokens); i++ {
+		if l.tokens[i] == oldToken {
+			l.tokens[i] = newToken
+		}
+	}
+}

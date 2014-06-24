@@ -29,6 +29,24 @@ func NewEmptyPointer(typ interface{}) *Pointer {
 	}
 }
 
+func (p *Pointer) Set(o token.Token) error {
+	if o == nil {
+		p.token = nil
+		p.cloned = true
+		return nil
+	}
+
+	if !reflect.TypeOf(o).Implements(p.typ) {
+		return fmt.Errorf("does not implement type %s", p.typ)
+	}
+
+	p.token = o
+
+	return nil
+}
+
+// Token interface methods
+
 func (p *Pointer) Clone() token.Token {
 	return &Pointer{
 		token:  p.token, // do not clone further
@@ -97,26 +115,26 @@ func (p *Pointer) PermutationsAll() int {
 	return p.token.PermutationsAll()
 }
 
-func (p *Pointer) Set(o token.Token) error {
-	if o == nil {
-		p.token = nil
-		p.cloned = true
-		return nil
-	}
-
-	if !reflect.TypeOf(o).Implements(p.typ) {
-		return fmt.Errorf("does not implement type %s", p.typ)
-	}
-
-	p.token = o
-
-	return nil
-}
-
 func (p *Pointer) String() string {
 	if p.token == nil {
 		return ""
 	}
 
 	return p.token.String()
+}
+
+// ForwardToken interface methods
+
+func (p *Pointer) LogicalRemove(tok token.Token) token.Token {
+	if p.token == tok {
+		return nil
+	}
+
+	return p
+}
+
+func (p *Pointer) Replace(oldToken, newToken token.Token) {
+	if p.token == oldToken {
+		p.token = newToken
+	}
 }

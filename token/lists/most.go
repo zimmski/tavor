@@ -28,6 +28,8 @@ func NewMost(tok token.Token, n int64) *Most {
 	return l
 }
 
+// Token interface methods
+
 func (l *Most) Clone() token.Token {
 	c := Most{
 		n:     l.n,
@@ -54,18 +56,6 @@ func (l *Most) FuzzAll(r rand.Rand) {
 	for _, tok := range l.value {
 		tok.FuzzAll(r)
 	}
-}
-
-func (l *Most) Get(i int) (token.Token, error) {
-	if i < 0 || i >= len(l.value) {
-		return nil, &ListError{ListErrorOutOfBound}
-	}
-
-	return l.value[i], nil
-}
-
-func (l *Most) Len() int {
-	return len(l.value)
 }
 
 func (l *Most) permutation(i int) {
@@ -116,6 +106,38 @@ func (l *Most) String() string {
 	}
 
 	return buffer.String()
+}
+
+// List interface methods
+
+func (l *Most) Get(i int) (token.Token, error) {
+	if i < 0 || i >= len(l.value) {
+		return nil, &ListError{ListErrorOutOfBound}
+	}
+
+	return l.value[i], nil
+}
+
+func (l *Most) Len() int {
+	return len(l.value)
+}
+
+func (l *Most) LogicalRemove(tok token.Token) token.Token {
+	if l.token == tok {
+		return nil
+	}
+
+	return l
+}
+
+func (l *Most) Replace(oldToken, newToken token.Token) {
+	if l.token == oldToken {
+		l.token = newToken
+
+		for i := range l.value {
+			l.value[i] = l.token.Clone()
+		}
+	}
 }
 
 // OptionalToken interface methods

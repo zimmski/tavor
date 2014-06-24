@@ -17,6 +17,8 @@ func NewOptional(tok token.Token) *Optional {
 	}
 }
 
+// Token interface methods
+
 func (c *Optional) Clone() token.Token {
 	return &Optional{
 		token: c.token.Clone(),
@@ -34,14 +36,6 @@ func (c *Optional) FuzzAll(r rand.Rand) {
 	if !c.value {
 		c.token.FuzzAll(r)
 	}
-}
-
-func (c *Optional) Get() token.Token {
-	if c.value {
-		return nil
-	}
-
-	return c.token
 }
 
 func (c *Optional) permutation(i int) {
@@ -76,6 +70,30 @@ func (c *Optional) String() string {
 	}
 
 	return c.token.String()
+}
+
+// ForwardToken interface methods
+
+func (c *Optional) Get() token.Token {
+	if c.value {
+		return nil
+	}
+
+	return c.token
+}
+
+func (c *Optional) LogicalRemove(tok token.Token) token.Token {
+	if c.token == tok {
+		return nil
+	}
+
+	return c
+}
+
+func (c *Optional) Replace(oldToken, newToken token.Token) {
+	if c.token == oldToken {
+		c.token = newToken
+	}
 }
 
 // OptionalToken interface methods

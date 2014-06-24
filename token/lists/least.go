@@ -28,6 +28,8 @@ func NewLeast(tok token.Token, n int64) *Least {
 	return l
 }
 
+// Token interface methods
+
 func (l *Least) Clone() token.Token {
 	c := Least{
 		n:     l.n,
@@ -61,18 +63,6 @@ func (l *Least) FuzzAll(r rand.Rand) {
 	}
 }
 
-func (l *Least) Get(i int) (token.Token, error) {
-	if i < 0 || i >= len(l.value) {
-		return nil, &ListError{ListErrorOutOfBound}
-	}
-
-	return l.value[i], nil
-}
-
-func (l *Least) Len() int {
-	return len(l.value)
-}
-
 func (l *Least) Permutation(i int) error {
 	panic("TODO not implemented")
 }
@@ -93,6 +83,38 @@ func (l *Least) String() string {
 	}
 
 	return buffer.String()
+}
+
+// List interface methods
+
+func (l *Least) Get(i int) (token.Token, error) {
+	if i < 0 || i >= len(l.value) {
+		return nil, &ListError{ListErrorOutOfBound}
+	}
+
+	return l.value[i], nil
+}
+
+func (l *Least) Len() int {
+	return len(l.value)
+}
+
+func (l *Least) LogicalRemove(tok token.Token) token.Token {
+	if l.token == tok {
+		return nil
+	}
+
+	return l
+}
+
+func (l *Least) Replace(oldToken, newToken token.Token) {
+	if l.token == oldToken {
+		l.token = newToken
+
+		for i := range l.value {
+			l.value[i] = l.token.Clone()
+		}
+	}
 }
 
 // OptionalToken interface methods

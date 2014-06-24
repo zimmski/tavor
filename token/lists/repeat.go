@@ -30,6 +30,8 @@ func NewRepeat(tok token.Token, from, to int64) *Repeat {
 	return l
 }
 
+// Token interface methods
+
 func (l *Repeat) Clone() token.Token {
 	c := Repeat{
 		from:  l.from,
@@ -57,18 +59,6 @@ func (l *Repeat) FuzzAll(r rand.Rand) {
 	for _, tok := range l.value {
 		tok.FuzzAll(r)
 	}
-}
-
-func (l *Repeat) Get(i int) (token.Token, error) {
-	if i < 0 || i >= len(l.value) {
-		return nil, &ListError{ListErrorOutOfBound}
-	}
-
-	return l.value[i], nil
-}
-
-func (l *Repeat) Len() int {
-	return len(l.value)
 }
 
 func (l *Repeat) permutation(i int) {
@@ -125,6 +115,38 @@ func (l *Repeat) String() string {
 	}
 
 	return buffer.String()
+}
+
+// List interface methods
+
+func (l *Repeat) Get(i int) (token.Token, error) {
+	if i < 0 || i >= len(l.value) {
+		return nil, &ListError{ListErrorOutOfBound}
+	}
+
+	return l.value[i], nil
+}
+
+func (l *Repeat) Len() int {
+	return len(l.value)
+}
+
+func (l *Repeat) LogicalRemove(tok token.Token) token.Token {
+	if l.token == tok {
+		return nil
+	}
+
+	return l
+}
+
+func (l *Repeat) Replace(oldToken, newToken token.Token) {
+	if l.token == oldToken {
+		l.token = newToken
+
+		for i := range l.value {
+			l.value[i] = l.token.Clone()
+		}
+	}
 }
 
 // OptionalToken interface methods

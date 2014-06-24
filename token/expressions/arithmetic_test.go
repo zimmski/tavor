@@ -6,13 +6,12 @@ import (
 	. "github.com/stretchr/testify/assert"
 
 	"github.com/zimmski/tavor/test"
-	"github.com/zimmski/tavor/token"
 	"github.com/zimmski/tavor/token/lists"
 	"github.com/zimmski/tavor/token/primitives"
 )
 
 func TestArithmeticExpressionTokensToBeTokens(t *testing.T) {
-	var tok *token.Token
+	var tok *lists.List
 
 	Implements(t, tok, &AddArithmetic{})
 	Implements(t, tok, &SubArithmetic{})

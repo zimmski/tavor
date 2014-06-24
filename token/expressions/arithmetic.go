@@ -38,23 +38,6 @@ func (e *AddArithmetic) FuzzAll(r rand.Rand) {
 	e.b.FuzzAll(r)
 }
 
-func (e *AddArithmetic) Get(i int) (token.Token, error) {
-	switch i {
-	case 0:
-		return e.a, nil
-	case 1:
-		return e.b, nil
-	default:
-		return nil, &lists.ListError{
-			Type: lists.ListErrorOutOfBound,
-		}
-	}
-}
-
-func (e *AddArithmetic) Len() int {
-	return 2
-}
-
 func (e *AddArithmetic) Permutation(i int) error {
 	permutations := e.Permutations()
 
@@ -89,6 +72,42 @@ func (e *AddArithmetic) String() string {
 	return strconv.Itoa(a + b)
 }
 
+// List interface methods
+
+func (e *AddArithmetic) Get(i int) (token.Token, error) {
+	switch i {
+	case 0:
+		return e.a, nil
+	case 1:
+		return e.b, nil
+	default:
+		return nil, &lists.ListError{
+			Type: lists.ListErrorOutOfBound,
+		}
+	}
+}
+
+func (e *AddArithmetic) Len() int {
+	return 2
+}
+
+func (e *AddArithmetic) LogicalRemove(tok token.Token) token.Token {
+	if tok == e.a || tok == e.b {
+		return nil
+	}
+
+	return e
+}
+
+func (e *AddArithmetic) Replace(oldToken, newToken token.Token) {
+	if oldToken == e.a {
+		e.a = newToken
+	}
+	if oldToken == e.b {
+		e.b = newToken
+	}
+}
+
 type SubArithmetic struct {
 	a token.Token
 	b token.Token
@@ -117,23 +136,6 @@ func (e *SubArithmetic) FuzzAll(r rand.Rand) {
 
 	e.a.FuzzAll(r)
 	e.b.FuzzAll(r)
-}
-
-func (e *SubArithmetic) Get(i int) (token.Token, error) {
-	switch i {
-	case 0:
-		return e.a, nil
-	case 1:
-		return e.b, nil
-	default:
-		return nil, &lists.ListError{
-			Type: lists.ListErrorOutOfBound,
-		}
-	}
-}
-
-func (e *SubArithmetic) Len() int {
-	return 2
 }
 
 func (e *SubArithmetic) Permutation(i int) error {
@@ -170,6 +172,42 @@ func (e *SubArithmetic) String() string {
 	return strconv.Itoa(a - b)
 }
 
+// List interface methods
+
+func (e *SubArithmetic) Get(i int) (token.Token, error) {
+	switch i {
+	case 0:
+		return e.a, nil
+	case 1:
+		return e.b, nil
+	default:
+		return nil, &lists.ListError{
+			Type: lists.ListErrorOutOfBound,
+		}
+	}
+}
+
+func (e *SubArithmetic) Len() int {
+	return 2
+}
+
+func (e *SubArithmetic) LogicalRemove(tok token.Token) token.Token {
+	if tok == e.a || tok == e.b {
+		return nil
+	}
+
+	return e
+}
+
+func (e *SubArithmetic) Replace(oldToken, newToken token.Token) {
+	if oldToken == e.a {
+		e.a = newToken
+	}
+	if oldToken == e.b {
+		e.b = newToken
+	}
+}
+
 type MulArithmetic struct {
 	a token.Token
 	b token.Token
@@ -198,23 +236,6 @@ func (e *MulArithmetic) FuzzAll(r rand.Rand) {
 
 	e.a.FuzzAll(r)
 	e.b.FuzzAll(r)
-}
-
-func (e *MulArithmetic) Get(i int) (token.Token, error) {
-	switch i {
-	case 0:
-		return e.a, nil
-	case 1:
-		return e.b, nil
-	default:
-		return nil, &lists.ListError{
-			Type: lists.ListErrorOutOfBound,
-		}
-	}
-}
-
-func (e *MulArithmetic) Len() int {
-	return 2
 }
 
 func (e *MulArithmetic) Permutation(i int) error {
@@ -251,6 +272,42 @@ func (e *MulArithmetic) String() string {
 	return strconv.Itoa(a * b)
 }
 
+// List interface methods
+
+func (e *MulArithmetic) Get(i int) (token.Token, error) {
+	switch i {
+	case 0:
+		return e.a, nil
+	case 1:
+		return e.b, nil
+	default:
+		return nil, &lists.ListError{
+			Type: lists.ListErrorOutOfBound,
+		}
+	}
+}
+
+func (e *MulArithmetic) Len() int {
+	return 2
+}
+
+func (e *MulArithmetic) LogicalRemove(tok token.Token) token.Token {
+	if tok == e.a || tok == e.b {
+		return nil
+	}
+
+	return e
+}
+
+func (e *MulArithmetic) Replace(oldToken, newToken token.Token) {
+	if oldToken == e.a {
+		e.a = newToken
+	}
+	if oldToken == e.b {
+		e.b = newToken
+	}
+}
+
 type DivArithmetic struct {
 	a token.Token
 	b token.Token
@@ -279,23 +336,6 @@ func (e *DivArithmetic) FuzzAll(r rand.Rand) {
 
 	e.a.FuzzAll(r)
 	e.b.FuzzAll(r)
-}
-
-func (e *DivArithmetic) Get(i int) (token.Token, error) {
-	switch i {
-	case 0:
-		return e.a, nil
-	case 1:
-		return e.b, nil
-	default:
-		return nil, &lists.ListError{
-			Type: lists.ListErrorOutOfBound,
-		}
-	}
-}
-
-func (e *DivArithmetic) Len() int {
-	return 2
 }
 
 func (e *DivArithmetic) Permutation(i int) error {
@@ -330,4 +370,40 @@ func (e *DivArithmetic) String() string {
 	}
 
 	return strconv.Itoa(a / b)
+}
+
+// List interface methods
+
+func (e *DivArithmetic) Get(i int) (token.Token, error) {
+	switch i {
+	case 0:
+		return e.a, nil
+	case 1:
+		return e.b, nil
+	default:
+		return nil, &lists.ListError{
+			Type: lists.ListErrorOutOfBound,
+		}
+	}
+}
+
+func (e *DivArithmetic) Len() int {
+	return 2
+}
+
+func (e *DivArithmetic) LogicalRemove(tok token.Token) token.Token {
+	if tok == e.a || tok == e.b {
+		return nil
+	}
+
+	return e
+}
+
+func (e *DivArithmetic) Replace(oldToken, newToken token.Token) {
+	if oldToken == e.a {
+		e.a = newToken
+	}
+	if oldToken == e.b {
+		e.b = newToken
+	}
 }

@@ -11,18 +11,20 @@ type Token interface {
 
 	Clone() Token
 
+	Fuzz(r rand.Rand)
+	FuzzAll(r rand.Rand)
+
 	Permutation(i int) error
 	Permutations() int
 	PermutationsAll() int
-
-	Fuzz(r rand.Rand)
-	FuzzAll(r rand.Rand)
 }
 
 type ForwardToken interface {
 	Token
 
 	Get() Token
+	LogicalRemove(tok Token) Token
+	Replace(oldToken, newToken Token)
 }
 
 type OptionalToken interface {
