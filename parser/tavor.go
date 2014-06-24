@@ -759,7 +759,8 @@ func (p *tavorParser) parseTokenDefinition() (rune, error) {
 		foundExit := false
 
 		if tavor.DEBUG {
-			fmt.Println("Need to check for loops")
+			fmt.Printf("Need to check for loops in %s with embedding %+v\n", name, embeddedToks)
+			fmt.Printf("Use embedding lookup map %+v\n", p.embeddedTokensInTerm)
 		}
 
 	EMBEDDEDTOKS:
@@ -1025,9 +1026,141 @@ func (p *tavorParser) parseSpecialTokenDefinition() (rune, error) {
 	return c, nil
 }
 
+func (p *tavorParser) unrollLoops(root token.Token) token.Token {
+	type unrollToken struct {
+		tok    token.Token
+		parent *unrollToken
+	}
+
+	if tavor.DEBUG {
+		fmt.Println("Unroll loops by cloning pointers")
+	}
+
+	checked := make(map[token.Token]token.Token)
+	counters := make(map[token.Token]int)
+
+	queue := linkedlist.New()
+
+	queue.Push(&unrollToken{
+		tok:    root,
+		parent: nil,
+	})
+
+	for !queue.Empty() {
+		v, _ := queue.Shift()
+		iTok, _ := v.(*unrollToken)
+
+		switch t := iTok.tok.(type) {
+		case *primitives.Pointer:
+			o := t.Get()
+
+			parent, ok := checked[o]
+			times := 0
+
+			if ok {
+				times = counters[parent]
+			} else {
+				parent = o.Clone()
+				checked[o] = parent
+			}
+
+			if times != MaxRepeat {
+				if tavor.DEBUG {
+					fmt.Printf("Clone (%p)%#v with parent (%p)%#v\n", t, t, parent, parent)
+				}
+
+				c := parent.Clone()
+
+				t.Set(c)
+
+				counters[parent] = times + 1
+				checked[c] = parent
+
+				if iTok.parent != nil {
+					switch tt := iTok.parent.tok.(type) {
+					case token.ForwardToken:
+						tt.Replace(t, c)
+					case lists.List:
+						tt.Replace(t, c)
+					}
+				} else {
+					root = c
+				}
+
+				queue.Unshift(&unrollToken{
+					tok:    c,
+					parent: iTok.parent,
+				})
+			} else {
+				if tavor.DEBUG {
+					fmt.Printf("Reached max repeat of %d for (%p)%#v with parent (%p)%#v\n", MaxRepeat, t, t, parent, parent)
+				}
+
+				t.Set(nil)
+
+				ta := iTok.tok
+				tt := iTok.parent
+
+			REMOVE:
+				for tt != nil {
+					switch l := tt.tok.(type) {
+					case token.ForwardToken:
+						if tavor.DEBUG {
+							fmt.Printf("Remove (%p)%#v from (%p)%#v\n", ta, ta, l, l)
+						}
+
+						c := l.LogicalRemove(ta)
+
+						if c != nil {
+							break REMOVE
+						}
+
+						ta = l
+						tt = tt.parent
+					case lists.List:
+						if tavor.DEBUG {
+							fmt.Printf("Remove (%p)%#v from (%p)%#v\n", ta, ta, l, l)
+						}
+
+						c := l.LogicalRemove(ta)
+
+						if c != nil {
+							break REMOVE
+						}
+
+						ta = l
+						tt = tt.parent
+					}
+				}
+			}
+		case token.ForwardToken:
+			if v := t.Get(); v != nil {
+				queue.Push(&unrollToken{
+					tok:    v,
+					parent: iTok,
+				})
+			}
+		case lists.List:
+			for i := 0; i < t.Len(); i++ {
+				c, _ := t.Get(i)
+
+				queue.Push(&unrollToken{
+					tok:    c,
+					parent: iTok,
+				})
+			}
+		}
+	}
+
+	if tavor.DEBUG {
+		fmt.Println("Done unrolling")
+	}
+
+	return root
+}
+
 func ParseTavor(src io.Reader) (token.Token, error) {
 	p := &tavorParser{
-
 		earlyUse:             make(map[string]token.Token),
 		embeddedTokensInTerm: make(map[string][]map[string]struct{}),
 		lookup:               make(map[string]token.Token),
@@ -1076,6 +1209,8 @@ func ParseTavor(src io.Reader) (token.Token, error) {
 			}
 		}
 	}
+
+	p.lookup["START"] = p.unrollLoops(p.lookup["START"])
 
 	return p.lookup["START"], nil
 }

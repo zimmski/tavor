@@ -192,16 +192,14 @@ func TestTavorParseErrors(t *testing.T) {
 	Equal(t, ParseErrorExpectedExpressionTerm, err.(*ParserError).Type)
 	Nil(t, tok)
 
-	/*
-		TODO this can maybe never happen as we do everything in one pass
-		so we do not know that $List must implement lists.List
+	// TODO this can maybe never happen as we do everything in one pass
+	// so we do not know that $List must implement lists.List
 
-		// wrong token type because of earlier usage
-		tok, err = ParseTavor(strings.NewReader("START = $List.Count\nList = 123"))
-		panic(err)
-		Equal(t, ParseErrorExpectedExpressionTerm, err.(*ParserError).Type)
-		Nil(t, tok)
-	*/
+	// // wrong token type because of earlier usage
+	// tok, err = ParseTavor(strings.NewReader("START = $List.Count\nList = 123"))
+	// panic(err)
+	// Equal(t, ParseErrorExpectedExpressionTerm, err.(*ParserError).Type)
+	// Nil(t, tok)
 }
 
 func TestTavorParserSimple(t *testing.T) {
@@ -642,29 +640,6 @@ func TestTavorParserAndCuriousCaseOfFuzzing(t *testing.T) {
 	var tok token.Token
 	var err error
 
-	// loop term (use a term in its definition)
-	tok, err = ParseTavor(strings.NewReader(
-		"B = 123\nA = B A | 456\nSTART = A\n",
-	))
-	Nil(t, err)
-	{
-		a, _ := tok.(*lists.One).Get(0)
-		p, _ := a.(*lists.All).Get(1)
-
-		Equal(t, tok, p.(*primitives.Pointer).Get())
-
-		Equal(t, tok, lists.NewOne(
-			lists.NewAll(
-				primitives.NewConstantInt(123),
-				p,
-			),
-			primitives.NewConstantInt(456),
-		))
-		r := test.NewRandTest(1)
-		tok.FuzzAll(r)
-		Equal(t, "123456", tok.String())
-	}
-
 	// detect endless loops
 	tok, err = ParseTavor(strings.NewReader(
 		"B = 123\nA = A B\nSTART = A\n",
@@ -677,25 +652,6 @@ func TestTavorParserAndCuriousCaseOfFuzzing(t *testing.T) {
 	))
 	Equal(t, ParseErrorEndlessLoopDetected, err.(*ParserError).Type)
 	Nil(t, tok)
-
-	tok, err = ParseTavor(strings.NewReader(
-		"B = 123\nA = B A | B\nSTART = A\n",
-	))
-	Nil(t, err)
-	{
-		a, _ := tok.(*lists.One).Get(0)
-		p, _ := a.(*lists.All).Get(1)
-
-		Equal(t, tok, p.(*primitives.Pointer).Get())
-
-		Equal(t, tok, lists.NewOne(
-			lists.NewAll(
-				primitives.NewConstantInt(123),
-				p,
-			),
-			primitives.NewConstantInt(123),
-		))
-	}
 
 	tok, err = ParseTavor(strings.NewReader(
 		"B = A\nA = B A | B\nSTART = A\n",
@@ -714,7 +670,7 @@ func TestTavorParserAndCuriousCaseOfFuzzing(t *testing.T) {
 		"START = Token\nToken = 123\n",
 	))
 	Nil(t, err)
-	Equal(t, tok.(*primitives.Pointer).Get(), primitives.NewConstantInt(123))
+	Equal(t, tok, primitives.NewConstantInt(123))
 
 	// Tokens should be cloned so they are different internally
 	{
@@ -768,5 +724,112 @@ func TestTavorParserAndCuriousCaseOfFuzzing(t *testing.T) {
 		tok.FuzzAll(r)
 
 		Equal(t, "211", tok.String())
+	}
+}
+
+func TestTavorParserLoops(t *testing.T) {
+	var tok token.Token
+	var err error
+
+	// simplest valid loop
+	tok, err = ParseTavor(strings.NewReader(`
+		A = A | 1
+
+		START = A
+	`))
+	Nil(t, err)
+	{
+		Equal(t, tok, lists.NewOne(
+			lists.NewOne(
+				lists.NewOne(
+					primitives.NewConstantInt(1),
+				),
+				primitives.NewConstantInt(1),
+			),
+			primitives.NewConstantInt(1),
+		))
+
+		Equal(t, "1", tok.String())
+	}
+
+	tok, err = ParseTavor(strings.NewReader(`
+		A = A 1 | 2
+
+		START = A
+	`))
+	Nil(t, err)
+	{
+		Equal(t, tok, lists.NewOne(
+			lists.NewAll(
+				lists.NewOne(
+					lists.NewAll(
+						lists.NewOne(
+							primitives.NewConstantInt(2),
+						),
+						primitives.NewConstantInt(1),
+					),
+					primitives.NewConstantInt(2),
+				),
+				primitives.NewConstantInt(1),
+			),
+			primitives.NewConstantInt(2),
+		))
+
+		Equal(t, "211", tok.String())
+	}
+
+	// optional loop
+	tok, err = ParseTavor(strings.NewReader(`
+		A = ?(A) 1
+
+		START = A
+	`))
+	Nil(t, err)
+	{
+		Equal(t, tok, lists.NewAll(
+			constraints.NewOptional(
+				lists.NewAll(
+					constraints.NewOptional(
+						lists.NewAll(
+							primitives.NewConstantInt(1),
+						),
+					),
+					primitives.NewConstantInt(1),
+				),
+			),
+			primitives.NewConstantInt(1),
+		))
+
+		Equal(t, "111", tok.String())
+	}
+
+	// One loop
+	tok, err = ParseTavor(strings.NewReader(`
+		A = (A | 2) 1
+
+		START = A
+	`))
+	Nil(t, err)
+	{
+		Equal(t, tok, lists.NewAll(
+			lists.NewOne(
+				lists.NewAll(
+					lists.NewOne(
+						lists.NewAll(
+							lists.NewOne(
+								primitives.NewConstantInt(2),
+							),
+							primitives.NewConstantInt(1),
+						),
+						primitives.NewConstantInt(2),
+					),
+					primitives.NewConstantInt(1),
+				),
+				primitives.NewConstantInt(2),
+			),
+			primitives.NewConstantInt(1),
+		))
+
+		Equal(t, "2111", tok.String())
 	}
 }
