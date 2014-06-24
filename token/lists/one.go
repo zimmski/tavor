@@ -7,7 +7,7 @@ import (
 
 type One struct {
 	tokens []token.Token
-	value  token.Token
+	value  int
 }
 
 func NewOne(toks ...token.Token) *One {
@@ -17,14 +17,14 @@ func NewOne(toks ...token.Token) *One {
 
 	return &One{
 		tokens: toks,
-		value:  toks[0],
+		value:  0,
 	}
 }
 
 func (l *One) Clone() token.Token {
 	c := One{
 		tokens: make([]token.Token, len(l.tokens)),
-		value:  l.value.Clone(),
+		value:  l.value,
 	}
 
 	for i, tok := range l.tokens {
@@ -43,7 +43,7 @@ func (l *One) Fuzz(r rand.Rand) {
 func (l *One) FuzzAll(r rand.Rand) {
 	l.Fuzz(r)
 
-	l.value.FuzzAll(r)
+	l.tokens[l.value].FuzzAll(r)
 }
 
 func (l *One) Get(i int) (token.Token, error) {
@@ -51,7 +51,7 @@ func (l *One) Get(i int) (token.Token, error) {
 		return nil, &ListError{ListErrorOutOfBound}
 	}
 
-	return l.value, nil
+	return l.tokens[l.value], nil
 }
 
 func (l *One) Len() int {
@@ -59,7 +59,7 @@ func (l *One) Len() int {
 }
 
 func (l *One) permutation(i int) {
-	l.value = l.tokens[i]
+	l.value = i
 }
 
 func (l *One) Permutation(i int) error {
@@ -91,5 +91,5 @@ func (l *One) PermutationsAll() int {
 }
 
 func (l *One) String() string {
-	return l.value.String()
+	return l.tokens[l.value].String()
 }
