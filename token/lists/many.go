@@ -9,7 +9,7 @@ import (
 
 type Many struct {
 	tokens []token.Token
-	value  []token.Token
+	value  []int
 }
 
 func NewMany(toks ...token.Token) *Many {
@@ -19,22 +19,24 @@ func NewMany(toks ...token.Token) *Many {
 
 	return &Many{
 		tokens: toks,
-		value:  toks,
+		value:  []int{0},
 	}
 }
+
+// Token interface methods
 
 func (l *Many) Clone() token.Token {
 	c := Many{
 		tokens: make([]token.Token, len(l.tokens)),
-		value:  make([]token.Token, len(l.value)),
+		value:  make([]int, len(l.value)),
 	}
 
 	for i, tok := range l.tokens {
 		c.tokens[i] = tok.Clone()
 	}
 
-	for i, tok := range l.value {
-		c.value[i] = tok.Clone()
+	for i, v := range l.value {
+		c.value[i] = v
 	}
 
 	return &c
@@ -44,7 +46,7 @@ func (l *Many) Fuzz(r rand.Rand) {
 	tl := len(l.tokens)
 
 	n := r.Intn(tl) + 1
-	toks := make([]token.Token, n)
+	toks := make([]int, n)
 	chosen := make(map[int]struct{})
 
 	for i := range toks {
@@ -52,7 +54,7 @@ func (l *Many) Fuzz(r rand.Rand) {
 			ri := r.Intn(tl)
 
 			if _, ok := chosen[ri]; !ok {
-				toks[i] = l.value[ri]
+				toks[i] = ri
 				chosen[ri] = struct{}{}
 
 				break
@@ -66,21 +68,9 @@ func (l *Many) Fuzz(r rand.Rand) {
 func (l *Many) FuzzAll(r rand.Rand) {
 	l.Fuzz(r)
 
-	for _, tok := range l.value {
-		tok.FuzzAll(r)
+	for _, v := range l.value {
+		l.tokens[v].FuzzAll(r)
 	}
-}
-
-func (l *Many) Get(i int) (token.Token, error) {
-	if i < 0 || i >= len(l.value) {
-		return nil, &ListError{ListErrorOutOfBound}
-	}
-
-	return l.value[i], nil
-}
-
-func (l *Many) Len() int {
-	return len(l.value)
 }
 
 func (l *Many) Permutation(i int) error {
@@ -98,9 +88,23 @@ func (l *Many) PermutationsAll() int {
 func (l *Many) String() string {
 	var buffer bytes.Buffer
 
-	for _, tok := range l.value {
-		buffer.WriteString(tok.String())
+	for _, v := range l.value {
+		buffer.WriteString(l.tokens[v].String())
 	}
 
 	return buffer.String()
+}
+
+// List interface methods
+
+func (l *Many) Get(i int) (token.Token, error) {
+	if i < 0 || i >= len(l.value) {
+		return nil, &ListError{ListErrorOutOfBound}
+	}
+
+	return l.tokens[l.value[i]], nil
+}
+
+func (l *Many) Len() int {
+	return len(l.value)
 }

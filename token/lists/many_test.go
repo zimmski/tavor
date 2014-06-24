@@ -20,6 +20,11 @@ func TestMany(t *testing.T) {
 	b := primitives.NewConstantString("b")
 
 	o := NewMany(a, b)
+	Equal(t, "a", o.String())
+	Equal(t, 1, o.Len())
+
+	r := test.NewRandTest(0)
+	o.FuzzAll(r)
 	Equal(t, "ab", o.String())
 	Equal(t, 2, o.Len())
 
@@ -32,11 +37,6 @@ func TestMany(t *testing.T) {
 	i, err = o.Get(2)
 	Equal(t, err.(*ListError).Type, ListErrorOutOfBound)
 	Nil(t, i)
-
-	r := test.NewRandTest(0)
-	o.FuzzAll(r)
-	Equal(t, "ab", o.String())
-	Equal(t, 2, o.Len())
 
 	r.Seed(100)
 	o.FuzzAll(r)
