@@ -73,22 +73,26 @@ func LoopExists(root token.Token) bool {
 
 		lookup[t] = struct{}{}
 
-		switch tok := v.(type) {
+		switch tok := t.(type) {
 		case *primitives.Pointer:
-			if v := tok.Get(); v != nil {
+			if v := tok.InternalGet(); v != nil {
 				if _, ok := lookup[v]; ok {
+					if DEBUG {
+						fmt.Printf("Found a loop through (%p)%+v\n", t)
+					}
+
 					return true
 				}
 
 				queue.Push(v)
 			}
 		case token.ForwardToken:
-			if v := tok.Get(); v != nil {
+			if v := tok.InternalGet(); v != nil {
 				queue.Push(v)
 			}
 		case lists.List:
-			for i := 0; i < tok.Len(); i++ {
-				c, _ := tok.Get(i)
+			for i := 0; i < tok.InternalLen(); i++ {
+				c, _ := tok.InternalGet(i)
 
 				queue.Push(c)
 			}

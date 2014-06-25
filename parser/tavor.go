@@ -1052,7 +1052,7 @@ func (p *tavorParser) unrollLoops(root token.Token) token.Token {
 
 		switch t := iTok.tok.(type) {
 		case *primitives.Pointer:
-			o := t.Get()
+			o := t.InternalGet()
 
 			parent, ok := checked[o]
 			times := 0
@@ -1134,15 +1134,15 @@ func (p *tavorParser) unrollLoops(root token.Token) token.Token {
 				}
 			}
 		case token.ForwardToken:
-			if v := t.Get(); v != nil {
+			if v := t.InternalGet(); v != nil {
 				queue.Push(&unrollToken{
 					tok:    v,
 					parent: iTok,
 				})
 			}
 		case lists.List:
-			for i := 0; i < t.Len(); i++ {
-				c, _ := t.Get(i)
+			for i := 0; i < t.InternalLen(); i++ {
+				c, _ := t.InternalGet(i)
 
 				queue.Push(&unrollToken{
 					tok:    c,
