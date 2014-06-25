@@ -16,6 +16,6 @@ lint: clean install
 test: clean
 	go test -race ./...
 tools:
-	go get code.google.com/p/go.tools/cmd/godoc
+	go get -u code.google.com/p/go.tools/cmd/godoc
 	go get -u code.google.com/p/go.tools/cmd/vet
 	go get -u github.com/golang/lint
