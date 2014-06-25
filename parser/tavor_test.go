@@ -840,4 +840,77 @@ func TestTavorParserLoops(t *testing.T) {
 
 		Equal(t, "2111", tok.String())
 	}
+
+	// two loops
+	/*
+		TODO fix this. the problem is that the max loop is reached with 2 as max too soon
+		since A is used twice in the whole token. so it is cloned and then gone through
+		and the first entcounter exceeds the max repeats
+		THE FIXME should be to remember which loop has which parent. so we now that
+		we can repeat the something with the same parent but ignore something with a different
+		parent
+
+
+		tavor.DEBUG = true
+		tok, err = ParseTavor(strings.NewReader(`
+			A = (A | 2) 1 ?(A) 3
+
+			START = A
+		`))
+		Nil(t, err)
+		{
+			tavor.PrettyPrintInternalTree(os.Stdout, tok)
+
+			Equal(t, tok, lists.NewAll(
+				lists.NewOne(
+					lists.NewAll(
+						lists.NewOne(
+							lists.NewAll(
+								primitives.NewConstantInt(2),
+								primitives.NewConstantInt(1),
+								primitives.NewConstantInt(3),
+							),
+							primitives.NewConstantInt(2),
+						),
+						primitives.NewConstantInt(1),
+						constraints.NewOptional(
+							lists.NewAll(
+								primitives.NewConstantInt(2),
+								primitives.NewConstantInt(1),
+								primitives.NewConstantInt(3),
+							),
+						),
+						primitives.NewConstantInt(3),
+					),
+					primitives.NewConstantInt(2),
+				),
+				primitives.NewConstantInt(1),
+				constraints.NewOptional(
+					lists.NewAll(
+						lists.NewOne(
+							lists.NewAll(
+								primitives.NewConstantInt(2),
+								primitives.NewConstantInt(1),
+								primitives.NewConstantInt(3),
+							),
+							primitives.NewConstantInt(2),
+						),
+						primitives.NewConstantInt(1),
+						constraints.NewOptional(
+							lists.NewAll(
+								primitives.NewConstantInt(2),
+								primitives.NewConstantInt(1),
+								primitives.NewConstantInt(3),
+							),
+						),
+						primitives.NewConstantInt(3),
+					),
+				),
+				primitives.NewConstantInt(3),
+			))
+
+			Equal(t, "213121331213121333", tok.String())
+		}
+		tavor.DEBUG = false
+	*/
 }
