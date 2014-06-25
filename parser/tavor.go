@@ -44,7 +44,7 @@ type tavorParser struct {
 
 	err string
 
-	earlyUse             map[string]tokenUse
+	earlyUse             map[string][]tokenUse
 	embeddedTokensInTerm map[string][]map[string]struct{}
 	lookup               map[string]tokenUse
 	lookupUsage          map[token.Token]struct{}
@@ -140,10 +140,10 @@ OUT:
 					token:    n,
 					position: p.scan.Position,
 				}
-				p.earlyUse[name] = tokenUse{
+				p.earlyUse[name] = append(p.earlyUse[name], tokenUse{
 					token:    n,
 					position: p.scan.Position,
-				}
+				})
 			}
 
 			embeddedToks[name] = struct{}{}
@@ -192,17 +192,24 @@ OUT:
 				ntok := tok.Clone()
 
 				if tavor.DEBUG {
-					fmt.Printf("token %s %#v(%p) was already used once. Cloned as %#v(%p)\n", name, tok, tok, ntok, ntok)
+					fmt.Printf("token %s (%p)%#v was already used once. Cloned as (%p)%#v\n", name, tok, tok, ntok, ntok)
 				}
 
 				p.lookup[name] = tokenUse{
 					token:    ntok,
 					position: p.scan.Position,
 				}
+				if t, ok := tok.(*primitives.Pointer); ok && t.Get() == nil {
+					p.earlyUse[name] = append(p.earlyUse[name], tokenUse{
+						token:    ntok,
+						position: p.scan.Position,
+					})
+				}
+
 				tok = ntok
 			} else {
 				if tavor.DEBUG {
-					fmt.Printf("Use token %#v(%p)\n", tok, tok)
+					fmt.Printf("Use token (%p)%#v\n", tok, tok)
 				}
 			}
 
@@ -574,7 +581,7 @@ func (p *tavorParser) parseTokenAttribute(c rune) (token.Token, error) {
 	tok := use.token
 
 	if tavor.DEBUG {
-		fmt.Printf("Use %#v(%p) as token\n", tok, tok)
+		fmt.Printf("Use (%p)%#v as token\n", tok, tok)
 	}
 
 	p.used[name] = tokenPosition
@@ -773,19 +780,27 @@ func (p *tavorParser) parseTokenDefinition() (rune, error) {
 	}
 
 	// self loop?
-	if use, ok := p.lookup[name]; ok {
+	if uses, ok := p.earlyUse[name]; ok {
 		if tavor.DEBUG {
 			fmt.Printf("parseTokenDefinition fill empty pointer for %s\n", name)
 		}
 
-		err = use.token.(*primitives.Pointer).Set(tok)
-		if err != nil {
-			return zeroRune, &ParserError{
-				Message:  fmt.Sprintf("Wrong token type for %s because of earlier usage: %s", name, err),
-				Type:     ParseErrorInvalidTokenType,
-				Position: p.scan.Pos(),
+		for _, use := range uses {
+			if tavor.DEBUG {
+				fmt.Printf("Use (%p)%#v for pointer (%p)%#v\n", tok, tok, use.token, use.token)
+			}
+
+			err = use.token.(*primitives.Pointer).Set(tok)
+			if err != nil {
+				return zeroRune, &ParserError{
+					Message:  fmt.Sprintf("Wrong token type for %s because of earlier usage: %s", name, err),
+					Type:     ParseErrorInvalidTokenType,
+					Position: p.scan.Pos(),
+				}
 			}
 		}
+
+		delete(p.earlyUse, name)
 	}
 
 	// check for endless loop
@@ -856,7 +871,7 @@ func (p *tavorParser) parseTokenDefinition() (rune, error) {
 	}
 
 	if tavor.DEBUG {
-		fmt.Printf("Added %#v(%p) as token %s\n", tok, tok, name)
+		fmt.Printf("Added (%p)%#v as token %s\n", tok, tok, name)
 	}
 
 	c = p.scan.Scan()
@@ -1066,7 +1081,7 @@ func (p *tavorParser) parseSpecialTokenDefinition() (rune, error) {
 	}
 
 	if tavor.DEBUG {
-		fmt.Printf("Added %#v(%p) as token %s\n", tok, tok, name)
+		fmt.Printf("Added (%p)%#v as token %s\n", tok, tok, name)
 	}
 
 	c = p.scan.Scan()
@@ -1216,7 +1231,7 @@ func (p *tavorParser) unrollLoops(root token.Token) token.Token {
 
 func ParseTavor(src io.Reader) (token.Token, error) {
 	p := &tavorParser{
-		earlyUse:             make(map[string]tokenUse),
+		earlyUse:             make(map[string][]tokenUse),
 		embeddedTokensInTerm: make(map[string][]map[string]struct{}),
 		lookup:               make(map[string]tokenUse),
 		lookupUsage:          make(map[token.Token]struct{}),
@@ -1248,12 +1263,14 @@ func ParseTavor(src io.Reader) (token.Token, error) {
 
 	p.used["START"] = p.scan.Position
 
-	for name, use := range p.earlyUse {
-		if use.token.(*primitives.Pointer).Get() == nil {
-			return nil, &ParserError{
-				Message:  fmt.Sprintf("Token \"%s\" is not defined", name),
-				Type:     ParseErrorTokenNotDefined,
-				Position: use.position,
+	for name, uses := range p.earlyUse {
+		for _, use := range uses {
+			if use.token.(*primitives.Pointer).Get() == nil {
+				return nil, &ParserError{
+					Message:  fmt.Sprintf("Token \"%s\" is not defined", name),
+					Type:     ParseErrorTokenNotDefined,
+					Position: use.position,
+				}
 			}
 		}
 	}

@@ -672,6 +672,14 @@ func TestTavorParserAndCuriousCaseOfFuzzing(t *testing.T) {
 	Nil(t, err)
 	Equal(t, tok, primitives.NewConstantInt(123))
 
+	// double embedded forward token all the way
+	tok, err = ParseTavor(strings.NewReader("A = B B\nB = 1\nSTART = A\n"))
+	Nil(t, err)
+	Equal(t, tok, lists.NewAll(
+		primitives.NewConstantInt(1),
+		primitives.NewConstantInt(1),
+	))
+
 	// Tokens should be cloned so they are different internally
 	{
 		tok, err = ParseTavor(strings.NewReader(
