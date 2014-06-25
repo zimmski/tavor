@@ -189,24 +189,37 @@ OUT:
 			tok := p.lookup[name].token
 
 			if _, ok := p.lookupUsage[tok]; ok {
-				ntok := tok.Clone()
-
-				if tavor.DEBUG {
-					fmt.Printf("token %s (%p)%#v was already used once. Cloned as (%p)%#v\n", name, tok, tok, ntok, ntok)
-				}
-
-				p.lookup[name] = tokenUse{
-					token:    ntok,
-					position: p.scan.Position,
-				}
 				if t, ok := tok.(*primitives.Pointer); ok && t.Get() == nil {
-					p.earlyUse[name] = append(p.earlyUse[name], tokenUse{
+					// FIXME if tok is directly given to NewPointer we get a panic: reflect: non-interface type passed to Type.Implements
+					var tokInterface *token.Token
+					ntok := primitives.NewEmptyPointer(tokInterface)
+					ntok.Set(tok)
+
+					if tavor.DEBUG {
+						fmt.Printf("token %s (%p)%#v is an empty pointer, better just forward to it (%p)%#v\n", name, tok, tok, ntok, ntok)
+					}
+
+					tok = ntok
+				} else {
+					ntok := tok.Clone()
+
+					if tavor.DEBUG {
+						fmt.Printf("token %s (%p)%#v was already used once. Cloned as (%p)%#v\n", name, tok, tok, ntok, ntok)
+					}
+
+					p.lookup[name] = tokenUse{
 						token:    ntok,
 						position: p.scan.Position,
-					})
-				}
+					}
+					if t, ok := tok.(*primitives.Pointer); ok && t.Get() == nil {
+						p.earlyUse[name] = append(p.earlyUse[name], tokenUse{
+							token:    ntok,
+							position: p.scan.Position,
+						})
+					}
 
-				tok = ntok
+					tok = ntok
+				}
 			} else {
 				if tavor.DEBUG {
 					fmt.Printf("Use token (%p)%#v\n", tok, tok)

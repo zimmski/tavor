@@ -913,4 +913,32 @@ func TestTavorParserLoops(t *testing.T) {
 		}
 		tavor.DEBUG = false
 	*/
+
+	// loop with token loop
+	tok, err = ParseTavor(strings.NewReader(`
+			B = A
+			C = B
+
+			A = ?(C) 1
+
+			START = A
+		`))
+	Nil(t, err)
+	{
+		Equal(t, tok, lists.NewAll(
+			constraints.NewOptional(
+				lists.NewAll(
+					constraints.NewOptional(
+						lists.NewAll(
+							primitives.NewConstantInt(1),
+						),
+					),
+					primitives.NewConstantInt(1),
+				),
+			),
+			primitives.NewConstantInt(1),
+		))
+
+		Equal(t, "111", tok.String())
+	}
 }
