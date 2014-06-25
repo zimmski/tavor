@@ -23,8 +23,10 @@ type ForwardToken interface {
 	Token
 
 	Get() Token
-	LogicalRemove(tok Token) Token
-	Replace(oldToken, newToken Token)
+
+	InternalGet() Token
+	InternalLogicalRemove(tok Token) Token
+	InternalReplace(oldToken, newToken Token)
 }
 
 type OptionalToken interface {

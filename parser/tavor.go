@@ -1079,9 +1079,9 @@ func (p *tavorParser) unrollLoops(root token.Token) token.Token {
 				if iTok.parent != nil {
 					switch tt := iTok.parent.tok.(type) {
 					case token.ForwardToken:
-						tt.Replace(t, c)
+						tt.InternalReplace(t, c)
 					case lists.List:
-						tt.Replace(t, c)
+						tt.InternalReplace(t, c)
 					}
 				} else {
 					root = c
@@ -1109,7 +1109,7 @@ func (p *tavorParser) unrollLoops(root token.Token) token.Token {
 							fmt.Printf("Remove (%p)%#v from (%p)%#v\n", ta, ta, l, l)
 						}
 
-						c := l.LogicalRemove(ta)
+						c := l.InternalLogicalRemove(ta)
 
 						if c != nil {
 							break REMOVE
@@ -1122,7 +1122,7 @@ func (p *tavorParser) unrollLoops(root token.Token) token.Token {
 							fmt.Printf("Remove (%p)%#v from (%p)%#v\n", ta, ta, l, l)
 						}
 
-						c := l.LogicalRemove(ta)
+						c := l.InternalLogicalRemove(ta)
 
 						if c != nil {
 							break REMOVE

@@ -83,6 +83,10 @@ func (p *Pointer) Get() token.Token {
 	return p.token
 }
 
+func (p *Pointer) InternalGet() token.Token {
+	return p.token
+}
+
 func (p *Pointer) Permutation(i int) error {
 	p.cloneOnFirstUse()
 
@@ -125,7 +129,7 @@ func (p *Pointer) String() string {
 
 // ForwardToken interface methods
 
-func (p *Pointer) LogicalRemove(tok token.Token) token.Token {
+func (p *Pointer) InternalLogicalRemove(tok token.Token) token.Token {
 	if p.token == tok {
 		return nil
 	}
@@ -133,7 +137,7 @@ func (p *Pointer) LogicalRemove(tok token.Token) token.Token {
 	return p
 }
 
-func (p *Pointer) Replace(oldToken, newToken token.Token) {
+func (p *Pointer) InternalReplace(oldToken, newToken token.Token) {
 	if p.token == oldToken {
 		p.token = newToken
 	}

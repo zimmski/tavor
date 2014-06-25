@@ -14,6 +14,10 @@ func TestPointerTokensToBeTokens(t *testing.T) {
 	var tok *token.Token
 
 	Implements(t, tok, &Pointer{})
+
+	var forward *token.ForwardToken
+
+	Implements(t, forward, &Pointer{})
 }
 
 func TestPointer(t *testing.T) {

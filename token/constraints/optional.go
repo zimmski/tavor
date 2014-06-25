@@ -82,7 +82,11 @@ func (c *Optional) Get() token.Token {
 	return c.token
 }
 
-func (c *Optional) LogicalRemove(tok token.Token) token.Token {
+func (c *Optional) InternalGet() token.Token {
+	return c.token
+}
+
+func (c *Optional) InternalLogicalRemove(tok token.Token) token.Token {
 	if c.token == tok {
 		return nil
 	}
@@ -90,7 +94,7 @@ func (c *Optional) LogicalRemove(tok token.Token) token.Token {
 	return c
 }
 
-func (c *Optional) Replace(oldToken, newToken token.Token) {
+func (c *Optional) InternalReplace(oldToken, newToken token.Token) {
 	if c.token == oldToken {
 		c.token = newToken
 	}

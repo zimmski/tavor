@@ -26,6 +26,9 @@ type List interface {
 
 	Get(i int) (token.Token, error)
 	Len() int
-	LogicalRemove(tok token.Token) token.Token
-	Replace(oldToken, newToken token.Token)
+
+	InternalGet(i int) (token.Token, error)
+	InternalLen() int
+	InternalLogicalRemove(tok token.Token) token.Token
+	InternalReplace(oldToken, newToken token.Token)
 }

@@ -14,6 +14,10 @@ func TestOptionalTokensToBeTokens(t *testing.T) {
 	var tok *token.Token
 
 	Implements(t, tok, &Optional{})
+
+	var forward *token.ForwardToken
+
+	Implements(t, forward, &Optional{})
 }
 
 func TestOptional(t *testing.T) {

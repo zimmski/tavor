@@ -99,7 +99,19 @@ func (l *Least) Len() int {
 	return len(l.value)
 }
 
-func (l *Least) LogicalRemove(tok token.Token) token.Token {
+func (l *Least) InternalGet(i int) (token.Token, error) {
+	if i != 1 {
+		return nil, &ListError{ListErrorOutOfBound}
+	}
+
+	return l.token, nil
+}
+
+func (l *Least) InternalLen() int {
+	return 1
+}
+
+func (l *Least) InternalLogicalRemove(tok token.Token) token.Token {
 	if l.token == tok {
 		return nil
 	}
@@ -107,7 +119,7 @@ func (l *Least) LogicalRemove(tok token.Token) token.Token {
 	return l
 }
 
-func (l *Least) Replace(oldToken, newToken token.Token) {
+func (l *Least) InternalReplace(oldToken, newToken token.Token) {
 	if l.token == oldToken {
 		l.token = newToken
 

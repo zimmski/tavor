@@ -109,7 +109,19 @@ func (l *Many) Len() int {
 	return len(l.value)
 }
 
-func (l *Many) LogicalRemove(tok token.Token) token.Token {
+func (l *Many) InternalGet(i int) (token.Token, error) {
+	if i < 0 || i >= len(l.tokens) {
+		return nil, &ListError{ListErrorOutOfBound}
+	}
+
+	return l.tokens[i], nil
+}
+
+func (l *Many) InternalLen() int {
+	return len(l.tokens)
+}
+
+func (l *Many) InternalLogicalRemove(tok token.Token) token.Token {
 	for i := 0; i < len(l.tokens); i++ {
 		if l.tokens[i] == tok {
 			for i, v := range l.value {
@@ -141,7 +153,7 @@ func (l *Many) LogicalRemove(tok token.Token) token.Token {
 	return l
 }
 
-func (l *Many) Replace(oldToken, newToken token.Token) {
+func (l *Many) InternalReplace(oldToken, newToken token.Token) {
 	for i := 0; i < len(l.tokens); i++ {
 		if l.tokens[i] == oldToken {
 			l.tokens[i] = newToken

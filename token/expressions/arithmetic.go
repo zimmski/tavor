@@ -91,7 +91,15 @@ func (e *AddArithmetic) Len() int {
 	return 2
 }
 
-func (e *AddArithmetic) LogicalRemove(tok token.Token) token.Token {
+func (e *AddArithmetic) InternalGet(i int) (token.Token, error) {
+	return e.Get(i)
+}
+
+func (e *AddArithmetic) InternalLen() int {
+	return e.Len()
+}
+
+func (e *AddArithmetic) InternalLogicalRemove(tok token.Token) token.Token {
 	if tok == e.a || tok == e.b {
 		return nil
 	}
@@ -99,7 +107,7 @@ func (e *AddArithmetic) LogicalRemove(tok token.Token) token.Token {
 	return e
 }
 
-func (e *AddArithmetic) Replace(oldToken, newToken token.Token) {
+func (e *AddArithmetic) InternalReplace(oldToken, newToken token.Token) {
 	if oldToken == e.a {
 		e.a = newToken
 	}
@@ -191,7 +199,15 @@ func (e *SubArithmetic) Len() int {
 	return 2
 }
 
-func (e *SubArithmetic) LogicalRemove(tok token.Token) token.Token {
+func (e *SubArithmetic) InternalGet(i int) (token.Token, error) {
+	return e.Get(i)
+}
+
+func (e *SubArithmetic) InternalLen() int {
+	return e.Len()
+}
+
+func (e *SubArithmetic) InternalLogicalRemove(tok token.Token) token.Token {
 	if tok == e.a || tok == e.b {
 		return nil
 	}
@@ -199,7 +215,7 @@ func (e *SubArithmetic) LogicalRemove(tok token.Token) token.Token {
 	return e
 }
 
-func (e *SubArithmetic) Replace(oldToken, newToken token.Token) {
+func (e *SubArithmetic) InternalReplace(oldToken, newToken token.Token) {
 	if oldToken == e.a {
 		e.a = newToken
 	}
@@ -291,7 +307,15 @@ func (e *MulArithmetic) Len() int {
 	return 2
 }
 
-func (e *MulArithmetic) LogicalRemove(tok token.Token) token.Token {
+func (e *MulArithmetic) InternalGet(i int) (token.Token, error) {
+	return e.Get(i)
+}
+
+func (e *MulArithmetic) InternalLen() int {
+	return e.Len()
+}
+
+func (e *MulArithmetic) InternalLogicalRemove(tok token.Token) token.Token {
 	if tok == e.a || tok == e.b {
 		return nil
 	}
@@ -299,7 +323,7 @@ func (e *MulArithmetic) LogicalRemove(tok token.Token) token.Token {
 	return e
 }
 
-func (e *MulArithmetic) Replace(oldToken, newToken token.Token) {
+func (e *MulArithmetic) InternalReplace(oldToken, newToken token.Token) {
 	if oldToken == e.a {
 		e.a = newToken
 	}
@@ -391,7 +415,15 @@ func (e *DivArithmetic) Len() int {
 	return 2
 }
 
-func (e *DivArithmetic) LogicalRemove(tok token.Token) token.Token {
+func (e *DivArithmetic) InternalGet(i int) (token.Token, error) {
+	return e.Get(i)
+}
+
+func (e *DivArithmetic) InternalLen() int {
+	return e.Len()
+}
+
+func (e *DivArithmetic) InternalLogicalRemove(tok token.Token) token.Token {
 	if tok == e.a || tok == e.b {
 		return nil
 	}
@@ -399,7 +431,7 @@ func (e *DivArithmetic) LogicalRemove(tok token.Token) token.Token {
 	return e
 }
 
-func (e *DivArithmetic) Replace(oldToken, newToken token.Token) {
+func (e *DivArithmetic) InternalReplace(oldToken, newToken token.Token) {
 	if oldToken == e.a {
 		e.a = newToken
 	}

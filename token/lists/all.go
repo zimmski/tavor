@@ -99,7 +99,15 @@ func (l *All) Len() int {
 	return len(l.tokens)
 }
 
-func (l *All) LogicalRemove(tok token.Token) token.Token {
+func (l *All) InternalGet(i int) (token.Token, error) {
+	return l.Get(i)
+}
+
+func (l *All) InternalLen() int {
+	return l.Len()
+}
+
+func (l *All) InternalLogicalRemove(tok token.Token) token.Token {
 	for i := 0; i < len(l.tokens); i++ {
 		if l.tokens[i] == tok {
 			switch tok.(type) {
@@ -119,7 +127,7 @@ func (l *All) LogicalRemove(tok token.Token) token.Token {
 	return l
 }
 
-func (l *All) Replace(oldToken, newToken token.Token) {
+func (l *All) InternalReplace(oldToken, newToken token.Token) {
 	for i := 0; i < len(l.tokens); i++ {
 		if l.tokens[i] == oldToken {
 			l.tokens[i] = newToken
