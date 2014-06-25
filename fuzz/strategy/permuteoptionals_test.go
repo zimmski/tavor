@@ -30,7 +30,7 @@ func TestPermuteOptionalsfindOptionals(t *testing.T) {
 		c := primitives.NewPointer(primitives.NewConstantInt(3))
 		d := lists.NewAll(a, b, c)
 
-		optionals, _ := o.findOptionals(r, d, false)
+		optionals := o.findOptionals(r, d, false)
 
 		Equal(t, optionals, []token.OptionalToken{
 			b,
@@ -42,14 +42,14 @@ func TestPermuteOptionalsfindOptionals(t *testing.T) {
 		c := lists.NewAll(a, b)
 		d := constraints.NewOptional(c)
 
-		optionals, _ := o.findOptionals(r, d, false)
+		optionals := o.findOptionals(r, d, false)
 
 		Equal(t, optionals, []token.OptionalToken{
 			d,
 		})
 
 		optionals[0].(token.OptionalToken).Activate()
-		children, _ := o.findOptionals(r, optionals[0], true)
+		children := o.findOptionals(r, optionals[0], true)
 
 		Equal(t, children, []token.OptionalToken{
 			a,
@@ -59,7 +59,7 @@ func TestPermuteOptionalsfindOptionals(t *testing.T) {
 	{
 		a := lists.NewRepeat(primitives.NewConstantInt(1), 0, 10)
 
-		optionals, _ := o.findOptionals(r, a, false)
+		optionals := o.findOptionals(r, a, false)
 
 		Equal(t, optionals, []token.OptionalToken{
 			a,
@@ -67,7 +67,7 @@ func TestPermuteOptionalsfindOptionals(t *testing.T) {
 
 		b := lists.NewRepeat(primitives.NewConstantInt(1), 1, 10)
 
-		optionals, _ = o.findOptionals(r, b, false)
+		optionals = o.findOptionals(r, b, false)
 
 		var nilOpts []token.OptionalToken
 		Equal(t, optionals, nilOpts)
