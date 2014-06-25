@@ -6,6 +6,7 @@ import (
 	. "github.com/stretchr/testify/assert"
 
 	"github.com/zimmski/tavor/test"
+	"github.com/zimmski/tavor/token"
 	"github.com/zimmski/tavor/token/constraints"
 	"github.com/zimmski/tavor/token/lists"
 	"github.com/zimmski/tavor/token/primitives"
@@ -31,7 +32,8 @@ func TestRandomStrategy(t *testing.T) {
 
 	r := test.NewRandTest(0)
 
-	ch := o.Fuzz(r)
+	ch, err := o.Fuzz(r)
+	Nil(t, err)
 
 	_, ok := <-ch
 	True(t, ok)
@@ -48,7 +50,8 @@ func TestRandomStrategy(t *testing.T) {
 	// rerun
 	r.Seed(1)
 
-	ch = o.Fuzz(r)
+	ch, err = o.Fuzz(r)
+	Nil(t, err)
 
 	_, ok = <-ch
 	True(t, ok)
@@ -62,7 +65,8 @@ func TestRandomStrategy(t *testing.T) {
 	// run with range
 	r.Seed(0)
 
-	ch = o.Fuzz(r)
+	ch, err = o.Fuzz(r)
+	Nil(t, err)
 	for i := range ch {
 		Equal(t, "78", c.String())
 		Equal(t, "7", a.String())
@@ -70,4 +74,10 @@ func TestRandomStrategy(t *testing.T) {
 
 		ch <- i
 	}
+}
+
+func TestRandomStrategyLoopDetection(t *testing.T) {
+	testStrategyLoopDetection(t, func(root token.Token) Strategy {
+		return NewRandomStrategy(root)
+	})
 }

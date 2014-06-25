@@ -8,6 +8,7 @@ import (
 
 	"github.com/zimmski/tavor/parser"
 	"github.com/zimmski/tavor/test"
+	"github.com/zimmski/tavor/token"
 	"github.com/zimmski/tavor/token/constraints"
 	"github.com/zimmski/tavor/token/lists"
 	"github.com/zimmski/tavor/token/primitives"
@@ -69,7 +70,8 @@ func TestAlmostAllPermutationsStrategy(t *testing.T) {
 
 		o := NewAlmostAllPermutationsStrategy(a)
 
-		ch := o.Fuzz(r)
+		ch, err := o.Fuzz(r)
+		Nil(t, err)
 
 		_, ok := <-ch
 		True(t, ok)
@@ -84,7 +86,8 @@ func TestAlmostAllPermutationsStrategy(t *testing.T) {
 
 		o := NewAlmostAllPermutationsStrategy(a)
 
-		ch := o.Fuzz(r)
+		ch, err := o.Fuzz(r)
+		Nil(t, err)
 
 		var got []string
 
@@ -108,7 +111,8 @@ func TestAlmostAllPermutationsStrategy(t *testing.T) {
 
 		o := NewAlmostAllPermutationsStrategy(a)
 
-		ch := o.Fuzz(r)
+		ch, err := o.Fuzz(r)
+		Nil(t, err)
 
 		var got []string
 
@@ -132,7 +136,8 @@ func TestAlmostAllPermutationsStrategy(t *testing.T) {
 
 		o := NewAlmostAllPermutationsStrategy(abc)
 
-		ch := o.Fuzz(r)
+		ch, err := o.Fuzz(r)
+		Nil(t, err)
 
 		var got []string
 
@@ -167,7 +172,8 @@ func TestAlmostAllPermutationsStrategy(t *testing.T) {
 
 		o := NewAlmostAllPermutationsStrategy(abc)
 
-		ch := o.Fuzz(r)
+		ch, err := o.Fuzz(r)
+		Nil(t, err)
 
 		var got []string
 
@@ -191,7 +197,8 @@ func TestAlmostAllPermutationsStrategy(t *testing.T) {
 
 		o := NewAlmostAllPermutationsStrategy(d)
 
-		ch := o.Fuzz(r)
+		ch, err := o.Fuzz(r)
+		Nil(t, err)
 
 		_, ok := <-ch
 		True(t, ok)
@@ -217,7 +224,8 @@ func TestAlmostAllPermutationsStrategy(t *testing.T) {
 		False(t, ok)
 
 		// rerun
-		ch = o.Fuzz(r)
+		ch, err = o.Fuzz(r)
+		Nil(t, err)
 
 		_, ok = <-ch
 		True(t, ok)
@@ -228,7 +236,8 @@ func TestAlmostAllPermutationsStrategy(t *testing.T) {
 		// run with range
 		var got []string
 
-		ch = o.Fuzz(r)
+		ch, err = o.Fuzz(r)
+		Nil(t, err)
 		for i := range ch {
 			got = append(got, d.String())
 
@@ -254,7 +263,8 @@ func TestAlmostAllPermutationsStrategy(t *testing.T) {
 
 		var got []string
 
-		ch := o.Fuzz(r)
+		ch, err := o.Fuzz(r)
+		Nil(t, err)
 		for i := range ch {
 			got = append(got, d.String())
 
@@ -286,7 +296,8 @@ func TestAlmostAllPermutationsStrategy(t *testing.T) {
 
 		var got []string
 
-		ch := o.Fuzz(r)
+		ch, err := o.Fuzz(r)
+		Nil(t, err)
 		for i := range ch {
 			got = append(got, b.String())
 
@@ -327,7 +338,8 @@ func TestAlmostAllPermutationsStrategy(t *testing.T) {
 
 		var got []string
 
-		ch := o.Fuzz(r)
+		ch, err := o.Fuzz(r)
+		Nil(t, err)
 		for i := range ch {
 			got = append(got, b.String())
 
@@ -364,7 +376,8 @@ func TestAlmostAllPermutationsStrategy(t *testing.T) {
 
 		var got []string
 
-		ch := s.Fuzz(r)
+		ch, err := s.Fuzz(r)
+		Nil(t, err)
 		for i := range ch {
 			got = append(got, o.String())
 
@@ -402,7 +415,8 @@ func TestAlmostAllPermutationsStrategy(t *testing.T) {
 
 		var got []string
 
-		ch := s.Fuzz(r)
+		ch, err := s.Fuzz(r)
+		Nil(t, err)
 		for i := range ch {
 			got = append(got, o.String())
 
@@ -434,7 +448,8 @@ func TestAlmostAllPermutationsStrategy(t *testing.T) {
 
 		var got []string
 
-		ch := s.Fuzz(r)
+		ch, err := s.Fuzz(r)
+		Nil(t, err)
 		for i := range ch {
 			got = append(got, o.String())
 
@@ -447,4 +462,10 @@ func TestAlmostAllPermutationsStrategy(t *testing.T) {
 			"243",
 		})
 	}
+}
+
+func TestAlmostAllPermutationsStrategyLoopDetection(t *testing.T) {
+	testStrategyLoopDetection(t, func(root token.Token) Strategy {
+		return NewAlmostAllPermutationsStrategy(root)
+	})
 }

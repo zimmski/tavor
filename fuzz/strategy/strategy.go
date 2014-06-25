@@ -8,8 +8,23 @@ import (
 	"github.com/zimmski/tavor/token"
 )
 
+type StrategyErrorType int
+
+const (
+	StrategyErrorEndlessLoopDetected = iota
+)
+
+type StrategyError struct {
+	Message string
+	Type    StrategyErrorType
+}
+
+func (err *StrategyError) Error() string {
+	return err.Message
+}
+
 type Strategy interface {
-	Fuzz(r rand.Rand) chan struct{}
+	Fuzz(r rand.Rand) (chan struct{}, error)
 }
 
 var strategies = make(map[string]func(tok token.Token) Strategy)

@@ -87,7 +87,14 @@ func (s *AlmostAllPermutationsStrategy) getLevel(root token.Token, fromChildren 
 	return level
 }
 
-func (s *AlmostAllPermutationsStrategy) Fuzz(r rand.Rand) chan struct{} {
+func (s *AlmostAllPermutationsStrategy) Fuzz(r rand.Rand) (chan struct{}, error) {
+	if tavor.LoopExists(s.root) {
+		return nil, &StrategyError{
+			Message: "Found endless loop in graph. Cannot proceed.",
+			Type:    StrategyErrorEndlessLoopDetected,
+		}
+	}
+
 	continueFuzzing := make(chan struct{})
 
 	s.resetedLookup = make(map[token.Token]int)
@@ -131,7 +138,7 @@ func (s *AlmostAllPermutationsStrategy) Fuzz(r rand.Rand) chan struct{} {
 		}
 	}()
 
-	return continueFuzzing
+	return continueFuzzing, nil
 }
 
 func (s *AlmostAllPermutationsStrategy) resetResetTokens() {

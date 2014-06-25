@@ -81,7 +81,14 @@ func (s *AllPermutationsStrategy) setPermutation(tok token.Token, permutation in
 	}
 }
 
-func (s *AllPermutationsStrategy) Fuzz(r rand.Rand) chan struct{} {
+func (s *AllPermutationsStrategy) Fuzz(r rand.Rand) (chan struct{}, error) {
+	if tavor.LoopExists(s.root) {
+		return nil, &StrategyError{
+			Message: "Found endless loop in graph. Cannot proceed.",
+			Type:    StrategyErrorEndlessLoopDetected,
+		}
+	}
+
 	continueFuzzing := make(chan struct{})
 
 	go func() {
@@ -106,7 +113,7 @@ func (s *AllPermutationsStrategy) Fuzz(r rand.Rand) chan struct{} {
 		close(continueFuzzing)
 	}()
 
-	return continueFuzzing
+	return continueFuzzing, nil
 }
 
 func (s *AllPermutationsStrategy) fuzz(continueFuzzing chan struct{}, tree []allPermutationsLevel, justastep bool) (bool, bool) {

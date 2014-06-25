@@ -150,7 +150,11 @@ func main() {
 		V("Using %s strategy", opts.Strategy)
 	}
 
-	ch := strat.Fuzz(r)
+	ch, err := strat.Fuzz(r)
+	if err != nil {
+		panic(err)
+	}
+
 	another := false
 	for i := range ch {
 		if !tavor.DEBUG {

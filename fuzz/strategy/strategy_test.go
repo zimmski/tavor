@@ -6,7 +6,10 @@ import (
 	. "github.com/stretchr/testify/assert"
 
 	"github.com/zimmski/tavor/rand"
+	"github.com/zimmski/tavor/test"
 	"github.com/zimmski/tavor/token"
+	"github.com/zimmski/tavor/token/constraints"
+	"github.com/zimmski/tavor/token/lists"
 	"github.com/zimmski/tavor/token/primitives"
 )
 
@@ -14,10 +17,10 @@ type mockStrategy struct {
 	root token.Token
 }
 
-func (s *mockStrategy) Fuzz(r rand.Rand) chan struct{} {
+func (s *mockStrategy) Fuzz(r rand.Rand) (chan struct{}, error) {
 	// do nothing
 
-	return nil
+	return nil, nil
 }
 
 func TestStrategy(t *testing.T) {
@@ -86,4 +89,80 @@ func TestStrategy(t *testing.T) {
 		Register("mockachino", nil)
 	}()
 	True(t, caught)
+}
+
+func testStrategyLoopDetection(t *testing.T, newStrategy func(root token.Token) Strategy) {
+	var tok *token.Token
+	r := test.NewRandTest(1)
+
+	{
+		// allow unloopy pointers
+
+		a := primitives.NewConstantInt(2)
+		p := primitives.NewPointer(a)
+		o := lists.NewAll(
+			p,
+			primitives.NewConstantInt(1),
+		)
+
+		s := newStrategy(o)
+
+		ch, err := s.Fuzz(r)
+		NotNil(t, ch)
+		Nil(t, err)
+	}
+	{
+		// check for simple loops
+
+		p := primitives.NewEmptyPointer(tok)
+		o := lists.NewAll(
+			p,
+			primitives.NewConstantInt(1),
+		)
+		p.Set(o)
+
+		s := newStrategy(o)
+
+		ch, err := s.Fuzz(r)
+		Nil(t, ch)
+		Equal(t, StrategyErrorEndlessLoopDetected, err.(*StrategyError).Type)
+
+		p = primitives.NewEmptyPointer(tok)
+		o = lists.NewAll(
+			primitives.NewConstantInt(1),
+			p,
+		)
+		p.Set(o)
+
+		s = newStrategy(o)
+
+		ch, err = s.Fuzz(r)
+		Nil(t, ch)
+		Equal(t, StrategyErrorEndlessLoopDetected, err.(*StrategyError).Type)
+	}
+	{
+		// deeper loops
+
+		p := primitives.NewEmptyPointer(tok)
+		o := lists.NewAll(
+			lists.NewOne(
+				p,
+				primitives.NewConstantInt(1),
+			),
+			lists.NewOne(
+				p,
+				primitives.NewConstantInt(2),
+			),
+			constraints.NewOptional(
+				p,
+			),
+		)
+		p.Set(o)
+
+		s := newStrategy(o)
+
+		ch, err := s.Fuzz(r)
+		Nil(t, ch)
+		Equal(t, StrategyErrorEndlessLoopDetected, err.(*StrategyError).Type)
+	}
 }

@@ -85,7 +85,8 @@ func TestPermuteOptionalsStrategy(t *testing.T) {
 
 		o := NewPermuteOptionalsStrategy(d)
 
-		ch := o.Fuzz(r)
+		ch, err := o.Fuzz(r)
+		Nil(t, err)
 
 		_, ok := <-ch
 		True(t, ok)
@@ -111,7 +112,8 @@ func TestPermuteOptionalsStrategy(t *testing.T) {
 		False(t, ok)
 
 		// rerun
-		ch = o.Fuzz(r)
+		ch, err = o.Fuzz(r)
+		Nil(t, err)
 
 		_, ok = <-ch
 		True(t, ok)
@@ -122,7 +124,8 @@ func TestPermuteOptionalsStrategy(t *testing.T) {
 		// run with range
 		var got []string
 
-		ch = o.Fuzz(r)
+		ch, err = o.Fuzz(r)
+		Nil(t, err)
 		for i := range ch {
 			got = append(got, d.String())
 
@@ -146,7 +149,8 @@ func TestPermuteOptionalsStrategy(t *testing.T) {
 
 		var got []string
 
-		ch := o.Fuzz(r)
+		ch, err := o.Fuzz(r)
+		Nil(t, err)
 		for i := range ch {
 			got = append(got, d.String())
 
@@ -173,7 +177,8 @@ func TestPermuteOptionalsStrategy(t *testing.T) {
 
 		var got []string
 
-		ch := o.Fuzz(r)
+		ch, err := o.Fuzz(r)
+		Nil(t, err)
 		for i := range ch {
 			got = append(got, d.String())
 
@@ -205,7 +210,8 @@ func TestPermuteOptionalsStrategy(t *testing.T) {
 
 		var got []string
 
-		ch := o.Fuzz(r)
+		ch, err := o.Fuzz(r)
+		Nil(t, err)
 		for i := range ch {
 			got = append(got, b.String())
 
@@ -239,7 +245,8 @@ func TestPermuteOptionalsStrategy(t *testing.T) {
 
 		var got []string
 
-		ch := o.Fuzz(r)
+		ch, err := o.Fuzz(r)
+		Nil(t, err)
 		for i := range ch {
 			got = append(got, b.String())
 
@@ -254,4 +261,10 @@ func TestPermuteOptionalsStrategy(t *testing.T) {
 			"ab1010",
 		})
 	}
+}
+
+func TestPermuteOptionalsStrategyLoopDetection(t *testing.T) {
+	testStrategyLoopDetection(t, func(root token.Token) Strategy {
+		return NewPermuteOptionalsStrategy(root)
+	})
 }

@@ -5,8 +5,11 @@ import (
 	"io"
 	"strings"
 
+	"github.com/zimmski/container/list/linkedlist"
+
 	"github.com/zimmski/tavor/token"
 	"github.com/zimmski/tavor/token/lists"
+	"github.com/zimmski/tavor/token/primitives"
 )
 
 const (
@@ -35,4 +38,41 @@ func prettyPrintTreeRek(w io.Writer, tok token.Token, level int) {
 			prettyPrintTreeRek(w, c, level+1)
 		}
 	}
+}
+
+func LoopExists(root token.Token) bool {
+	lookup := make(map[token.Token]struct{})
+	queue := linkedlist.New()
+
+	queue.Push(root)
+
+	for !queue.Empty() {
+		v, _ := queue.Shift()
+		t, _ := v.(token.Token)
+
+		lookup[t] = struct{}{}
+
+		switch tok := v.(type) {
+		case *primitives.Pointer:
+			if v := tok.Get(); v != nil {
+				if _, ok := lookup[v]; ok {
+					return true
+				}
+
+				queue.Push(v)
+			}
+		case token.ForwardToken:
+			if v := tok.Get(); v != nil {
+				queue.Push(v)
+			}
+		case lists.List:
+			for i := 0; i < tok.Len(); i++ {
+				c, _ := tok.Get(i)
+
+				queue.Push(c)
+			}
+		}
+	}
+
+	return false
 }
