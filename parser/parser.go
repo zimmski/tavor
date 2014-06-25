@@ -1,5 +1,10 @@
 package parser
 
+import (
+	"fmt"
+	"text/scanner"
+)
+
 type ParserErrorType int
 
 const (
@@ -29,8 +34,10 @@ const (
 type ParserError struct {
 	Message string
 	Type    ParserErrorType
+
+	Position scanner.Position
 }
 
 func (err *ParserError) Error() string {
-	return err.Message
+	return fmt.Sprintf("L:%d, C:%d - %s", err.Position.Line, err.Position.Column, err.Message)
 }
