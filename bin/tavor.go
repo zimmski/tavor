@@ -24,12 +24,13 @@ var opts struct {
 
 	ListStrategies bool `long:"list-strategies" description:"List all available strategies." no-ini:"true"`
 
-	InputFile string `long:"input-file" description:"Input tavor file" required:"true" no-ini:"true"`
-	Seed      int64  `long:"seed" description:"Seed for all the randomness"`
-	Strategy  string `long:"strategy" description:"The fuzzing strategy" default:"random"`
-	Validate  bool   `long:"validate" description:"Just validates the input file"`
-	Verbose   bool   `long:"verbose" description:"Do verbose output."`
-	Version   bool   `long:"version" description:"Print the version of this program." no-ini:"true"`
+	InputFile     string `long:"input-file" description:"Input tavor file" required:"true" no-ini:"true"`
+	PrintInternal bool   `long:"print-internal" description:"Prints the interal AST of the parsed file"`
+	Seed          int64  `long:"seed" description:"Seed for all the randomness"`
+	Strategy      string `long:"strategy" description:"The fuzzing strategy" default:"random"`
+	Validate      bool   `long:"validate" description:"Just validates the input file"`
+	Verbose       bool   `long:"verbose" description:"Do verbose output."`
+	Version       bool   `long:"version" description:"Print the version of this program." no-ini:"true"`
 
 	Debug bool `long:"debug" description:"Temporary debugging argument"`
 
@@ -125,6 +126,10 @@ func main() {
 
 	if opts.Verbose {
 		V("File is ok")
+	}
+
+	if opts.PrintInternal {
+		tavor.PrettyPrintInternalTree(os.Stdout, doc)
 	}
 
 	if opts.Validate {

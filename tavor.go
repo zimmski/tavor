@@ -40,6 +40,27 @@ func prettyPrintTreeRek(w io.Writer, tok token.Token, level int) {
 	}
 }
 
+func PrettyPrintInternalTree(w io.Writer, root token.Token) {
+	prettyPrintInternalTreeRek(w, root, 0)
+}
+
+func prettyPrintInternalTreeRek(w io.Writer, tok token.Token, level int) {
+	fmt.Fprintf(w, "%s(%p)%#v\n", strings.Repeat("\t", level), tok, tok)
+
+	switch t := tok.(type) {
+	case token.ForwardToken:
+		if v := t.InternalGet(); v != nil {
+			prettyPrintInternalTreeRek(w, v, level+1)
+		}
+	case lists.List:
+		for i := 0; i < t.InternalLen(); i++ {
+			c, _ := t.InternalGet(i)
+
+			prettyPrintInternalTreeRek(w, c, level+1)
+		}
+	}
+}
+
 func LoopExists(root token.Token) bool {
 	lookup := make(map[token.Token]struct{})
 	queue := linkedlist.New()
