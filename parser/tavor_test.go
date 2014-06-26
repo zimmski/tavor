@@ -852,7 +852,7 @@ func TestTavorParserLoops(t *testing.T) {
 		parent
 
 
-		tavor.DEBUG = true
+		log.LevelDebug()
 		tok, err = ParseTavor(strings.NewReader(`
 			A = (A | 2) 1 ?(A) 3
 
@@ -912,7 +912,7 @@ func TestTavorParserLoops(t *testing.T) {
 
 			Equal(t, "213121331213121333", tok.String())
 		}
-		tavor.DEBUG = false
+		log.LevelWarn()
 	*/
 
 	// loop with token loop

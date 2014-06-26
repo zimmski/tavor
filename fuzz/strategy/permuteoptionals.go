@@ -1,12 +1,12 @@
 package strategy
 
 import (
-	"fmt"
 	"math"
 
 	"github.com/zimmski/container/list/linkedlist"
 
 	"github.com/zimmski/tavor"
+	"github.com/zimmski/tavor/log"
 	"github.com/zimmski/tavor/rand"
 	"github.com/zimmski/tavor/token"
 	"github.com/zimmski/tavor/token/lists"
@@ -65,9 +65,7 @@ func (s *PermuteOptionalsStrategy) findOptionals(r rand.Rand, root token.Token, 
 				continue
 			}
 
-			if tavor.DEBUG {
-				fmt.Printf("Found optional %#v\n", t)
-			}
+			log.Debugf("Found optional %#v", t)
 
 			t.Deactivate()
 
@@ -104,9 +102,7 @@ func (s *PermuteOptionalsStrategy) resetResetTokens() {
 
 		switch tok := v.(type) {
 		case token.ResetToken:
-			if tavor.DEBUG {
-				fmt.Printf("Reset %#v(%p)\n", tok, tok)
-			}
+			log.Debugf("Reset %#v(%p)", tok, tok)
 
 			tok.Reset()
 		}
@@ -136,9 +132,7 @@ func (s *PermuteOptionalsStrategy) Fuzz(r rand.Rand) (chan struct{}, error) {
 	continueFuzzing := make(chan struct{})
 
 	go func() {
-		if tavor.DEBUG {
-			fmt.Println("Start permute optionals routine")
-		}
+		log.Debug("Start permute optionals routine")
 
 		optionals := s.findOptionals(r, s.root, false)
 
@@ -150,21 +144,15 @@ func (s *PermuteOptionalsStrategy) Fuzz(r rand.Rand) (chan struct{}, error) {
 
 		s.resetResetTokens()
 
-		if tavor.DEBUG {
-			fmt.Println("Done with fuzzing step")
-		}
+		log.Debug("Done with fuzzing step")
 
 		// done with the last fuzzing step
 		continueFuzzing <- struct{}{}
 
-		if tavor.DEBUG {
-			fmt.Println("Finished fuzzing. Wait till the outside is ready to close.")
-		}
+		log.Debug("Finished fuzzing. Wait till the outside is ready to close.")
 
 		if _, ok := <-continueFuzzing; ok {
-			if tavor.DEBUG {
-				fmt.Println("Close fuzzing channel")
-			}
+			log.Debug("Close fuzzing channel")
 
 			close(continueFuzzing)
 		}
@@ -174,9 +162,7 @@ func (s *PermuteOptionalsStrategy) Fuzz(r rand.Rand) (chan struct{}, error) {
 }
 
 func (s *PermuteOptionalsStrategy) fuzz(r rand.Rand, continueFuzzing chan struct{}, optionals []token.OptionalToken) bool {
-	if tavor.DEBUG {
-		fmt.Printf("Fuzzing optionals %#v\n", optionals)
-	}
+	log.Debugf("Fuzzing optionals %#v", optionals)
 
 	// TODO make this WAYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY smarter
 	// since we can only fuzz 64 optionals at max
@@ -185,9 +171,7 @@ func (s *PermuteOptionalsStrategy) fuzz(r rand.Rand, continueFuzzing chan struct
 	maxSteps := int(math.Pow(2, float64(len(optionals))))
 
 	for {
-		if tavor.DEBUG {
-			fmt.Printf("Fuzzing step %b\n", p)
-		}
+		log.Debugf("Fuzzing step %b", p)
 
 		ith := 1
 
@@ -212,27 +196,21 @@ func (s *PermuteOptionalsStrategy) fuzz(r rand.Rand, continueFuzzing chan struct
 		p++
 
 		if p == maxSteps {
-			if tavor.DEBUG {
-				fmt.Println("Done with fuzzing these optionals")
-			}
+			log.Debug("Done with fuzzing these optionals")
 
 			break
 		}
 
 		s.resetResetTokens()
 
-		if tavor.DEBUG {
-			fmt.Println("Done with fuzzing step")
-		}
+		log.Debug("Done with fuzzing step")
 
 		// done with this fuzzing step
 		continueFuzzing <- struct{}{}
 
 		// wait until we are allowed to continue
 		if _, ok := <-continueFuzzing; !ok {
-			if tavor.DEBUG {
-				fmt.Println("Fuzzing channel closed from outside")
-			}
+			log.Debug("Fuzzing channel closed from outside")
 
 			return false
 		}

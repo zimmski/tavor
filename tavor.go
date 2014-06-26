@@ -7,6 +7,7 @@ import (
 
 	"github.com/zimmski/container/list/linkedlist"
 
+	"github.com/zimmski/tavor/log"
 	"github.com/zimmski/tavor/token"
 	"github.com/zimmski/tavor/token/lists"
 	"github.com/zimmski/tavor/token/primitives"
@@ -19,9 +20,6 @@ const (
 const (
 	MaxRepeat = 2
 )
-
-//TODO remove this
-var DEBUG = false
 
 func PrettyPrintTree(w io.Writer, root token.Token) {
 	prettyPrintTreeRek(w, root, 0)
@@ -81,9 +79,7 @@ func LoopExists(root token.Token) bool {
 		case *primitives.Pointer:
 			if v := tok.InternalGet(); v != nil {
 				if _, ok := lookup[v]; ok {
-					if DEBUG {
-						fmt.Printf("Found a loop through (%p)%+v\n", t)
-					}
+					log.Debugf("Found a loop through (%p)%+v", t)
 
 					return true
 				}
@@ -112,9 +108,7 @@ func UnrollPointers(root token.Token) token.Token {
 		parent *unrollToken
 	}
 
-	if DEBUG {
-		fmt.Println("Unroll pointers by cloning them")
-	}
+	log.Debug("Unroll pointers by cloning them")
 
 	checked := make(map[token.Token]token.Token)
 	counters := make(map[token.Token]int)
@@ -145,9 +139,7 @@ func UnrollPointers(root token.Token) token.Token {
 			}
 
 			if times != MaxRepeat {
-				if DEBUG {
-					fmt.Printf("Clone (%p)%#v with parent (%p)%#v\n", t, t, parent, parent)
-				}
+				log.Debugf("Clone (%p)%#v with parent (%p)%#v", t, t, parent, parent)
 
 				c := parent.Clone()
 
@@ -172,9 +164,7 @@ func UnrollPointers(root token.Token) token.Token {
 					parent: iTok.parent,
 				})
 			} else {
-				if DEBUG {
-					fmt.Printf("Reached max repeat of %d for (%p)%#v with parent (%p)%#v\n", MaxRepeat, t, t, parent, parent)
-				}
+				log.Debugf("Reached max repeat of %d for (%p)%#v with parent (%p)%#v", MaxRepeat, t, t, parent, parent)
 
 				t.Set(nil)
 
@@ -185,9 +175,7 @@ func UnrollPointers(root token.Token) token.Token {
 				for tt != nil {
 					switch l := tt.tok.(type) {
 					case token.ForwardToken:
-						if DEBUG {
-							fmt.Printf("Remove (%p)%#v from (%p)%#v\n", ta, ta, l, l)
-						}
+						log.Debugf("Remove (%p)%#v from (%p)%#v", ta, ta, l, l)
 
 						c := l.InternalLogicalRemove(ta)
 
@@ -198,9 +186,7 @@ func UnrollPointers(root token.Token) token.Token {
 						ta = l
 						tt = tt.parent
 					case lists.List:
-						if DEBUG {
-							fmt.Printf("Remove (%p)%#v from (%p)%#v\n", ta, ta, l, l)
-						}
+						log.Debugf("Remove (%p)%#v from (%p)%#v", ta, ta, l, l)
 
 						c := l.InternalLogicalRemove(ta)
 
@@ -232,9 +218,7 @@ func UnrollPointers(root token.Token) token.Token {
 		}
 	}
 
-	if DEBUG {
-		fmt.Println("Done unrolling")
-	}
+	log.Debug("Done unrolling")
 
 	return root
 }

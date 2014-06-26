@@ -10,6 +10,7 @@ import (
 
 	"github.com/zimmski/tavor"
 	"github.com/zimmski/tavor/fuzz/strategy"
+	"github.com/zimmski/tavor/log"
 	"github.com/zimmski/tavor/parser"
 )
 
@@ -35,10 +36,6 @@ var opts struct {
 	Debug bool `long:"debug" description:"Temporary debugging argument"`
 
 	configFile string
-}
-
-func V(msg string, args ...interface{}) {
-	fmt.Fprintf(os.Stderr, "[VERBOSE] "+msg+"\n", args...)
 }
 
 func checkArguments() {
@@ -92,6 +89,14 @@ func checkArguments() {
 	if opts.Seed == 0 {
 		opts.Seed = time.Now().UTC().UnixNano()
 	}
+
+	if opts.Debug {
+		log.LevelDebug()
+	} else if opts.Verbose {
+		log.LevelInfo()
+	} else {
+		log.LevelWarn()
+	}
 }
 
 func doListArguments() {
@@ -111,9 +116,7 @@ func doListArguments() {
 func main() {
 	checkArguments()
 
-	if opts.Verbose {
-		V("Open file %s", opts.InputFile)
-	}
+	log.Infof("Open file %s", opts.InputFile)
 
 	file, err := os.Open(opts.InputFile)
 	if err != nil {
@@ -121,18 +124,12 @@ func main() {
 	}
 	defer file.Close()
 
-	if opts.Debug {
-		tavor.DEBUG = true
-	}
-
 	doc, err := parser.ParseTavor(file)
 	if err != nil {
 		panic(fmt.Errorf("cannot parse tavor file: %v", err))
 	}
 
-	if opts.Verbose {
-		V("File is ok")
-	}
+	log.Info("File is valid")
 
 	if opts.PrintInternal {
 		tavor.PrettyPrintInternalTree(os.Stdout, doc)
@@ -142,13 +139,8 @@ func main() {
 		os.Exit(returnOk)
 	}
 
-	if opts.Verbose {
-		V("Using seed %d", opts.Seed)
-	}
-
-	if opts.Verbose {
-		V("Counted %d overall permutations", doc.PermutationsAll())
-	}
+	log.Infof("Using seed %d", opts.Seed)
+	log.Infof("Counted %d overall permutations", doc.PermutationsAll())
 
 	r := rand.New(rand.NewSource(opts.Seed))
 
@@ -157,9 +149,7 @@ func main() {
 		panic(err)
 	}
 
-	if opts.Verbose {
-		V("Using %s strategy", opts.Strategy)
-	}
+	log.Infof("Using %s strategy", opts.Strategy)
 
 	ch, err := strat.Fuzz(r)
 	if err != nil {
@@ -168,7 +158,7 @@ func main() {
 
 	another := false
 	for i := range ch {
-		if !tavor.DEBUG {
+		if !opts.Debug {
 			if another {
 				fmt.Println()
 			} else {
@@ -176,10 +166,11 @@ func main() {
 			}
 		}
 
-		if tavor.DEBUG {
-			fmt.Printf("Result:\n%s\n", doc.String())
-		} else {
-			fmt.Print(doc.String())
+		log.Debug("Result:")
+
+		fmt.Print(doc.String())
+		if opts.Debug {
+			fmt.Println()
 		}
 
 		ch <- i

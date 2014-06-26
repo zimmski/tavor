@@ -29,6 +29,7 @@ const (
 	ParseErrorUnexpectedTokenDefinitionTermination
 	ParseErrorExpectedExpressionTerm
 	ParseErrorEndlessLoopDetected
+	ParseErrorRootIsNil
 )
 
 type ParserError struct {

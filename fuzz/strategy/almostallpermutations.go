@@ -1,11 +1,10 @@
 package strategy
 
 import (
-	"fmt"
-
 	"github.com/zimmski/container/list/linkedlist"
 
 	"github.com/zimmski/tavor"
+	"github.com/zimmski/tavor/log"
 	"github.com/zimmski/tavor/rand"
 	"github.com/zimmski/tavor/token"
 	"github.com/zimmski/tavor/token/lists"
@@ -100,16 +99,12 @@ func (s *AlmostAllPermutationsStrategy) Fuzz(r rand.Rand) (chan struct{}, error)
 	s.resetedLookup = make(map[token.Token]int)
 
 	go func() {
-		if tavor.DEBUG {
-			fmt.Println("Start almost all permutations routine")
-		}
+		log.Debug("Start almost all permutations routine")
 
 		level := s.getLevel(s.root, false)
 
 		if len(level) != 0 {
-			if tavor.DEBUG {
-				fmt.Println("Start fuzzing step")
-			}
+			log.Debug("Start fuzzing step")
 
 			if !s.fuzz(continueFuzzing, level) {
 				return
@@ -118,21 +113,15 @@ func (s *AlmostAllPermutationsStrategy) Fuzz(r rand.Rand) (chan struct{}, error)
 
 		s.resetResetTokens()
 
-		if tavor.DEBUG {
-			fmt.Println("Done with fuzzing step")
-		}
+		log.Debug("Done with fuzzing step")
 
 		// done with the last fuzzing step
 		continueFuzzing <- struct{}{}
 
-		if tavor.DEBUG {
-			fmt.Println("Finished fuzzing. Wait till the outside is ready to close.")
-		}
+		log.Debug("Finished fuzzing. Wait till the outside is ready to close.")
 
 		if _, ok := <-continueFuzzing; ok {
-			if tavor.DEBUG {
-				fmt.Println("Close fuzzing channel")
-			}
+			log.Debug("Close fuzzing channel")
 
 			close(continueFuzzing)
 		}
@@ -151,9 +140,7 @@ func (s *AlmostAllPermutationsStrategy) resetResetTokens() {
 
 		switch tok := v.(type) {
 		case token.ResetToken:
-			if tavor.DEBUG {
-				fmt.Printf("Reset %#v(%p)\n", tok, tok)
-			}
+			log.Debugf("Reset %#v(%p)", tok, tok)
 
 			tok.Reset()
 		}
@@ -183,9 +170,7 @@ func (s *AlmostAllPermutationsStrategy) setTokenPermutation(tok token.Token, per
 }
 
 func (s *AlmostAllPermutationsStrategy) fuzz(continueFuzzing chan struct{}, level []almostAllPermutationsLevel) bool {
-	if tavor.DEBUG {
-		fmt.Printf("Fuzzing level %d->%#v\n", len(level), level)
-	}
+	log.Debugf("Fuzzing level %d->%#v", len(level), level)
 
 	last := len(level) - 1
 
@@ -194,9 +179,7 @@ STEP:
 		for i := range level {
 			if level[i].permutation > level[i].maxPermutations {
 				if i <= last {
-					if tavor.DEBUG {
-						fmt.Printf("Max reached redo everything <= %d and increment next\n", i)
-					}
+					log.Debugf("Max reached redo everything <= %d and increment next", i)
 
 					level[i+1].permutation++
 					s.setTokenPermutation(level[i+1].token, level[i+1].permutation)
@@ -212,9 +195,7 @@ STEP:
 				continue STEP
 			}
 
-			if tavor.DEBUG {
-				fmt.Printf("Permute %d->%#v\n", i, level[i])
-			}
+			log.Debugf("Permute %d->%#v", i, level[i])
 
 			s.setTokenPermutation(level[i].token, level[i].permutation)
 
@@ -243,9 +224,7 @@ STEP:
 				}
 			}
 			if !found {
-				if tavor.DEBUG {
-					fmt.Println("Done with fuzzing this level")
-				}
+				log.Debug("Done with fuzzing this level")
 
 				break STEP
 			}
@@ -253,25 +232,19 @@ STEP:
 
 		s.resetResetTokens()
 
-		if tavor.DEBUG {
-			fmt.Println("Done with fuzzing step")
-		}
+		log.Debug("Done with fuzzing step")
 
 		// done with this fuzzing step
 		continueFuzzing <- struct{}{}
 
 		// wait until we are allowed to continue
 		if _, ok := <-continueFuzzing; !ok {
-			if tavor.DEBUG {
-				fmt.Println("Fuzzing channel closed from outside")
-			}
+			log.Debug("Fuzzing channel closed from outside")
 
 			return false
 		}
 
-		if tavor.DEBUG {
-			fmt.Println("Start fuzzing step")
-		}
+		log.Debug("Start fuzzing step")
 
 		s.resetedLookup = make(map[token.Token]int)
 	}
