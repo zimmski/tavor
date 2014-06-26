@@ -55,6 +55,12 @@ func checkArguments() {
 
 	p.AddGroup("Tavor", "Tavor arguments", &opts)
 
+	if len(os.Args) == 1 {
+		p.WriteHelp(os.Stdout)
+
+		os.Exit(returnHelp)
+	}
+
 	if _, err := p.ParseArgs(os.Args); err != nil {
 		doListArguments()
 
