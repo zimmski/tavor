@@ -7,6 +7,7 @@ import (
 
 	. "github.com/stretchr/testify/assert"
 
+	"github.com/zimmski/tavor"
 	"github.com/zimmski/tavor/test"
 	"github.com/zimmski/tavor/token"
 	"github.com/zimmski/tavor/token/aggregates"
@@ -403,7 +404,7 @@ func TestTavorParserAlternationsAndGroupings(t *testing.T) {
 	Nil(t, err)
 	Equal(t, tok, lists.NewAll(
 		primitives.NewConstantInt(1),
-		lists.NewRepeat(primitives.NewConstantInt(2), 1, MaxRepeat),
+		lists.NewRepeat(primitives.NewConstantInt(2), 1, tavor.MaxRepeat),
 	))
 
 	// or repeat
@@ -414,7 +415,7 @@ func TestTavorParserAlternationsAndGroupings(t *testing.T) {
 		lists.NewRepeat(lists.NewOne(
 			primitives.NewConstantInt(2),
 			primitives.NewConstantInt(3),
-		), 1, MaxRepeat),
+		), 1, tavor.MaxRepeat),
 		primitives.NewConstantInt(4),
 	))
 
@@ -423,7 +424,7 @@ func TestTavorParserAlternationsAndGroupings(t *testing.T) {
 	Nil(t, err)
 	Equal(t, tok, lists.NewAll(
 		primitives.NewConstantInt(1),
-		lists.NewRepeat(primitives.NewConstantInt(2), 0, MaxRepeat),
+		lists.NewRepeat(primitives.NewConstantInt(2), 0, tavor.MaxRepeat),
 	))
 
 	// or optional repeat
@@ -434,7 +435,7 @@ func TestTavorParserAlternationsAndGroupings(t *testing.T) {
 		lists.NewRepeat(lists.NewOne(
 			primitives.NewConstantInt(2),
 			primitives.NewConstantInt(3),
-		), 0, MaxRepeat),
+		), 0, tavor.MaxRepeat),
 		primitives.NewConstantInt(4),
 	))
 
@@ -443,7 +444,7 @@ func TestTavorParserAlternationsAndGroupings(t *testing.T) {
 	Nil(t, err)
 	Equal(t, tok, lists.NewAll(
 		primitives.NewConstantInt(1),
-		lists.NewRepeat(primitives.NewConstantInt(2), 0, MaxRepeat),
+		lists.NewRepeat(primitives.NewConstantInt(2), 0, tavor.MaxRepeat),
 	))
 
 	// exact repeat
@@ -459,7 +460,7 @@ func TestTavorParserAlternationsAndGroupings(t *testing.T) {
 	Nil(t, err)
 	Equal(t, tok, lists.NewAll(
 		primitives.NewConstantInt(1),
-		lists.NewRepeat(primitives.NewConstantInt(2), 3, MaxRepeat),
+		lists.NewRepeat(primitives.NewConstantInt(2), 3, tavor.MaxRepeat),
 	))
 
 	// at most repeat
@@ -499,7 +500,7 @@ func TestTavorParserTokenAttributes(t *testing.T) {
 				primitives.NewConstantInt(1),
 				primitives.NewConstantInt(2),
 				primitives.NewConstantInt(3),
-			), 0, MaxRepeat),
+			), 0, tavor.MaxRepeat),
 			primitives.NewConstantString("->"),
 			aggregates.NewLen(list),
 		))
