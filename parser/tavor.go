@@ -497,7 +497,7 @@ func (p *tavorParser) parseExpressionTerm(c rune) (rune, token.Token, error) {
 }
 
 func (p *tavorParser) parseTokenAttribute(c rune) (token.Token, error) {
-	log.Debug("START token attribute")
+	log.Debug("New token attribute")
 
 	_, err := p.expectRune(scanner.Ident, c)
 	if err != nil {
@@ -535,7 +535,7 @@ func (p *tavorParser) parseTokenAttribute(c rune) (token.Token, error) {
 
 	p.used[name] = tokenPosition
 
-	log.Debug("END token attribute (or will be unknown token attribute)")
+	log.Debug("Finished token attribute (or will be unknown token attribute)")
 
 	switch i := tok.(type) {
 	case lists.List:
@@ -1011,7 +1011,7 @@ func ParseTavor(src io.Reader) (token.Token, error) {
 		used:                 make(map[string]scanner.Position),
 	}
 
-	log.Debug("INIT")
+	log.Debug("Start parsing tavor file")
 
 	p.scan.Init(src)
 
@@ -1059,6 +1059,8 @@ func ParseTavor(src io.Reader) (token.Token, error) {
 	start := p.lookup["START"].token
 
 	start = tavor.UnrollPointers(start)
+
+	log.Debug("Finished parsing")
 
 	return start, nil
 }

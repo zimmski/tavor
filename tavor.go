@@ -108,7 +108,7 @@ func UnrollPointers(root token.Token) token.Token {
 		parent *unrollToken
 	}
 
-	log.Debug("Unroll pointers by cloning them")
+	log.Debug("Start unrolling pointers by cloning them")
 
 	checked := make(map[token.Token]token.Token)
 	counters := make(map[token.Token]int)
@@ -218,7 +218,7 @@ func UnrollPointers(root token.Token) token.Token {
 		}
 	}
 
-	log.Debug("Done unrolling")
+	log.Debug("Finished unrolling")
 
 	return root
 }
