@@ -1,12 +1,12 @@
 package primitives
 
 import (
-	"github.com/zimmski/tavor/token"
 	"testing"
 
 	. "github.com/stretchr/testify/assert"
 
 	"github.com/zimmski/tavor/test"
+	"github.com/zimmski/tavor/token"
 )
 
 func TestStringTokensToBeTokens(t *testing.T) {
