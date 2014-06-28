@@ -17,21 +17,23 @@ import (
 const (
 	returnOk = iota
 	returnHelp
+	returnBashCompletion
 )
 
 var opts struct {
-	Config      func(s string) error `long:"config" description:"INI config file" no-ini:"true"`
-	ConfigWrite string               `long:"config-write" description:"Write all arguments to an INI config file or to STDOUT with \"-\" as argument." no-ini:"true"`
+	Config      func(s flags.Filename) error `long:"config" description:"INI config file" no-ini:"true"`
+	ConfigWrite flags.Filename               `long:"config-write" description:"Write all arguments to an INI config file or to STDOUT with \"-\" as argument." no-ini:"true"`
 
 	ListStrategies bool `long:"list-strategies" description:"List all available strategies." no-ini:"true"`
 
-	InputFile     string `long:"input-file" description:"Input tavor file" required:"true" no-ini:"true"`
-	PrintInternal bool   `long:"print-internal" description:"Prints the internal AST of the parsed file"`
-	Seed          int64  `long:"seed" description:"Seed for all the randomness"`
-	Strategy      string `long:"strategy" description:"The fuzzing strategy" default:"random"`
-	Validate      bool   `long:"validate" description:"Just validates the input file"`
-	Verbose       bool   `long:"verbose" description:"Do verbose output."`
-	Version       bool   `long:"version" description:"Print the version of this program." no-ini:"true"`
+	Help          bool           `long:"help" description:"Show this help message" no-ini:"true"`
+	InputFile     flags.Filename `long:"input-file" description:"Input tavor file" required:"true" no-ini:"true"`
+	PrintInternal bool           `long:"print-internal" description:"Prints the internal AST of the parsed file"`
+	Seed          int64          `long:"seed" description:"Seed for all the randomness"`
+	Strategy      string         `long:"strategy" description:"The fuzzing strategy" default:"random"`
+	Validate      bool           `long:"validate" description:"Just validates the input file"`
+	Verbose       bool           `long:"verbose" description:"Do verbose output."`
+	Version       bool           `long:"version" description:"Print the version of this program." no-ini:"true"`
 
 	Debug bool `long:"debug" description:"Temporary debugging argument"`
 
@@ -39,38 +41,45 @@ var opts struct {
 }
 
 func checkArguments() {
-	p := flags.NewNamedParser("tavor", flags.HelpFlag)
+	p := flags.NewNamedParser("tavor", flags.PassDoubleDash)
+
 	p.ShortDescription = "A fuzzing and delta-debugging platform."
 
-	opts.Config = func(s string) error {
+	opts.Config = func(s flags.Filename) error {
 		ini := flags.NewIniParser(p)
 
-		opts.configFile = s
+		opts.configFile = string(s)
 
-		return ini.ParseFile(s)
+		return ini.ParseFile(string(s))
 	}
 
 	p.AddGroup("Tavor", "Tavor arguments", &opts)
 
-	if len(os.Args) == 1 {
+	_, err := p.Parse()
+
+	if opts.Help || len(os.Args) == 1 {
 		p.WriteHelp(os.Stdout)
 
 		os.Exit(returnHelp)
-	}
+	} else if opts.Version {
+		fmt.Printf("Tavor v%s\n", tavor.Version)
 
-	if _, err := p.ParseArgs(os.Args); err != nil {
-		doListArguments()
-
-		if e, ok := err.(*flags.Error); !ok || e.Type != flags.ErrHelp {
-			panic(err)
-		} else {
-			p.WriteHelp(os.Stdout)
-
-			os.Exit(returnHelp)
+		os.Exit(returnOk)
+	} else if opts.ListStrategies {
+		for _, name := range strategy.List() {
+			fmt.Println(name)
 		}
+
+		os.Exit(returnOk)
 	}
 
-	doListArguments()
+	if err != nil {
+		panic(err)
+	}
+
+	if len(os.Getenv("GO_FLAGS_COMPLETION")) != 0 {
+		os.Exit(returnBashCompletion)
+	}
 
 	if opts.ConfigWrite != "" {
 		ini := flags.NewIniParser(p)
@@ -80,7 +89,7 @@ func checkArguments() {
 		if opts.ConfigWrite == "-" {
 			(ini.Write(os.Stdout, iniOptions))
 		} else {
-			ini.WriteFile(opts.ConfigWrite, iniOptions)
+			ini.WriteFile(string(opts.ConfigWrite), iniOptions)
 		}
 
 		os.Exit(returnOk)
@@ -99,26 +108,12 @@ func checkArguments() {
 	}
 }
 
-func doListArguments() {
-	if opts.Version {
-		fmt.Printf("Tavor v%s\n", tavor.Version)
-
-		os.Exit(returnOk)
-	} else if opts.ListStrategies {
-		for _, name := range strategy.List() {
-			fmt.Println(name)
-		}
-
-		os.Exit(returnOk)
-	}
-}
-
 func main() {
 	checkArguments()
 
 	log.Infof("Open file %s", opts.InputFile)
 
-	file, err := os.Open(opts.InputFile)
+	file, err := os.Open(string(opts.InputFile))
 	if err != nil {
 		panic(fmt.Errorf("cannot open tavor file %s: %v", opts.InputFile, err))
 	}
