@@ -21,21 +21,21 @@ const (
 )
 
 var opts struct {
-	Config      func(s flags.Filename) error `long:"config" description:"INI config file" no-ini:"true"`
-	ConfigWrite flags.Filename               `long:"config-write" description:"Write all arguments to an INI config file or to STDOUT with \"-\" as argument." no-ini:"true"`
+	Config         func(s flags.Filename) error `long:"config" description:"INI config file" no-ini:"true"`
+	ConfigWrite    flags.Filename               `long:"config-write" description:"Write all arguments to an INI config file or to STDOUT with \"-\" as argument." no-ini:"true"`
+	Debug          bool                         `long:"debug" description:"Temporary debugging argument"`
+	Help           bool                         `long:"help" description:"Show this help message" no-ini:"true"`
+	ListStrategies bool                         `long:"list-strategies" description:"List all available strategies." no-ini:"true"`
+	PrintInternal  bool                         `long:"print-internal" description:"Prints the internal AST of the parsed file"`
+	Seed           int64                        `long:"seed" description:"Seed for all the randomness"`
+	Strategy       string                       `long:"strategy" description:"The fuzzing strategy" default:"random"`
+	Validate       bool                         `long:"validate" description:"Just validates the input file"`
+	Verbose        bool                         `long:"verbose" description:"Do verbose output."`
+	Version        bool                         `long:"version" description:"Print the version of this program." no-ini:"true"`
 
-	ListStrategies bool `long:"list-strategies" description:"List all available strategies." no-ini:"true"`
-
-	Help          bool           `long:"help" description:"Show this help message" no-ini:"true"`
-	InputFile     flags.Filename `long:"input-file" description:"Input tavor file" required:"true" no-ini:"true"`
-	PrintInternal bool           `long:"print-internal" description:"Prints the internal AST of the parsed file"`
-	Seed          int64          `long:"seed" description:"Seed for all the randomness"`
-	Strategy      string         `long:"strategy" description:"The fuzzing strategy" default:"random"`
-	Validate      bool           `long:"validate" description:"Just validates the input file"`
-	Verbose       bool           `long:"verbose" description:"Do verbose output."`
-	Version       bool           `long:"version" description:"Print the version of this program." no-ini:"true"`
-
-	Debug bool `long:"debug" description:"Temporary debugging argument"`
+	Positional struct {
+		FormatFile flags.Filename `description:"Input tavor format file" required:"true" no-ini:"true"`
+	} `positional-args:"true" required:"true"`
 
 	configFile string
 }
@@ -111,11 +111,11 @@ func checkArguments() {
 func main() {
 	checkArguments()
 
-	log.Infof("Open file %s", opts.InputFile)
+	log.Infof("Open file %s", opts.Positional.FormatFile)
 
-	file, err := os.Open(string(opts.InputFile))
+	file, err := os.Open(string(opts.Positional.FormatFile))
 	if err != nil {
-		panic(fmt.Errorf("cannot open tavor file %s: %v", opts.InputFile, err))
+		panic(fmt.Errorf("cannot open tavor file %s: %v", opts.Positional.FormatFile, err))
 	}
 	defer file.Close()
 
