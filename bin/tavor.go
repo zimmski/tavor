@@ -26,7 +26,7 @@ var opts struct {
 	ListStrategies bool `long:"list-strategies" description:"List all available strategies." no-ini:"true"`
 
 	InputFile     string `long:"input-file" description:"Input tavor file" required:"true" no-ini:"true"`
-	PrintInternal bool   `long:"print-internal" description:"Prints the interal AST of the parsed file"`
+	PrintInternal bool   `long:"print-internal" description:"Prints the internal AST of the parsed file"`
 	Seed          int64  `long:"seed" description:"Seed for all the randomness"`
 	Strategy      string `long:"strategy" description:"The fuzzing strategy" default:"random"`
 	Validate      bool   `long:"validate" description:"Just validates the input file"`
