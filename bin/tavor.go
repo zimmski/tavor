@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/jessevdk/go-flags"
@@ -24,20 +25,33 @@ var opts struct {
 	Config         func(s flags.Filename) error `long:"config" description:"INI config file" no-ini:"true"`
 	ConfigWrite    flags.Filename               `long:"config-write" description:"Write all arguments to an INI config file or to STDOUT with \"-\" as argument." no-ini:"true"`
 	Debug          bool                         `long:"debug" description:"Temporary debugging argument"`
+	FormatFile     flags.Filename               `long:"format-file" description:"Input tavor format file" required:"true" no-ini:"true"`
 	Help           bool                         `long:"help" description:"Show this help message" no-ini:"true"`
 	ListStrategies bool                         `long:"list-strategies" description:"List all available strategies." no-ini:"true"`
 	PrintInternal  bool                         `long:"print-internal" description:"Prints the internal AST of the parsed file"`
 	Seed           int64                        `long:"seed" description:"Seed for all the randomness"`
-	Strategy       string                       `long:"strategy" description:"The fuzzing strategy" default:"random"`
+	Strategy       Strategy                     `long:"strategy" description:"The fuzzing strategy" default:"random"`
 	Validate       bool                         `long:"validate" description:"Just validates the input file"`
 	Verbose        bool                         `long:"verbose" description:"Do verbose output."`
 	Version        bool                         `long:"version" description:"Print the version of this program." no-ini:"true"`
 
-	Positional struct {
-		FormatFile flags.Filename `description:"Input tavor format file" required:"true" no-ini:"true"`
-	} `positional-args:"true" required:"true"`
-
 	configFile string
+}
+
+type Strategy string
+
+func (s *Strategy) Complete(match string) []flags.Completion {
+	var items []flags.Completion
+
+	for _, name := range strategy.List() {
+		if strings.HasPrefix(name, match) {
+			items = append(items, flags.Completion{
+				Item: name,
+			})
+		}
+	}
+
+	return items
 }
 
 func checkArguments() {
@@ -56,7 +70,6 @@ func checkArguments() {
 	p.AddGroup("Tavor", "Tavor arguments", &opts)
 
 	_, err := p.Parse()
-
 	if opts.Help || len(os.Args) == 1 {
 		p.WriteHelp(os.Stdout)
 
@@ -111,11 +124,11 @@ func checkArguments() {
 func main() {
 	checkArguments()
 
-	log.Infof("Open file %s", opts.Positional.FormatFile)
+	log.Infof("Open file %s", opts.FormatFile)
 
-	file, err := os.Open(string(opts.Positional.FormatFile))
+	file, err := os.Open(string(opts.FormatFile))
 	if err != nil {
-		panic(fmt.Errorf("cannot open tavor file %s: %v", opts.Positional.FormatFile, err))
+		panic(fmt.Errorf("cannot open tavor file %s: %v", opts.FormatFile, err))
 	}
 	defer file.Close()
 
@@ -139,7 +152,7 @@ func main() {
 
 	r := rand.New(rand.NewSource(opts.Seed))
 
-	strat, err := strategy.New(opts.Strategy, doc)
+	strat, err := strategy.New(string(opts.Strategy), doc)
 	if err != nil {
 		panic(err)
 	}
