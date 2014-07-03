@@ -1,6 +1,8 @@
 package primitives
 
 import (
+	"fmt"
+
 	"github.com/zimmski/tavor/rand"
 	"github.com/zimmski/tavor/token"
 )
@@ -30,7 +32,34 @@ func (p *ConstantString) FuzzAll(r rand.Rand) {
 }
 
 func (p *ConstantString) Parse(pars *token.InternalParser, cur *token.ParserList) ([]token.ParserList, error) {
-	panic("TODO implement")
+	vLen := len(p.value)
+
+	nextIndex := vLen + cur.Index
+
+	if nextIndex > pars.DataLen {
+		return nil, &token.ParserError{
+			Message: fmt.Sprintf("Expected \"%s\" but got early EOF", p.value),
+			Type:    token.ParseErrorUnexpectedEOF,
+		}
+	}
+
+	if got := pars.Data[cur.Index:nextIndex]; p.value != got {
+		return nil, &token.ParserError{
+			Message: fmt.Sprintf("Expected \"%s\" but got \"%s\"", p.value, got),
+			Type:    token.ParseErrorUnexpectedData,
+		}
+	}
+
+	return []token.ParserList{
+		token.ParserList{
+			Tokens: append(cur.Tokens, token.ParserToken{
+				Token:    p.Clone(),
+				Index:    1,
+				MaxIndex: 1,
+			}),
+			Index: nextIndex,
+		},
+	}, nil
 }
 
 func (p *ConstantString) Permutation(i int) error {
