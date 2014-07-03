@@ -73,6 +73,10 @@ func (l *Many) FuzzAll(r rand.Rand) {
 	}
 }
 
+func (l *Many) Parse(parser token.InternalParser, cur *token.ParserList) []token.ParserList {
+	panic("TODO implement")
+}
+
 func (l *Many) Permutation(i int) error {
 	panic("TODO not implemented")
 }

@@ -31,6 +31,10 @@ func (p *ConstantInt) FuzzAll(r rand.Rand) {
 	p.Fuzz(r)
 }
 
+func (p *ConstantInt) Parse(parser token.InternalParser, cur *token.ParserList) []token.ParserList {
+	panic("TODO implement")
+}
+
 func (p *ConstantInt) Permutation(i int) error {
 	permutations := p.Permutations()
 
@@ -79,6 +83,10 @@ func (p *RandomInt) Fuzz(r rand.Rand) {
 
 func (p *RandomInt) FuzzAll(r rand.Rand) {
 	p.Fuzz(r)
+}
+
+func (p *RandomInt) Parse(parser token.InternalParser, cur *token.ParserList) []token.ParserList {
+	panic("TODO implement")
 }
 
 func (p *RandomInt) Permutation(i int) error {
@@ -139,6 +147,10 @@ func (p *RangeInt) Fuzz(r rand.Rand) {
 
 func (p *RangeInt) FuzzAll(r rand.Rand) {
 	p.Fuzz(r)
+}
+
+func (p *RangeInt) Parse(parser token.InternalParser, cur *token.ParserList) []token.ParserList {
+	panic("TODO implement")
 }
 
 func (p *RangeInt) permutation(i int) {

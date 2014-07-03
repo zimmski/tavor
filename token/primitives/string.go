@@ -29,6 +29,10 @@ func (p *ConstantString) FuzzAll(r rand.Rand) {
 	p.Fuzz(r)
 }
 
+func (p *ConstantString) Parse(parser token.InternalParser, cur *token.ParserList) []token.ParserList {
+	panic("TODO implement")
+}
+
 func (p *ConstantString) Permutation(i int) error {
 	permutations := p.Permutations()
 

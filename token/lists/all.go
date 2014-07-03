@@ -47,6 +47,10 @@ func (l *All) FuzzAll(r rand.Rand) {
 	}
 }
 
+func (l *All) Parse(parser token.InternalParser, cur *token.ParserList) []token.ParserList {
+	panic("TODO implement")
+}
+
 func (l *All) Permutation(i int) error {
 	permutations := l.Permutations()
 

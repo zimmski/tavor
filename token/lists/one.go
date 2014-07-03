@@ -48,6 +48,10 @@ func (l *One) FuzzAll(r rand.Rand) {
 	l.tokens[l.value].FuzzAll(r)
 }
 
+func (l *One) Parse(parser token.InternalParser, cur *token.ParserList) []token.ParserList {
+	panic("TODO implement")
+}
+
 func (l *One) permutation(i int) {
 	l.value = i
 }

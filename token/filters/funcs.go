@@ -42,6 +42,10 @@ func (f *FuncFilter) FuzzAll(r rand.Rand) {
 	f.Fuzz(r)
 }
 
+func (f *FuncFilter) Parse(parser token.InternalParser, cur *token.ParserList) []token.ParserList {
+	panic("TODO implement")
+}
+
 func (f *FuncFilter) Permutation(i int) error {
 	panic("Not implemented")
 }

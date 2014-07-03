@@ -17,6 +17,8 @@ type Token interface {
 	Permutation(i int) error
 	Permutations() int
 	PermutationsAll() int
+
+	Parse(parser InternalParser, cur *ParserList) []ParserList
 }
 
 type ForwardToken interface {
@@ -60,4 +62,18 @@ type ResetToken interface {
 	Token
 
 	Reset()
+}
+
+type InternalParser struct { // TODO move this some place else
+	Data string
+}
+
+type ParserList struct { // TODO move this some place else
+	Tokens []ParserToken
+	Index  int
+}
+
+type ParserToken struct { // TODO move this some place else
+	Token Token
+	Index int
 }

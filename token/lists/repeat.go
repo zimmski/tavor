@@ -61,6 +61,10 @@ func (l *Repeat) FuzzAll(r rand.Rand) {
 	}
 }
 
+func (l *Repeat) Parse(parser token.InternalParser, cur *token.ParserList) []token.ParserList {
+	panic("TODO implement")
+}
+
 func (l *Repeat) permutation(i int) {
 	toks := make([]token.Token, i+int(l.from))
 

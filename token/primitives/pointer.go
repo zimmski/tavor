@@ -87,6 +87,10 @@ func (p *Pointer) InternalGet() token.Token {
 	return p.token
 }
 
+func (p *Pointer) Parse(parser token.InternalParser, cur *token.ParserList) []token.ParserList {
+	panic("Pointer token is not allowed during internal parsing")
+}
+
 func (p *Pointer) Permutation(i int) error {
 	p.cloneOnFirstUse()
 

@@ -73,9 +73,12 @@ func (s *Sequence) ResetItem() *sequenceResetItem {
 
 // Sequence is an unusable token
 
-func (s *Sequence) Clone() token.Token      { panic("unusable token") }
-func (s *Sequence) Fuzz(r rand.Rand)        { panic("unusable token") }
-func (s *Sequence) FuzzAll(r rand.Rand)     { panic("unusable token") }
+func (s *Sequence) Clone() token.Token  { panic("unusable token") }
+func (s *Sequence) Fuzz(r rand.Rand)    { panic("unusable token") }
+func (s *Sequence) FuzzAll(r rand.Rand) { panic("unusable token") }
+func (s *Sequence) Parse(parser token.InternalParser, cur *token.ParserList) []token.ParserList {
+	panic("unusable token")
+}
 func (s *Sequence) Permutation(i int) error { panic("unusable token") }
 func (s *Sequence) Permutations() int       { panic("unusable token") }
 func (s *Sequence) PermutationsAll() int    { panic("unusable token") }
@@ -99,6 +102,10 @@ func (s *sequenceItem) Fuzz(r rand.Rand) {
 
 func (s *sequenceItem) FuzzAll(r rand.Rand) {
 	s.Fuzz(r)
+}
+
+func (s *sequenceItem) Parse(parser token.InternalParser, cur *token.ParserList) []token.ParserList {
+	panic("TODO implement")
 }
 
 func (s *sequenceItem) permutation(i int) {
@@ -157,6 +164,10 @@ func (s *sequenceExistingItem) FuzzAll(r rand.Rand) {
 	s.Fuzz(r)
 }
 
+func (s *sequenceExistingItem) Parse(parser token.InternalParser, cur *token.ParserList) []token.ParserList {
+	panic("TODO implement")
+}
+
 func (s *sequenceExistingItem) permutation(r rand.Rand) {
 	s.value = s.sequence.existing(r)
 }
@@ -209,6 +220,10 @@ func (s *sequenceResetItem) Fuzz(r rand.Rand) {
 
 func (s *sequenceResetItem) FuzzAll(r rand.Rand) {
 	s.Fuzz(r)
+}
+
+func (s *sequenceResetItem) Parse(parser token.InternalParser, cur *token.ParserList) []token.ParserList {
+	panic("TODO implement")
 }
 
 func (s *sequenceResetItem) permutation(i int) {

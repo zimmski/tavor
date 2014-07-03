@@ -38,6 +38,10 @@ func (e *AddArithmetic) FuzzAll(r rand.Rand) {
 	e.b.FuzzAll(r)
 }
 
+func (e *AddArithmetic) Parse(parser token.InternalParser, cur *token.ParserList) []token.ParserList {
+	panic("TODO implement")
+}
+
 func (e *AddArithmetic) Permutation(i int) error {
 	permutations := e.Permutations()
 
@@ -144,6 +148,10 @@ func (e *SubArithmetic) FuzzAll(r rand.Rand) {
 
 	e.a.FuzzAll(r)
 	e.b.FuzzAll(r)
+}
+
+func (e *SubArithmetic) Parse(parser token.InternalParser, cur *token.ParserList) []token.ParserList {
+	panic("TODO implement")
 }
 
 func (e *SubArithmetic) Permutation(i int) error {
@@ -254,6 +262,10 @@ func (e *MulArithmetic) FuzzAll(r rand.Rand) {
 	e.b.FuzzAll(r)
 }
 
+func (e *MulArithmetic) Parse(parser token.InternalParser, cur *token.ParserList) []token.ParserList {
+	panic("TODO implement")
+}
+
 func (e *MulArithmetic) Permutation(i int) error {
 	permutations := e.Permutations()
 
@@ -360,6 +372,10 @@ func (e *DivArithmetic) FuzzAll(r rand.Rand) {
 
 	e.a.FuzzAll(r)
 	e.b.FuzzAll(r)
+}
+
+func (e *DivArithmetic) Parse(parser token.InternalParser, cur *token.ParserList) []token.ParserList {
+	panic("TODO implement")
 }
 
 func (e *DivArithmetic) Permutation(i int) error {
