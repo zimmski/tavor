@@ -2,14 +2,15 @@ package parser
 
 import (
 	"fmt"
-	"github.com/zimmski/tavor/token/lists"
-	"github.com/zimmski/tavor/token/primitives"
 	"strings"
 	"testing"
 
 	. "github.com/stretchr/testify/assert"
 
 	"github.com/zimmski/tavor/token"
+	"github.com/zimmski/tavor/token/constraints"
+	"github.com/zimmski/tavor/token/lists"
+	"github.com/zimmski/tavor/token/primitives"
 )
 
 func TestInternalParseErrors(t *testing.T) {
@@ -49,11 +50,15 @@ func TestInternalParseErrors(t *testing.T) {
 
 func checkParse(t *testing.T, root token.Token, data string) {
 	errs := ParseInternal(root, strings.NewReader(data))
+
 	if len(errs) != 0 {
 		fmt.Printf("ERRS: %+v\n", errs)
+
+		panic(fmt.Sprintf("Expected nil, but got: %#v", errs))
 	}
-	Nil(t, errs)
-	Equal(t, data, root.String())
+	if got := root.String(); !ObjectsAreEqual(data, got) {
+		panic(fmt.Sprintf("Not equal: %#v != %#v", data, got))
+	}
 }
 
 func TestInternalParse(t *testing.T) {
@@ -160,6 +165,32 @@ func TestInternalParse(t *testing.T) {
 	)
 
 	errs = ParseInternal(o, strings.NewReader("1c"))
+	Equal(t, token.ParseErrorUnexpectedData, errs[0].(*token.ParserError).Type)
+	Nil(t, tok)
+
+	// optional
+	o = lists.NewAll(
+		constraints.NewOptional(primitives.NewConstantInt(1)),
+		primitives.NewConstantString("a"),
+	)
+
+	checkParse(
+		t,
+		o,
+		"1a",
+	)
+
+	checkParse(
+		t,
+		o,
+		"a",
+	)
+
+	errs = ParseInternal(o, strings.NewReader("1c"))
+	Equal(t, token.ParseErrorUnexpectedData, errs[0].(*token.ParserError).Type)
+	Nil(t, tok)
+
+	errs = ParseInternal(o, strings.NewReader("21a"))
 	Equal(t, token.ParseErrorUnexpectedData, errs[0].(*token.ParserError).Type)
 	Nil(t, tok)
 }

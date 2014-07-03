@@ -39,7 +39,17 @@ func (c *Optional) FuzzAll(r rand.Rand) {
 }
 
 func (c *Optional) Parse(pars *token.InternalParser, cur int) (int, []error) {
-	panic("TODO implement")
+	nex, errs := c.token.Parse(pars, cur)
+
+	if len(errs) == 0 {
+		c.value = false
+
+		return nex, nil
+	}
+
+	c.value = true
+
+	return cur, nil
 }
 
 func (c *Optional) permutation(i int) {
