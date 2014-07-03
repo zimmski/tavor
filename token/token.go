@@ -2,6 +2,7 @@ package token
 
 import (
 	"fmt"
+	"text/scanner"
 
 	"github.com/zimmski/tavor/rand"
 )
@@ -18,7 +19,7 @@ type Token interface {
 	Permutations() int
 	PermutationsAll() int
 
-	Parse(parser InternalParser, cur *ParserList) []ParserList
+	Parse(pars *InternalParser, cur *ParserList) ([]ParserList, error)
 }
 
 type ForwardToken interface {
@@ -65,7 +66,8 @@ type ResetToken interface {
 }
 
 type InternalParser struct { // TODO move this some place else
-	Data string
+	Data    string
+	DataLen int
 }
 
 type ParserList struct { // TODO move this some place else
@@ -74,6 +76,53 @@ type ParserList struct { // TODO move this some place else
 }
 
 type ParserToken struct { // TODO move this some place else
-	Token Token
-	Index int
+	Token    Token
+	Index    int
+	MaxIndex int
 }
+
+////////////////////////
+// was in parser.go but "import cycle not allowed" forced me to do this
+
+type ParserErrorType int
+
+const (
+	ParseErrorNoStart ParserErrorType = iota
+	ParseErrorNewLineNeeded
+	ParseErrorEarlyNewLine
+	ParseErrorEmptyExpressionIsInvalid
+	ParseErrorEmptyTokenDefinition
+	ParseErrorInvalidArgumentValue
+	ParseErrorInvalidTokenName
+	ParseErrorInvalidTokenType
+	ParseErrorUnusedToken
+	ParseErrorMissingSpecialTokenArgument
+	ParseErrorNonTerminatedString
+	ParseErrorTokenAlreadyDefined
+	ParseErrorTokenNotDefined
+	ParseErrorExpectRune
+	ParseErrorUnknownSpecialTokenArgument
+	ParseErrorUnknownSpecialTokenType
+	ParseErrorUnknownTokenAttribute
+	ParseErrorUnknownTypeForSpecialToken
+	ParseErrorUnexpectedTokenDefinitionTermination
+	ParseErrorExpectedExpressionTerm
+	ParseErrorEndlessLoopDetected
+
+	ParseErrorRootIsNil
+	ParseErrorUnexpectedEOF
+	ParseErrorUnexpectedData
+)
+
+type ParserError struct {
+	Message string
+	Type    ParserErrorType
+
+	Position scanner.Position
+}
+
+func (err *ParserError) Error() string {
+	return fmt.Sprintf("L:%d, C:%d - %s", err.Position.Line, err.Position.Column, err.Message)
+}
+
+////////////////////////

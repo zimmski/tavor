@@ -42,7 +42,7 @@ func (f *FuncFilter) FuzzAll(r rand.Rand) {
 	f.Fuzz(r)
 }
 
-func (f *FuncFilter) Parse(parser token.InternalParser, cur *token.ParserList) []token.ParserList {
+func (f *FuncFilter) Parse(pars *token.InternalParser, cur *token.ParserList) ([]token.ParserList, error) {
 	panic("TODO implement")
 }
 

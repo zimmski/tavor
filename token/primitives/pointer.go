@@ -87,7 +87,7 @@ func (p *Pointer) InternalGet() token.Token {
 	return p.token
 }
 
-func (p *Pointer) Parse(parser token.InternalParser, cur *token.ParserList) []token.ParserList {
+func (p *Pointer) Parse(pars *token.InternalParser, cur *token.ParserList) ([]token.ParserList, error) {
 	panic("Pointer token is not allowed during internal parsing")
 }
 
