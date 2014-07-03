@@ -5,7 +5,7 @@ all: clean install test install binaries
 binaries:
 	go install $(GOPATH)/src/github.com/zimmski/tavor/bin/tavor.go
 clean:
-	go clean ./...
+	go clean -i ./...
 debugbinaries:
 	go install -race $(GOPATH)/src/github.com/zimmski/tavor/bin/tavor.go
 fmt:
