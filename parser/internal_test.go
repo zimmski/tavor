@@ -134,4 +134,32 @@ func TestInternalParse(t *testing.T) {
 	errs = ParseInternal(o, strings.NewReader("2"))
 	Equal(t, token.ParseErrorUnexpectedData, errs[0].(*token.ParserError).Type)
 	Nil(t, tok)
+
+	// combine
+	o = lists.NewOne(
+		lists.NewAll(
+			primitives.NewConstantInt(1),
+			primitives.NewConstantString("a"),
+		),
+		lists.NewAll(
+			primitives.NewConstantInt(1),
+			primitives.NewConstantString("b"),
+		),
+	)
+
+	checkParse(
+		t,
+		o,
+		"1a",
+	)
+
+	checkParse(
+		t,
+		o,
+		"1b",
+	)
+
+	errs = ParseInternal(o, strings.NewReader("1c"))
+	Equal(t, token.ParseErrorUnexpectedData, errs[0].(*token.ParserError).Type)
+	Nil(t, tok)
 }
