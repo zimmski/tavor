@@ -50,16 +50,18 @@ func (l *One) FuzzAll(r rand.Rand) {
 
 func (l *One) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	var nex int
-	var errs []error
+	var es, errs []error
 
 	for i := range l.tokens {
-		nex, errs = l.tokens[i].Parse(pars, cur)
+		nex, es = l.tokens[i].Parse(pars, cur)
 
-		if len(errs) == 0 {
+		if len(es) == 0 {
 			l.value = i
 
 			return nex, nil
 		}
+
+		errs = append(errs, es...)
 	}
 
 	return cur, errs
