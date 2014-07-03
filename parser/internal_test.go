@@ -193,4 +193,30 @@ func TestInternalParse(t *testing.T) {
 	errs = ParseInternal(o, strings.NewReader("21a"))
 	Equal(t, token.ParseErrorUnexpectedData, errs[0].(*token.ParserError).Type)
 	Nil(t, tok)
+
+	// repeat
+	o = lists.NewAll(
+		primitives.NewConstantInt(1),
+		lists.NewRepeat(primitives.NewConstantInt(2), 2, 5),
+	)
+
+	checkParse(
+		t,
+		o,
+		"122",
+	)
+
+	checkParse(
+		t,
+		o,
+		"122222",
+	)
+
+	errs = ParseInternal(o, strings.NewReader("12"))
+	Equal(t, token.ParseErrorUnexpectedEOF, errs[0].(*token.ParserError).Type)
+	Nil(t, tok)
+
+	errs = ParseInternal(o, strings.NewReader("1222222"))
+	Equal(t, token.ParseErrorExpectedEOF, errs[0].(*token.ParserError).Type)
+	Nil(t, tok)
 }

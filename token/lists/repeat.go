@@ -62,7 +62,37 @@ func (l *Repeat) FuzzAll(r rand.Rand) {
 }
 
 func (l *Repeat) Parse(pars *token.InternalParser, cur int) (int, []error) {
-	panic("TODO implement")
+	var toks []token.Token
+
+	for i := 1; i <= int(l.from); i++ {
+		tok := l.token.Clone()
+
+		nex, errs := tok.Parse(pars, cur)
+
+		if len(errs) != 0 {
+			return cur, errs
+		}
+
+		cur = nex
+		toks = append(toks, tok)
+	}
+
+	for i := l.from; i < l.to; i++ {
+		tok := l.token.Clone()
+
+		nex, errs := tok.Parse(pars, cur)
+
+		if len(errs) != 0 {
+			return cur, nil
+		}
+
+		cur = nex
+		toks = append(toks, tok)
+	}
+
+	l.value = toks
+
+	return cur, nil
 }
 
 func (l *Repeat) permutation(i int) {
