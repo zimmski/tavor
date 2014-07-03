@@ -47,7 +47,7 @@ func (f *FuncFilter) Parse(pars *token.InternalParser, cur int) (int, []error) {
 }
 
 func (f *FuncFilter) Permutation(i int) error {
-	panic("Not implemented")
+	panic("TODO implemented")
 }
 
 func (f *FuncFilter) Permutations() int {

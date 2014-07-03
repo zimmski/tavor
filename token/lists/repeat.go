@@ -83,7 +83,7 @@ func (l *Repeat) Parse(pars *token.InternalParser, cur int) (int, []error) {
 		nex, errs := tok.Parse(pars, cur)
 
 		if len(errs) != 0 {
-			return cur, nil
+			break
 		}
 
 		cur = nex
