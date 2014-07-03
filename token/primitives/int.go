@@ -32,36 +32,27 @@ func (p *ConstantInt) FuzzAll(r rand.Rand) {
 	p.Fuzz(r)
 }
 
-func (p *ConstantInt) Parse(pars *token.InternalParser, cur *token.ParserList) ([]token.ParserList, error) {
+func (p *ConstantInt) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	v := strconv.Itoa(p.value)
 	vLen := len(v)
 
-	nextIndex := vLen + cur.Index
+	nextIndex := vLen + cur
 
 	if nextIndex > pars.DataLen {
-		return nil, &token.ParserError{
+		return cur, []error{&token.ParserError{
 			Message: fmt.Sprintf("Expected \"%s\" but got early EOF", v),
 			Type:    token.ParseErrorUnexpectedEOF,
-		}
+		}}
 	}
 
-	if got := pars.Data[cur.Index:nextIndex]; v != got {
-		return nil, &token.ParserError{
+	if got := pars.Data[cur:nextIndex]; v != got {
+		return cur, []error{&token.ParserError{
 			Message: fmt.Sprintf("Expected \"%s\" but got \"%s\"", v, got),
 			Type:    token.ParseErrorUnexpectedData,
-		}
+		}}
 	}
 
-	return []token.ParserList{
-		token.ParserList{
-			Tokens: append(cur.Tokens, token.ParserToken{
-				Token:    p.Clone(),
-				Index:    1,
-				MaxIndex: 1,
-			}),
-			Index: nextIndex,
-		},
-	}, nil
+	return nextIndex, nil
 }
 
 func (p *ConstantInt) Permutation(i int) error {
@@ -114,7 +105,7 @@ func (p *RandomInt) FuzzAll(r rand.Rand) {
 	p.Fuzz(r)
 }
 
-func (p *RandomInt) Parse(pars *token.InternalParser, cur *token.ParserList) ([]token.ParserList, error) {
+func (p *RandomInt) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	panic("TODO implement")
 }
 
@@ -178,7 +169,7 @@ func (p *RangeInt) FuzzAll(r rand.Rand) {
 	p.Fuzz(r)
 }
 
-func (p *RangeInt) Parse(pars *token.InternalParser, cur *token.ParserList) ([]token.ParserList, error) {
+func (p *RangeInt) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	panic("TODO implement")
 }
 

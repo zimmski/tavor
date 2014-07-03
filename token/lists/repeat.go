@@ -61,7 +61,7 @@ func (l *Repeat) FuzzAll(r rand.Rand) {
 	}
 }
 
-func (l *Repeat) Parse(pars *token.InternalParser, cur *token.ParserList) ([]token.ParserList, error) {
+func (l *Repeat) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	panic("TODO implement")
 }
 

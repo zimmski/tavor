@@ -1,23 +1,22 @@
 package parser
 
 import (
+	"fmt"
 	"io"
 	"io/ioutil"
-
-	"github.com/zimmski/container/list/linkedlist"
 
 	"github.com/zimmski/tavor/log"
 	"github.com/zimmski/tavor/token"
 )
 
-func ParseInternal(root token.Token, src io.Reader) (token.Token, error) {
+func ParseInternal(root token.Token, src io.Reader) []error {
 	log.Debug("Start internal parsing")
 
 	if root == nil {
-		return nil, &token.ParserError{
+		return []error{&token.ParserError{
 			Message: "Root token is nil",
 			Type:    token.ParseErrorRootIsNil,
-		}
+		}}
 	}
 
 	p := &token.InternalParser{}
@@ -29,39 +28,29 @@ func ParseInternal(root token.Token, src io.Reader) (token.Token, error) {
 		panic(err)
 	}
 
-	queue := linkedlist.New()
+	nex, errs := root.Parse(p, 0)
 
-	nex, err := root.Parse(p, &token.ParserList{})
-	if err != nil {
-		return nil, err
-	}
+	if len(errs) != 0 {
+		log.Debugf("Internal parsing failed %v", errs)
 
-	for i := len(nex) - 1; i > -1; i-- {
-		queue.Unshift(nex[i])
-	}
+		return errs
+	} else if nex != p.DataLen {
+		i := p.DataLen - nex
+		msg := ""
 
-	for !queue.Empty() {
-		v, _ := queue.Shift()
-		l, _ := v.(token.ParserList)
-
-		for i := len(l.Tokens) - 1; i > -1; i-- {
-			if l.Tokens[i].Index != l.Tokens[i].MaxIndex {
-				nex, err = l.Tokens[i].Token.Parse(p, &l)
-
-				for i := len(nex) - 1; i > -1; i-- {
-					queue.Unshift(nex[i])
-				}
-			}
+		if i > 5 {
+			msg = fmt.Sprintf("Expected EOF but still %q and more left", p.Data[nex:5])
+		} else {
+			msg = fmt.Sprintf("Expected EOF but still %q left", p.Data[nex:nex+i])
 		}
 
-		if l.Index == p.DataLen {
-			log.Debugf("Finished internal parsing with token %v", l.Tokens[0].Token)
-
-			return l.Tokens[0].Token, nil
-		}
+		return []error{&token.ParserError{
+			Message: msg,
+			Type:    token.ParseErrorExpectedEOF,
+		}}
 	}
 
-	log.Debugf("Internal parsing failed %v", err)
+	log.Debugf("Finished internal parsing")
 
-	return nil, err
+	return nil
 }

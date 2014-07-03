@@ -38,7 +38,7 @@ func (e *AddArithmetic) FuzzAll(r rand.Rand) {
 	e.b.FuzzAll(r)
 }
 
-func (e *AddArithmetic) Parse(pars *token.InternalParser, cur *token.ParserList) ([]token.ParserList, error) {
+func (e *AddArithmetic) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	panic("TODO implement")
 }
 
@@ -150,7 +150,7 @@ func (e *SubArithmetic) FuzzAll(r rand.Rand) {
 	e.b.FuzzAll(r)
 }
 
-func (e *SubArithmetic) Parse(pars *token.InternalParser, cur *token.ParserList) ([]token.ParserList, error) {
+func (e *SubArithmetic) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	panic("TODO implement")
 }
 
@@ -262,7 +262,7 @@ func (e *MulArithmetic) FuzzAll(r rand.Rand) {
 	e.b.FuzzAll(r)
 }
 
-func (e *MulArithmetic) Parse(pars *token.InternalParser, cur *token.ParserList) ([]token.ParserList, error) {
+func (e *MulArithmetic) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	panic("TODO implement")
 }
 
@@ -374,7 +374,7 @@ func (e *DivArithmetic) FuzzAll(r rand.Rand) {
 	e.b.FuzzAll(r)
 }
 
-func (e *DivArithmetic) Parse(pars *token.InternalParser, cur *token.ParserList) ([]token.ParserList, error) {
+func (e *DivArithmetic) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	panic("TODO implement")
 }
 

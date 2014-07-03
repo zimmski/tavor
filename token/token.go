@@ -19,7 +19,7 @@ type Token interface {
 	Permutations() int
 	PermutationsAll() int
 
-	Parse(pars *InternalParser, cur *ParserList) ([]ParserList, error)
+	Parse(pars *InternalParser, cur int) (int, []error)
 }
 
 type ForwardToken interface {
@@ -70,17 +70,6 @@ type InternalParser struct { // TODO move this some place else
 	DataLen int
 }
 
-type ParserList struct { // TODO move this some place else
-	Tokens []ParserToken
-	Index  int
-}
-
-type ParserToken struct { // TODO move this some place else
-	Token    Token
-	Index    int
-	MaxIndex int
-}
-
 ////////////////////////
 // was in parser.go but "import cycle not allowed" forced me to do this
 
@@ -109,6 +98,7 @@ const (
 	ParseErrorExpectedExpressionTerm
 	ParseErrorEndlessLoopDetected
 
+	ParseErrorExpectedEOF
 	ParseErrorRootIsNil
 	ParseErrorUnexpectedEOF
 	ParseErrorUnexpectedData

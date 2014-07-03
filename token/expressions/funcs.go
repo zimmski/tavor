@@ -29,7 +29,7 @@ func (e *FuncExpression) FuzzAll(r rand.Rand) {
 	e.Fuzz(r)
 }
 
-func (e *FuncExpression) Parse(pars *token.InternalParser, cur *token.ParserList) ([]token.ParserList, error) {
+func (e *FuncExpression) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	panic("TODO implement")
 }
 

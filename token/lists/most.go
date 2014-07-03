@@ -58,7 +58,7 @@ func (l *Most) FuzzAll(r rand.Rand) {
 	}
 }
 
-func (l *Most) Parse(pars *token.InternalParser, cur *token.ParserList) ([]token.ParserList, error) {
+func (l *Most) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	panic("TODO implement")
 }
 

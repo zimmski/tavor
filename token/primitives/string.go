@@ -31,35 +31,26 @@ func (p *ConstantString) FuzzAll(r rand.Rand) {
 	p.Fuzz(r)
 }
 
-func (p *ConstantString) Parse(pars *token.InternalParser, cur *token.ParserList) ([]token.ParserList, error) {
+func (p *ConstantString) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	vLen := len(p.value)
 
-	nextIndex := vLen + cur.Index
+	nextIndex := vLen + cur
 
 	if nextIndex > pars.DataLen {
-		return nil, &token.ParserError{
+		return cur, []error{&token.ParserError{
 			Message: fmt.Sprintf("Expected \"%s\" but got early EOF", p.value),
 			Type:    token.ParseErrorUnexpectedEOF,
-		}
+		}}
 	}
 
-	if got := pars.Data[cur.Index:nextIndex]; p.value != got {
-		return nil, &token.ParserError{
+	if got := pars.Data[cur:nextIndex]; p.value != got {
+		return cur, []error{&token.ParserError{
 			Message: fmt.Sprintf("Expected \"%s\" but got \"%s\"", p.value, got),
 			Type:    token.ParseErrorUnexpectedData,
-		}
+		}}
 	}
 
-	return []token.ParserList{
-		token.ParserList{
-			Tokens: append(cur.Tokens, token.ParserToken{
-				Token:    p.Clone(),
-				Index:    1,
-				MaxIndex: 1,
-			}),
-			Index: nextIndex,
-		},
-	}, nil
+	return nextIndex, nil
 }
 
 func (p *ConstantString) Permutation(i int) error {
