@@ -20,6 +20,7 @@ const (
 	returnHelp
 	returnBashCompletion
 	returnInvalidInputFile
+	returnError
 )
 
 var opts struct {
@@ -76,7 +77,7 @@ func checkArguments() string {
 	p.ShortDescription = "A fuzzing and delta-debugging platform."
 
 	if _, err := p.AddGroup("Tavor", "Tavor arguments", &opts); err != nil {
-		panic(err)
+		exitError(err.Error())
 	}
 
 	_, err := p.Parse()
@@ -97,7 +98,7 @@ func checkArguments() string {
 	}
 
 	if err != nil {
-		panic(err)
+		exitError(err.Error())
 	}
 
 	if len(os.Getenv("GO_FLAGS_COMPLETION")) != 0 {
@@ -121,6 +122,12 @@ func checkArguments() string {
 	return p.Active.Name
 }
 
+func exitError(format string, args ...interface{}) {
+	fmt.Fprintf(os.Stderr, format+"\n", args...)
+
+	os.Exit(returnError)
+}
+
 func main() {
 	command := checkArguments()
 
@@ -128,13 +135,13 @@ func main() {
 
 	file, err := os.Open(string(opts.Format.FormatFile))
 	if err != nil {
-		panic(fmt.Errorf("cannot open tavor file %s: %v", opts.Format.FormatFile, err))
+		exitError("cannot open tavor file %s: %v", opts.Format.FormatFile, err)
 	}
 	defer file.Close()
 
 	doc, err := parser.ParseTavor(file)
 	if err != nil {
-		panic(fmt.Errorf("cannot parse tavor file: %v", err))
+		exitError("cannot parse tavor file: %v", err)
 	}
 
 	log.Info("Format file is valid")
@@ -155,14 +162,14 @@ func main() {
 
 		strat, err := strategy.New(string(opts.Fuzz.Strategy), doc)
 		if err != nil {
-			panic(err)
+			exitError(err.Error())
 		}
 
 		log.Infof("Using %s strategy", opts.Fuzz.Strategy)
 
 		ch, err := strat.Fuzz(r)
 		if err != nil {
-			panic(err)
+			exitError(err.Error())
 		}
 
 		another := false
@@ -193,7 +200,7 @@ func main() {
 
 		input, err := os.Open(string(inputFile))
 		if err != nil {
-			panic(fmt.Errorf("cannot open input file %s: %v", inputFile, err))
+			exitError("cannot open input file %s: %v", inputFile, err)
 		}
 		defer input.Close()
 
@@ -215,7 +222,7 @@ func main() {
 			panic("TODO not implemented yet")
 		}
 	default:
-		log.Panicf("Unknown command %q", command)
+		exitError("Unknown command %q", command)
 	}
 
 	os.Exit(returnOk)
