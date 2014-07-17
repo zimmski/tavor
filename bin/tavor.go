@@ -11,6 +11,7 @@ import (
 
 	"github.com/zimmski/tavor"
 	"github.com/zimmski/tavor/fuzz/strategy"
+	"github.com/zimmski/tavor/graph"
 	"github.com/zimmski/tavor/log"
 	"github.com/zimmski/tavor/parser"
 )
@@ -44,15 +45,18 @@ var opts struct {
 	Fuzz struct {
 		Strategy       Strategy `long:"strategy" description:"The fuzzing strategy" default:"random"`
 		ListStrategies bool     `long:"list-strategies" description:"List all available strategies"`
-	} `command:"fuzz"`
+	} `command:"fuzz" description:"Fuzz the given format file"`
+
+	Graph struct {
+	} `command:"graph" description:"Generate a DOT file out of the internal AST"`
 
 	Reduce struct {
 		InputFile flags.Filename `long:"input-file" description:"Input file which gets parsed, validated and delta-debugged via the format file" required:"true"`
-	} `command:"reduce"`
+	} `command:"reduce" description:"Reduce the given input file"`
 
 	Validate struct {
 		InputFile flags.Filename `long:"input-file" description:"Input file which gets parsed and validated via the format file" required:"true"`
-	} `command:"validate"`
+	} `command:"validate" description:"Validate the given format file"`
 }
 
 type Strategy string
@@ -191,6 +195,8 @@ func main() {
 
 			ch <- i
 		}
+	case "graph":
+		graph.WriteDot(doc, os.Stdout)
 	case "reduce", "validate":
 		inputFile := opts.Validate.InputFile
 
