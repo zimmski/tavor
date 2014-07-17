@@ -30,6 +30,14 @@ func NewRepeat(tok token.Token, from, to int64) *Repeat {
 	return l
 }
 
+func (l *Repeat) From() int64 {
+	return l.from
+}
+
+func (l *Repeat) To() int64 {
+	return l.to
+}
+
 // Token interface methods
 
 func (l *Repeat) Clone() token.Token {
