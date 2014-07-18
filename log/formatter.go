@@ -45,8 +45,8 @@ func (f *LogFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 
 		fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m %-44s ", levelColor, levelText, entry.Data["msg"])
 
-		keys := make([]string, 0)
-		for k, _ := range entry.Data {
+		var keys []string
+		for k := range entry.Data {
 			if k != "level" && k != "msg" && k != "time" {
 				keys = append(keys, k)
 			}
