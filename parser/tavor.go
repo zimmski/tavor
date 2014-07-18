@@ -552,6 +552,11 @@ func (p *tavorParser) parseTokenAttribute(c rune) (token.Token, error) {
 		case "Reset":
 			return i.ResetItem(), nil
 		}
+	case *primitives.RandomInt, *primitives.RangeInt:
+		switch attribute {
+		case "Value":
+			return i, nil
+		}
 	}
 
 	return nil, &token.ParserError{

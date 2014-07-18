@@ -100,7 +100,7 @@ Additional (optional) arguments for each type are:
 
 Possible attributes for each type are:
 * "Int"
-    * does not define any attribute
+    * Value - The value of the Int
 * "Sequence"
     * Next - Indicates the next value of the sequence.
     * Existing - Indicates an available value of the sequence in the whole data.
