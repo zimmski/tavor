@@ -555,7 +555,7 @@ func (p *tavorParser) parseTokenAttribute(c rune) (token.Token, error) {
 	case *primitives.RandomInt, *primitives.RangeInt:
 		switch attribute {
 		case "Value":
-			return i, nil
+			return i.Clone(), nil
 		}
 	}
 
