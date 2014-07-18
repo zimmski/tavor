@@ -127,7 +127,7 @@ func (l *Most) Len() int {
 }
 
 func (l *Most) InternalGet(i int) (token.Token, error) {
-	if i != 1 {
+	if i != 0 {
 		return nil, &ListError{ListErrorOutOfBound}
 	}
 

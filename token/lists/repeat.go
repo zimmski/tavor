@@ -174,7 +174,7 @@ func (l *Repeat) Len() int {
 }
 
 func (l *Repeat) InternalGet(i int) (token.Token, error) {
-	if i != 1 {
+	if i != 0 {
 		return nil, &ListError{ListErrorOutOfBound}
 	}
 

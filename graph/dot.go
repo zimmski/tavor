@@ -153,7 +153,7 @@ func (g *dotGraph) addDot(tok token.Token) (start, next map[token.Token]bool) {
 			typ:   "point",
 		}
 
-		v, _ := t.InternalGet(1)
+		v, _ := t.InternalGet(0)
 
 		s, n := g.addDot(v)
 

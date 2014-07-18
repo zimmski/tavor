@@ -104,7 +104,7 @@ func (l *Least) Len() int {
 }
 
 func (l *Least) InternalGet(i int) (token.Token, error) {
-	if i != 1 {
+	if i != 0 {
 		return nil, &ListError{ListErrorOutOfBound}
 	}
 
