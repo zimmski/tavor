@@ -113,12 +113,16 @@ func UnrollPointers(root token.Token) token.Token {
 	checked := make(map[token.Token]token.Token)
 	counters := make(map[token.Token]int)
 
+	parents := make(map[token.Token]token.Token)
+	changed := make(map[token.Token]struct{})
+
 	queue := linkedlist.New()
 
 	queue.Push(&unrollToken{
 		tok:    root,
 		parent: nil,
 	})
+	parents[root] = nil
 
 	for !queue.Empty() {
 		v, _ := queue.Shift()
@@ -149,6 +153,10 @@ func UnrollPointers(root token.Token) token.Token {
 				checked[c] = parent
 
 				if iTok.parent != nil {
+					log.Debugf("Replace in (%p)%#v", iTok.parent.tok, iTok.parent.tok)
+
+					changed[iTok.parent.tok] = struct{}{}
+
 					switch tt := iTok.parent.tok.(type) {
 					case token.ForwardToken:
 						tt.InternalReplace(t, c)
@@ -156,6 +164,8 @@ func UnrollPointers(root token.Token) token.Token {
 						tt.InternalReplace(t, c)
 					}
 				} else {
+					log.Debugf("Replace as root")
+
 					root = c
 				}
 
@@ -173,6 +183,9 @@ func UnrollPointers(root token.Token) token.Token {
 
 			REMOVE:
 				for tt != nil {
+					delete(parents, tt.tok)
+					delete(changed, tt.tok)
+
 					switch l := tt.tok.(type) {
 					case token.ForwardToken:
 						log.Debugf("Remove (%p)%#v from (%p)%#v", ta, ta, l, l)
@@ -205,6 +218,8 @@ func UnrollPointers(root token.Token) token.Token {
 					tok:    v,
 					parent: iTok,
 				})
+
+				parents[v] = iTok.tok
 			}
 		case lists.List:
 			for i := 0; i < t.InternalLen(); i++ {
@@ -214,7 +229,27 @@ func UnrollPointers(root token.Token) token.Token {
 					tok:    c,
 					parent: iTok,
 				})
+
+				parents[c] = iTok.tok
 			}
+		}
+	}
+
+	// we need to update some tokens with the same child to regenerate clones
+	for child := range changed {
+		parent := parents[child]
+
+		if parent == nil {
+			continue
+		}
+
+		log.Debugf("Update (%p)%#v with child (%p)%#v", parent, parent, child, child)
+
+		switch tt := parent.(type) {
+		case token.ForwardToken:
+			tt.InternalReplace(child, child)
+		case lists.List:
+			tt.InternalReplace(child, child)
 		}
 	}
 

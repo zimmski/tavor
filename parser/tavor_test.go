@@ -942,4 +942,34 @@ func TestTavorParserLoops(t *testing.T) {
 
 		Equal(t, "111", tok.String())
 	}
+
+	// repeated forward one
+	tok, err = ParseTavor(strings.NewReader(`
+			Action = SetParameter,
+			       | GetParameter
+
+			SetParameter = "setParam"
+			GetParameter = "getParam" ("param 1" | "param 2")
+
+			START = +(Action)
+		`))
+	Nil(t, err)
+	{
+		Equal(t, tok, lists.NewRepeat(
+			lists.NewOne(
+				primitives.NewConstantString("setParam"),
+				lists.NewAll(
+					primitives.NewConstantString("getParam"),
+					lists.NewOne(
+						primitives.NewConstantString("param 1"),
+						primitives.NewConstantString("param 2"),
+					),
+				),
+			),
+			1,
+			2,
+		))
+
+		Equal(t, "setParam", tok.String())
+	}
 }
