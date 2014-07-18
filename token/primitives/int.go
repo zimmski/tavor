@@ -151,6 +151,16 @@ func NewRangeInt(from, to int) *RangeInt {
 	}
 }
 
+func (p *RangeInt) From() int {
+	return p.from
+}
+
+func (p *RangeInt) To() int {
+	return p.to
+}
+
+// Token interface methods
+
 func (p *RangeInt) Clone() token.Token {
 	return &RangeInt{
 		from:  p.from,

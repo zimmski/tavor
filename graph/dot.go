@@ -189,6 +189,13 @@ func (g *dotGraph) addDot(tok token.Token) (start, next map[token.Token]bool) {
 		}
 	case lists.List:
 		panic(fmt.Errorf("%#v not implemented", t))
+	case *primitives.RangeInt:
+		g.vertices[tok] = dotVertice{
+			label: fmt.Sprintf("%d-%d", t.From(), t.To()),
+		}
+
+		start[tok] = false
+		next[tok] = false
 	default:
 		g.vertices[tok] = dotVertice{
 			label: tok.String(),
