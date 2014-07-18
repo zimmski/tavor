@@ -9,7 +9,7 @@ clean:
 debugbinaries:
 	go install -race $(GOPATH)/src/github.com/zimmski/tavor/bin/tavor.go
 fmt:
-	gofmt -l -w -tabs=true $(GOPATH)/src/github.com/zimmski/tavor
+	gofmt -l -w $(GOPATH)/src/github.com/zimmski/tavor
 install:
 	go install -race ./...
 lint: clean install
