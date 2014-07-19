@@ -2,6 +2,7 @@ package parser
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -35,6 +36,19 @@ func TestInternalParseErrors(t *testing.T) {
 	Equal(t, token.ParseErrorExpectedEOF, errs[0].(*token.ParserError).Type)
 
 	errs = ParseInternal(primitives.NewConstantInt(1), strings.NewReader("1234567890"))
+	Equal(t, len(errs), 1)
+	Equal(t, token.ParseErrorExpectedEOF, errs[0].(*token.ParserError).Type)
+
+	// range integer errors
+	errs = ParseInternal(primitives.NewRangeInt(1, 10), strings.NewReader(""))
+	Equal(t, len(errs), 1)
+	Equal(t, token.ParseErrorUnexpectedEOF, errs[0].(*token.ParserError).Type)
+
+	errs = ParseInternal(primitives.NewRangeInt(1, 10), strings.NewReader("0"))
+	Equal(t, len(errs), 1)
+	Equal(t, token.ParseErrorUnexpectedData, errs[0].(*token.ParserError).Type)
+
+	errs = ParseInternal(primitives.NewRangeInt(1, 10), strings.NewReader("11"))
 	Equal(t, len(errs), 1)
 	Equal(t, token.ParseErrorExpectedEOF, errs[0].(*token.ParserError).Type)
 
@@ -77,6 +91,20 @@ func TestInternalParse(t *testing.T) {
 		primitives.NewConstantInt(123),
 		"123",
 	)
+
+	// range integer
+	checkParse(
+		t,
+		primitives.NewRangeInt(1, 1),
+		"1",
+	)
+	for i := 1; i <= 10; i++ {
+		checkParse(
+			t,
+			primitives.NewRangeInt(1, 10),
+			strconv.Itoa(i),
+		)
+	}
 
 	// constant string
 	checkParse(

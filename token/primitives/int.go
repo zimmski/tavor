@@ -144,6 +144,10 @@ type RangeInt struct {
 }
 
 func NewRangeInt(from, to int) *RangeInt {
+	if from > to {
+		panic("TODO implement that From can be bigger than To")
+	}
+
 	return &RangeInt{
 		from:  from,
 		to:    to,
@@ -180,7 +184,57 @@ func (p *RangeInt) FuzzAll(r rand.Rand) {
 }
 
 func (p *RangeInt) Parse(pars *token.InternalParser, cur int) (int, []error) {
-	panic("TODO implement")
+	if cur == pars.DataLen {
+		return cur, []error{&token.ParserError{
+			Message: fmt.Sprintf("Expected integer in range %d-%d but got early EOF", p.from, p.to),
+			Type:    token.ParseErrorUnexpectedEOF,
+		}}
+	}
+
+	i := cur
+	v := ""
+
+	for {
+		c := pars.Data[i]
+
+		if c < '0' || c > '9' {
+			break
+		}
+
+		v += string(c)
+
+		if ci, _ := strconv.Atoi(v); ci < p.from || ci > p.to {
+			v = v[:len(v)-1]
+
+			break
+		}
+
+		i++
+
+		if i == pars.DataLen {
+			break
+		}
+	}
+
+	i--
+
+	ci, _ := strconv.Atoi(v)
+
+	if v == "" || (ci < p.from || ci > p.to) {
+		// is the first character already invalid
+		if i < cur {
+			i = cur
+		}
+
+		return cur, []error{&token.ParserError{
+			Message: fmt.Sprintf("Expected integer in range %d-%d but got \"%s\"", p.from, p.to, pars.Data[cur:i]),
+			Type:    token.ParseErrorUnexpectedData,
+		}}
+	}
+
+	p.value = ci
+
+	return i + 1, nil
 }
 
 func (p *RangeInt) permutation(i int) {
