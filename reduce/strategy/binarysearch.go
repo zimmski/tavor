@@ -64,14 +64,14 @@ func (s *BinarySearchStrategy) getTree(root token.Token, fromChildren bool) []bi
 				continue
 			}
 
-			s.setReduction(t, 1)
+			maxReductions := t.Reduces()
+
+			s.setReduction(t, maxReductions)
 
 			tree = append(tree, binarySearchLevel{
 				token:         t,
-				reduction:     1,
-				maxReductions: t.Reduces(),
-
-				children: s.getTree(t, true),
+				reduction:     maxReductions,
+				maxReductions: maxReductions,
 			})
 		case token.ForwardToken:
 			c := t.Get()
@@ -121,7 +121,7 @@ func (s *BinarySearchStrategy) resetResetTokens() {
 }
 
 func (s *BinarySearchStrategy) setReduction(tok token.ReduceToken, reduction int) {
-	log.Debugf("Set %#v(%p) to reduction %d", tok, tok, reduction)
+	log.Debugf("Set (%p)%#v to reduction %d", tok, tok, reduction)
 
 	if err := tok.Reduce(reduction); err != nil {
 		panic(err)
@@ -147,14 +147,12 @@ func (s *BinarySearchStrategy) Reduce() (chan struct{}, chan<- ReduceFeedbackTyp
 		if len(tree) != 0 {
 			log.Debug("Start reducing step")
 
-			if contin, _ := s.reduce(continueReducing, feedbackReducing, tree, false); !contin {
+			if contin := s.reduce(continueReducing, feedbackReducing, tree); !contin {
 				return
 			}
 		} else {
 			log.Debug("No reduceable tokens to begin with")
 		}
-
-		s.resetResetTokens()
 
 		log.Debug("Finished reducing")
 
@@ -165,129 +163,50 @@ func (s *BinarySearchStrategy) Reduce() (chan struct{}, chan<- ReduceFeedbackTyp
 	return continueReducing, feedbackReducing, nil
 }
 
-func (s *BinarySearchStrategy) reduce(continueReducing chan struct{}, feedbackReducing <-chan ReduceFeedbackType, tree []binarySearchLevel, justastep bool) (bool, bool) {
+func (s *BinarySearchStrategy) reduce(continueReducing chan struct{}, feedbackReducing <-chan ReduceFeedbackType, tree []binarySearchLevel) bool {
 	log.Debugf("Reducing level %d->%#v", len(tree), tree)
 
-STEP:
-	for {
-		if justastep && len(tree[0].children) != 0 {
-			log.Debugf("STEP FURTHER INTO")
+	// we always asume that the initial values are bad so we ignore them right away
 
-			if contin, step := s.reduce(continueReducing, feedbackReducing, tree[0].children, justastep); !contin {
-				return false, false
-			} else if step {
-				log.Debugf("CONTINUE after child step")
+	// TODO do a binary search on the level entries
+	for _, c := range tree {
+		for {
+			// TODO do a binary search on the 1..maxReductions for this level entry
+			c.reduction--
+			c.token.Reduce(c.reduction)
 
-				return true, true
+			contin, feedback := s.nextStep(continueReducing, feedbackReducing)
+			if !contin {
+				return false
+			} else if feedback == Good {
+				log.Debugf("Go back a reduction")
+
+				c.reduction++
+				c.token.Reduce(c.reduction)
+
+				break
 			}
 
-			log.Debugf("REDUCE after child step")
-		} else {
-			log.Debugf("Reduce %d->%#v", 0, tree[0])
-
-			if tree[0].reduction != 1 {
-				s.setReduction(tree[0].token, tree[0].reduction)
-				tree[0].children = s.getTree(tree[0].token, true)
-
-				if justastep {
-					log.Debugf("CONTINUE after reduction")
-
-					return true, true
-				}
-			}
-
-			if len(tree[0].children) != 0 {
-				if contin, step := s.reduce(continueReducing, feedbackReducing, tree[0].children, justastep); !contin {
-					return false, false
-				} else if step {
-					log.Debugf("CONTINUE after child step")
-
-					return true, true
-				}
-			} else {
-				if !justastep && (tree[0].token != s.root || tree[0].reduction <= tree[0].maxReductions) && !s.nextStep(continueReducing, feedbackReducing) {
-					return false, false
-				}
+			if c.reduction == 1 {
+				break
 			}
 		}
 
-		tree[0].reduction++
+		log.Debugf("Reduced (%p)%#v to reduction %d/%d", c.token, c.token, c.reduction, c.maxReductions)
 
-		if tree[0].reduction > tree[0].maxReductions {
-			for i := 0; i < len(tree); i++ {
-				log.Debugf("Check %d vs %d for %#v", tree[i].reduction, tree[i].maxReductions, tree[i])
-			}
+		c.children = s.getTree(c.token, true)
 
-			i := 0
+		if len(c.children) != 0 {
+			log.Debugf("Reduce the children of (%p)%#v", c.token, c.token, c.reduction, c.maxReductions)
 
-			for {
-				if i == len(tree)-1 {
-					log.Debugf("Done with reducing this level because %#v", tree)
-
-					break STEP
-				}
-
-				i++
-
-				if len(tree[i].children) != 0 {
-					log.Debugf("CHECK children %#v", tree[i])
-
-					if contin, step := s.reduce(continueReducing, feedbackReducing, tree[i].children, true); !contin {
-						return false, false
-					} else if step {
-						for j := 0; j < i; j++ {
-							tree[j].reduction = 1
-							s.setReduction(tree[j].token, tree[j].reduction)
-							tree[j].children = s.getTree(tree[j].token, true)
-						}
-
-						if justastep {
-							return true, true
-						}
-
-						log.Debugf("STEP continue")
-
-						continue STEP
-					}
-
-					log.Debugf("REDUCE continue")
-				}
-
-				tree[i].reduction++
-
-				if tree[i].reduction <= tree[i].maxReductions {
-					for j := 0; j < i; j++ {
-						tree[j].reduction = 1
-						s.setReduction(tree[j].token, tree[j].reduction)
-						tree[j].children = s.getTree(tree[j].token, true)
-					}
-
-					log.Debugf("Reduce %d->%#v", i, tree[i])
-
-					s.setReduction(tree[i].token, tree[i].reduction)
-					tree[i].children = s.getTree(tree[i].token, true)
-
-					if justastep {
-						return true, true
-					}
-
-					continue STEP
-				}
-			}
-		} else if justastep {
-			s.setReduction(tree[0].token, tree[0].reduction)
-			tree[0].children = s.getTree(tree[0].token, true)
-
-			log.Debugf("CONTINUE after reduction")
-
-			return true, true
+			s.reduce(continueReducing, feedbackReducing, c.children)
 		}
 	}
 
-	return true, false
+	return true
 }
 
-func (s *BinarySearchStrategy) nextStep(continueReducing chan struct{}, feedbackReducing <-chan ReduceFeedbackType) bool {
+func (s *BinarySearchStrategy) nextStep(continueReducing chan struct{}, feedbackReducing <-chan ReduceFeedbackType) (bool, ReduceFeedbackType) {
 	s.resetResetTokens()
 
 	log.Debug("Done with reducing step")
@@ -296,23 +215,24 @@ func (s *BinarySearchStrategy) nextStep(continueReducing chan struct{}, feedback
 	continueReducing <- struct{}{}
 
 	// wait until we got feedback to the current state
-	if feedback, ok := <-feedbackReducing; ok {
+	feedback, ok := <-feedbackReducing
+	if ok {
 		// TODO implement the usage of the feedback
 		log.Debugf("GOT FEEDBACK -> Looks %s", feedback)
 	} else {
 		log.Debug("Reducing feedback channel closed from outside")
 
-		return false
+		return false, Unknown
 	}
 
 	// wait until we are allowed to continue
 	if _, ok := <-continueReducing; !ok {
 		log.Debug("Reducing continue channel closed from outside")
 
-		return false
+		return false, Unknown
 	}
 
 	log.Debug("Start reducing step")
 
-	return true
+	return true, feedback
 }

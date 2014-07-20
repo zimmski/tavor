@@ -25,7 +25,8 @@ func (err *StrategyError) Error() string {
 type ReduceFeedbackType int
 
 const (
-	Good ReduceFeedbackType = iota
+	Unknown ReduceFeedbackType = iota
+	Good
 	Bad
 )
 
