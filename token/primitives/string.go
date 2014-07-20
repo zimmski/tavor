@@ -38,14 +38,14 @@ func (p *ConstantString) Parse(pars *token.InternalParser, cur int) (int, []erro
 
 	if nextIndex > pars.DataLen {
 		return cur, []error{&token.ParserError{
-			Message: fmt.Sprintf("Expected \"%s\" but got early EOF", p.value),
+			Message: fmt.Sprintf("Expected %q but got early EOF", p.value),
 			Type:    token.ParseErrorUnexpectedEOF,
 		}}
 	}
 
 	if got := pars.Data[cur:nextIndex]; p.value != got {
 		return cur, []error{&token.ParserError{
-			Message: fmt.Sprintf("Expected \"%s\" but got \"%s\"", p.value, got),
+			Message: fmt.Sprintf("Expected %q but got %q", p.value, got),
 			Type:    token.ParseErrorUnexpectedData,
 		}}
 	}

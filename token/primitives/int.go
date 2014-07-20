@@ -40,14 +40,14 @@ func (p *ConstantInt) Parse(pars *token.InternalParser, cur int) (int, []error) 
 
 	if nextIndex > pars.DataLen {
 		return cur, []error{&token.ParserError{
-			Message: fmt.Sprintf("Expected \"%s\" but got early EOF", v),
+			Message: fmt.Sprintf("Expected %q but got early EOF", v),
 			Type:    token.ParseErrorUnexpectedEOF,
 		}}
 	}
 
 	if got := pars.Data[cur:nextIndex]; v != got {
 		return cur, []error{&token.ParserError{
-			Message: fmt.Sprintf("Expected \"%s\" but got \"%s\"", v, got),
+			Message: fmt.Sprintf("Expected %q but got %q", v, got),
 			Type:    token.ParseErrorUnexpectedData,
 		}}
 	}
@@ -227,7 +227,7 @@ func (p *RangeInt) Parse(pars *token.InternalParser, cur int) (int, []error) {
 		}
 
 		return cur, []error{&token.ParserError{
-			Message: fmt.Sprintf("Expected integer in range %d-%d but got \"%s\"", p.from, p.to, pars.Data[cur:i]),
+			Message: fmt.Sprintf("Expected integer in range %d-%d but got %q", p.from, p.to, pars.Data[cur:i]),
 			Type:    token.ParseErrorUnexpectedData,
 		}}
 	}

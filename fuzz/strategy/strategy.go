@@ -32,7 +32,7 @@ var strategies = make(map[string]func(tok token.Token) Strategy)
 func New(name string, tok token.Token) (Strategy, error) {
 	strat, ok := strategies[name]
 	if !ok {
-		return nil, fmt.Errorf("unknown fuzzing strategy \"%s\"", name)
+		return nil, fmt.Errorf("unknown fuzzing strategy %q", name)
 	}
 
 	return strat(tok), nil

@@ -51,7 +51,7 @@ type tavorParser struct {
 func (p *tavorParser) expectRune(expect rune, got rune) (rune, error) {
 	if got != expect {
 		return got, &token.ParserError{
-			Message:  fmt.Sprintf("Expected \"%s\" but got \"%s\"", scanner.TokenString(expect), scanner.TokenString(got)),
+			Message:  fmt.Sprintf("Expected %q but got %q", scanner.TokenString(expect), scanner.TokenString(got)),
 			Type:     token.ParseErrorExpectRune,
 			Position: p.scan.Pos(),
 		}
@@ -523,7 +523,7 @@ func (p *tavorParser) parseTokenAttribute(c rune) (token.Token, error) {
 	use, ok := p.lookup[name]
 	if !ok {
 		return nil, &token.ParserError{
-			Message:  fmt.Sprintf("Token \"%s\" is not defined", name),
+			Message:  fmt.Sprintf("Token %q is not defined", name),
 			Type:     token.ParseErrorTokenNotDefined,
 			Position: p.scan.Pos(),
 		}
@@ -560,7 +560,7 @@ func (p *tavorParser) parseTokenAttribute(c rune) (token.Token, error) {
 	}
 
 	return nil, &token.ParserError{
-		Message:  fmt.Sprintf("Unknown token attribute \"%s\" for token type \"%s\"", attribute, reflect.TypeOf(tok)),
+		Message:  fmt.Sprintf("Unknown token attribute %q for token type %q", attribute, reflect.TypeOf(tok)),
 		Type:     token.ParseErrorUnknownTokenAttribute,
 		Position: p.scan.Pos(),
 	}
@@ -787,7 +787,7 @@ func (p *tavorParser) parseTokenDefinition() (rune, error) {
 			log.Debug("There is no loop exit for this token, I'll throw an error.")
 
 			return zeroRune, &token.ParserError{
-				Message:  fmt.Sprintf("Token \"%s\" has an endless loop without exit\n", name),
+				Message:  fmt.Sprintf("Token %q has an endless loop without exit\n", name),
 				Type:     token.ParseErrorEndlessLoopDetected,
 				Position: p.scan.Pos(), // TODO correct position
 			}
@@ -976,7 +976,7 @@ func (p *tavorParser) parseSpecialTokenDefinition() (rune, error) {
 		tok = sequences.NewSequence(start, step)
 	default:
 		return zeroRune, &token.ParserError{
-			Message:  fmt.Sprintf("Unknown special token type \"%s\"", typ),
+			Message:  fmt.Sprintf("Unknown special token type %q", typ),
 			Type:     token.ParseErrorUnknownSpecialTokenType,
 			Position: p.scan.Pos(),
 		}
@@ -985,7 +985,7 @@ func (p *tavorParser) parseSpecialTokenDefinition() (rune, error) {
 	for arg := range arguments {
 		if _, ok := usedArguments[arg]; !ok {
 			return zeroRune, &token.ParserError{
-				Message:  fmt.Sprintf("Unknown special token argument \"%s\"", arg),
+				Message:  fmt.Sprintf("Unknown special token argument %q", arg),
 				Type:     token.ParseErrorUnknownSpecialTokenArgument,
 				Position: p.scan.Pos(),
 			}
@@ -1043,7 +1043,7 @@ func ParseTavor(src io.Reader) (token.Token, error) {
 		for _, use := range uses {
 			if use.token.(*primitives.Pointer).Get() == nil {
 				return nil, &token.ParserError{
-					Message:  fmt.Sprintf("Token \"%s\" is not defined", name),
+					Message:  fmt.Sprintf("Token %q is not defined", name),
 					Type:     token.ParseErrorTokenNotDefined,
 					Position: use.position,
 				}
@@ -1054,7 +1054,7 @@ func ParseTavor(src io.Reader) (token.Token, error) {
 	for name, use := range p.lookup {
 		if _, ok := p.used[name]; !ok {
 			return nil, &token.ParserError{
-				Message:  fmt.Sprintf("Token \"%s\" declared but not used", name),
+				Message:  fmt.Sprintf("Token %q declared but not used", name),
 				Type:     token.ParseErrorUnusedToken,
 				Position: use.position,
 			}
