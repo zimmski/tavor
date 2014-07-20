@@ -79,7 +79,7 @@ func LoopExists(root token.Token) bool {
 		case *primitives.Pointer:
 			if v := tok.InternalGet(); v != nil {
 				if _, ok := lookup[v]; ok {
-					log.Debugf("Found a loop through (%p)%+v", t)
+					log.Debugf("Found a loop through (%p)%#v", t, t)
 
 					return true
 				}
