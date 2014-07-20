@@ -43,7 +43,7 @@ type OptionalToken interface {
 type PermutationErrorType int
 
 const (
-	PermutationErrorIndexOutOfBound = iota
+	PermutationErrorIndexOutOfBound PermutationErrorType = iota
 )
 
 type PermutationError struct {
@@ -63,6 +63,32 @@ type ResetToken interface {
 	Token
 
 	Reset()
+}
+
+type ReduceErrorType int
+
+const (
+	ReduceErrorIndexOutOfBound ReduceErrorType = iota
+)
+
+type ReduceError struct {
+	Type ReduceErrorType
+}
+
+func (err *ReduceError) Error() string {
+	switch err.Type {
+	case ReduceErrorIndexOutOfBound:
+		return "Reduce index out of bound"
+	default:
+		return fmt.Sprintf("Unknown reduce error type %#v", err.Type)
+	}
+}
+
+type ReduceToken interface {
+	Token
+
+	Reduce(i int) error
+	Reduces() int
 }
 
 type InternalParser struct { // TODO move this some place else

@@ -263,6 +263,11 @@ func main() {
 			}
 
 			for i := range contin {
+				fmt.Print(doc.String())
+				if opts.General.Debug {
+					fmt.Println()
+				}
+
 				// TODO get user feedback for Good or Bad question, right now it is ok that everything is bad
 				feedback <- reduceStrategy.Bad
 

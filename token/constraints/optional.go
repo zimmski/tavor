@@ -8,6 +8,9 @@ import (
 type Optional struct {
 	token token.Token
 	value bool
+
+	reducing              bool
+	reducingOriginalValue bool
 }
 
 func NewOptional(tok token.Token) *Optional {
@@ -119,3 +122,32 @@ func (c *Optional) InternalReplace(oldToken, newToken token.Token) {
 func (c *Optional) IsOptional() bool { return true }
 func (c *Optional) Activate()        { c.value = false }
 func (c *Optional) Deactivate()      { c.value = true }
+
+// ReduceToken interface methods
+
+func (c *Optional) Reduce(i int) error {
+	reduces := c.Permutations()
+
+	if reduces == 0 || i < 1 || i > reduces {
+		return &token.ReduceError{
+			Type: token.ReduceErrorIndexOutOfBound,
+		}
+	}
+
+	if !c.reducing {
+		c.reducing = true
+		c.reducingOriginalValue = c.value
+	}
+
+	c.permutation(i - 1)
+
+	return nil
+}
+
+func (c *Optional) Reduces() int {
+	if c.reducing || !c.value {
+		return 2
+	}
+
+	return 0
+}

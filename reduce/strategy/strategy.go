@@ -29,6 +29,17 @@ const (
 	Bad
 )
 
+func (f ReduceFeedbackType) String() string {
+	switch f {
+	case Bad:
+		return "Bad"
+	case Good:
+		return "Good"
+	default:
+		return "Unknown feedback"
+	}
+}
+
 type Strategy interface {
 	Reduce() (chan struct{}, chan<- ReduceFeedbackType, error)
 }
@@ -38,7 +49,7 @@ var strategies = make(map[string]func(tok token.Token) Strategy)
 func New(name string, tok token.Token) (Strategy, error) {
 	strat, ok := strategies[name]
 	if !ok {
-		return nil, fmt.Errorf("unknown reduce strategy \"%s\"", name)
+		return nil, fmt.Errorf("unknown reduce strategy %q", name)
 	}
 
 	return strat(tok), nil
