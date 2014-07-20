@@ -11,7 +11,7 @@ import (
 type StrategyErrorType int
 
 const (
-	StrategyErrorEndlessLoopDetected = iota
+	StrategyErrorEndlessLoopDetected StrategyErrorType = iota
 )
 
 type StrategyError struct {
