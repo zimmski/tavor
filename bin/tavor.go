@@ -10,10 +10,11 @@ import (
 	"github.com/jessevdk/go-flags"
 
 	"github.com/zimmski/tavor"
-	"github.com/zimmski/tavor/fuzz/strategy"
+	fuzzStrategy "github.com/zimmski/tavor/fuzz/strategy"
 	"github.com/zimmski/tavor/graph"
 	"github.com/zimmski/tavor/log"
 	"github.com/zimmski/tavor/parser"
+	reduceStrategy "github.com/zimmski/tavor/reduce/strategy"
 )
 
 const (
@@ -43,15 +44,17 @@ var opts struct {
 	} `group:"Format file options"`
 
 	Fuzz struct {
-		Strategy       Strategy `long:"strategy" description:"The fuzzing strategy" default:"random"`
-		ListStrategies bool     `long:"list-strategies" description:"List all available strategies"`
+		Strategy       FuzzStrategy `long:"strategy" description:"The fuzzing strategy" default:"random"`
+		ListStrategies bool         `long:"list-strategies" description:"List all available strategies"`
 	} `command:"fuzz" description:"Fuzz the given format file"`
 
 	Graph struct {
 	} `command:"graph" description:"Generate a DOT file out of the internal AST"`
 
 	Reduce struct {
-		InputFile flags.Filename `long:"input-file" description:"Input file which gets parsed, validated and delta-debugged via the format file" required:"true"`
+		InputFile      flags.Filename `long:"input-file" description:"Input file which gets parsed, validated and delta-debugged via the format file" required:"true"`
+		Strategy       ReduceStrategy `long:"strategy" description:"The reducing strategy" default:"BinarySearch"`
+		ListStrategies bool           `long:"list-strategies" description:"List all available strategies"`
 	} `command:"reduce" description:"Reduce the given input file"`
 
 	Validate struct {
@@ -59,12 +62,28 @@ var opts struct {
 	} `command:"validate" description:"Validate the given format file"`
 }
 
-type Strategy string
+type FuzzStrategy string
 
-func (s *Strategy) Complete(match string) []flags.Completion {
+func (s *FuzzStrategy) Complete(match string) []flags.Completion {
 	var items []flags.Completion
 
-	for _, name := range strategy.List() {
+	for _, name := range fuzzStrategy.List() {
+		if strings.HasPrefix(name, match) {
+			items = append(items, flags.Completion{
+				Item: name,
+			})
+		}
+	}
+
+	return items
+}
+
+type ReduceStrategy string
+
+func (s *ReduceStrategy) Complete(match string) []flags.Completion {
+	var items []flags.Completion
+
+	for _, name := range reduceStrategy.List() {
 		if strings.HasPrefix(name, match) {
 			items = append(items, flags.Completion{
 				Item: name,
@@ -94,7 +113,13 @@ func checkArguments() string {
 
 		os.Exit(returnOk)
 	} else if opts.Fuzz.ListStrategies {
-		for _, name := range strategy.List() {
+		for _, name := range fuzzStrategy.List() {
+			fmt.Println(name)
+		}
+
+		os.Exit(returnOk)
+	} else if opts.Reduce.ListStrategies {
+		for _, name := range reduceStrategy.List() {
 			fmt.Println(name)
 		}
 
@@ -164,7 +189,7 @@ func main() {
 	case "fuzz":
 		log.Infof("Counted %d overall permutations", doc.PermutationsAll())
 
-		strat, err := strategy.New(string(opts.Fuzz.Strategy), doc)
+		strat, err := fuzzStrategy.New(string(opts.Fuzz.Strategy), doc)
 		if err != nil {
 			exitError(err.Error())
 		}
@@ -225,7 +250,31 @@ func main() {
 		}
 
 		if command == "reduce" {
-			panic("TODO not implemented yet")
+			strat, err := reduceStrategy.New(string(opts.Reduce.Strategy), doc)
+			if err != nil {
+				exitError(err.Error())
+			}
+
+			log.Infof("Using %s strategy", opts.Reduce.Strategy)
+
+			contin, feedback, err := strat.Reduce()
+			if err != nil {
+				exitError(err.Error())
+			}
+
+			for i := range contin {
+				// TODO get user feedback for Good or Bad question, right now it is ok that everything is bad
+				feedback <- reduceStrategy.Bad
+
+				contin <- i
+			}
+
+			log.Info("Reduced to minimum")
+
+			fmt.Print(doc.String())
+			if opts.General.Debug {
+				fmt.Println()
+			}
 		}
 	default:
 		exitError("Unknown command %q", command)
