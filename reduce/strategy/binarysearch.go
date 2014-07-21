@@ -170,24 +170,25 @@ func (s *BinarySearchStrategy) reduce(continueReducing chan struct{}, feedbackRe
 
 	// TODO do a binary search on the level entries
 	for _, c := range tree {
+		c.reduction = 0
 		for {
 			// TODO do a binary search on the 1..maxReductions for this level entry
-			c.reduction--
+			c.reduction++
 			c.token.Reduce(c.reduction)
 
 			contin, feedback := s.nextStep(continueReducing, feedbackReducing)
 			if !contin {
 				return false
-			} else if feedback == Good {
-				log.Debugf("Go back a reduction")
-
-				c.reduction++
-				c.token.Reduce(c.reduction)
-
+			} else if feedback == Bad {
 				break
 			}
 
-			if c.reduction == 1 {
+			if c.reduction == c.maxReductions-1 {
+				log.Debug("Use initial value, nothing to reduce")
+
+				c.reduction = c.maxReductions
+				c.token.Reduce(c.reduction)
+
 				break
 			}
 		}
