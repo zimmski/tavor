@@ -78,4 +78,16 @@ func TestRangeInt(t *testing.T) {
 	Equal(t, "3", o.String())
 
 	Equal(t, o.Permutation(4).(*token.PermutationError).Type, token.PermutationErrorIndexOutOfBound)
+
+	// range with step 2
+	o = NewRangeIntWithStep(2, 6, 2)
+	Equal(t, "2", o.String())
+
+	r.Seed(0)
+	o.FuzzAll(r)
+	Equal(t, "4", o.String())
+	o.FuzzAll(r)
+	Equal(t, "6", o.String())
+	o.FuzzAll(r)
+	Equal(t, "2", o.String())
 }

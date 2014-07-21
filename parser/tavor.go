@@ -937,10 +937,25 @@ func (p *tavorParser) parseSpecialTokenDefinition() (rune, error) {
 				}
 			}
 
+			step := 1
+
+			if raw, ok := arguments["step"]; ok {
+				step, err = strconv.Atoi(raw)
+				if err != nil {
+					return zeroRune, &token.ParserError{
+						Message:  "\"step\" needs an integer value",
+						Type:     token.ParseErrorInvalidArgumentValue,
+						Position: p.scan.Pos(),
+					}
+				}
+
+				usedArguments["step"] = struct{}{}
+			}
+
 			usedArguments["from"] = struct{}{}
 			usedArguments["to"] = struct{}{}
 
-			tok = primitives.NewRangeInt(from, to)
+			tok = primitives.NewRangeIntWithStep(from, to, step)
 		} else {
 			tok = primitives.NewRandomInt()
 		}

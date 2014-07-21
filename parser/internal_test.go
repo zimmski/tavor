@@ -52,6 +52,10 @@ func TestInternalParseErrors(t *testing.T) {
 	Equal(t, len(errs), 1)
 	Equal(t, token.ParseErrorExpectedEOF, errs[0].(*token.ParserError).Type)
 
+	errs = ParseInternal(primitives.NewRangeIntWithStep(2, 10, 2), strings.NewReader("3"))
+	Equal(t, len(errs), 1)
+	Equal(t, token.ParseErrorUnexpectedData, errs[0].(*token.ParserError).Type)
+
 	// constant string errors
 	errs = ParseInternal(primitives.NewConstantString("a"), strings.NewReader(""))
 	Equal(t, len(errs), 1)
@@ -102,6 +106,19 @@ func TestInternalParse(t *testing.T) {
 		checkParse(
 			t,
 			primitives.NewRangeInt(1, 10),
+			strconv.Itoa(i),
+		)
+	}
+
+	checkParse(
+		t,
+		primitives.NewRangeIntWithStep(2, 2, 2),
+		"2",
+	)
+	for i := 2; i <= 10; i += 2 {
+		checkParse(
+			t,
+			primitives.NewRangeIntWithStep(2, 10, 2),
 			strconv.Itoa(i),
 		)
 	}

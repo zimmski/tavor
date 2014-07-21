@@ -139,6 +139,7 @@ func (p *RandomInt) String() string {
 type RangeInt struct {
 	from int
 	to   int
+	step int
 
 	value int
 }
@@ -149,8 +150,27 @@ func NewRangeInt(from, to int) *RangeInt {
 	}
 
 	return &RangeInt{
-		from:  from,
-		to:    to,
+		from: from,
+		to:   to,
+		step: 1,
+
+		value: from,
+	}
+}
+
+func NewRangeIntWithStep(from, to, step int) *RangeInt {
+	if from > to {
+		panic("TODO implement that From can be bigger than To")
+	}
+	if step < 1 {
+		panic("TODO implement 0 and negative step")
+	}
+
+	return &RangeInt{
+		from: from,
+		to:   to,
+		step: step,
+
 		value: from,
 	}
 }
@@ -163,12 +183,18 @@ func (p *RangeInt) To() int {
 	return p.to
 }
 
+func (p *RangeInt) Step() int {
+	return p.step
+}
+
 // Token interface methods
 
 func (p *RangeInt) Clone() token.Token {
 	return &RangeInt{
-		from:  p.from,
-		to:    p.to,
+		from: p.from,
+		to:   p.to,
+		step: p.step,
+
 		value: p.value,
 	}
 }
@@ -186,7 +212,7 @@ func (p *RangeInt) FuzzAll(r rand.Rand) {
 func (p *RangeInt) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	if cur == pars.DataLen {
 		return cur, []error{&token.ParserError{
-			Message: fmt.Sprintf("Expected integer in range %d-%d but got early EOF", p.from, p.to),
+			Message: fmt.Sprintf("Expected integer in range %d-%d with step %d but got early EOF", p.from, p.to, p.step),
 			Type:    token.ParseErrorUnexpectedEOF,
 		}}
 	}
@@ -203,8 +229,8 @@ func (p *RangeInt) Parse(pars *token.InternalParser, cur int) (int, []error) {
 
 		v += string(c)
 
-		if ci, _ := strconv.Atoi(v); ci < p.from || ci > p.to {
-			v = v[:len(v)-1]
+		if ci, _ := strconv.Atoi(v); ci > p.to {
+			v = v[:len(v)-1] // remove last digit
 
 			break
 		}
@@ -220,14 +246,14 @@ func (p *RangeInt) Parse(pars *token.InternalParser, cur int) (int, []error) {
 
 	ci, _ := strconv.Atoi(v)
 
-	if v == "" || (ci < p.from || ci > p.to) {
+	if v == "" || (ci < p.from || ci > p.to) || ci%p.step != 0 {
 		// is the first character already invalid
 		if i < cur {
 			i = cur
 		}
 
 		return cur, []error{&token.ParserError{
-			Message: fmt.Sprintf("Expected integer in range %d-%d but got %q", p.from, p.to, pars.Data[cur:i]),
+			Message: fmt.Sprintf("Expected integer in range %d-%d with step %d but got %q", p.from, p.to, p.step, pars.Data[cur:i]),
 			Type:    token.ParseErrorUnexpectedData,
 		}}
 	}
@@ -238,7 +264,7 @@ func (p *RangeInt) Parse(pars *token.InternalParser, cur int) (int, []error) {
 }
 
 func (p *RangeInt) permutation(i int) {
-	p.value = p.from + i
+	p.value = p.from + (i * p.step)
 }
 
 func (p *RangeInt) Permutation(i int) error {
@@ -256,7 +282,7 @@ func (p *RangeInt) Permutation(i int) error {
 }
 
 func (p *RangeInt) Permutations() int {
-	return p.to - p.from + 1
+	return (p.to-p.from)/p.step + 1
 }
 
 func (p *RangeInt) PermutationsAll() int {

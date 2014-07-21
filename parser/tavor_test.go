@@ -169,6 +169,10 @@ func TestTavorParseErrors(t *testing.T) {
 	Equal(t, token.ParseErrorInvalidArgumentValue, err.(*token.ParserError).Type)
 	Nil(t, tok)
 
+	tok, err = ParseTavor(strings.NewReader("$START = type: Int,\nfrom:123,\nto:456,\nstep:abc\n"))
+	Equal(t, token.ParseErrorInvalidArgumentValue, err.(*token.ParserError).Type)
+	Nil(t, tok)
+
 	// invalid arguments for special token Sequence
 	tok, err = ParseTavor(strings.NewReader("$START = type: Sequence,\nstart:abc\n"))
 	Equal(t, token.ParseErrorInvalidArgumentValue, err.(*token.ParserError).Type)
@@ -528,6 +532,12 @@ func TestTavorParserSpecialTokens(t *testing.T) {
 	))
 	Nil(t, err)
 	Equal(t, tok, primitives.NewRangeInt(2, 10))
+
+	tok, err = ParseTavor(strings.NewReader(
+		"$Spec = type: Int,\nfrom: 2,\nto: 10,\nstep: 2\nSTART = Spec\n",
+	))
+	Nil(t, err)
+	Equal(t, tok, primitives.NewRangeIntWithStep(2, 10, 2))
 
 	// Sequence
 	tok, err = ParseTavor(strings.NewReader(
