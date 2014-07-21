@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"math/rand"
 	"os"
@@ -262,14 +263,32 @@ func main() {
 				exitError(err.Error())
 			}
 
+			readCLI := bufio.NewReader(os.Stdin)
+
 			for i := range contin {
 				fmt.Print(doc.String())
 				if opts.General.Debug {
 					fmt.Println()
 				}
 
-				// TODO get user feedback for Good or Bad question, right now it is ok that everything is bad
-				feedback <- reduceStrategy.Bad
+				for {
+					fmt.Printf("\nDoes the error still exist? [yes|no]: ")
+
+					line, _, err := readCLI.ReadLine()
+					if err != nil {
+						panic(err)
+					}
+
+					if s := strings.ToUpper(string(line)); s == "YES" {
+						feedback <- reduceStrategy.Bad
+
+						break
+					} else if s == "NO" {
+						feedback <- reduceStrategy.Good
+
+						break
+					}
+				}
 
 				contin <- i
 			}
