@@ -2,7 +2,9 @@ package main
 
 import (
 	"bufio"
+	"crypto/md5"
 	"fmt"
+	"io/ioutil"
 	"math/rand"
 	"os"
 	"strings"
@@ -45,9 +47,11 @@ var opts struct {
 	} `group:"Format file options"`
 
 	Fuzz struct {
-		Strategy        FuzzStrategy `long:"strategy" description:"The fuzzing strategy" default:"random"`
-		ListStrategies  bool         `long:"list-strategies" description:"List all available strategies"`
-		ResultSeparator string       `long:"result-separator" description:"Separates result outputs of each fuzzing step" default:"\n"`
+		Strategy         FuzzStrategy `long:"strategy" description:"The fuzzing strategy" default:"random"`
+		ListStrategies   bool         `long:"list-strategies" description:"List all available strategies"`
+		ResultFolder     string       `long:"result-folder" description:"Save every fuzzing result with the MD5 checksum as filename in this folder"`
+		ResultExtensions string       `long:"result-extension" description:"If result-folder is used this will be the extension of every filename"`
+		ResultSeparator  string       `long:"result-separator" description:"Separates result outputs of each fuzzing step" default:"\n"`
 	} `command:"fuzz" description:"Fuzz the given format file"`
 
 	Graph struct {
@@ -204,19 +208,37 @@ func main() {
 			exitError(err.Error())
 		}
 
+		folder := opts.Fuzz.ResultFolder
+		if len(folder) != 0 && folder[len(folder)-1] != '/' {
+			folder += "/"
+		}
+
 		another := false
 		for i := range ch {
-			if !opts.General.Debug {
-				if another {
-					fmt.Println()
-				} else {
-					another = true
+			if folder == "" {
+				if !opts.General.Debug {
+					if another {
+						fmt.Println()
+					} else {
+						another = true
+					}
+				}
+
+				log.Debug("Result:")
+				fmt.Print(doc.String())
+				fmt.Print(opts.Fuzz.ResultSeparator)
+			} else {
+				out := doc.String()
+				sum := md5.Sum([]byte(out))
+
+				file := fmt.Sprintf("%s%x%s", folder, sum, opts.Fuzz.ResultExtensions)
+
+				log.Infof("Write result to %s", file)
+
+				if err := ioutil.WriteFile(file, []byte(out), 0644); err != nil {
+					exitError("error writing to %s: %v", file, err)
 				}
 			}
-
-			log.Debug("Result:")
-			fmt.Print(doc.String())
-			fmt.Print(opts.Fuzz.ResultSeparator)
 
 			ch <- i
 		}
@@ -274,7 +296,7 @@ func main() {
 
 					line, _, err := readCLI.ReadLine()
 					if err != nil {
-						panic(err)
+						exitError("reading from CLI failed: %v", err)
 					}
 
 					if s := strings.ToUpper(string(line)); s == "YES" {
