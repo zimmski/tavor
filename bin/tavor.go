@@ -47,11 +47,11 @@ var opts struct {
 	} `group:"Format file options"`
 
 	Fuzz struct {
-		Strategy         FuzzStrategy `long:"strategy" description:"The fuzzing strategy" default:"random"`
-		ListStrategies   bool         `long:"list-strategies" description:"List all available strategies"`
-		ResultFolder     string       `long:"result-folder" description:"Save every fuzzing result with the MD5 checksum as filename in this folder"`
-		ResultExtensions string       `long:"result-extension" description:"If result-folder is used this will be the extension of every filename"`
-		ResultSeparator  string       `long:"result-separator" description:"Separates result outputs of each fuzzing step" default:"\n"`
+		Strategy         FuzzStrategy   `long:"strategy" description:"The fuzzing strategy" default:"random"`
+		ListStrategies   bool           `long:"list-strategies" description:"List all available strategies"`
+		ResultFolder     flags.Filename `long:"result-folder" description:"Save every fuzzing result with the MD5 checksum as filename in this folder"`
+		ResultExtensions string         `long:"result-extension" description:"If result-folder is used this will be the extension of every filename"`
+		ResultSeparator  string         `long:"result-separator" description:"Separates result outputs of each fuzzing step" default:"\n"`
 	} `command:"fuzz" description:"Fuzz the given format file"`
 
 	Graph struct {
@@ -153,6 +153,12 @@ func checkArguments() string {
 		opts.Global.Seed = time.Now().UTC().UnixNano()
 	}
 
+	if opts.Fuzz.ResultFolder != "" {
+		if err := folderExists(string(opts.Fuzz.ResultFolder)); err != nil {
+			exitError("result-folder invalid: %v", err)
+		}
+	}
+
 	log.Infof("Using seed %d", opts.Global.Seed)
 
 	return p.Active.Name
@@ -162,6 +168,25 @@ func exitError(format string, args ...interface{}) {
 	fmt.Fprintf(os.Stderr, format+"\n", args...)
 
 	os.Exit(returnError)
+}
+
+func folderExists(folder string) error {
+	f, err := os.Open(folder)
+	if err != nil {
+		return fmt.Errorf("%q does not exist", folder)
+	}
+	defer f.Close()
+
+	fi, err := f.Stat()
+	if err != nil {
+		return fmt.Errorf("could not stat %q", folder)
+	}
+
+	if !fi.Mode().IsDir() {
+		return fmt.Errorf("%q is not a folder", folder)
+	}
+
+	return nil
 }
 
 func main() {
