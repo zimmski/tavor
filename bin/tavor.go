@@ -45,17 +45,19 @@ var opts struct {
 	} `group:"Format file options"`
 
 	Fuzz struct {
-		Strategy       FuzzStrategy `long:"strategy" description:"The fuzzing strategy" default:"random"`
-		ListStrategies bool         `long:"list-strategies" description:"List all available strategies"`
+		Strategy        FuzzStrategy `long:"strategy" description:"The fuzzing strategy" default:"random"`
+		ListStrategies  bool         `long:"list-strategies" description:"List all available strategies"`
+		ResultSeparator string       `long:"result-separator" description:"Separates result outputs of each fuzzing step" default:"\n"`
 	} `command:"fuzz" description:"Fuzz the given format file"`
 
 	Graph struct {
 	} `command:"graph" description:"Generate a DOT file out of the internal AST"`
 
 	Reduce struct {
-		InputFile      flags.Filename `long:"input-file" description:"Input file which gets parsed, validated and delta-debugged via the format file" required:"true"`
-		Strategy       ReduceStrategy `long:"strategy" description:"The reducing strategy" default:"BinarySearch"`
-		ListStrategies bool           `long:"list-strategies" description:"List all available strategies"`
+		InputFile       flags.Filename `long:"input-file" description:"Input file which gets parsed, validated and delta-debugged via the format file" required:"true"`
+		Strategy        ReduceStrategy `long:"strategy" description:"The reducing strategy" default:"BinarySearch"`
+		ListStrategies  bool           `long:"list-strategies" description:"List all available strategies"`
+		ResultSeparator string         `long:"result-separator" description:"Separates result outputs of each reducing step" default:"\n"`
 	} `command:"reduce" description:"Reduce the given input file"`
 
 	Validate struct {
@@ -213,11 +215,8 @@ func main() {
 			}
 
 			log.Debug("Result:")
-
 			fmt.Print(doc.String())
-			if opts.General.Debug {
-				fmt.Println()
-			}
+			fmt.Print(opts.Fuzz.ResultSeparator)
 
 			ch <- i
 		}
@@ -266,10 +265,9 @@ func main() {
 			readCLI := bufio.NewReader(os.Stdin)
 
 			for i := range contin {
+				log.Debug("Result:")
 				fmt.Print(doc.String())
-				if opts.General.Debug {
-					fmt.Println()
-				}
+				fmt.Print(opts.Reduce.ResultSeparator)
 
 				for {
 					fmt.Printf("\nDoes the error still exist? [yes|no]: ")
@@ -295,10 +293,9 @@ func main() {
 
 			log.Info("Reduced to minimum")
 
+			log.Debug("Result:")
 			fmt.Print(doc.String())
-			if opts.General.Debug {
-				fmt.Println()
-			}
+			fmt.Print(opts.Reduce.ResultSeparator)
 		}
 	default:
 		exitError("Unknown command %q", command)
