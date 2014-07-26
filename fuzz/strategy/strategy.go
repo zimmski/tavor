@@ -27,10 +27,10 @@ type Strategy interface {
 	Fuzz(r rand.Rand) (chan struct{}, error)
 }
 
-var strategies = make(map[string]func(tok token.Token) Strategy)
+var strategyLookup = make(map[string]func(tok token.Token) Strategy)
 
 func New(name string, tok token.Token) (Strategy, error) {
-	strat, ok := strategies[name]
+	strat, ok := strategyLookup[name]
 	if !ok {
 		return nil, fmt.Errorf("unknown fuzzing strategy %q", name)
 	}
@@ -39,15 +39,15 @@ func New(name string, tok token.Token) (Strategy, error) {
 }
 
 func List() []string {
-	keyStrategies := make([]string, 0, len(strategies))
+	keyStrategyLookup := make([]string, 0, len(strategyLookup))
 
-	for key := range strategies {
-		keyStrategies = append(keyStrategies, key)
+	for key := range strategyLookup {
+		keyStrategyLookup = append(keyStrategyLookup, key)
 	}
 
-	sort.Strings(keyStrategies)
+	sort.Strings(keyStrategyLookup)
 
-	return keyStrategies
+	return keyStrategyLookup
 }
 
 func Register(name string, strat func(tok token.Token) Strategy) {
@@ -55,9 +55,9 @@ func Register(name string, strat func(tok token.Token) Strategy) {
 		panic("register fuzzing strategy is nil")
 	}
 
-	if _, ok := strategies[name]; ok {
+	if _, ok := strategyLookup[name]; ok {
 		panic("fuzzing strategy " + name + " already registered")
 	}
 
-	strategies[name] = strat
+	strategyLookup[name] = strat
 }
