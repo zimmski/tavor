@@ -19,6 +19,7 @@ import (
 	"github.com/zimmski/tavor/log"
 	"github.com/zimmski/tavor/parser"
 	reduceStrategy "github.com/zimmski/tavor/reduce/strategy"
+	"github.com/zimmski/tavor/token"
 )
 
 const (
@@ -48,7 +49,7 @@ var opts struct {
 	} `group:"Format file options"`
 
 	Fuzz struct {
-		Filters          []FuzzFilter   `long:"filter" description:"Fuzzing filter to apply"`
+		Filters          FuzzFilters    `long:"filter" description:"Fuzzing filter to apply"`
 		ListFilters      bool           `long:"list-filters" description:"List all available fuzzing filters"`
 		Strategy         FuzzStrategy   `long:"strategy" description:"The fuzzing strategy" default:"random"`
 		ListStrategies   bool           `long:"list-strategies" description:"List all available fuzzing strategies"`
@@ -58,6 +59,8 @@ var opts struct {
 	} `command:"fuzz" description:"Fuzz the given format file"`
 
 	Graph struct {
+		Filters     FuzzFilters `long:"filter" description:"Fuzzing filter to apply"`
+		ListFilters bool        `long:"list-filters" description:"List all available fuzzing filters"`
 	} `command:"graph" description:"Generate a DOT file out of the internal AST"`
 
 	Reduce struct {
@@ -73,8 +76,9 @@ var opts struct {
 }
 
 type FuzzFilter string
+type FuzzFilters []FuzzFilter
 
-func (s *FuzzFilter) Complete(match string) []flags.Completion {
+func (s FuzzFilters) Complete(match string) []flags.Completion {
 	var items []flags.Completion
 
 	for _, name := range fuzzFilter.List() {
@@ -138,7 +142,7 @@ func checkArguments() string {
 		fmt.Printf("Tavor v%s\n", tavor.Version)
 
 		os.Exit(returnOk)
-	} else if opts.Fuzz.ListFilters {
+	} else if opts.Fuzz.ListFilters || opts.Graph.ListFilters {
 		for _, name := range fuzzFilter.List() {
 			fmt.Println(name)
 		}
@@ -214,6 +218,31 @@ func folderExists(folder string) error {
 	return nil
 }
 
+func applyFilters(filterNames []FuzzFilter, doc token.Token) token.Token {
+	if len(filterNames) != 0 {
+		var err error
+		var filters []fuzzFilter.Filter
+
+		for _, name := range filterNames {
+			filt, err := fuzzFilter.New(string(name))
+			if err != nil {
+				exitError(err.Error())
+			}
+
+			filters = append(filters, filt)
+
+			log.Infof("Using %s fuzzing filter", name)
+		}
+
+		doc, err = fuzzFilter.ApplyFilters(filters, doc)
+		if err != nil {
+			exitError(err.Error())
+		}
+	}
+
+	return doc
+}
+
 func main() {
 	command := checkArguments()
 
@@ -244,25 +273,7 @@ func main() {
 
 	switch command {
 	case "fuzz":
-		if len(opts.Fuzz.Filters) != 0 {
-			var filters []fuzzFilter.Filter
-
-			for _, name := range opts.Fuzz.Filters {
-				filt, err := fuzzFilter.New(string(name))
-				if err != nil {
-					exitError(err.Error())
-				}
-
-				filters = append(filters, filt)
-
-				log.Infof("Using %s fuzzing filter", name)
-			}
-
-			doc, err = fuzzFilter.ApplyFilters(filters, doc)
-			if err != nil {
-				exitError(err.Error())
-			}
-		}
+		doc = applyFilters(opts.Fuzz.Filters, doc)
 
 		log.Infof("Counted %d overall permutations", doc.PermutationsAll())
 
@@ -313,6 +324,8 @@ func main() {
 			ch <- i
 		}
 	case "graph":
+		doc = applyFilters(opts.Graph.Filters, doc)
+
 		graph.WriteDot(doc, os.Stdout)
 	case "reduce", "validate":
 		inputFile := opts.Validate.InputFile
