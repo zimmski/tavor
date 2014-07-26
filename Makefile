@@ -11,6 +11,7 @@ debugbinaries:
 fmt:
 	gofmt -l -w $(GOPATH)/src/github.com/zimmski/tavor
 install:
+	go install ./...
 	go install -race ./...
 lint: clean install
 	go tool vet -all=true -v=true $(GOPATH)/src/github.com/zimmski/tavor
