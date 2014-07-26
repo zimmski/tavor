@@ -13,6 +13,7 @@ import (
 	"github.com/jessevdk/go-flags"
 
 	"github.com/zimmski/tavor"
+	fuzzFilter "github.com/zimmski/tavor/fuzz/filter"
 	fuzzStrategy "github.com/zimmski/tavor/fuzz/strategy"
 	"github.com/zimmski/tavor/graph"
 	"github.com/zimmski/tavor/log"
@@ -47,8 +48,10 @@ var opts struct {
 	} `group:"Format file options"`
 
 	Fuzz struct {
+		Filters          []FuzzFilter   `long:"filter" description:"Fuzzing filter to apply"`
+		ListFilters      bool           `long:"list-filters" description:"List all available fuzzing filters"`
 		Strategy         FuzzStrategy   `long:"strategy" description:"The fuzzing strategy" default:"random"`
-		ListStrategies   bool           `long:"list-strategies" description:"List all available strategies"`
+		ListStrategies   bool           `long:"list-strategies" description:"List all available fuzzing strategies"`
 		ResultFolder     flags.Filename `long:"result-folder" description:"Save every fuzzing result with the MD5 checksum as filename in this folder"`
 		ResultExtensions string         `long:"result-extension" description:"If result-folder is used this will be the extension of every filename"`
 		ResultSeparator  string         `long:"result-separator" description:"Separates result outputs of each fuzzing step" default:"\n"`
@@ -60,13 +63,29 @@ var opts struct {
 	Reduce struct {
 		InputFile       flags.Filename `long:"input-file" description:"Input file which gets parsed, validated and delta-debugged via the format file" required:"true"`
 		Strategy        ReduceStrategy `long:"strategy" description:"The reducing strategy" default:"BinarySearch"`
-		ListStrategies  bool           `long:"list-strategies" description:"List all available strategies"`
+		ListStrategies  bool           `long:"list-strategies" description:"List all available reducing strategies"`
 		ResultSeparator string         `long:"result-separator" description:"Separates result outputs of each reducing step" default:"\n"`
 	} `command:"reduce" description:"Reduce the given input file"`
 
 	Validate struct {
 		InputFile flags.Filename `long:"input-file" description:"Input file which gets parsed and validated via the format file" required:"true"`
 	} `command:"validate" description:"Validate the given format file"`
+}
+
+type FuzzFilter string
+
+func (s *FuzzFilter) Complete(match string) []flags.Completion {
+	var items []flags.Completion
+
+	for _, name := range fuzzFilter.List() {
+		if strings.HasPrefix(name, match) {
+			items = append(items, flags.Completion{
+				Item: name,
+			})
+		}
+	}
+
+	return items
 }
 
 type FuzzStrategy string
@@ -117,6 +136,12 @@ func checkArguments() string {
 		os.Exit(returnHelp)
 	} else if opts.General.Version {
 		fmt.Printf("Tavor v%s\n", tavor.Version)
+
+		os.Exit(returnOk)
+	} else if opts.Fuzz.ListFilters {
+		for _, name := range fuzzFilter.List() {
+			fmt.Println(name)
+		}
 
 		os.Exit(returnOk)
 	} else if opts.Fuzz.ListStrategies {
@@ -219,6 +244,26 @@ func main() {
 
 	switch command {
 	case "fuzz":
+		if len(opts.Fuzz.Filters) != 0 {
+			var filters []fuzzFilter.Filter
+
+			for _, name := range opts.Fuzz.Filters {
+				filt, err := fuzzFilter.New(string(name))
+				if err != nil {
+					exitError(err.Error())
+				}
+
+				filters = append(filters, filt)
+
+				log.Infof("Using %s fuzzing filter", name)
+			}
+
+			doc, err = fuzzFilter.ApplyFilters(filters, doc)
+			if err != nil {
+				exitError(err.Error())
+			}
+		}
+
 		log.Infof("Counted %d overall permutations", doc.PermutationsAll())
 
 		strat, err := fuzzStrategy.New(string(opts.Fuzz.Strategy), doc)
@@ -226,7 +271,7 @@ func main() {
 			exitError(err.Error())
 		}
 
-		log.Infof("Using %s strategy", opts.Fuzz.Strategy)
+		log.Infof("Using %s fuzzing strategy", opts.Fuzz.Strategy)
 
 		ch, err := strat.Fuzz(r)
 		if err != nil {
@@ -302,7 +347,7 @@ func main() {
 				exitError(err.Error())
 			}
 
-			log.Infof("Using %s strategy", opts.Reduce.Strategy)
+			log.Infof("Using %s reducing strategy", opts.Reduce.Strategy)
 
 			contin, feedback, err := strat.Reduce()
 			if err != nil {
