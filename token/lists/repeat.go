@@ -13,6 +13,9 @@ type Repeat struct {
 	to    int64
 	token token.Token
 	value []token.Token
+
+	reducing              bool
+	reducingOriginalValue []token.Token
 }
 
 func NewRepeat(tok token.Token, from, to int64) *Repeat {
@@ -221,4 +224,203 @@ func (l *Repeat) Deactivate() {
 	}
 
 	l.value = []token.Token{}
+}
+
+// ReduceToken interface methods
+
+func combinations(n int, k int) <-chan []int {
+	ret := make(chan []int)
+
+	go func() {
+		is := make([]int, k)
+
+		for i := 0; i < k; i++ {
+			is[i] = i
+		}
+
+		for {
+			// send the current progress
+			cur := make([]int, k)
+			copy(cur, is)
+			ret <- cur
+
+			// special case, of no elements to choose
+			if k == 0 {
+				// we reached the end
+
+				break
+			}
+
+			// increase the last element
+			j := k - 1
+			is[j]++
+
+			if is[j] == n {
+				// increase from the back to the front
+				for j != 0 && is[j] == n {
+					j--
+					is[j]++
+				}
+
+				c := n
+				found := false
+
+				// do we have a increasing order up to the highest value at the end?
+				for i := k - 1; i >= j; i-- {
+					if is[i] != c {
+						found = true
+
+						break
+					}
+
+					c--
+				}
+
+				if !found {
+					if j == 0 {
+						// we reached the end
+
+						break
+					} else {
+						j--
+						is[j]++
+					}
+				}
+
+				// reset values
+				for ; j < k-1; j++ {
+					is[j+1] = is[j] + 1
+				}
+
+				// if after a reset the last value is still to high we are done
+				if is[k-1] == n {
+					// we reached the end
+
+					break
+				}
+			}
+		}
+
+		close(ret)
+	}()
+
+	return ret
+}
+
+func (l *Repeat) Reduce(i int) error {
+	count := 0
+	reduces := l.reduces()
+	for _, le := range reduces {
+		count += le
+	}
+
+	if count <= 1 || i < 1 || i > count {
+		return &token.ReduceError{
+			Type: token.ReduceErrorIndexOutOfBound,
+		}
+	}
+
+	if !l.reducing {
+		l.reducing = true
+		l.reducingOriginalValue = l.value
+	}
+
+	j := 0
+
+	if l.from == 0 {
+		if i == 1 {
+			l.value = []token.Token{}
+
+			return nil
+		}
+
+		i--
+		j++
+	}
+
+	i--
+
+	for i >= reduces[j] {
+		i -= reduces[j]
+		j++
+	}
+
+	var sel []int
+
+	for c := range combinations(len(l.reducingOriginalValue), j+int(l.from)) {
+		if i == 0 {
+			sel = c
+
+			break
+		}
+
+		i--
+	}
+
+	tokens := make([]token.Token, len(sel))
+
+	for i, c := range sel {
+		tokens[i] = l.reducingOriginalValue[c]
+	}
+
+	l.value = tokens
+
+	return nil
+}
+
+func factorial(n int) int {
+	c := n
+	n--
+
+	for n != 0 {
+		c *= n
+		n--
+	}
+
+	return c
+}
+
+func (l *Repeat) reduces() []int {
+	n := len(l.value)
+	if l.reducing {
+		n = len(l.reducingOriginalValue)
+	}
+
+	le := int(n - int(l.from) + 1)
+	reduces := make([]int, le)
+
+	j := 0
+	k := int(l.from)
+
+	if k == 0 {
+		reduces[0] = 1
+
+		j++
+		k++
+	}
+
+	to := n - 1
+
+	for ; k <= to; k++ {
+		reduces[j] = factorial(n) / (factorial(n-k) * factorial(k))
+		j++
+	}
+
+	reduces[le-1] = 1
+
+	return reduces
+}
+
+func (l *Repeat) Reduces() int {
+	if l.reducing || int(l.from) < len(l.value) {
+		count := 0
+		r := l.reduces()
+		for _, le := range r {
+			count += le
+		}
+
+		return count
+	}
+
+	return 0
 }

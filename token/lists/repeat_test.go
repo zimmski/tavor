@@ -100,3 +100,278 @@ func TestRepeat(t *testing.T) {
 	o2 := o.Clone()
 	Equal(t, o.String(), o2.String())
 }
+
+func TestRepeatReduces(t *testing.T) {
+	a := primitives.NewConstantString("a")
+
+	o := NewRepeat(a, 0, 1)
+	o.Permutation(o.Permutations())
+	Equal(t, o.reduces(), []int{1, 1})
+	Equal(t, o.Reduces(), 2)
+
+	// cannnot be reduces!
+	o = NewRepeat(a, 1, 1)
+	o.Permutation(o.Permutations())
+	Equal(t, o.reduces(), []int{1})
+	Equal(t, o.Reduces(), 0)
+
+	o = NewRepeat(a, 0, 2)
+	o.Permutation(o.Permutations())
+	Equal(t, o.reduces(), []int{1, 2, 1})
+	Equal(t, o.Reduces(), 4)
+
+	o = NewRepeat(a, 1, 2)
+	o.Permutation(o.Permutations())
+	Equal(t, o.reduces(), []int{2, 1})
+	Equal(t, o.Reduces(), 3)
+
+	o = NewRepeat(a, 0, 3)
+	o.Permutation(o.Permutations())
+	Equal(t, o.reduces(), []int{1, 3, 3, 1})
+	Equal(t, o.Reduces(), 8)
+
+	o = NewRepeat(a, 1, 3)
+	o.Permutation(o.Permutations())
+	Equal(t, o.reduces(), []int{3, 3, 1})
+	Equal(t, o.Reduces(), 7)
+
+	o = NewRepeat(a, 2, 3)
+	o.Permutation(o.Permutations())
+	Equal(t, o.reduces(), []int{3, 1})
+	Equal(t, o.Reduces(), 4)
+
+	// cannnot be reduces!
+	o = NewRepeat(a, 3, 3)
+	o.Permutation(o.Permutations())
+	Equal(t, o.reduces(), []int{1})
+	Equal(t, o.Reduces(), 0)
+}
+
+func TestRepeatCombinations(t *testing.T) {
+	type tt struct {
+		n        int
+		k        int
+		expected [][]int
+	}
+	tests := []tt{
+		tt{
+			n: 1, k: 0,
+			expected: [][]int{
+				[]int{},
+			},
+		},
+		tt{
+			n: 1, k: 1,
+			expected: [][]int{
+				[]int{0},
+			},
+		},
+		tt{
+			n: 2, k: 0,
+			expected: [][]int{
+				[]int{},
+			},
+		},
+		tt{
+			n: 2, k: 1,
+			expected: [][]int{
+				[]int{0},
+				[]int{1},
+			},
+		},
+		tt{
+			n: 2, k: 2,
+			expected: [][]int{
+				[]int{0, 1},
+			},
+		},
+		tt{
+			n: 3, k: 0,
+			expected: [][]int{
+				[]int{},
+			},
+		},
+		tt{
+			n: 3, k: 1,
+			expected: [][]int{
+				[]int{0},
+				[]int{1},
+				[]int{2},
+			},
+		},
+		tt{
+			n: 3, k: 2,
+			expected: [][]int{
+				[]int{0, 1},
+				[]int{0, 2},
+				[]int{1, 2},
+			},
+		},
+		tt{
+			n: 3, k: 3,
+			expected: [][]int{
+				[]int{0, 1, 2},
+			},
+		},
+		tt{
+			n: 4, k: 0,
+			expected: [][]int{
+				[]int{},
+			},
+		},
+		tt{
+			n: 4, k: 1,
+			expected: [][]int{
+				[]int{0},
+				[]int{1},
+				[]int{2},
+				[]int{3},
+			},
+		},
+		tt{
+			n: 4, k: 2,
+			expected: [][]int{
+				[]int{0, 1},
+				[]int{0, 2},
+				[]int{0, 3},
+				[]int{1, 2},
+				[]int{1, 3},
+				[]int{2, 3},
+			},
+		},
+		tt{
+			n: 4, k: 3,
+			expected: [][]int{
+				[]int{0, 1, 2},
+				[]int{0, 1, 3},
+				[]int{0, 2, 3},
+				[]int{1, 2, 3},
+			},
+		},
+		tt{
+			n: 4, k: 4,
+			expected: [][]int{
+				[]int{0, 1, 2, 3},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		var actual [][]int
+
+		for c := range combinations(test.n, test.k) {
+			actual = append(actual, c)
+		}
+
+		Equal(t, test.expected, actual)
+	}
+}
+
+func TestRepeatReduce(t *testing.T) {
+	a := primitives.NewConstantString("a")
+
+	type tt struct {
+		from     int64
+		to       int64
+		expected []string
+	}
+
+	tests := []tt{
+		tt{
+			from: 0, to: 1,
+			expected: []string{
+				"",
+				"0",
+			},
+		},
+		tt{
+			from: 1, to: 1,
+			expected: nil,
+		},
+		tt{
+			from: 0, to: 2,
+			expected: []string{
+				"",
+				"0",
+				"1",
+				"01",
+			},
+		},
+		tt{
+			from: 1, to: 2,
+			expected: []string{
+				"0",
+				"1",
+				"01",
+			},
+		},
+		tt{
+			from: 0, to: 3,
+			expected: []string{
+				"",
+				"0",
+				"1",
+				"2",
+				"01",
+				"02",
+				"12",
+				"012",
+			},
+		},
+		tt{
+			from: 1, to: 3,
+			expected: []string{
+				"0",
+				"1",
+				"2",
+				"01",
+				"02",
+				"12",
+				"012",
+			},
+		},
+		tt{
+			from: 2, to: 3,
+			expected: []string{
+				"01",
+				"02",
+				"12",
+				"012",
+			},
+		},
+		tt{
+			from: 3, to: 3,
+			expected: nil,
+		},
+	}
+
+	for _, test := range tests {
+		o := NewRepeat(a, test.from, test.to)
+		o.value = make([]token.Token, test.to)
+		for i := 0; i < len(o.value); i++ {
+			o.value[i] = primitives.NewConstantInt(i)
+		}
+
+		reduces := len(test.expected)
+
+		Equal(t, reduces, o.Reduces())
+
+		err := o.Reduce(0)
+		NotNil(t, err)
+		err = o.Reduce(reduces + 1)
+		NotNil(t, err)
+
+		if reduces != 0 {
+			var actual []string
+
+			for i := 1; i <= reduces; i++ {
+				err := o.Reduce(i)
+				Nil(t, err)
+
+				actual = append(actual, o.String())
+			}
+
+			Equal(t, test.expected, actual)
+		}
+	}
+}
