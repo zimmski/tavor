@@ -79,7 +79,7 @@ func LoopExists(root token.Token) bool {
 		case *primitives.Pointer:
 			if v := tok.InternalGet(); v != nil {
 				if _, ok := lookup[v]; ok {
-					log.Debugf("Found a loop through (%p)%#v", t, t)
+					log.Debugf("found a loop through (%p)%#v", t, t)
 
 					return true
 				}
@@ -108,7 +108,7 @@ func UnrollPointers(root token.Token) token.Token {
 		parent *unrollToken
 	}
 
-	log.Debug("Start unrolling pointers by cloning them")
+	log.Debug("start unrolling pointers by cloning them")
 
 	checked := make(map[token.Token]token.Token)
 	counters := make(map[token.Token]int)
@@ -143,7 +143,7 @@ func UnrollPointers(root token.Token) token.Token {
 			}
 
 			if times != MaxRepeat {
-				log.Debugf("Clone (%p)%#v with parent (%p)%#v", t, t, parent, parent)
+				log.Debugf("clone (%p)%#v with parent (%p)%#v", t, t, parent, parent)
 
 				c := parent.Clone()
 
@@ -153,7 +153,7 @@ func UnrollPointers(root token.Token) token.Token {
 				checked[c] = parent
 
 				if iTok.parent != nil {
-					log.Debugf("Replace in (%p)%#v", iTok.parent.tok, iTok.parent.tok)
+					log.Debugf("replace in (%p)%#v", iTok.parent.tok, iTok.parent.tok)
 
 					changed[iTok.parent.tok] = struct{}{}
 
@@ -164,7 +164,7 @@ func UnrollPointers(root token.Token) token.Token {
 						tt.InternalReplace(t, c)
 					}
 				} else {
-					log.Debugf("Replace as root")
+					log.Debugf("replace as root")
 
 					root = c
 				}
@@ -174,7 +174,7 @@ func UnrollPointers(root token.Token) token.Token {
 					parent: iTok.parent,
 				})
 			} else {
-				log.Debugf("Reached max repeat of %d for (%p)%#v with parent (%p)%#v", MaxRepeat, t, t, parent, parent)
+				log.Debugf("reached max repeat of %d for (%p)%#v with parent (%p)%#v", MaxRepeat, t, t, parent, parent)
 
 				t.Set(nil)
 
@@ -188,7 +188,7 @@ func UnrollPointers(root token.Token) token.Token {
 
 					switch l := tt.tok.(type) {
 					case token.ForwardToken:
-						log.Debugf("Remove (%p)%#v from (%p)%#v", ta, ta, l, l)
+						log.Debugf("remove (%p)%#v from (%p)%#v", ta, ta, l, l)
 
 						c := l.InternalLogicalRemove(ta)
 
@@ -199,7 +199,7 @@ func UnrollPointers(root token.Token) token.Token {
 						ta = l
 						tt = tt.parent
 					case lists.List:
-						log.Debugf("Remove (%p)%#v from (%p)%#v", ta, ta, l, l)
+						log.Debugf("remove (%p)%#v from (%p)%#v", ta, ta, l, l)
 
 						c := l.InternalLogicalRemove(ta)
 
@@ -243,7 +243,7 @@ func UnrollPointers(root token.Token) token.Token {
 			continue
 		}
 
-		log.Debugf("Update (%p)%#v with child (%p)%#v", parent, parent, child, child)
+		log.Debugf("update (%p)%#v with child (%p)%#v", parent, parent, child, child)
 
 		switch tt := parent.(type) {
 		case token.ForwardToken:
@@ -253,7 +253,7 @@ func UnrollPointers(root token.Token) token.Token {
 		}
 	}
 
-	log.Debug("Finished unrolling")
+	log.Debug("finished unrolling")
 
 	return root
 }

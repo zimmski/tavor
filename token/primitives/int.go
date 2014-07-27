@@ -40,14 +40,14 @@ func (p *ConstantInt) Parse(pars *token.InternalParser, cur int) (int, []error) 
 
 	if nextIndex > pars.DataLen {
 		return cur, []error{&token.ParserError{
-			Message: fmt.Sprintf("Expected %q but got early EOF", v),
+			Message: fmt.Sprintf("expected %q but got early EOF", v),
 			Type:    token.ParseErrorUnexpectedEOF,
 		}}
 	}
 
 	if got := pars.Data[cur:nextIndex]; v != got {
 		return cur, []error{&token.ParserError{
-			Message: fmt.Sprintf("Expected %q but got %q", v, got),
+			Message: fmt.Sprintf("expected %q but got %q", v, got),
 			Type:    token.ParseErrorUnexpectedData,
 		}}
 	}
@@ -212,7 +212,7 @@ func (p *RangeInt) FuzzAll(r rand.Rand) {
 func (p *RangeInt) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	if cur == pars.DataLen {
 		return cur, []error{&token.ParserError{
-			Message: fmt.Sprintf("Expected integer in range %d-%d with step %d but got early EOF", p.from, p.to, p.step),
+			Message: fmt.Sprintf("expected integer in range %d-%d with step %d but got early EOF", p.from, p.to, p.step),
 			Type:    token.ParseErrorUnexpectedEOF,
 		}}
 	}
@@ -253,7 +253,7 @@ func (p *RangeInt) Parse(pars *token.InternalParser, cur int) (int, []error) {
 		}
 
 		return cur, []error{&token.ParserError{
-			Message: fmt.Sprintf("Expected integer in range %d-%d with step %d but got %q", p.from, p.to, p.step, pars.Data[cur:i]),
+			Message: fmt.Sprintf("expected integer in range %d-%d with step %d but got %q", p.from, p.to, p.step, pars.Data[cur:i]),
 			Type:    token.ParseErrorUnexpectedData,
 		}}
 	}

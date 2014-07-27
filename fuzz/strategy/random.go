@@ -27,7 +27,7 @@ func init() {
 func (s *RandomStrategy) Fuzz(r rand.Rand) (chan struct{}, error) {
 	if tavor.LoopExists(s.root) {
 		return nil, &StrategyError{
-			Message: "Found endless loop in graph. Cannot proceed.",
+			Message: "found endless loop in graph. Cannot proceed.",
 			Type:    StrategyErrorEndlessLoopDetected,
 		}
 	}
@@ -35,19 +35,19 @@ func (s *RandomStrategy) Fuzz(r rand.Rand) (chan struct{}, error) {
 	continueFuzzing := make(chan struct{})
 
 	go func() {
-		log.Debug("Start random fuzzing routine")
+		log.Debug("start random fuzzing routine")
 
 		s.fuzz(s.root, r)
 
-		log.Debug("Done with fuzzing step")
+		log.Debug("done with fuzzing step")
 
 		// done with the last fuzzing step
 		continueFuzzing <- struct{}{}
 
-		log.Debug("Finished fuzzing. Wait till the outside is ready to close.")
+		log.Debug("finished fuzzing. Wait till the outside is ready to close.")
 
 		if _, ok := <-continueFuzzing; ok {
-			log.Debug("Close fuzzing channel")
+			log.Debug("close fuzzing channel")
 
 			close(continueFuzzing)
 		}

@@ -72,7 +72,7 @@ func (s *AllPermutationsStrategy) getTree(root token.Token, fromChildren bool) [
 }
 
 func (s *AllPermutationsStrategy) setPermutation(tok token.Token, permutation int) {
-	log.Debugf("Set %#v(%p) to permutation %d", tok, tok, permutation)
+	log.Debugf("set %#v(%p) to permutation %d", tok, tok, permutation)
 
 	if err := tok.Permutation(permutation); err != nil {
 		panic(err)
@@ -82,7 +82,7 @@ func (s *AllPermutationsStrategy) setPermutation(tok token.Token, permutation in
 func (s *AllPermutationsStrategy) Fuzz(r rand.Rand) (chan struct{}, error) {
 	if tavor.LoopExists(s.root) {
 		return nil, &StrategyError{
-			Message: "Found endless loop in graph. Cannot proceed.",
+			Message: "found endless loop in graph. Cannot proceed.",
 			Type:    StrategyErrorEndlessLoopDetected,
 		}
 	}
@@ -90,17 +90,17 @@ func (s *AllPermutationsStrategy) Fuzz(r rand.Rand) (chan struct{}, error) {
 	continueFuzzing := make(chan struct{})
 
 	go func() {
-		log.Debug("Start all permutations routine")
+		log.Debug("start all permutations routine")
 
 		tree := s.getTree(s.root, false)
 
-		log.Debug("Start fuzzing step")
+		log.Debug("start fuzzing step")
 
 		if contin, _ := s.fuzz(continueFuzzing, tree, false); !contin {
 			return
 		}
 
-		log.Debug("Finished fuzzing.")
+		log.Debug("finished fuzzing.")
 
 		close(continueFuzzing)
 	}()
@@ -109,7 +109,7 @@ func (s *AllPermutationsStrategy) Fuzz(r rand.Rand) (chan struct{}, error) {
 }
 
 func (s *AllPermutationsStrategy) fuzz(continueFuzzing chan struct{}, tree []allPermutationsLevel, justastep bool) (bool, bool) {
-	log.Debugf("Fuzzing level %d->%#v", len(tree), tree)
+	log.Debugf("fuzzing level %d->%#v", len(tree), tree)
 
 STEP:
 	for {
@@ -126,7 +126,7 @@ STEP:
 
 			log.Debugf("PERMUTATE after child step")
 		} else {
-			log.Debugf("Permute %d->%#v", 0, tree[0])
+			log.Debugf("permute %d->%#v", 0, tree[0])
 
 			if tree[0].permutation != 1 {
 				s.setPermutation(tree[0].token, tree[0].permutation)
@@ -158,14 +158,14 @@ STEP:
 
 		if tree[0].permutation > tree[0].maxPermutations {
 			for i := 0; i < len(tree); i++ {
-				log.Debugf("Check %d vs %d for %#v", tree[i].permutation, tree[i].maxPermutations, tree[i])
+				log.Debugf("check %d vs %d for %#v", tree[i].permutation, tree[i].maxPermutations, tree[i])
 			}
 
 			i := 0
 
 			for {
 				if i == len(tree)-1 {
-					log.Debugf("Done with fuzzing this level because %#v", tree)
+					log.Debugf("done with fuzzing this level because %#v", tree)
 
 					break STEP
 				}
@@ -205,7 +205,7 @@ STEP:
 						tree[j].children = s.getTree(tree[j].token, true)
 					}
 
-					log.Debugf("Permute %d->%#v", i, tree[i])
+					log.Debugf("permute %d->%#v", i, tree[i])
 
 					s.setPermutation(tree[i].token, tree[i].permutation)
 					tree[i].children = s.getTree(tree[i].token, true)
@@ -233,19 +233,19 @@ STEP:
 func (s *AllPermutationsStrategy) nextStep(continueFuzzing chan struct{}) bool {
 	s.resetResetTokens()
 
-	log.Debug("Done with fuzzing step")
+	log.Debug("done with fuzzing step")
 
 	// done with this fuzzing step
 	continueFuzzing <- struct{}{}
 
 	// wait until we are allowed to continue
 	if _, ok := <-continueFuzzing; !ok {
-		log.Debug("Fuzzing channel closed from outside")
+		log.Debug("fuzzing channel closed from outside")
 
 		return false
 	}
 
-	log.Debug("Start fuzzing step")
+	log.Debug("start fuzzing step")
 
 	return true
 }
@@ -260,7 +260,7 @@ func (s *AllPermutationsStrategy) resetResetTokens() {
 
 		switch tok := v.(type) {
 		case token.ResetToken:
-			log.Debugf("Reset %#v(%p)", tok, tok)
+			log.Debugf("reset %#v(%p)", tok, tok)
 
 			tok.Reset()
 		}

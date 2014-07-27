@@ -72,7 +72,7 @@ var opts struct {
 
 	Validate struct {
 		InputFile flags.Filename `long:"input-file" description:"Input file which gets parsed and validated via the format file" required:"true"`
-	} `command:"validate" description:"Validate the given format file"`
+	} `command:"validate" description:"Validate the given input file"`
 }
 
 type FuzzFilter string
@@ -188,7 +188,7 @@ func checkArguments() string {
 		}
 	}
 
-	log.Infof("Using seed %d", opts.Global.Seed)
+	log.Infof("using seed %d", opts.Global.Seed)
 
 	return p.Active.Name
 }
@@ -231,7 +231,7 @@ func applyFilters(filterNames []FuzzFilter, doc token.Token) token.Token {
 
 			filters = append(filters, filt)
 
-			log.Infof("Using %s fuzzing filter", name)
+			log.Infof("using %s fuzzing filter", name)
 		}
 
 		doc, err = fuzzFilter.ApplyFilters(filters, doc)
@@ -246,7 +246,7 @@ func applyFilters(filterNames []FuzzFilter, doc token.Token) token.Token {
 func main() {
 	command := checkArguments()
 
-	log.Infof("Open file %s", opts.Format.FormatFile)
+	log.Infof("open file %s", opts.Format.FormatFile)
 
 	file, err := os.Open(string(opts.Format.FormatFile))
 	if err != nil {
@@ -259,7 +259,7 @@ func main() {
 		exitError("cannot parse tavor file: %v", err)
 	}
 
-	log.Info("Format file is valid")
+	log.Info("format file is valid")
 
 	if opts.Format.PrintInternal {
 		tavor.PrettyPrintInternalTree(os.Stdout, doc)
@@ -275,14 +275,14 @@ func main() {
 	case "fuzz":
 		doc = applyFilters(opts.Fuzz.Filters, doc)
 
-		log.Infof("Counted %d overall permutations", doc.PermutationsAll())
+		log.Infof("counted %d overall permutations", doc.PermutationsAll())
 
 		strat, err := fuzzStrategy.New(string(opts.Fuzz.Strategy), doc)
 		if err != nil {
 			exitError(err.Error())
 		}
 
-		log.Infof("Using %s fuzzing strategy", opts.Fuzz.Strategy)
+		log.Infof("using %s fuzzing strategy", opts.Fuzz.Strategy)
 
 		ch, err := strat.Fuzz(r)
 		if err != nil {
@@ -305,7 +305,7 @@ func main() {
 					}
 				}
 
-				log.Debug("Result:")
+				log.Debug("result:")
 				fmt.Print(doc.String())
 				fmt.Print(opts.Fuzz.ResultSeparator)
 			} else {
@@ -314,7 +314,7 @@ func main() {
 
 				file := fmt.Sprintf("%s%x%s", folder, sum, opts.Fuzz.ResultExtensions)
 
-				log.Infof("Write result to %s", file)
+				log.Infof("write result to %s", file)
 
 				if err := ioutil.WriteFile(file, []byte(out), 0644); err != nil {
 					exitError("error writing to %s: %v", file, err)
@@ -343,9 +343,9 @@ func main() {
 		errs := parser.ParseInternal(doc, input)
 
 		if len(errs) == 0 {
-			log.Info("Input file is valid")
+			log.Info("input file is valid")
 		} else {
-			log.Info("Input file is invalid")
+			log.Info("input file is invalid")
 
 			for _, err := range errs {
 				log.Error(err)
@@ -360,7 +360,7 @@ func main() {
 				exitError(err.Error())
 			}
 
-			log.Infof("Using %s reducing strategy", opts.Reduce.Strategy)
+			log.Infof("using %s reducing strategy", opts.Reduce.Strategy)
 
 			contin, feedback, err := strat.Reduce()
 			if err != nil {
@@ -370,7 +370,7 @@ func main() {
 			readCLI := bufio.NewReader(os.Stdin)
 
 			for i := range contin {
-				log.Debug("Result:")
+				log.Debug("result:")
 				fmt.Print(doc.String())
 				fmt.Print(opts.Reduce.ResultSeparator)
 
@@ -396,14 +396,14 @@ func main() {
 				contin <- i
 			}
 
-			log.Info("Reduced to minimum")
+			log.Info("reduced to minimum")
 
-			log.Debug("Result:")
+			log.Debug("result:")
 			fmt.Print(doc.String())
 			fmt.Print(opts.Reduce.ResultSeparator)
 		}
 	default:
-		exitError("Unknown command %q", command)
+		exitError("unknown command %q", command)
 	}
 
 	os.Exit(returnOk)

@@ -33,11 +33,11 @@ const (
 func (f ReduceFeedbackType) String() string {
 	switch f {
 	case Bad:
-		return "Bad"
+		return "bad"
 	case Good:
-		return "Good"
+		return "good"
 	default:
-		return "Unknown feedback"
+		return "unknown feedback"
 	}
 }
 

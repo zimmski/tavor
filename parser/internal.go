@@ -10,11 +10,11 @@ import (
 )
 
 func ParseInternal(root token.Token, src io.Reader) []error {
-	log.Debug("Start internal parsing")
+	log.Debug("start internal parsing")
 
 	if root == nil {
 		return []error{&token.ParserError{
-			Message: "Root token is nil",
+			Message: "root token is nil",
 			Type:    token.ParseErrorRootIsNil,
 		}}
 	}
@@ -31,7 +31,7 @@ func ParseInternal(root token.Token, src io.Reader) []error {
 	nex, errs := root.Parse(p, 0)
 
 	if len(errs) != 0 {
-		log.Debugf("Internal parsing failed %v", errs)
+		log.Debugf("internal parsing failed %v", errs)
 
 		return errs
 	} else if nex != p.DataLen {
@@ -50,7 +50,7 @@ func ParseInternal(root token.Token, src io.Reader) []error {
 		}}
 	}
 
-	log.Debugf("Finished internal parsing")
+	log.Debugf("finished internal parsing")
 
 	return nil
 }

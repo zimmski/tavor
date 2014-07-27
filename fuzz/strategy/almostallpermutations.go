@@ -89,7 +89,7 @@ func (s *AlmostAllPermutationsStrategy) getLevel(root token.Token, fromChildren 
 func (s *AlmostAllPermutationsStrategy) Fuzz(r rand.Rand) (chan struct{}, error) {
 	if tavor.LoopExists(s.root) {
 		return nil, &StrategyError{
-			Message: "Found endless loop in graph. Cannot proceed.",
+			Message: "found endless loop in graph. Cannot proceed.",
 			Type:    StrategyErrorEndlessLoopDetected,
 		}
 	}
@@ -99,12 +99,12 @@ func (s *AlmostAllPermutationsStrategy) Fuzz(r rand.Rand) (chan struct{}, error)
 	s.resetedLookup = make(map[token.Token]int)
 
 	go func() {
-		log.Debug("Start almost all permutations routine")
+		log.Debug("start almost all permutations routine")
 
 		level := s.getLevel(s.root, false)
 
 		if len(level) != 0 {
-			log.Debug("Start fuzzing step")
+			log.Debug("start fuzzing step")
 
 			if !s.fuzz(continueFuzzing, level) {
 				return
@@ -113,15 +113,15 @@ func (s *AlmostAllPermutationsStrategy) Fuzz(r rand.Rand) (chan struct{}, error)
 
 		s.resetResetTokens()
 
-		log.Debug("Done with fuzzing step")
+		log.Debug("done with fuzzing step")
 
 		// done with the last fuzzing step
 		continueFuzzing <- struct{}{}
 
-		log.Debug("Finished fuzzing. Wait till the outside is ready to close.")
+		log.Debug("finished fuzzing. Wait till the outside is ready to close.")
 
 		if _, ok := <-continueFuzzing; ok {
-			log.Debug("Close fuzzing channel")
+			log.Debug("close fuzzing channel")
 
 			close(continueFuzzing)
 		}
@@ -140,7 +140,7 @@ func (s *AlmostAllPermutationsStrategy) resetResetTokens() {
 
 		switch tok := v.(type) {
 		case token.ResetToken:
-			log.Debugf("Reset %#v(%p)", tok, tok)
+			log.Debugf("reset %#v(%p)", tok, tok)
 
 			tok.Reset()
 		}
@@ -170,7 +170,7 @@ func (s *AlmostAllPermutationsStrategy) setTokenPermutation(tok token.Token, per
 }
 
 func (s *AlmostAllPermutationsStrategy) fuzz(continueFuzzing chan struct{}, level []almostAllPermutationsLevel) bool {
-	log.Debugf("Fuzzing level %d->%#v", len(level), level)
+	log.Debugf("fuzzing level %d->%#v", len(level), level)
 
 	last := len(level) - 1
 
@@ -179,7 +179,7 @@ STEP:
 		for i := range level {
 			if level[i].permutation > level[i].maxPermutations {
 				if i <= last {
-					log.Debugf("Max reached redo everything <= %d and increment next", i)
+					log.Debugf("max reached redo everything <= %d and increment next", i)
 
 					level[i+1].permutation++
 					s.setTokenPermutation(level[i+1].token, level[i+1].permutation)
@@ -195,7 +195,7 @@ STEP:
 				continue STEP
 			}
 
-			log.Debugf("Permute %d->%#v", i, level[i])
+			log.Debugf("permute %d->%#v", i, level[i])
 
 			s.setTokenPermutation(level[i].token, level[i].permutation)
 
@@ -224,7 +224,7 @@ STEP:
 				}
 			}
 			if !found {
-				log.Debug("Done with fuzzing this level")
+				log.Debug("done with fuzzing this level")
 
 				break STEP
 			}
@@ -232,19 +232,19 @@ STEP:
 
 		s.resetResetTokens()
 
-		log.Debug("Done with fuzzing step")
+		log.Debug("done with fuzzing step")
 
 		// done with this fuzzing step
 		continueFuzzing <- struct{}{}
 
 		// wait until we are allowed to continue
 		if _, ok := <-continueFuzzing; !ok {
-			log.Debug("Fuzzing channel closed from outside")
+			log.Debug("fuzzing channel closed from outside")
 
 			return false
 		}
 
-		log.Debug("Start fuzzing step")
+		log.Debug("start fuzzing step")
 
 		s.resetedLookup = make(map[token.Token]int)
 	}

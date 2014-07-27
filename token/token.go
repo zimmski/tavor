@@ -53,9 +53,9 @@ type PermutationError struct {
 func (err *PermutationError) Error() string {
 	switch err.Type {
 	case PermutationErrorIndexOutOfBound:
-		return "Permutation index out of bound"
+		return "permutation index out of bound"
 	default:
-		return fmt.Sprintf("Unknown permutation error type %#v", err.Type)
+		return fmt.Sprintf("unknown permutation error type %#v", err.Type)
 	}
 }
 
@@ -78,9 +78,9 @@ type ReduceError struct {
 func (err *ReduceError) Error() string {
 	switch err.Type {
 	case ReduceErrorIndexOutOfBound:
-		return "Reduce index out of bound"
+		return "reduce index out of bound"
 	default:
-		return fmt.Sprintf("Unknown reduce error type %#v", err.Type)
+		return fmt.Sprintf("unknown reduce error type %#v", err.Type)
 	}
 }
 

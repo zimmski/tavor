@@ -65,7 +65,7 @@ func (s *PermuteOptionalsStrategy) findOptionals(r rand.Rand, root token.Token, 
 				continue
 			}
 
-			log.Debugf("Found optional %#v", t)
+			log.Debugf("found optional %#v", t)
 
 			t.Deactivate()
 
@@ -102,7 +102,7 @@ func (s *PermuteOptionalsStrategy) resetResetTokens() {
 
 		switch tok := v.(type) {
 		case token.ResetToken:
-			log.Debugf("Reset %#v(%p)", tok, tok)
+			log.Debugf("reset %#v(%p)", tok, tok)
 
 			tok.Reset()
 		}
@@ -124,7 +124,7 @@ func (s *PermuteOptionalsStrategy) resetResetTokens() {
 func (s *PermuteOptionalsStrategy) Fuzz(r rand.Rand) (chan struct{}, error) {
 	if tavor.LoopExists(s.root) {
 		return nil, &StrategyError{
-			Message: "Found endless loop in graph. Cannot proceed.",
+			Message: "found endless loop in graph. Cannot proceed.",
 			Type:    StrategyErrorEndlessLoopDetected,
 		}
 	}
@@ -132,7 +132,7 @@ func (s *PermuteOptionalsStrategy) Fuzz(r rand.Rand) (chan struct{}, error) {
 	continueFuzzing := make(chan struct{})
 
 	go func() {
-		log.Debug("Start permute optionals routine")
+		log.Debug("start permute optionals routine")
 
 		optionals := s.findOptionals(r, s.root, false)
 
@@ -144,15 +144,15 @@ func (s *PermuteOptionalsStrategy) Fuzz(r rand.Rand) (chan struct{}, error) {
 
 		s.resetResetTokens()
 
-		log.Debug("Done with fuzzing step")
+		log.Debug("done with fuzzing step")
 
 		// done with the last fuzzing step
 		continueFuzzing <- struct{}{}
 
-		log.Debug("Finished fuzzing. Wait till the outside is ready to close.")
+		log.Debug("finished fuzzing. Wait till the outside is ready to close.")
 
 		if _, ok := <-continueFuzzing; ok {
-			log.Debug("Close fuzzing channel")
+			log.Debug("close fuzzing channel")
 
 			close(continueFuzzing)
 		}
@@ -162,7 +162,7 @@ func (s *PermuteOptionalsStrategy) Fuzz(r rand.Rand) (chan struct{}, error) {
 }
 
 func (s *PermuteOptionalsStrategy) fuzz(r rand.Rand, continueFuzzing chan struct{}, optionals []token.OptionalToken) bool {
-	log.Debugf("Fuzzing optionals %#v", optionals)
+	log.Debugf("fuzzing optionals %#v", optionals)
 
 	// TODO make this WAYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY smarter
 	// since we can only fuzz 64 optionals at max
@@ -171,7 +171,7 @@ func (s *PermuteOptionalsStrategy) fuzz(r rand.Rand, continueFuzzing chan struct
 	maxSteps := int(math.Pow(2, float64(len(optionals))))
 
 	for {
-		log.Debugf("Fuzzing step %b", p)
+		log.Debugf("fuzzing step %b", p)
 
 		ith := 1
 
@@ -196,21 +196,21 @@ func (s *PermuteOptionalsStrategy) fuzz(r rand.Rand, continueFuzzing chan struct
 		p++
 
 		if p == maxSteps {
-			log.Debug("Done with fuzzing these optionals")
+			log.Debug("done with fuzzing these optionals")
 
 			break
 		}
 
 		s.resetResetTokens()
 
-		log.Debug("Done with fuzzing step")
+		log.Debug("done with fuzzing step")
 
 		// done with this fuzzing step
 		continueFuzzing <- struct{}{}
 
 		// wait until we are allowed to continue
 		if _, ok := <-continueFuzzing; !ok {
-			log.Debug("Fuzzing channel closed from outside")
+			log.Debug("fuzzing channel closed from outside")
 
 			return false
 		}
