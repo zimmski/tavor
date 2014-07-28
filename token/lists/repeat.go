@@ -399,9 +399,7 @@ func (l *Repeat) reduces() []int {
 		k++
 	}
 
-	to := n - 1
-
-	for ; k <= to; k++ {
+	for ; k < n; k++ {
 		reduces[j] = factorial(n) / (factorial(n-k) * factorial(k))
 		j++
 	}
