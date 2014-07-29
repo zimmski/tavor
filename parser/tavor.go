@@ -220,10 +220,6 @@ OUT:
 		case scanner.String:
 			s := p.scan.TokenText()
 
-			if s[0] != '"' {
-				panic("unknown " + s) // TODO remove this
-			}
-
 			if s[len(s)-1] != '"' {
 				return zeroRune, nil, nil, &token.ParserError{
 					Message:  "string is not terminated",
