@@ -21,40 +21,45 @@ func init() {
 }
 
 func (f *PositiveBoundaryValueAnalysisFilter) Apply(tok token.Token) ([]token.Token, error) {
-	if t, ok := tok.(*primitives.RangeInt); ok {
-		l := t.Permutations()
+	t, ok := tok.(*primitives.RangeInt)
+	if !ok {
+		return nil, nil
+	}
 
-		var replacements []token.Token
+	l := t.Permutations()
 
-		if err := t.Permutation(1); err != nil {
+	var replacements []token.Token
+
+	// lower boundary
+	if err := t.Permutation(1); err != nil {
+		panic(err)
+	}
+
+	i, _ := strconv.Atoi(t.String())
+
+	replacements = append(replacements, primitives.NewConstantInt(i))
+
+	// middle
+	if l > 2 {
+		if err := t.Permutation(int(math.Ceil(float64(l) / 2.0))); err != nil {
 			panic(err)
 		}
 
 		i, _ := strconv.Atoi(t.String())
 
 		replacements = append(replacements, primitives.NewConstantInt(i))
-
-		if l > 2 {
-			if err := t.Permutation(int(math.Ceil(float64(l) / 2.0))); err != nil {
-				panic(err)
-			}
-
-			i, _ := strconv.Atoi(t.String())
-
-			replacements = append(replacements, primitives.NewConstantInt(i))
-		}
-		if l != 1 {
-			if err := t.Permutation(l); err != nil {
-				panic(err)
-			}
-
-			i, _ := strconv.Atoi(t.String())
-
-			replacements = append(replacements, primitives.NewConstantInt(i))
-		}
-
-		return replacements, nil
 	}
 
-	return nil, nil
+	// upper boundary
+	if l != 1 {
+		if err := t.Permutation(l); err != nil {
+			panic(err)
+		}
+
+		i, _ := strconv.Atoi(t.String())
+
+		replacements = append(replacements, primitives.NewConstantInt(i))
+	}
+
+	return replacements, nil
 }
