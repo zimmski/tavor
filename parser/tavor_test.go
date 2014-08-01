@@ -983,3 +983,66 @@ func TestTavorParserLoops(t *testing.T) {
 		Equal(t, "setParam", tok.String())
 	}
 }
+
+func TestTavorParserCornerCases(t *testing.T) {
+	// early usage used twice deeper in token
+	{
+		tok, err := ParseTavor(strings.NewReader(`
+			c = ?(d)
+
+			a = c
+			b = c
+
+			d =  "TEXT"
+
+			START = a | b
+		`))
+		Nil(t, err)
+		Equal(t, tok, lists.NewOne(
+			constraints.NewOptional(primitives.NewConstantString("TEXT")),
+			constraints.NewOptional(primitives.NewConstantString("TEXT")),
+		))
+
+		Equal(t, "TEXT", tok.String())
+	}
+	// early usage used twice
+	{
+		tok, err := ParseTavor(strings.NewReader(`
+			c = d
+
+			a = c
+			b = c
+
+			d =  "TEXT"
+
+			START = a | b
+		`))
+		Nil(t, err)
+		Equal(t, tok, lists.NewOne(
+			primitives.NewConstantString("TEXT"),
+			primitives.NewConstantString("TEXT"),
+		))
+
+		Equal(t, "TEXT", tok.String())
+	}
+	// early usage used twice even deeper in token
+	{
+		tok, err := ParseTavor(strings.NewReader(`
+			c = ?(?(d))
+
+			a = c
+			b = c
+
+			d =  "TEXT"
+
+			START = a | b
+		`))
+		Nil(t, err)
+		Equal(t, tok, lists.NewOne(
+			constraints.NewOptional(constraints.NewOptional(primitives.NewConstantString("TEXT"))),
+			constraints.NewOptional(constraints.NewOptional(primitives.NewConstantString("TEXT"))),
+		))
+
+		Equal(t, "TEXT", tok.String())
+	}
+}

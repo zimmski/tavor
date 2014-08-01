@@ -124,14 +124,15 @@ OUT:
 				log.Debugf("parseTerm use empty pointer for %s", name)
 
 				var tokenInterface *token.Token
-				n := primitives.NewEmptyPointer(tokenInterface)
+				b := primitives.NewEmptyPointer(tokenInterface)
+				n := primitives.NewPointer(b)
 
 				p.lookup[name] = tokenUse{
 					token:    n,
 					position: p.scan.Position,
 				}
 				p.earlyUse[name] = append(p.earlyUse[name], tokenUse{
-					token:    n,
+					token:    b,
 					position: p.scan.Position,
 				})
 			}
