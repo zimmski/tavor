@@ -36,7 +36,9 @@ func (p *Pointer) Set(o token.Token) error {
 		return nil
 	}
 
-	if !reflect.TypeOf(o).Implements(p.typ) {
+	oType := reflect.TypeOf(o)
+
+	if !oType.AssignableTo(p.typ) && (p.typ.Kind() == reflect.Interface && !oType.Implements(p.typ)) {
 		return fmt.Errorf("does not implement type %s", p.typ)
 	}
 
