@@ -106,6 +106,7 @@ func UnrollPointers(root token.Token) token.Token {
 	type unrollToken struct {
 		tok    token.Token
 		parent *unrollToken
+		counts map[token.Token]int
 	}
 
 	log.Debug("start unrolling pointers by cloning them")
@@ -113,7 +114,6 @@ func UnrollPointers(root token.Token) token.Token {
 	parents := make(map[token.Token]token.Token)
 	changed := make(map[token.Token]struct{})
 
-	counts := make(map[token.Token]int)
 	originals := make(map[token.Token]token.Token)
 	originalClones := make(map[token.Token]token.Token)
 
@@ -122,6 +122,7 @@ func UnrollPointers(root token.Token) token.Token {
 	queue.Push(&unrollToken{
 		tok:    root,
 		parent: nil,
+		counts: make(map[token.Token]int),
 	})
 	parents[root] = nil
 
@@ -169,7 +170,7 @@ func UnrollPointers(root token.Token) token.Token {
 				if o, found := originals[child]; found {
 					log.Debugf("Found original (%p)%#v for child (%p)%#v", o, o, child, child)
 					original = o
-					counted, _ = counts[original]
+					counted = iTok.counts[original]
 
 					if counted >= MaxRepeat {
 						replace = false
@@ -188,6 +189,11 @@ func UnrollPointers(root token.Token) token.Token {
 				log.Debugf("clone (%p)%#v with child (%p)%#v", t, t, child, child)
 
 				c := originalClones[original].Clone()
+
+				counts := make(map[token.Token]int)
+				for k, v := range iTok.counts {
+					counts[k] = v
+				}
 
 				counts[original] = counted + 1
 				originals[c] = original
@@ -216,6 +222,7 @@ func UnrollPointers(root token.Token) token.Token {
 				queue.Unshift(&unrollToken{
 					tok:    c,
 					parent: iTok.parent,
+					counts: counts,
 				})
 			} else {
 				// we reached a maximum of repetition, we cut and remove dangling tokens
@@ -262,6 +269,7 @@ func UnrollPointers(root token.Token) token.Token {
 				queue.Push(&unrollToken{
 					tok:    v,
 					parent: iTok,
+					counts: iTok.counts,
 				})
 
 				parents[v] = iTok.tok
@@ -273,13 +281,10 @@ func UnrollPointers(root token.Token) token.Token {
 				queue.Push(&unrollToken{
 					tok:    c,
 					parent: iTok,
+					counts: iTok.counts,
 				})
 
 				parents[c] = iTok.tok
-			}
-		default:
-			if original, found := originals[t]; found {
-				delete(counts, original)
 			}
 		}
 	}

@@ -1061,4 +1061,19 @@ func TestTavorParserCornerCases(t *testing.T) {
 
 		Equal(t, "BBB", tok.String())
 	}
+	{
+		tok, err := ParseTavor(strings.NewReader(`
+			START = B  B  B
+
+			B = 1 2
+		`))
+		Nil(t, err)
+		Equal(t, tok, lists.NewAll(
+			lists.NewAll(primitives.NewConstantInt(1), primitives.NewConstantInt(2)),
+			lists.NewAll(primitives.NewConstantInt(1), primitives.NewConstantInt(2)),
+			lists.NewAll(primitives.NewConstantInt(1), primitives.NewConstantInt(2)),
+		))
+
+		Equal(t, "121212", tok.String())
+	}
 }
