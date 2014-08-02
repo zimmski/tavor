@@ -7,7 +7,9 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"os"
+	"os/exec"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/jessevdk/go-flags"
@@ -64,6 +66,10 @@ var opts struct {
 	} `command:"graph" description:"Generate a DOT file out of the internal AST"`
 
 	Reduce struct {
+		Exec string `long:"exec" description:"Execute this binary with possible arguments to test a delta-debugging step"`
+		//ExecExactExitCode bool   `long:"exec-exact-exit-code" description:"Same exit code has to be present to reduce further"`
+		ExecDoNotRemoveTmpFiles bool `long:"exec-do-not-remove-tmp-files" description:"If set tmp files for delta debugging are not removed"`
+
 		InputFile       flags.Filename `long:"input-file" description:"Input file which gets parsed, validated and delta-debugged via the format file" required:"true"`
 		Strategy        ReduceStrategy `long:"strategy" description:"The reducing strategy" default:"BinarySearch"`
 		ListStrategies  bool           `long:"list-strategies" description:"List all available reducing strategies"`
@@ -367,33 +373,131 @@ func main() {
 				exitError(err.Error())
 			}
 
-			readCLI := bufio.NewReader(os.Stdin)
+			if opts.Reduce.Exec != "" {
+				execs := strings.Split(opts.Reduce.Exec, " ")
 
-			for i := range contin {
-				log.Debug("result:")
-				fmt.Print(doc.String())
-				fmt.Print(opts.Reduce.ResultSeparator)
+				stepId := 0
 
-				for {
-					fmt.Printf("\nDoes the error still exist? [yes|no]: ")
+				tmp, err := ioutil.TempFile("", fmt.Sprintf("dd-%d-", stepId))
+				if err != nil {
+					exitError("Cannot create tmp file: %s", err)
+				}
+				_, err = tmp.WriteString(doc.String())
+				if err != nil {
+					exitError("Cannot write to tmp file: %s", err)
+				}
 
-					line, _, err := readCLI.ReadLine()
+				log.Infof("Execute %q to get original outputs with %q", opts.Reduce.Exec, tmp.Name())
+
+				var execExitCode int
+
+				execCommand := exec.Command(execs[0], execs[1:]...)
+
+				execCommand.Env = []string{fmt.Sprintf("TAVOR_DD_FILE=%s", tmp.Name())}
+
+				execCommand.Stderr = os.Stderr
+				execCommand.Stdout = os.Stdout
+
+				err = execCommand.Run()
+				if err == nil {
+					execExitCode = 0
+				} else if e, ok := err.(*exec.ExitError); ok {
+					execExitCode = e.Sys().(syscall.WaitStatus).ExitStatus()
+				} else {
+					exitError("Could not execute exec successfully: %s", err)
+				}
+
+				log.Infof("Exit status was %d", execExitCode)
+
+				if !opts.Reduce.ExecDoNotRemoveTmpFiles {
+					err = os.Remove(tmp.Name())
 					if err != nil {
-						exitError("reading from CLI failed: %v", err)
-					}
-
-					if s := strings.ToUpper(string(line)); s == "YES" {
-						feedback <- reduceStrategy.Bad
-
-						break
-					} else if s == "NO" {
-						feedback <- reduceStrategy.Good
-
-						break
+						log.Errorf("Could not remove tmp file %q: %s", tmp.Name(), err)
 					}
 				}
 
-				contin <- i
+				for i := range contin {
+					stepId++
+
+					tmp, err := ioutil.TempFile("", fmt.Sprintf("dd-%d-", stepId))
+					if err != nil {
+						exitError("Cannot create tmp file: %s", err)
+					}
+					_, err = tmp.WriteString(doc.String())
+					if err != nil {
+						exitError("Cannot write to tmp file: %s", err)
+					}
+
+					log.Infof("Test %q", tmp.Name())
+
+					var ddExitCode int
+
+					execCommand := exec.Command(execs[0], execs[1:]...)
+
+					execCommand.Env = []string{fmt.Sprintf("TAVOR_DD_FILE=%s", tmp.Name())}
+
+					execCommand.Stderr = os.Stderr
+					execCommand.Stdout = os.Stdout
+
+					err = execCommand.Run()
+					if err == nil {
+						ddExitCode = 0
+					} else if e, ok := err.(*exec.ExitError); ok {
+						ddExitCode = e.Sys().(syscall.WaitStatus).ExitStatus()
+					} else {
+						exitError("Could not execute exec successfully: %s", err)
+					}
+
+					log.Infof("Exit status was %d", ddExitCode)
+
+					if !opts.Reduce.ExecDoNotRemoveTmpFiles {
+						err = os.Remove(tmp.Name())
+						if err != nil {
+							log.Errorf("Could not remove tmp file %q: %s", tmp.Name(), err)
+						}
+					}
+
+					if execExitCode == ddExitCode {
+						log.Infof("Same output, continue delta")
+
+						feedback <- reduceStrategy.Bad
+					} else {
+						log.Infof("Not the same output, do another step")
+
+						feedback <- reduceStrategy.Good
+					}
+
+					contin <- i
+				}
+			} else {
+				readCLI := bufio.NewReader(os.Stdin)
+
+				for i := range contin {
+					log.Debug("result:")
+					fmt.Print(doc.String())
+					fmt.Print(opts.Reduce.ResultSeparator)
+
+					for {
+						fmt.Printf("\nDoes the error still exist? [yes|no]: ")
+
+						line, _, err := readCLI.ReadLine()
+						if err != nil {
+							exitError("reading from CLI failed: %v", err)
+						}
+
+						if s := strings.ToUpper(string(line)); s == "YES" {
+							feedback <- reduceStrategy.Bad
+
+							break
+						} else if s == "NO" {
+							feedback <- reduceStrategy.Good
+
+							break
+						}
+					}
+
+					contin <- i
+				}
 			}
 
 			log.Info("reduced to minimum")
