@@ -110,11 +110,12 @@ func UnrollPointers(root token.Token) token.Token {
 
 	log.Debug("start unrolling pointers by cloning them")
 
-	checked := make(map[token.Token]token.Token)
-	counters := make(map[token.Token]int)
-
 	parents := make(map[token.Token]token.Token)
 	changed := make(map[token.Token]struct{})
+
+	counts := make(map[token.Token]int)
+	originals := make(map[token.Token]token.Token)
+	originalClones := make(map[token.Token]token.Token)
 
 	queue := linkedlist.New()
 
@@ -130,27 +131,70 @@ func UnrollPointers(root token.Token) token.Token {
 
 		switch t := iTok.tok.(type) {
 		case *primitives.Pointer:
-			o := t.InternalGet()
+			child := t.InternalGet()
 
-			parent, ok := checked[o]
-			times := 0
+			replace := true
 
-			if ok {
-				times = counters[parent]
-			} else {
-				parent = o.Clone()
-				checked[o] = parent
+			if p, ok := child.(*primitives.Pointer); ok {
+				checked := map[*primitives.Pointer]struct{}{
+					p: struct{}{},
+				}
+
+				for {
+					log.Debugf("Child (%p)%#v is a pointer lets go one further", p, p)
+
+					child = p.InternalGet()
+
+					p, ok = child.(*primitives.Pointer)
+					if !ok {
+						break
+					}
+
+					if _, found := checked[p]; found {
+						log.Debugf("Endless pointer loop with (%p)%#v", p, p)
+
+						replace = false
+
+						break
+					}
+
+					checked[p] = struct{}{}
+				}
 			}
 
-			if times != MaxRepeat {
-				log.Debugf("clone (%p)%#v with parent (%p)%#v", t, t, parent, parent)
+			var original token.Token
+			counted := 0
 
-				c := parent.Clone()
+			if replace {
+				if o, found := originals[child]; found {
+					log.Debugf("Found original (%p)%#v for child (%p)%#v", o, o, child, child)
+					original = o
+					counted, _ = counts[original]
+
+					if counted >= MaxRepeat {
+						replace = false
+					}
+				} else {
+					log.Debugf("Found no original for child (%p)%#v, must be new!", child, child)
+					originals[child] = child
+					original = child
+
+					// we want to clone only original structures so we always clone the clone since the original could have been changed in the meantime
+					originalClones[child] = child.Clone()
+				}
+			}
+
+			if replace {
+				log.Debugf("clone (%p)%#v with child (%p)%#v", t, t, child, child)
+
+				c := originalClones[original].Clone()
+
+				counts[original] = counted + 1
+				originals[c] = original
+
+				log.Debugf("clone is (%p)%#v", c, c)
 
 				t.Set(c)
-
-				counters[parent] = times + 1
-				checked[c] = parent
 
 				if iTok.parent != nil {
 					log.Debugf("replace in (%p)%#v", iTok.parent.tok, iTok.parent.tok)
@@ -174,7 +218,8 @@ func UnrollPointers(root token.Token) token.Token {
 					parent: iTok.parent,
 				})
 			} else {
-				log.Debugf("reached max repeat of %d for (%p)%#v with parent (%p)%#v", MaxRepeat, t, t, parent, parent)
+				// we reached a maximum of repetition, we cut and remove dangling tokens
+				log.Debugf("reached max repeat of %d for (%p)%#v with child (%p)%#v", MaxRepeat, t, t, child, child)
 
 				t.Set(nil)
 
@@ -231,6 +276,10 @@ func UnrollPointers(root token.Token) token.Token {
 				})
 
 				parents[c] = iTok.tok
+			}
+		default:
+			if original, found := originals[t]; found {
+				delete(counts, original)
 			}
 		}
 	}
