@@ -760,9 +760,7 @@ func TestTavorParserLoops(t *testing.T) {
 	{
 		Equal(t, tok, lists.NewOne(
 			lists.NewOne(
-				lists.NewOne(
-					primitives.NewConstantInt(1),
-				),
+				primitives.NewConstantInt(1),
 				primitives.NewConstantInt(1),
 			),
 			primitives.NewConstantInt(1),
@@ -782,9 +780,7 @@ func TestTavorParserLoops(t *testing.T) {
 			lists.NewAll(
 				lists.NewOne(
 					lists.NewAll(
-						lists.NewOne(
-							primitives.NewConstantInt(2),
-						),
+						primitives.NewConstantInt(2),
 						primitives.NewConstantInt(1),
 					),
 					primitives.NewConstantInt(2),
@@ -835,9 +831,7 @@ func TestTavorParserLoops(t *testing.T) {
 				lists.NewAll(
 					lists.NewOne(
 						lists.NewAll(
-							lists.NewOne(
-								primitives.NewConstantInt(2),
-							),
+							primitives.NewConstantInt(2),
 							primitives.NewConstantInt(1),
 						),
 						primitives.NewConstantInt(2),
@@ -865,7 +859,7 @@ func TestTavorParserLoops(t *testing.T) {
 				lists.NewAll(
 					lists.NewOne(
 						lists.NewAll(
-							lists.NewOne(primitives.NewConstantInt(2)),
+							primitives.NewConstantInt(2),
 							primitives.NewConstantInt(1),
 							primitives.NewConstantInt(3),
 						),
@@ -874,7 +868,7 @@ func TestTavorParserLoops(t *testing.T) {
 					primitives.NewConstantInt(1),
 					constraints.NewOptional(
 						lists.NewAll(
-							lists.NewOne(primitives.NewConstantInt(2)),
+							primitives.NewConstantInt(2),
 							primitives.NewConstantInt(1),
 							primitives.NewConstantInt(3),
 						),
@@ -888,7 +882,7 @@ func TestTavorParserLoops(t *testing.T) {
 				lists.NewAll(
 					lists.NewOne(
 						lists.NewAll(
-							lists.NewOne(primitives.NewConstantInt(2)),
+							primitives.NewConstantInt(2),
 							primitives.NewConstantInt(1),
 							primitives.NewConstantInt(3),
 						),
@@ -897,7 +891,7 @@ func TestTavorParserLoops(t *testing.T) {
 					primitives.NewConstantInt(1),
 					constraints.NewOptional(
 						lists.NewAll(
-							lists.NewOne(primitives.NewConstantInt(2)),
+							primitives.NewConstantInt(2),
 							primitives.NewConstantInt(1),
 							primitives.NewConstantInt(3),
 						),
@@ -985,22 +979,22 @@ func TestTavorParserLoops(t *testing.T) {
 				lists.NewAll(
 					lists.NewOne(
 						lists.NewAll(
-							lists.NewOne(primitives.NewConstantInt(1)),
-							lists.NewOne(primitives.NewConstantInt(2)),
+							primitives.NewConstantInt(1),
+							primitives.NewConstantInt(2),
 						),
 						primitives.NewConstantInt(1),
 					),
 					lists.NewOne(
 						lists.NewAll(
-							lists.NewOne(primitives.NewConstantInt(1)),
-							lists.NewOne(primitives.NewConstantInt(2)),
+							primitives.NewConstantInt(1),
+							primitives.NewConstantInt(2),
 						),
 						primitives.NewConstantInt(2),
 					),
 					constraints.NewOptional(
 						lists.NewAll(
-							lists.NewOne(primitives.NewConstantInt(1)),
-							lists.NewOne(primitives.NewConstantInt(2)),
+							primitives.NewConstantInt(1),
+							primitives.NewConstantInt(2),
 						),
 					),
 				),
@@ -1010,22 +1004,22 @@ func TestTavorParserLoops(t *testing.T) {
 				lists.NewAll(
 					lists.NewOne(
 						lists.NewAll(
-							lists.NewOne(primitives.NewConstantInt(1)),
-							lists.NewOne(primitives.NewConstantInt(2)),
+							primitives.NewConstantInt(1),
+							primitives.NewConstantInt(2),
 						),
 						primitives.NewConstantInt(1),
 					),
 					lists.NewOne(
 						lists.NewAll(
-							lists.NewOne(primitives.NewConstantInt(1)),
-							lists.NewOne(primitives.NewConstantInt(2)),
+							primitives.NewConstantInt(1),
+							primitives.NewConstantInt(2),
 						),
 						primitives.NewConstantInt(2),
 					),
 					constraints.NewOptional(
 						lists.NewAll(
-							lists.NewOne(primitives.NewConstantInt(1)),
-							lists.NewOne(primitives.NewConstantInt(2)),
+							primitives.NewConstantInt(1),
+							primitives.NewConstantInt(2),
 						),
 					),
 				),
@@ -1034,22 +1028,22 @@ func TestTavorParserLoops(t *testing.T) {
 			constraints.NewOptional(lists.NewAll(
 				lists.NewOne(
 					lists.NewAll(
-						lists.NewOne(primitives.NewConstantInt(1)),
-						lists.NewOne(primitives.NewConstantInt(2)),
+						primitives.NewConstantInt(1),
+						primitives.NewConstantInt(2),
 					),
 					primitives.NewConstantInt(1),
 				),
 				lists.NewOne(
 					lists.NewAll(
-						lists.NewOne(primitives.NewConstantInt(1)),
-						lists.NewOne(primitives.NewConstantInt(2)),
+						primitives.NewConstantInt(1),
+						primitives.NewConstantInt(2),
 					),
 					primitives.NewConstantInt(2),
 				),
 				constraints.NewOptional(
 					lists.NewAll(
-						lists.NewOne(primitives.NewConstantInt(1)),
-						lists.NewOne(primitives.NewConstantInt(2)),
+						primitives.NewConstantInt(1),
+						primitives.NewConstantInt(2),
 					),
 				),
 			)),

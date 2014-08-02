@@ -233,6 +233,25 @@ func UnrollPointers(root token.Token) token.Token {
 				ta := iTok.tok
 				tt := iTok.parent
 
+				repl := func(parent token.Token, this token.Token, that token.Token) {
+					log.Debugf("replace (%p)%#v by (%p)%#v", this, this, that, that)
+
+					if parent != nil {
+						changed[parent] = struct{}{}
+
+						switch tt := parent.(type) {
+						case token.ForwardToken:
+							tt.InternalReplace(this, that)
+						case lists.List:
+							tt.InternalReplace(this, that)
+						}
+					} else {
+						log.Debugf("replace as root")
+
+						root = that
+					}
+				}
+
 			REMOVE:
 				for tt != nil {
 					delete(parents, tt.tok)
@@ -245,6 +264,10 @@ func UnrollPointers(root token.Token) token.Token {
 						c := l.InternalLogicalRemove(ta)
 
 						if c != nil {
+							if c != l {
+								repl(tt.parent.tok, l, c)
+							}
+
 							break REMOVE
 						}
 
@@ -256,6 +279,10 @@ func UnrollPointers(root token.Token) token.Token {
 						c := l.InternalLogicalRemove(ta)
 
 						if c != nil {
+							if c != l {
+								repl(tt.parent.tok, l, c)
+							}
+
 							break REMOVE
 						}
 

@@ -146,8 +146,11 @@ func (l *One) InternalLogicalRemove(tok token.Token) token.Token {
 		}
 	}
 
-	if len(l.tokens) == 0 {
+	switch len(l.tokens) {
+	case 0:
 		return nil
+	case 1:
+		return l.tokens[0]
 	}
 
 	if l.value == -1 {
