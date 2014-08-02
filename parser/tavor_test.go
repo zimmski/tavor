@@ -982,6 +982,95 @@ func TestTavorParserLoops(t *testing.T) {
 
 		Equal(t, "setParam", tok.String())
 	}
+
+	// endless loop with exit through optional
+	{
+		tok, err = ParseTavor(strings.NewReader(`
+			C = A
+			B = C
+
+			A = (B | 1)(B | 2) ?(B)
+
+			START = A
+		`))
+		Nil(t, err)
+		Equal(t, tok, lists.NewAll(
+			lists.NewOne(
+				lists.NewAll(
+					lists.NewOne(
+						lists.NewAll(
+							lists.NewOne(primitives.NewConstantInt(1)),
+							lists.NewOne(primitives.NewConstantInt(2)),
+						),
+						primitives.NewConstantInt(1),
+					),
+					lists.NewOne(
+						lists.NewAll(
+							lists.NewOne(primitives.NewConstantInt(1)),
+							lists.NewOne(primitives.NewConstantInt(2)),
+						),
+						primitives.NewConstantInt(2),
+					),
+					constraints.NewOptional(
+						lists.NewAll(
+							lists.NewOne(primitives.NewConstantInt(1)),
+							lists.NewOne(primitives.NewConstantInt(2)),
+						),
+					),
+				),
+				primitives.NewConstantInt(1),
+			),
+			lists.NewOne(
+				lists.NewAll(
+					lists.NewOne(
+						lists.NewAll(
+							lists.NewOne(primitives.NewConstantInt(1)),
+							lists.NewOne(primitives.NewConstantInt(2)),
+						),
+						primitives.NewConstantInt(1),
+					),
+					lists.NewOne(
+						lists.NewAll(
+							lists.NewOne(primitives.NewConstantInt(1)),
+							lists.NewOne(primitives.NewConstantInt(2)),
+						),
+						primitives.NewConstantInt(2),
+					),
+					constraints.NewOptional(
+						lists.NewAll(
+							lists.NewOne(primitives.NewConstantInt(1)),
+							lists.NewOne(primitives.NewConstantInt(2)),
+						),
+					),
+				),
+				primitives.NewConstantInt(2),
+			),
+			constraints.NewOptional(lists.NewAll(
+				lists.NewOne(
+					lists.NewAll(
+						lists.NewOne(primitives.NewConstantInt(1)),
+						lists.NewOne(primitives.NewConstantInt(2)),
+					),
+					primitives.NewConstantInt(1),
+				),
+				lists.NewOne(
+					lists.NewAll(
+						lists.NewOne(primitives.NewConstantInt(1)),
+						lists.NewOne(primitives.NewConstantInt(2)),
+					),
+					primitives.NewConstantInt(2),
+				),
+				constraints.NewOptional(
+					lists.NewAll(
+						lists.NewOne(primitives.NewConstantInt(1)),
+						lists.NewOne(primitives.NewConstantInt(2)),
+					),
+				),
+			)),
+		))
+
+		Equal(t, "121212121212121212", tok.String())
+	}
 }
 
 func TestTavorParserCornerCases(t *testing.T) {
