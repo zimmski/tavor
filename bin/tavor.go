@@ -68,7 +68,8 @@ var opts struct {
 	Reduce struct {
 		Exec string `long:"exec" description:"Execute this binary with possible arguments to test a delta-debugging step"`
 		//ExecExactExitCode bool   `long:"exec-exact-exit-code" description:"Same exit code has to be present to reduce further"`
-		ExecDoNotRemoveTmpFiles bool `long:"exec-do-not-remove-tmp-files" description:"If set tmp files for delta debugging are not removed"`
+		ExecDoNotRemoveTmpFiles bool             `long:"exec-do-not-remove-tmp-files" description:"If set tmp files for delta debugging are not removed"`
+		ExecArgumentType        ExecArgumentType `long:"exec-argument-type" description:"How the delta-debugging step is given to the binary" default:"environment"`
 
 		InputFile       flags.Filename `long:"input-file" description:"Input file which gets parsed, validated and delta-debugged via the format file" required:"true"`
 		Strategy        ReduceStrategy `long:"strategy" description:"The reducing strategy" default:"BinarySearch"`
@@ -79,6 +80,27 @@ var opts struct {
 	Validate struct {
 		InputFile flags.Filename `long:"input-file" description:"Input file which gets parsed and validated via the format file" required:"true"`
 	} `command:"validate" description:"Validate the given input file"`
+}
+
+var ExecArgumentTypes = []string{
+	"argument",
+	"environment",
+}
+
+type ExecArgumentType string
+
+func (e ExecArgumentType) Complete(match string) []flags.Completion {
+	var items []flags.Completion
+
+	for _, name := range ExecArgumentTypes {
+		if strings.HasPrefix(name, match) {
+			items = append(items, flags.Completion{
+				Item: name,
+			})
+		}
+	}
+
+	return items
 }
 
 type FuzzFilter string
@@ -191,6 +213,22 @@ func checkArguments() string {
 	if opts.Fuzz.ResultFolder != "" {
 		if err := folderExists(string(opts.Fuzz.ResultFolder)); err != nil {
 			exitError("result-folder invalid: %v", err)
+		}
+	}
+
+	if opts.Reduce.ExecArgumentType != "" {
+		found := false
+
+		for _, v := range ExecArgumentTypes {
+			if string(opts.Reduce.ExecArgumentType) == v {
+				found = true
+
+				break
+			}
+		}
+
+		if !found {
+			exitError(fmt.Sprintf("%q is an unknown exec argument type", opts.Reduce.ExecArgumentType))
 		}
 	}
 
@@ -375,6 +413,12 @@ func main() {
 
 			if opts.Reduce.Exec != "" {
 				execs := strings.Split(opts.Reduce.Exec, " ")
+				var execDDFileArguments []int
+				for i, v := range execs {
+					if v == "TAVOR_DD_FILE" {
+						execDDFileArguments = append(execDDFileArguments, i)
+					}
+				}
 
 				stepId := 0
 
@@ -391,9 +435,17 @@ func main() {
 
 				var execExitCode int
 
+				if string(opts.Reduce.ExecArgumentType) == "argument" {
+					for _, v := range execDDFileArguments {
+						execs[v] = tmp.Name()
+					}
+				}
+
 				execCommand := exec.Command(execs[0], execs[1:]...)
 
-				execCommand.Env = []string{fmt.Sprintf("TAVOR_DD_FILE=%s", tmp.Name())}
+				if string(opts.Reduce.ExecArgumentType) == "environment" {
+					execCommand.Env = []string{fmt.Sprintf("TAVOR_DD_FILE=%s", tmp.Name())}
+				}
 
 				execCommand.Stderr = os.Stderr
 				execCommand.Stdout = os.Stdout
@@ -432,9 +484,17 @@ func main() {
 
 					var ddExitCode int
 
+					if string(opts.Reduce.ExecArgumentType) == "argument" {
+						for _, v := range execDDFileArguments {
+							execs[v] = tmp.Name()
+						}
+					}
+
 					execCommand := exec.Command(execs[0], execs[1:]...)
 
-					execCommand.Env = []string{fmt.Sprintf("TAVOR_DD_FILE=%s", tmp.Name())}
+					if string(opts.Reduce.ExecArgumentType) == "environment" {
+						execCommand.Env = []string{fmt.Sprintf("TAVOR_DD_FILE=%s", tmp.Name())}
+					}
 
 					execCommand.Stderr = os.Stderr
 					execCommand.Stdout = os.Stdout
