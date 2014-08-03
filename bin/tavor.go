@@ -2,8 +2,10 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"crypto/md5"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"math/rand"
 	"os"
@@ -66,8 +68,10 @@ var opts struct {
 	} `command:"graph" description:"Generate a DOT file out of the internal AST"`
 
 	Reduce struct {
-		Exec string `long:"exec" description:"Execute this binary with possible arguments to test a delta-debugging step"`
-		//ExecExactExitCode bool   `long:"exec-exact-exit-code" description:"Same exit code has to be present to reduce further"`
+		Exec                    string           `long:"exec" description:"Execute this binary with possible arguments to test a delta-debugging step"`
+		ExecExactExitCode       bool             `long:"exec-exact-exit-code" description:"Same exit code has to be present to reduce further"`
+		ExecExactStderr         bool             `long:"exec-exact-stderr" description:"Same stderr output has to be present to reduce further"`
+		ExecExactStdout         bool             `long:"exec-exact-stdout" description:"Same stdout output has to be present to reduce further"`
 		ExecDoNotRemoveTmpFiles bool             `long:"exec-do-not-remove-tmp-files" description:"If set tmp files for delta debugging are not removed"`
 		ExecArgumentType        ExecArgumentType `long:"exec-argument-type" description:"How the delta-debugging step is given to the binary" default:"environment"`
 
@@ -231,6 +235,9 @@ func checkArguments() string {
 		if !found {
 			exitError(fmt.Sprintf("%q is an unknown exec argument type", opts.Reduce.ExecArgumentType))
 		}
+	}
+	if !opts.Reduce.ExecExactExitCode && !opts.Reduce.ExecExactStderr && !opts.Reduce.ExecExactStdout {
+		exitError("At least one exec-exact argument has to be given")
 	}
 
 	log.Infof("using seed %d", opts.Global.Seed)
@@ -437,6 +444,8 @@ func main() {
 				log.Infof("Execute %q to get original outputs with %q", opts.Reduce.Exec, tmp.Name())
 
 				var execExitCode int
+				var execStderr bytes.Buffer
+				var execStdout bytes.Buffer
 
 				if string(opts.Reduce.ExecArgumentType) == "argument" {
 					for _, v := range execDDFileArguments {
@@ -450,8 +459,8 @@ func main() {
 					execCommand.Env = []string{fmt.Sprintf("TAVOR_DD_FILE=%s", tmp.Name())}
 				}
 
-				execCommand.Stderr = os.Stderr
-				execCommand.Stdout = os.Stdout
+				execCommand.Stderr = io.MultiWriter(&execStderr, os.Stderr)
+				execCommand.Stdout = io.MultiWriter(&execStdout, os.Stdout)
 
 				stdin, err := execCommand.StdinPipe()
 				if err != nil {
@@ -508,6 +517,8 @@ func main() {
 					log.Infof("Test %q", tmp.Name())
 
 					var ddExitCode int
+					var ddStderr bytes.Buffer
+					var ddStdout bytes.Buffer
 
 					if string(opts.Reduce.ExecArgumentType) == "argument" {
 						for _, v := range execDDFileArguments {
@@ -521,8 +532,8 @@ func main() {
 						execCommand.Env = []string{fmt.Sprintf("TAVOR_DD_FILE=%s", tmp.Name())}
 					}
 
-					execCommand.Stderr = os.Stderr
-					execCommand.Stdout = os.Stdout
+					execCommand.Stderr = io.MultiWriter(&ddStderr, os.Stderr)
+					execCommand.Stdout = io.MultiWriter(&ddStdout, os.Stdout)
 
 					stdin, err := execCommand.StdinPipe()
 					if err != nil {
@@ -562,7 +573,44 @@ func main() {
 						}
 					}
 
-					if execExitCode == ddExitCode {
+					oks := 0
+					oksNeeded := 0
+
+					if opts.Reduce.ExecExactExitCode {
+						oksNeeded++
+
+						if execExitCode == ddExitCode {
+							log.Infof("Same exit code")
+
+							oks++
+						} else {
+							log.Infof("Not the same exit code")
+						}
+					}
+					if opts.Reduce.ExecExactStderr {
+						oksNeeded++
+
+						if execStderr.String() == ddStderr.String() {
+							log.Infof("Same stderr")
+
+							oks++
+						} else {
+							log.Infof("Not the same stderr")
+						}
+					}
+					if opts.Reduce.ExecExactStdout {
+						oksNeeded++
+
+						if execStdout.String() == ddStdout.String() {
+							log.Infof("Same stdout")
+
+							oks++
+						} else {
+							log.Infof("Not the same stdout")
+						}
+					}
+
+					if oks == oksNeeded {
 						log.Infof("Same output, continue delta")
 
 						feedback <- reduceStrategy.Bad
