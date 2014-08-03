@@ -11,6 +11,7 @@ import (
 	"os"
 	"os/exec"
 	"regexp"
+	"strconv"
 	"strings"
 	"syscall"
 	"time"
@@ -230,6 +231,11 @@ func checkArguments() string {
 			exitError("result-folder invalid: %v", err)
 		}
 	}
+	if opts.Fuzz.ResultSeparator != "" {
+		if t, err := strconv.Unquote(`"` + opts.Fuzz.ResultSeparator + `"`); err == nil {
+			opts.Fuzz.ResultSeparator = t
+		}
+	}
 
 	if opts.Reduce.ExecArgumentType != "" {
 		found := false
@@ -248,6 +254,11 @@ func checkArguments() string {
 	}
 	if !opts.Reduce.ExecExactExitCode && !opts.Reduce.ExecExactStderr && !opts.Reduce.ExecExactStdout && opts.Reduce.ExecMatchStderr == "" && opts.Reduce.ExecMatchStdout == "" {
 		exitError("At least one exec-exact or exec-match argument has to be given")
+	}
+	if opts.Reduce.ResultSeparator != "" {
+		if t, err := strconv.Unquote(`"` + opts.Reduce.ResultSeparator + `"`); err == nil {
+			opts.Reduce.ResultSeparator = t
+		}
 	}
 
 	log.Infof("using seed %d", opts.Global.Seed)
