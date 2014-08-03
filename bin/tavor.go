@@ -80,6 +80,8 @@ var opts struct {
 		ExecArgumentType        ExecArgumentType `long:"exec-argument-type" description:"How the delta-debugging step is given to the binary" default:"environment"`
 		ListExecArgumentTypes   bool             `long:"list-exec-argument-types" description:"List all available exec argument types"`
 
+		Script string `long:"script" description:"Execute this binary which gets fed with delta-debugging steps and should return feedback to the steps"`
+
 		InputFile       flags.Filename `long:"input-file" description:"Input file which gets parsed, validated and delta-debugged via the format file" required:"true"`
 		Strategy        ReduceStrategy `long:"strategy" description:"The reducing strategy" default:"BinarySearch"`
 		ListStrategies  bool           `long:"list-strategies" description:"List all available reducing strategies"`
@@ -684,6 +686,106 @@ func main() {
 
 					contin <- i
 				}
+			} else if opts.Reduce.Script != "" {
+				execs := strings.Split(opts.Reduce.Script, " ")
+
+				execCommand := exec.Command(execs[0], execs[1:]...)
+
+				stdin, err := execCommand.StdinPipe()
+				if err != nil {
+					exitError("Could not get stdin pipe: %s", err)
+				}
+				defer stdin.Close()
+
+				stdout, err := execCommand.StdoutPipe()
+				if err != nil {
+					exitError("Could not get stdout pipe: %s", err)
+				}
+				defer stdout.Close()
+
+				execCommand.Stderr = os.Stderr
+
+				stdoutReader := bufio.NewReader(stdout)
+
+				log.Infof("Execute script %q", opts.Reduce.Script)
+
+				err = execCommand.Start()
+				if err != nil {
+					exitError("Could not start script: %s", err)
+				}
+
+				log.Infof("Send original output to script")
+
+				_, err = stdin.Write([]byte(doc.String()))
+				if err != nil {
+					exitError("Could not write stdin to script: %s", err)
+				}
+				_, err = stdin.Write([]byte(opts.Reduce.ResultSeparator))
+				if err != nil {
+					exitError("Could not write stdin to script: %s", err)
+				}
+
+				feed, err := stdoutReader.ReadString('\n')
+				if err != nil {
+					exitError("Could not read stdout from script: %s", err)
+				}
+
+				if feed != "OK\n" {
+					exitError("Feedback from script to orignal was not OK: %s", feed)
+				}
+
+				contin, feedback, err := strat.Reduce()
+				if err != nil {
+					exitError(err.Error())
+				}
+
+				for i := range contin {
+					_, err = stdin.Write([]byte(doc.String()))
+					if err != nil {
+						exitError("Could not write stdin to script: %s", err)
+					}
+					_, err = stdin.Write([]byte(opts.Reduce.ResultSeparator))
+					if err != nil {
+						exitError("Could not write stdin to script: %s", err)
+					}
+
+					feed, err := stdoutReader.ReadString('\n')
+					if err != nil {
+						exitError("Could not read stdout from script: %s", err)
+					}
+
+					switch feed {
+					case "YES\n":
+						log.Infof("Same output, continue delta")
+
+						feedback <- reduceStrategy.Bad
+					case "NO\n":
+						log.Infof("Not the same output, do another step")
+
+						feedback <- reduceStrategy.Good
+					default:
+						exitError("Feedback from script to orignal was not YES nor NO: %s", feed)
+					}
+
+					contin <- i
+				}
+
+				stdin.Close()
+				stdout.Close()
+
+				err = execCommand.Wait()
+
+				var execExitCode int
+
+				if err == nil {
+					execExitCode = 0
+				} else if e, ok := err.(*exec.ExitError); ok {
+					execExitCode = e.Sys().(syscall.WaitStatus).ExitStatus()
+				} else {
+					exitError("Could not execute exec successfully: %s", err)
+				}
+
+				log.Infof("Exit status was %d", execExitCode)
 			} else {
 				readCLI := bufio.NewReader(os.Stdin)
 
