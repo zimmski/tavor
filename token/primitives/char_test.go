@@ -12,11 +12,11 @@ import (
 func TestCharTokensToBeTokens(t *testing.T) {
 	var tok *token.Token
 
-	Implements(t, tok, &CharacterPattern{})
+	Implements(t, tok, &CharacterClass{})
 }
 
-func TestCharacterPattern(t *testing.T) {
-	o := NewCharacterPattern("abc")
+func TestCharacterClass(t *testing.T) {
+	o := NewCharacterClass("abc")
 	Equal(t, "a", o.String())
 
 	r := test.NewRandTest(-1)
@@ -48,7 +48,7 @@ func TestCharacterPattern(t *testing.T) {
 
 	Equal(t, o.Permutation(4).(*token.PermutationError).Type, token.PermutationErrorIndexOutOfBound)
 
-	o = NewCharacterPattern(`\d`)
+	o = NewCharacterClass(`\d`)
 	Equal(t, "0", o.String())
 	Equal(t, 10, o.Permutations())
 }

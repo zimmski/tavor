@@ -10,13 +10,13 @@ import (
 	"github.com/zimmski/tavor/token"
 )
 
-var characterPatternEscapes = map[rune][]rune{
+var characterClassEscapes = map[rune][]rune{
 	'd': []rune{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'},
 	's': []rune{'\t', '\n', '\f', '\r'},
 	'w': []rune{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'N', 'M', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'n', 'm', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '_'},
 }
 
-type CharacterPattern struct {
+type CharacterClass struct {
 	chars       []rune
 	charsLookup map[rune]struct{}
 
@@ -25,7 +25,7 @@ type CharacterPattern struct {
 	value rune
 }
 
-func NewCharacterPattern(pattern string) *CharacterPattern {
+func NewCharacterClass(pattern string) *CharacterClass {
 	if pattern == "" {
 		panic("pattern is empty")
 	}
@@ -60,7 +60,7 @@ func NewCharacterPattern(pattern string) *CharacterPattern {
 					panic(fmt.Sprintf("early EOF for escaped character"))
 				}
 
-				esc, ok := characterPatternEscapes[c]
+				esc, ok := characterClassEscapes[c]
 				if !ok {
 					panic(fmt.Sprintf("Unknown escape character %q", c))
 				}
@@ -76,7 +76,7 @@ func NewCharacterPattern(pattern string) *CharacterPattern {
 		c, _, err = runes.ReadRune()
 	}
 
-	return &CharacterPattern{
+	return &CharacterClass{
 		chars:       chars,
 		charsLookup: charsLookup,
 
@@ -86,7 +86,7 @@ func NewCharacterPattern(pattern string) *CharacterPattern {
 	}
 }
 
-func (c *CharacterPattern) Clone() token.Token {
+func (c *CharacterClass) Clone() token.Token {
 	chars := make([]rune, len(c.chars))
 
 	copy(chars, c.chars)
@@ -97,7 +97,7 @@ func (c *CharacterPattern) Clone() token.Token {
 		charsLookup[k] = struct{}{}
 	}
 
-	return &CharacterPattern{
+	return &CharacterClass{
 		chars:       chars,
 		charsLookup: charsLookup,
 
@@ -107,17 +107,17 @@ func (c *CharacterPattern) Clone() token.Token {
 	}
 }
 
-func (c *CharacterPattern) Fuzz(r rand.Rand) {
+func (c *CharacterClass) Fuzz(r rand.Rand) {
 	i := r.Intn(len(c.chars))
 
 	c.permutation(i)
 }
 
-func (c *CharacterPattern) FuzzAll(r rand.Rand) {
+func (c *CharacterClass) FuzzAll(r rand.Rand) {
 	c.Fuzz(r)
 }
 
-func (c *CharacterPattern) Parse(pars *token.InternalParser, cur int) (int, []error) {
+func (c *CharacterClass) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	// TODO FIXME NOW we can see the need to put pars.Data into a reader... since we cannot do a readRune here!
 	v := rune(pars.Data[cur])
 
@@ -131,11 +131,11 @@ func (c *CharacterPattern) Parse(pars *token.InternalParser, cur int) (int, []er
 	return cur + 1, nil
 }
 
-func (c *CharacterPattern) permutation(i int) {
+func (c *CharacterClass) permutation(i int) {
 	c.value = c.chars[i]
 }
 
-func (c *CharacterPattern) Permutation(i int) error {
+func (c *CharacterClass) Permutation(i int) error {
 	permutations := c.Permutations()
 
 	if i < 1 || i > permutations {
@@ -149,14 +149,14 @@ func (c *CharacterPattern) Permutation(i int) error {
 	return nil
 }
 
-func (c *CharacterPattern) Permutations() int {
+func (c *CharacterClass) Permutations() int {
 	return len(c.chars)
 }
 
-func (c *CharacterPattern) PermutationsAll() int {
+func (c *CharacterClass) PermutationsAll() int {
 	return c.Permutations()
 }
 
-func (c *CharacterPattern) String() string {
+func (c *CharacterClass) String() string {
 	return string(c.value)
 }
