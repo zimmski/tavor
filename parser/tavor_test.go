@@ -1146,3 +1146,24 @@ func TestTavorParserCornerCases(t *testing.T) {
 		Equal(t, "121212", tok.String())
 	}
 }
+
+func TestTavorParserCharacterClasses(t *testing.T) {
+	{
+		tok, err := ParseTavor(strings.NewReader(`
+			START = [123]
+		`))
+		Nil(t, err)
+		Equal(t, tok, primitives.NewCharacterClass("123"))
+
+		Equal(t, "1", tok.String())
+	}
+	{
+		tok, err := ParseTavor(strings.NewReader(`
+			START = [\w]
+		`))
+		Nil(t, err)
+		Equal(t, tok, primitives.NewCharacterClass(`\w`))
+
+		Equal(t, "0", tok.String())
+	}
+}

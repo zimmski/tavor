@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"reflect"
@@ -24,7 +25,6 @@ import (
 	TODO
 
 	Token names can only consist of letters, digits and "_"
-	ShortAlternation = [123]
 	Allow forward usage of token attributes
 	Allow correct forward usage of ExistingSequenceItems
 */
@@ -369,6 +369,27 @@ OUT:
 			}
 
 			tokens = append(tokens, tok)
+		case '[':
+			log.Debug("NEW character class")
+
+			var pattern bytes.Buffer
+
+			c = p.scan.Scan()
+
+			for c != ']' && c != scanner.EOF {
+				pattern.WriteString(p.scan.TokenText())
+
+				c = p.scan.Scan()
+			}
+
+			if c == scanner.EOF {
+				log.Debug("break out parseTerm character class")
+				break OUT
+			}
+
+			tokens = append(tokens, primitives.NewCharacterClass(pattern.String()))
+
+			log.Debug("END character class")
 		case ',': // multi line token
 			if _, err := p.expectScanRune('\n'); err != nil {
 				return zeroRune, nil, nil, err

@@ -65,6 +65,12 @@ RepeatAtMostTenTimes = "text" +,10("me") // "me" is repeated at most ten times.
 RepeatTwoToTenTimes = "text" +2,10("me") // "me" is repeated two to ten times.
 ```
 
+### Character classes
+
+```
+Letters  = [abc]
+```
+
 ### Token attributes
 
 Token attributes can be used in token definitions by prepending a dollar sign to their name and separate the token name from the attribute by a dot.
