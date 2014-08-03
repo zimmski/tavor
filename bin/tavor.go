@@ -77,6 +77,7 @@ var opts struct {
 		ExecMatchStdout         string           `long:"exec-match-stdout" description:"Searches through stdout via the given regex. A match has to be present to reduce further"`
 		ExecDoNotRemoveTmpFiles bool             `long:"exec-do-not-remove-tmp-files" description:"If set tmp files for delta debugging are not removed"`
 		ExecArgumentType        ExecArgumentType `long:"exec-argument-type" description:"How the delta-debugging step is given to the binary" default:"environment"`
+		ListExecArgumentTypes   bool             `long:"list-exec-argument-types" description:"List all available exec argument types"`
 
 		InputFile       flags.Filename `long:"input-file" description:"Input file which gets parsed, validated and delta-debugged via the format file" required:"true"`
 		Strategy        ReduceStrategy `long:"strategy" description:"The reducing strategy" default:"BinarySearch"`
@@ -186,6 +187,12 @@ func checkArguments() string {
 		os.Exit(returnOk)
 	} else if opts.Fuzz.ListStrategies {
 		for _, name := range fuzzStrategy.List() {
+			fmt.Println(name)
+		}
+
+		os.Exit(returnOk)
+	} else if opts.Reduce.ListExecArgumentTypes {
+		for _, name := range ExecArgumentTypes {
 			fmt.Println(name)
 		}
 
