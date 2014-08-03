@@ -85,6 +85,7 @@ var opts struct {
 var ExecArgumentTypes = []string{
 	"argument",
 	"environment",
+	"stdin",
 }
 
 type ExecArgumentType string
@@ -422,11 +423,13 @@ func main() {
 
 				stepId := 0
 
+				docOut := doc.String()
+
 				tmp, err := ioutil.TempFile("", fmt.Sprintf("dd-%d-", stepId))
 				if err != nil {
 					exitError("Cannot create tmp file: %s", err)
 				}
-				_, err = tmp.WriteString(doc.String())
+				_, err = tmp.WriteString(docOut)
 				if err != nil {
 					exitError("Cannot write to tmp file: %s", err)
 				}
@@ -450,7 +453,27 @@ func main() {
 				execCommand.Stderr = os.Stderr
 				execCommand.Stdout = os.Stdout
 
-				err = execCommand.Run()
+				stdin, err := execCommand.StdinPipe()
+				if err != nil {
+					exitError("Could not get stdin pipe: %s", err)
+				}
+
+				err = execCommand.Start()
+				if err != nil {
+					exitError("Could not start exce: %s", err)
+				}
+
+				if string(opts.Reduce.ExecArgumentType) == "stdin" {
+					_, err := stdin.Write([]byte(docOut))
+					if err != nil {
+						exitError("Could not write stdin to exec: %s", err)
+					}
+
+					stdin.Close()
+				}
+
+				err = execCommand.Wait()
+
 				if err == nil {
 					execExitCode = 0
 				} else if e, ok := err.(*exec.ExitError); ok {
@@ -471,11 +494,13 @@ func main() {
 				for i := range contin {
 					stepId++
 
+					docOut := doc.String()
+
 					tmp, err := ioutil.TempFile("", fmt.Sprintf("dd-%d-", stepId))
 					if err != nil {
 						exitError("Cannot create tmp file: %s", err)
 					}
-					_, err = tmp.WriteString(doc.String())
+					_, err = tmp.WriteString(docOut)
 					if err != nil {
 						exitError("Cannot write to tmp file: %s", err)
 					}
@@ -499,7 +524,27 @@ func main() {
 					execCommand.Stderr = os.Stderr
 					execCommand.Stdout = os.Stdout
 
-					err = execCommand.Run()
+					stdin, err := execCommand.StdinPipe()
+					if err != nil {
+						exitError("Could not get stdin pipe: %s", err)
+					}
+
+					err = execCommand.Start()
+					if err != nil {
+						exitError("Could not start exce: %s", err)
+					}
+
+					if string(opts.Reduce.ExecArgumentType) == "stdin" {
+						_, err := stdin.Write([]byte(docOut))
+						if err != nil {
+							exitError("Could not write stdin to exec: %s", err)
+						}
+
+						stdin.Close()
+					}
+
+					err = execCommand.Wait()
+
 					if err == nil {
 						ddExitCode = 0
 					} else if e, ok := err.(*exec.ExitError); ok {
