@@ -1,10 +1,12 @@
 package strategy
 
 import (
+	"bytes"
 	"testing"
 
 	. "github.com/stretchr/testify/assert"
 
+	"github.com/zimmski/tavor/parser"
 	"github.com/zimmski/tavor/token"
 	"github.com/zimmski/tavor/token/constraints"
 	"github.com/zimmski/tavor/token/lists"
@@ -86,6 +88,26 @@ func TestBinarySearchStrategy(t *testing.T) {
 		False(t, ok)
 
 		Equal(t, "12", root.String())
+	}
+	// Test that inputs are never changed if they cannot be reduced
+	{
+		root := lists.NewRepeat(primitives.NewCharacterClass(`\w`), 10, 10)
+		input := "KrOxDOj4fU"
+
+		errs := parser.ParseInternal(root, bytes.NewBufferString(input))
+		Nil(t, errs)
+
+		Equal(t, input, root.String())
+
+		o := NewBinarySearch(root)
+
+		contin, _, err := o.Reduce()
+		Nil(t, err)
+
+		_, ok := <-contin
+		False(t, ok)
+
+		Equal(t, input, root.String())
 	}
 }
 

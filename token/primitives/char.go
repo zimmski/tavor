@@ -128,6 +128,8 @@ func (c *CharacterClass) Parse(pars *token.InternalParser, cur int) (int, []erro
 		}}
 	}
 
+	c.value = v
+
 	return cur + 1, nil
 }
 
