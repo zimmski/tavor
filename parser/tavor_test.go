@@ -205,6 +205,14 @@ func TestTavorParseErrors(t *testing.T) {
 	// panic(err)
 	// Equal(t, token.ParseErrorExpectedExpressionTerm, err.(*token.ParserError).Type)
 	// Nil(t, tok)
+
+	// missing closing ] for character class
+	tok, err = ParseTavor(strings.NewReader("START = [ab"))
+	Equal(t, token.ParseErrorExpectRune, err.(*token.ParserError).Type)
+	Nil(t, tok)
+	tok, err = ParseTavor(strings.NewReader("START = [ab\n"))
+	Equal(t, token.ParseErrorExpectRune, err.(*token.ParserError).Type)
+	Nil(t, tok)
 }
 
 func TestTavorParserSimple(t *testing.T) {

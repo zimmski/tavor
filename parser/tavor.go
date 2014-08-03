@@ -376,15 +376,16 @@ OUT:
 
 			c = p.scan.Scan()
 
-			for c != ']' && c != scanner.EOF {
+			for c != ']' && c != '\n' && c != scanner.EOF {
 				pattern.WriteString(p.scan.TokenText())
 
 				c = p.scan.Scan()
 			}
 
-			if c == scanner.EOF {
-				log.Debug("break out parseTerm character class")
-				break OUT
+			if c != ']' {
+				_, err := p.expectRune(']', c)
+
+				return zeroRune, nil, nil, err
 			}
 
 			tokens = append(tokens, primitives.NewCharacterClass(pattern.String()))
