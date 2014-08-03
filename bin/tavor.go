@@ -437,11 +437,6 @@ func main() {
 
 			log.Infof("using %s reducing strategy", opts.Reduce.Strategy)
 
-			contin, feedback, err := strat.Reduce()
-			if err != nil {
-				exitError(err.Error())
-			}
-
 			if opts.Reduce.Exec != "" {
 				execs := strings.Split(opts.Reduce.Exec, " ")
 				var execDDFileArguments []int
@@ -538,6 +533,11 @@ func main() {
 					if err != nil {
 						log.Errorf("Could not remove tmp file %q: %s", tmp.Name(), err)
 					}
+				}
+
+				contin, feedback, err := strat.Reduce()
+				if err != nil {
+					exitError(err.Error())
 				}
 
 				for i := range contin {
@@ -686,6 +686,11 @@ func main() {
 				}
 			} else {
 				readCLI := bufio.NewReader(os.Stdin)
+
+				contin, feedback, err := strat.Reduce()
+				if err != nil {
+					exitError(err.Error())
+				}
 
 				for i := range contin {
 					log.Debug("result:")
