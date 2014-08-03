@@ -252,8 +252,10 @@ func checkArguments() string {
 			exitError(fmt.Sprintf("%q is an unknown exec argument type", opts.Reduce.ExecArgumentType))
 		}
 	}
-	if !opts.Reduce.ExecExactExitCode && !opts.Reduce.ExecExactStderr && !opts.Reduce.ExecExactStdout && opts.Reduce.ExecMatchStderr == "" && opts.Reduce.ExecMatchStdout == "" {
-		exitError("At least one exec-exact or exec-match argument has to be given")
+	if opts.Reduce.Exec != "" {
+		if !opts.Reduce.ExecExactExitCode && !opts.Reduce.ExecExactStderr && !opts.Reduce.ExecExactStdout && opts.Reduce.ExecMatchStderr == "" && opts.Reduce.ExecMatchStdout == "" {
+			exitError("At least one exec-exact or exec-match argument has to be given")
+		}
 	}
 	if opts.Reduce.ResultSeparator != "" {
 		if t, err := strconv.Unquote(`"` + opts.Reduce.ResultSeparator + `"`); err == nil {
