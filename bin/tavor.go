@@ -10,6 +10,7 @@ import (
 	"math/rand"
 	"os"
 	"os/exec"
+	"regexp"
 	"strings"
 	"syscall"
 	"time"
@@ -72,6 +73,8 @@ var opts struct {
 		ExecExactExitCode       bool             `long:"exec-exact-exit-code" description:"Same exit code has to be present to reduce further"`
 		ExecExactStderr         bool             `long:"exec-exact-stderr" description:"Same stderr output has to be present to reduce further"`
 		ExecExactStdout         bool             `long:"exec-exact-stdout" description:"Same stdout output has to be present to reduce further"`
+		ExecMatchStderr         string           `long:"exec-match-stderr" description:"Searches through stderr via the given regex. A match has to be present to reduce further"`
+		ExecMatchStdout         string           `long:"exec-match-stdout" description:"Searches through stdout via the given regex. A match has to be present to reduce further"`
 		ExecDoNotRemoveTmpFiles bool             `long:"exec-do-not-remove-tmp-files" description:"If set tmp files for delta debugging are not removed"`
 		ExecArgumentType        ExecArgumentType `long:"exec-argument-type" description:"How the delta-debugging step is given to the binary" default:"environment"`
 
@@ -236,8 +239,8 @@ func checkArguments() string {
 			exitError(fmt.Sprintf("%q is an unknown exec argument type", opts.Reduce.ExecArgumentType))
 		}
 	}
-	if !opts.Reduce.ExecExactExitCode && !opts.Reduce.ExecExactStderr && !opts.Reduce.ExecExactStdout {
-		exitError("At least one exec-exact argument has to be given")
+	if !opts.Reduce.ExecExactExitCode && !opts.Reduce.ExecExactStderr && !opts.Reduce.ExecExactStdout && opts.Reduce.ExecMatchStderr == "" && opts.Reduce.ExecMatchStdout == "" {
+		exitError("At least one exec-exact or exec-match argument has to be given")
 	}
 
 	log.Infof("using seed %d", opts.Global.Seed)
@@ -447,6 +450,16 @@ func main() {
 				var execStderr bytes.Buffer
 				var execStdout bytes.Buffer
 
+				var matchStderr *regexp.Regexp
+				var matchStdout *regexp.Regexp
+
+				if opts.Reduce.ExecMatchStderr != "" {
+					matchStderr = regexp.MustCompile(opts.Reduce.ExecMatchStderr)
+				}
+				if opts.Reduce.ExecMatchStdout != "" {
+					matchStdout = regexp.MustCompile(opts.Reduce.ExecMatchStdout)
+				}
+
 				if string(opts.Reduce.ExecArgumentType) == "argument" {
 					for _, v := range execDDFileArguments {
 						execs[v] = tmp.Name()
@@ -492,6 +505,13 @@ func main() {
 				}
 
 				log.Infof("Exit status was %d", execExitCode)
+
+				if matchStderr != nil && !matchStderr.Match(execStderr.Bytes()) {
+					exitError("Original output does not match stderr match pattern")
+				}
+				if matchStdout != nil && !matchStdout.Match(execStdout.Bytes()) {
+					exitError("Original output does not match stdout match pattern")
+				}
 
 				if !opts.Reduce.ExecDoNotRemoveTmpFiles {
 					err = os.Remove(tmp.Name())
@@ -607,6 +627,28 @@ func main() {
 							oks++
 						} else {
 							log.Infof("Not the same stdout")
+						}
+					}
+					if matchStderr != nil {
+						oksNeeded++
+
+						if matchStderr.Match(ddStderr.Bytes()) {
+							log.Infof("Same stderr matching")
+
+							oks++
+						} else {
+							log.Infof("Not the same stderr matching")
+						}
+					}
+					if matchStdout != nil {
+						oksNeeded++
+
+						if matchStdout.Match(ddStdout.Bytes()) {
+							log.Infof("Same stdout matching")
+
+							oks++
+						} else {
+							log.Infof("Not the same stdout matching")
 						}
 					}
 
