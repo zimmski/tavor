@@ -416,7 +416,7 @@ func TestTavorParserAlternationsAndGroupings(t *testing.T) {
 	Nil(t, err)
 	Equal(t, tok, lists.NewAll(
 		primitives.NewConstantInt(1),
-		lists.NewRepeat(primitives.NewConstantInt(2), 1, tavor.MaxRepeat),
+		lists.NewRepeat(primitives.NewConstantInt(2), 1, int64(tavor.MaxRepeat)),
 	))
 
 	// or repeat
@@ -427,7 +427,7 @@ func TestTavorParserAlternationsAndGroupings(t *testing.T) {
 		lists.NewRepeat(lists.NewOne(
 			primitives.NewConstantInt(2),
 			primitives.NewConstantInt(3),
-		), 1, tavor.MaxRepeat),
+		), 1, int64(tavor.MaxRepeat)),
 		primitives.NewConstantInt(4),
 	))
 
@@ -436,7 +436,7 @@ func TestTavorParserAlternationsAndGroupings(t *testing.T) {
 	Nil(t, err)
 	Equal(t, tok, lists.NewAll(
 		primitives.NewConstantInt(1),
-		lists.NewRepeat(primitives.NewConstantInt(2), 0, tavor.MaxRepeat),
+		lists.NewRepeat(primitives.NewConstantInt(2), 0, int64(tavor.MaxRepeat)),
 	))
 
 	// or optional repeat
@@ -447,7 +447,7 @@ func TestTavorParserAlternationsAndGroupings(t *testing.T) {
 		lists.NewRepeat(lists.NewOne(
 			primitives.NewConstantInt(2),
 			primitives.NewConstantInt(3),
-		), 0, tavor.MaxRepeat),
+		), 0, int64(tavor.MaxRepeat)),
 		primitives.NewConstantInt(4),
 	))
 
@@ -456,7 +456,7 @@ func TestTavorParserAlternationsAndGroupings(t *testing.T) {
 	Nil(t, err)
 	Equal(t, tok, lists.NewAll(
 		primitives.NewConstantInt(1),
-		lists.NewRepeat(primitives.NewConstantInt(2), 0, tavor.MaxRepeat),
+		lists.NewRepeat(primitives.NewConstantInt(2), 0, int64(tavor.MaxRepeat)),
 	))
 
 	// exact repeat
@@ -472,7 +472,7 @@ func TestTavorParserAlternationsAndGroupings(t *testing.T) {
 	Nil(t, err)
 	Equal(t, tok, lists.NewAll(
 		primitives.NewConstantInt(1),
-		lists.NewRepeat(primitives.NewConstantInt(2), 3, tavor.MaxRepeat),
+		lists.NewRepeat(primitives.NewConstantInt(2), 3, int64(tavor.MaxRepeat)),
 	))
 
 	// at most repeat
@@ -512,7 +512,7 @@ func TestTavorParserTokenAttributes(t *testing.T) {
 				primitives.NewConstantInt(1),
 				primitives.NewConstantInt(2),
 				primitives.NewConstantInt(3),
-			), 0, tavor.MaxRepeat),
+			), 0, int64(tavor.MaxRepeat)),
 			primitives.NewConstantString("->"),
 			aggregates.NewLen(list),
 		))

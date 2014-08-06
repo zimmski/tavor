@@ -45,7 +45,8 @@ var opts struct {
 	} `group:"General options"`
 
 	Global struct {
-		Seed int64 `long:"seed" description:"Seed for all the randomness"`
+		Seed      int64 `long:"seed" description:"Seed for all the randomness"`
+		MaxRepeat int   `long:"max-repeat" description:"How many times loops and repetitions should be repeated" default:"2"`
 	} `group:"Global options"`
 
 	Format struct {
@@ -228,6 +229,10 @@ func checkArguments() string {
 		opts.Global.Seed = time.Now().UTC().UnixNano()
 	}
 
+	if opts.Global.MaxRepeat < 1 {
+		exitError("max repeats has to be at least 1")
+	}
+
 	if opts.Fuzz.ResultFolder != "" {
 		if err := folderExists(string(opts.Fuzz.ResultFolder)); err != nil {
 			exitError("result-folder invalid: %v", err)
@@ -266,6 +271,7 @@ func checkArguments() string {
 	}
 
 	log.Infof("using seed %d", opts.Global.Seed)
+	log.Infof("using max repeat %d", opts.Global.MaxRepeat)
 
 	return p.Active.Name
 }
@@ -322,6 +328,8 @@ func applyFilters(filterNames []FuzzFilter, doc token.Token) token.Token {
 
 func main() {
 	command := checkArguments()
+
+	tavor.MaxRepeat = opts.Global.MaxRepeat
 
 	log.Infof("open file %s", opts.Format.FormatFile)
 
