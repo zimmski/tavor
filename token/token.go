@@ -113,6 +113,7 @@ const (
 	ParseErrorUnusedToken
 	ParseErrorMissingSpecialTokenArgument
 	ParseErrorNonTerminatedString
+	ParseErrorNoTokenForVariable
 	ParseErrorTokenAlreadyDefined
 	ParseErrorTokenNotDefined
 	ParseErrorExpectRune

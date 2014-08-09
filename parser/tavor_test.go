@@ -16,6 +16,7 @@ import (
 	"github.com/zimmski/tavor/token/lists"
 	"github.com/zimmski/tavor/token/primitives"
 	"github.com/zimmski/tavor/token/sequences"
+	"github.com/zimmski/tavor/token/variables"
 )
 
 func TestTavorParseErrors(t *testing.T) {
@@ -212,6 +213,11 @@ func TestTavorParseErrors(t *testing.T) {
 	Nil(t, tok)
 	tok, err = ParseTavor(strings.NewReader("START = [ab\n"))
 	Equal(t, token.ParseErrorExpectRune, err.(*token.ParserError).Type)
+	Nil(t, tok)
+
+	// no token for variable
+	tok, err = ParseTavor(strings.NewReader("START = <hey>\n"))
+	Equal(t, token.ParseErrorNoTokenForVariable, err.(*token.ParserError).Type)
 	Nil(t, tok)
 }
 
@@ -740,7 +746,7 @@ func TestTavorParserAndCuriousCaseOfFuzzing(t *testing.T) {
 	// Correct list behaviour
 	{
 		tok, err = ParseTavor(strings.NewReader(`
-			A = *2(1)
+			A = +2(1)
 
 			START = $A.Count A
 		`))
@@ -1173,5 +1179,25 @@ func TestTavorParserCharacterClasses(t *testing.T) {
 		Equal(t, tok, primitives.NewCharacterClass(`\w`))
 
 		Equal(t, "0", tok.String())
+	}
+}
+
+func TestTavorParserVariables(t *testing.T) {
+	// simple save and value
+	{
+		tok, err := ParseTavor(strings.NewReader(`
+			START = Save Print
+
+			Save = "text"<var>
+
+			Print = $var.Value
+		`))
+		Nil(t, err)
+		Equal(t, tok, lists.NewAll(
+			primitives.NewConstantString("text"),
+			variables.NewVariable(primitives.NewConstantString("text")),
+		))
+
+		Equal(t, "texttext", tok.String())
 	}
 }
