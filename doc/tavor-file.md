@@ -130,3 +130,15 @@ SomeIdOrMore = $Id.Existing | ${Id.Existing + 1}
 
 DoubleTheCount = ${Letter.Count + Letter.Count}
 ```
+
+### Variables
+
+Every token in the right side of a definition can be saved into a variable.
+
+
+```
+START = Save Print
+
+Save = "text"<var>
+Print = <var>.Value
+```
