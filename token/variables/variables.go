@@ -6,19 +6,20 @@ import (
 )
 
 type Variable struct {
-	value token.Token
+	token token.Token
 }
 
-func NewVariable(value token.Token) *Variable {
+func NewVariable(token token.Token) *Variable {
 	return &Variable{
-		value: value,
+		token: token,
 	}
 }
 
 func (v *Variable) Clone() token.Token {
-	return &Variable{
-		value: v.value,
-	}
+	/*return &Variable{
+		token: v.token,
+	}*/
+	return v
 }
 
 func (v *Variable) Fuzz(r rand.Rand) {
@@ -34,27 +35,87 @@ func (v *Variable) Parse(pars *token.InternalParser, cur int) (int, []error) {
 }
 
 func (v *Variable) Permutation(i int) error {
-	permutations := v.Permutations()
+	return v.token.Permutation(i)
+}
 
-	if i < 1 || i > permutations {
-		return &token.PermutationError{
-			Type: token.PermutationErrorIndexOutOfBound,
-		}
+func (v *Variable) Permutations() int {
+	return v.token.Permutations()
+}
+
+func (v *Variable) PermutationsAll() int {
+	return v.token.PermutationsAll()
+}
+
+func (v *Variable) String() string {
+	return v.token.String()
+}
+
+// ForwardToken interface methods
+
+func (v *Variable) Get() token.Token {
+	return nil
+}
+
+func (v *Variable) InternalGet() token.Token {
+	return v.token
+}
+
+func (v *Variable) InternalLogicalRemove(tok token.Token) token.Token {
+	if v.token == tok {
+		return nil
 	}
 
+	return v
+}
+
+func (v *Variable) InternalReplace(oldToken, newToken token.Token) {
+	if v.token == oldToken {
+		v.token = newToken
+	}
+}
+
+type VariableValue struct {
+	variable *Variable
+}
+
+func NewVariableValue(variable *Variable) *VariableValue {
+	return &VariableValue{
+		variable: variable,
+	}
+}
+
+func (v *VariableValue) Clone() token.Token {
+	return &VariableValue{
+		variable: v.variable,
+	}
+}
+
+func (v *VariableValue) Fuzz(r rand.Rand) {
+	// do nothing
+}
+
+func (v *VariableValue) FuzzAll(r rand.Rand) {
+	v.Fuzz(r)
+}
+
+func (v *VariableValue) Parse(pars *token.InternalParser, cur int) (int, []error) {
+	panic("TODO implement")
+}
+
+func (v *VariableValue) Permutation(i int) error {
 	// do nothing
 
 	return nil
 }
 
-func (v *Variable) Permutations() int {
+func (v *VariableValue) Permutations() int {
 	return 1
 }
 
-func (v *Variable) PermutationsAll() int {
-	return v.Permutations()
+func (v *VariableValue) PermutationsAll() int {
+	return 1
 }
 
-func (v *Variable) String() string {
-	return v.value.String()
+func (v *VariableValue) String() string {
+	return v.variable.InternalGet().String()
 }

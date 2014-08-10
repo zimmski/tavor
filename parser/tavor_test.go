@@ -11,6 +11,7 @@ import (
 	"github.com/zimmski/tavor/test"
 	"github.com/zimmski/tavor/token"
 	"github.com/zimmski/tavor/token/aggregates"
+	"github.com/zimmski/tavor/token/conditions"
 	"github.com/zimmski/tavor/token/constraints"
 	"github.com/zimmski/tavor/token/expressions"
 	"github.com/zimmski/tavor/token/lists"
@@ -1193,11 +1194,64 @@ func TestTavorParserVariables(t *testing.T) {
 			Print = $var.Value
 		`))
 		Nil(t, err)
+		variable := variables.NewVariable(primitives.NewConstantString("text"))
 		Equal(t, tok, lists.NewAll(
-			primitives.NewConstantString("text"),
-			variables.NewVariable(primitives.NewConstantString("text")),
+			variable,
+			variables.NewVariableValue(variable),
 		))
 
 		Equal(t, "texttext", tok.String())
+	}
+}
+
+func TestTavorParserIfElseIfElsedd(t *testing.T) {
+	// basic if, else if and else
+	{
+		tok, err := ParseTavor(strings.NewReader(`
+			START = Choose<var> Print
+
+			Choose = 1 | 2 | 3
+
+			Print = {if var.Value == 1} "var is one" {else if var.Value == 2} "var is two" {else} "var is three" {endif}
+		`))
+		Nil(t, err)
+
+		variable, _ := tok.(*lists.All).InternalGet(0)
+		one := variable.(*variables.Variable).InternalGet()
+
+		nOne := lists.NewOne(
+			primitives.NewConstantInt(1),
+			primitives.NewConstantInt(2),
+			primitives.NewConstantInt(3),
+		)
+		nVariable := variables.NewVariable(nOne)
+
+		Equal(t, tok, lists.NewAll(
+			nVariable,
+			conditions.NewIf(
+				conditions.IfPair{
+					Head: conditions.NewBooleanEqual(variables.NewVariableValue(nVariable), primitives.NewConstantInt(1)),
+					Body: primitives.NewConstantString("var is one"),
+				},
+				conditions.IfPair{
+					Head: conditions.NewBooleanEqual(variables.NewVariableValue(nVariable), primitives.NewConstantInt(2)),
+					Body: primitives.NewConstantString("var is two"),
+				},
+				conditions.IfPair{
+					Head: conditions.NewBooleanTrue(),
+					Body: primitives.NewConstantString("var is three"),
+				},
+			),
+		))
+
+		Equal(t, "1var is one", tok.String())
+
+		Equal(t, 3, one.Permutations())
+
+		one.Permutation(2)
+		Equal(t, "2var is two", tok.String())
+
+		one.Permutation(3)
+		Equal(t, "3var is three", tok.String())
 	}
 }

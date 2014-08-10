@@ -81,14 +81,6 @@ func (p *Pointer) FuzzAll(r rand.Rand) {
 	p.token.FuzzAll(r)
 }
 
-func (p *Pointer) Get() token.Token {
-	return p.token
-}
-
-func (p *Pointer) InternalGet() token.Token {
-	return p.token
-}
-
 func (p *Pointer) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	panic("Pointer token is not allowed during internal parsing")
 }
@@ -134,6 +126,14 @@ func (p *Pointer) String() string {
 }
 
 // ForwardToken interface methods
+
+func (p *Pointer) Get() token.Token {
+	return p.token
+}
+
+func (p *Pointer) InternalGet() token.Token {
+	return p.token
+}
 
 func (p *Pointer) InternalLogicalRemove(tok token.Token) token.Token {
 	if p.token == tok {

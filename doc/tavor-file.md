@@ -142,3 +142,13 @@ START = Save Print
 Save = "text"<var>
 Print = <var>.Value
 ```
+
+### If, If else and else
+
+```
+START = Choose<var> Print
+
+Choose = 1 | 2 | 3
+
+Print = {if var.Value == 1} "var is one" {else if var.Value == 2} "var is two" {else} "var is three" {endif}
+```

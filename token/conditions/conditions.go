@@ -1,0 +1,192 @@
+package conditions
+
+import (
+	"fmt"
+
+	"github.com/zimmski/tavor/rand"
+	"github.com/zimmski/tavor/token"
+	"github.com/zimmski/tavor/token/lists"
+)
+
+type IfPair struct {
+	Head BooleanExpression
+	Body token.Token
+}
+
+// Token interface methods
+
+func (c *IfPair) Clone() token.Token {
+	return &IfPair{
+		Head: c.Head,
+		Body: c.Body,
+	}
+}
+
+func (c *IfPair) Fuzz(r rand.Rand) {
+	// do nothing
+}
+
+func (c *IfPair) FuzzAll(r rand.Rand) {
+	// do nothing
+}
+
+func (c *IfPair) Parse(pars *token.InternalParser, cur int) (int, []error) {
+	panic("This should never happen")
+}
+
+func (c *IfPair) Permutation(i int) error {
+	// do nothing
+
+	return nil
+}
+
+func (c *IfPair) Permutations() int {
+	return 1
+}
+
+func (c *IfPair) PermutationsAll() int {
+	return 1
+}
+
+func (c *IfPair) String() string {
+	return fmt.Sprintf("(%p)%#v -> (%p)%#v", c.Head, c.Head, c.Body, c.Body)
+}
+
+// List interface methods
+
+func (c *IfPair) Get(i int) (token.Token, error) {
+	return nil, &lists.ListError{
+		Type: lists.ListErrorOutOfBound,
+	}
+}
+
+func (c *IfPair) Len() int {
+	return 0
+}
+
+func (c *IfPair) InternalGet(i int) (token.Token, error) {
+	switch i {
+	case 0:
+		return c.Head, nil
+	case 1:
+		return c.Body, nil
+	default:
+		return nil, &lists.ListError{
+			Type: lists.ListErrorOutOfBound,
+		}
+	}
+}
+
+func (c *IfPair) InternalLen() int {
+	return 2
+}
+
+func (c *IfPair) InternalLogicalRemove(tok token.Token) token.Token {
+	panic("This should never happen")
+}
+
+func (c *IfPair) InternalReplace(oldToken, newToken token.Token) {
+	panic("This should never happen")
+}
+
+type If struct {
+	Pairs []IfPair
+}
+
+func NewIf(Pairs ...IfPair) *If {
+	if len(Pairs) == 0 {
+		panic("Must at least given one if pair")
+	}
+
+	return &If{
+		Pairs: Pairs,
+	}
+}
+
+// Token interface methods
+
+func (c *If) Clone() token.Token {
+	return &If{
+		Pairs: c.Pairs,
+	}
+}
+
+func (c *If) Fuzz(r rand.Rand) {
+	// do nothing
+}
+
+func (c *If) FuzzAll(r rand.Rand) {
+	c.Fuzz(r)
+}
+
+func (c *If) Parse(pars *token.InternalParser, cur int) (int, []error) {
+	panic("TODO implement")
+}
+
+func (c *If) Permutation(i int) error {
+	permutations := c.Permutations()
+
+	if i < 1 || i > permutations {
+		return &token.PermutationError{
+			Type: token.PermutationErrorIndexOutOfBound,
+		}
+	}
+
+	// do nothing
+
+	return nil
+}
+
+func (c *If) Permutations() int {
+	return 1
+}
+
+func (c *If) PermutationsAll() int {
+	return c.Permutations()
+}
+
+func (c *If) String() string {
+	for _, pair := range c.Pairs {
+		if pair.Head.Evaluate() {
+			return pair.Body.String()
+		}
+	}
+
+	panic("This should not happen")
+}
+
+/*
+// List interface methods
+
+func (c *If) Get(i int) (token.Token, error) {
+	return nil, &lists.ListError{
+		Type: lists.ListErrorOutOfBound,
+	}
+}
+
+func (c *If) Len() int {
+	return 0
+}
+
+func (c *If) InternalGet(i int) (token.Token, error) {
+	if i < 0 || i >= len(c.Pairs) {
+		return nil, &lists.ListError{
+			Type: lists.ListErrorOutOfBound,
+		}
+	}
+
+	return &c.Pairs[i], nil
+}
+
+func (c *If) InternalLen() int {
+	return len(c.Pairs)
+}
+
+func (c *If) InternalLogicalRemove(tok token.Token) token.Token {
+	panic("TODO")
+}
+
+func (c *If) InternalReplace(oldToken, newToken token.Token) {
+	panic("TODO")
+}
+*/

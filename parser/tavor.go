@@ -14,6 +14,7 @@ import (
 	"github.com/zimmski/tavor/log"
 	"github.com/zimmski/tavor/token"
 	"github.com/zimmski/tavor/token/aggregates"
+	"github.com/zimmski/tavor/token/conditions"
 	"github.com/zimmski/tavor/token/constraints"
 	"github.com/zimmski/tavor/token/expressions"
 	"github.com/zimmski/tavor/token/lists"
@@ -47,6 +48,7 @@ type tavorParser struct {
 	lookup               map[string]tokenUse
 	lookupUsage          map[token.Token]struct{}
 	used                 map[string]scanner.Position
+	variableUsages       []*variables.Variable
 }
 
 func (p *tavorParser) expectRune(expect rune, got rune) (rune, error) {
@@ -69,7 +71,7 @@ func (p *tavorParser) expectScanRune(expect rune) (rune, error) {
 	return p.expectRune(expect, got)
 }
 
-func (p *tavorParser) parseGlobalScope(variableScope map[string]token.Token) error {
+func (p *tavorParser) parseGlobalScope(variableScope map[string]*variables.Variable) error {
 	var err error
 
 	c := p.scan.Scan()
@@ -108,17 +110,13 @@ func (p *tavorParser) parseGlobalScope(variableScope map[string]token.Token) err
 	return nil
 }
 
-func (p *tavorParser) parseTerm(c rune, variableScope map[string]token.Token) (rune, []token.Token, []map[string]struct{}, error) {
+func (p *tavorParser) parseTerm(c rune, variableScope map[string]*variables.Variable) (rune, []token.Token, []map[string]struct{}, error) {
 	var err error
 	var embeddedTokens = make([]map[string]struct{}, 0)
 	var embeddedToks = make(map[string]struct{}, 0)
 	var tokens []token.Token
 
-	var lastToken token.Token = nil
-
 	addToken := func(tok token.Token) {
-		lastToken = tok
-
 		tokens = append(tokens, tok)
 	}
 
@@ -383,7 +381,15 @@ OUT:
 			var tok token.Token
 
 			if c == '{' {
-				tok, err = p.parseExpression(c, variableScope)
+				c, tok, err = p.parseExpression(variableScope)
+				if err != nil {
+					return zeroRune, nil, nil, err
+				}
+
+				_, err = p.expectRune('}', c)
+				if err != nil {
+					return zeroRune, nil, nil, err
+				}
 			} else {
 				tok, err = p.parseTokenAttribute(c, variableScope)
 			}
@@ -423,7 +429,7 @@ OUT:
 				return zeroRune, nil, nil, err
 			}
 
-			if lastToken == nil {
+			if len(tokens) == 0 {
 				return zeroRune, nil, nil, &token.ParserError{
 					Message:  "Variable has to be assigned to a token",
 					Type:     token.ParseErrorNoTokenForVariable,
@@ -438,9 +444,12 @@ OUT:
 				return zeroRune, nil, nil, err
 			}
 
-			variable := variables.NewVariable(lastToken)
+			variable := variables.NewVariable(tokens[len(tokens)-1])
 
+			tokens[len(tokens)-1] = variable
 			variableScope[variableName] = variable
+
+			p.variableUsages = append(p.variableUsages, variable)
 
 			log.Debug("END variable")
 		case ',': // multi line token
@@ -476,39 +485,29 @@ OUT:
 	return c, tokens, embeddedTokens, nil
 }
 
-func (p *tavorParser) parseExpression(c rune, variableScope map[string]token.Token) (token.Token, error) {
+func (p *tavorParser) parseExpression(variableScope map[string]*variables.Variable) (rune, token.Token, error) {
 	log.Debug("START expression")
 
-	_, err := p.expectRune('{', c)
-	if err != nil {
-		return nil, err
-	}
-
-	c = p.scan.Scan()
-	log.Debugf("parseExpression after {} %d:%v -> %v", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
+	c := p.scan.Scan()
+	log.Debugf("parseExpression %d:%v -> %v", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
 
 	c, tok, err := p.parseExpressionTerm(c, variableScope)
 	if err != nil {
-		return nil, err
+		return zeroRune, nil, err
 	} else if tok == nil {
-		return nil, &token.ParserError{
+		return zeroRune, nil, &token.ParserError{
 			Message:  "empty expressions are not allowed",
 			Type:     token.ParseErrorEmptyExpressionIsInvalid,
 			Position: p.scan.Pos(), // TODO correct position
 		}
 	}
 
-	_, err = p.expectRune('}', c)
-	if err != nil {
-		return nil, err
-	}
-
 	log.Debug("END expression")
 
-	return tok, nil
+	return c, tok, nil
 }
 
-func (p *tavorParser) parseExpressionTerm(c rune, variableScope map[string]token.Token) (rune, token.Token, error) {
+func (p *tavorParser) parseExpressionTerm(c rune, variableScope map[string]*variables.Variable) (rune, token.Token, error) {
 	var tok token.Token
 	var err error
 
@@ -567,7 +566,7 @@ func (p *tavorParser) parseExpressionTerm(c rune, variableScope map[string]token
 	return c, tok, nil
 }
 
-func (p *tavorParser) parseTokenAttribute(c rune, variableScope map[string]token.Token) (token.Token, error) {
+func (p *tavorParser) parseTokenAttribute(c rune, variableScope map[string]*variables.Variable) (token.Token, error) {
 	log.Debug("new token attribute")
 
 	_, err := p.expectRune(scanner.Ident, c)
@@ -637,7 +636,11 @@ func (p *tavorParser) parseTokenAttribute(c rune, variableScope map[string]token
 	case *variables.Variable:
 		switch attribute {
 		case "Value":
-			return i.Clone(), nil
+			v := variables.NewVariableValue(i)
+
+			p.variableUsages = append(p.variableUsages, i)
+
+			return v, nil
 		}
 	}
 
@@ -648,7 +651,7 @@ func (p *tavorParser) parseTokenAttribute(c rune, variableScope map[string]token
 	}
 }
 
-func (p *tavorParser) parseScope(c rune, variableScope map[string]token.Token) (rune, []token.Token, []map[string]struct{}, error) {
+func (p *tavorParser) parseScope(c rune, variableScope map[string]*variables.Variable) (rune, []token.Token, []map[string]struct{}, error) {
 	var err error
 	var embeddedTokens = make([]map[string]struct{}, 0)
 	var tokens []token.Token
@@ -663,71 +666,204 @@ func (p *tavorParser) parseScope(c rune, variableScope map[string]token.Token) (
 		tokens = toks
 	}
 
-	if c == '|' {
-		log.Debug("NEW or")
+	var ifPairs []conditions.IfPair
 
-		var orTerms []token.Token
-		optional := false
+SCOPE:
+	for {
+		switch c {
+		case '|':
+			log.Debug("NEW or")
 
-		toks = tokens
+			var orTerms []token.Token
+			optional := false
 
-	OR:
-		for {
-			switch len(toks) {
-			case 0:
-				optional = true
-			case 1:
-				orTerms = append(orTerms, toks[0])
-			default:
-				orTerms = append(orTerms, lists.NewAll(toks...))
-			}
+			toks = tokens
 
-			if embeddedTokens != nil {
-				if len(embeddedToks) == 0 {
-					// since there is a Or term without any token embedded we can say
-					// that we can break out of a loop at this point
-					embeddedTokens = nil
+		OR:
+			for {
+				switch len(toks) {
+				case 0:
+					optional = true
+				case 1:
+					orTerms = append(orTerms, toks[0])
+				default:
+					orTerms = append(orTerms, lists.NewAll(toks...))
+				}
+
+				if embeddedTokens != nil {
+					if len(embeddedToks) == 0 {
+						// since there is a Or term without any token embedded we can say
+						// that we can break out of a loop at this point
+						embeddedTokens = nil
+					} else {
+						embeddedTokens = append(embeddedTokens, embeddedToks...)
+					}
+				}
+
+				if c == '|' {
+					c = p.scan.Scan()
+					log.Debugf("parseScope Or %d:%v -> %v", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
 				} else {
-					embeddedTokens = append(embeddedTokens, embeddedToks...)
+					log.Debug("parseScope break out or")
+
+					break OR
+				}
+
+				c, toks, embeddedToks, err = p.parseTerm(c, variableScope)
+				if err != nil {
+					return zeroRune, nil, nil, err
 				}
 			}
 
-			if c == '|' {
-				c = p.scan.Scan()
-				log.Debugf("parseScope Or %d:%v -> %v", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
-			} else {
-				log.Debug("parseScope break out or")
+			or := lists.NewOne(orTerms...)
 
-				break OR
+			if optional {
+				tokens = []token.Token{constraints.NewOptional(or)}
+
+				embeddedTokens = nil
+			} else {
+				tokens = []token.Token{or}
 			}
 
-			c, toks, embeddedToks, err = p.parseTerm(c, variableScope)
+			log.Debug("END or")
+		case '{': // TODO make conditions work with ORs...
+			log.Debug("NEW condition")
+
+			c = p.scan.Scan()
+			condition := p.scan.TokenText()
+
+			var conditionExpression conditions.BooleanExpression
+
+			switch condition {
+			case "if":
+				log.Debug("found IF")
+
+				c, conditionExpression, err = p.parseConditionExpression(variableScope)
+				if err != nil {
+					return zeroRune, nil, nil, err
+				}
+			case "else":
+				if len(ifPairs) == 0 {
+					panic("TODO else/elseif without if")
+				}
+
+				c = p.scan.Scan()
+
+				if p.scan.TokenText() == "if" {
+					log.Debug("found ELSEIF")
+
+					c, conditionExpression, err = p.parseConditionExpression(variableScope)
+					if err != nil {
+						return zeroRune, nil, nil, err
+					}
+				} else {
+					log.Debug("found ELSE")
+
+					conditionExpression = conditions.NewBooleanTrue()
+				}
+			case "endif":
+				log.Debug("found ENDIF")
+
+				if len(ifPairs) == 0 {
+					panic("TODO endif without if")
+				}
+
+				c = p.scan.Scan()
+			default:
+				return zeroRune, nil, nil, &token.ParserError{
+					Message:  fmt.Sprintf("unknown condition %q", condition),
+					Type:     token.ParseErrorUnknownCondition,
+					Position: p.scan.Pos(),
+				}
+			}
+
+			_, err = p.expectRune('}', c)
 			if err != nil {
 				return zeroRune, nil, nil, err
 			}
+
+			c = p.scan.Scan()
+
+			if condition != "endif" {
+				// TODO do something with embeddedTOks here
+				c, toks, embeddedToks, err = p.parseTerm(c, variableScope) // TODO this should be a a global scope or so ... we can do nesting
+				if err != nil {
+					return zeroRune, nil, nil, err
+				}
+
+				embeddedTokens = append(embeddedTokens, embeddedToks...)
+
+				var tok token.Token
+
+				switch len(toks) {
+				case 0:
+					panic("empty body is not allowed") // TODO catch this
+				case 1:
+					tok = toks[0]
+				default:
+					tok = lists.NewAll(toks...)
+				}
+
+				ifPairs = append(ifPairs, conditions.IfPair{
+					Head: conditionExpression,
+					Body: tok,
+				})
+			} else {
+				tokens = []token.Token{conditions.NewIf(ifPairs...)}
+
+				ifPairs = nil
+
+				break SCOPE
+			}
+
+			log.Debug("END condition")
+
+			continue SCOPE
+		default:
+			if len(embeddedToks) != 0 {
+				embeddedTokens = append(embeddedTokens, embeddedToks...)
+			}
 		}
 
-		or := lists.NewOne(orTerms...)
+		break SCOPE
+	}
 
-		if optional {
-			tokens = []token.Token{constraints.NewOptional(or)}
-
-			embeddedTokens = nil
-		} else {
-			tokens = []token.Token{or}
-		}
-
-		log.Debug("END or")
-	} else {
-		if len(embeddedToks) != 0 {
-			embeddedTokens = append(embeddedTokens, embeddedToks...)
-		}
+	if len(ifPairs) != 0 {
+		panic("TODO if without endif")
 	}
 
 	return c, tokens, embeddedTokens, nil
 }
 
-func (p *tavorParser) parseTokenDefinition(variableScope map[string]token.Token) (rune, error) {
+func (p *tavorParser) parseConditionExpression(variableScope map[string]*variables.Variable) (rune, conditions.BooleanExpression, error) {
+	c, a, err := p.parseExpression(variableScope)
+	if err != nil {
+		return zeroRune, nil, err
+	}
+
+	switch c {
+	case '=':
+		_, err = p.expectScanRune('=')
+		if err != nil {
+			return zeroRune, nil, err
+		}
+	default:
+		return zeroRune, nil, &token.ParserError{
+			Message:  fmt.Sprintf("unknown boolean operator %q", c),
+			Type:     token.ParseErrorUnknownBooleanOperator,
+			Position: p.scan.Pos(),
+		}
+	}
+
+	c, b, err := p.parseExpression(variableScope)
+	if err != nil {
+		return zeroRune, nil, err
+	}
+
+	return c, conditions.NewBooleanEqual(a, b), nil
+}
+
+func (p *tavorParser) parseTokenDefinition(variableScope map[string]*variables.Variable) (rune, error) {
 	var c rune
 	var err error
 
@@ -1122,7 +1258,7 @@ func ParseTavor(src io.Reader) (token.Token, error) {
 	}
 	p.scan.Whitespace = 1<<'\t' | 1<<' ' | 1<<'\r'
 
-	variableScope := make(map[string]token.Token)
+	variableScope := make(map[string]*variables.Variable)
 
 	if err := p.parseGlobalScope(variableScope); err != nil {
 		return nil, err
@@ -1156,6 +1292,27 @@ func ParseTavor(src io.Reader) (token.Token, error) {
 				Message:  fmt.Sprintf("token %q declared but not used", name),
 				Type:     token.ParseErrorUnusedToken,
 				Position: use.position,
+			}
+		}
+	}
+
+	for _, variable := range p.variableUsages {
+		tok := variable.InternalGet()
+
+		if po, ok := tok.(*primitives.Pointer); ok {
+			log.Debugf("Found pointer in variable %p(%#v)", variable, variable)
+
+			for {
+				c := po.InternalGet()
+
+				po, ok = c.(*primitives.Pointer)
+				if !ok {
+					log.Debugf("Replaced pointer %p(%#v) with %p(%#v)", tok, tok, c, c)
+
+					variable.InternalReplace(tok, c)
+
+					break
+				}
 			}
 		}
 	}
