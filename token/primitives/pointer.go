@@ -29,6 +29,15 @@ func NewEmptyPointer(typ interface{}) *Pointer {
 	}
 }
 
+func NewTokenPointer(tok token.Token) *Pointer {
+	var tokenType *token.Token
+
+	return &Pointer{
+		token: tok,
+		typ:   reflect.TypeOf(tokenType).Elem(),
+	}
+}
+
 func (p *Pointer) Set(o token.Token) error {
 	if o == nil {
 		p.token = nil

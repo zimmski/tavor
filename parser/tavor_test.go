@@ -199,14 +199,10 @@ func TestTavorParseErrors(t *testing.T) {
 	Equal(t, token.ParseErrorExpectedExpressionTerm, err.(*token.ParserError).Type)
 	Nil(t, tok)
 
-	// TODO this can maybe never happen as we do everything in one pass
-	// so we do not know that $List must implement lists.List
-
-	// // wrong token type because of earlier usage
-	// tok, err = ParseTavor(strings.NewReader("START = $List.Count\nList = 123"))
-	// panic(err)
-	// Equal(t, token.ParseErrorExpectedExpressionTerm, err.(*token.ParserError).Type)
-	// Nil(t, tok)
+	// wrong token type because of earlier usage
+	tok, err = ParseTavor(strings.NewReader("START = $List.Count\nList = 123\n"))
+	Equal(t, token.ParseErrorUnknownTokenAttribute, err.(*token.ParserError).Type)
+	Nil(t, tok)
 
 	// missing closing ] for character class
 	tok, err = ParseTavor(strings.NewReader("START = [ab"))
@@ -219,6 +215,15 @@ func TestTavorParseErrors(t *testing.T) {
 	// no token for variable
 	tok, err = ParseTavor(strings.NewReader("START = <hey>\n"))
 	Equal(t, token.ParseErrorNoTokenForVariable, err.(*token.ParserError).Type)
+	Nil(t, tok)
+
+	// variable not defined because of different scope
+	tok, err = ParseTavor(strings.NewReader(`
+		Save = "text"<var>
+		Print = $var.Value
+		START = Save Print
+	`))
+	Equal(t, token.ParseErrorTokenNotDefined, err.(*token.ParserError).Type)
 	Nil(t, tok)
 }
 
@@ -706,6 +711,13 @@ func TestTavorParserAndCuriousCaseOfFuzzing(t *testing.T) {
 		primitives.NewConstantInt(1),
 	))
 
+	// Token attribute forward usage
+	tok, err = ParseTavor(strings.NewReader(
+		"START = $int.Value\n$int = type: Int\n",
+	))
+	Nil(t, err)
+	Equal(t, tok, primitives.NewRandomInt())
+
 	// Tokens should be cloned so they are different internally
 	{
 		tok, err = ParseTavor(strings.NewReader(
@@ -1187,9 +1199,9 @@ func TestTavorParserVariables(t *testing.T) {
 	// simple save and value
 	{
 		tok, err := ParseTavor(strings.NewReader(`
-			START = Save Print
+			START = Save<var> Print
 
-			Save = "text"<var>
+			Save = "text"
 
 			Print = $var.Value
 		`))
@@ -1230,11 +1242,11 @@ func TestTavorParserIfElseIfElsedd(t *testing.T) {
 			nVariable,
 			conditions.NewIf(
 				conditions.IfPair{
-					Head: conditions.NewBooleanEqual(variables.NewVariableValue(nVariable), primitives.NewConstantInt(1)),
+					Head: conditions.NewBooleanEqual(primitives.NewTokenPointer(variables.NewVariableValue(nVariable)), primitives.NewConstantInt(1)),
 					Body: primitives.NewConstantString("var is one"),
 				},
 				conditions.IfPair{
-					Head: conditions.NewBooleanEqual(variables.NewVariableValue(nVariable), primitives.NewConstantInt(2)),
+					Head: conditions.NewBooleanEqual(primitives.NewTokenPointer(variables.NewVariableValue(nVariable)), primitives.NewConstantInt(2)),
 					Body: primitives.NewConstantString("var is two"),
 				},
 				conditions.IfPair{
