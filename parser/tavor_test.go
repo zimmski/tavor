@@ -225,6 +225,14 @@ func TestTavorParseErrors(t *testing.T) {
 	`))
 	Equal(t, token.ParseErrorTokenNotDefined, err.(*token.ParserError).Type)
 	Nil(t, tok)
+
+	tok, err = ParseTavor(strings.NewReader(`
+		START = Token Print
+		Token = "text"<var> Print
+		Print = $var.Value
+	`))
+	Equal(t, token.ParseErrorTokenNotDefined, err.(*token.ParserError).Type)
+	Nil(t, tok)
 }
 
 func TestTavorParserSimple(t *testing.T) {

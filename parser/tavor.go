@@ -1384,6 +1384,12 @@ func ParseTavor(src io.Reader) (token.Token, error) {
 							panic(fmt.Errorf("TODO handle this better: different types %v vs %v", typ, tType))
 						}
 					}
+				} else {
+					return nil, &token.ParserError{
+						Message:  fmt.Sprintf("token or variable %q is not defined", forwardUse.tokenName),
+						Type:     token.ParseErrorTokenNotDefined,
+						Position: usage.position,
+					}
 				}
 			}
 
