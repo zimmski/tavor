@@ -277,8 +277,9 @@ func (c *ExpressionPointer) Evaluate() bool {
 		log.Debugf("Found pointer in ExpressionPointer %p(%#v)", c, c)
 
 		for {
-			po.Use()
 			c := po.InternalGet()
+			c = c.Clone()
+			po.Set(c)
 
 			po, ok = c.(*primitives.Pointer)
 			if !ok {
@@ -336,6 +337,30 @@ func (c *ExpressionPointer) String() string {
 	return c.token.String()
 }
 
+// ForwardToken interface methods
+
+func (c *ExpressionPointer) Get() token.Token {
+	return nil
+}
+
+func (c *ExpressionPointer) InternalGet() token.Token {
+	return c.token
+}
+
+func (c *ExpressionPointer) InternalLogicalRemove(tok token.Token) token.Token {
+	if c.token == tok {
+		return nil
+	}
+
+	return c
+}
+
+func (c *ExpressionPointer) InternalReplace(oldToken, newToken token.Token) {
+	if c.token == oldToken {
+		c.token = newToken
+	}
+}
+
 // ScopeToken interface methods
 
 func (c *ExpressionPointer) SetScope(variableScope map[string]token.Token) {
@@ -345,8 +370,9 @@ func (c *ExpressionPointer) SetScope(variableScope map[string]token.Token) {
 		log.Debugf("Found pointer in ExpressionPointer %p(%#v)", c, c)
 
 		for {
-			po.Use()
 			c := po.InternalGet()
+			c = c.Clone()
+			po.Set(c)
 
 			po, ok = c.(*primitives.Pointer)
 			if !ok {

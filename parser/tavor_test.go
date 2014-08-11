@@ -1293,4 +1293,48 @@ func TestTavorParserIfElseIfElsedd(t *testing.T) {
 		one.Permutation(3)
 		Equal(t, "3var is three", tok.String())
 	}
+	// if defined
+	{
+		tok, err := ParseTavor(strings.NewReader(`
+			START = Token Print
+
+			Token = "abc"<var> Print
+
+			Print = {if defined var} "var is defined" {else} "var is not defined" {endif}
+		`))
+		Nil(t, err)
+
+		nVariable := variables.NewVariable("var", primitives.NewConstantString("abc"))
+
+		ll := lists.NewAll(
+			lists.NewAll(
+				nVariable,
+				conditions.NewIf(
+					conditions.IfPair{
+						Head: conditions.NewExpressionPointer(primitives.NewTokenPointer(conditions.NewVariableDefined("var", map[string]token.Token{"var": nVariable}))),
+						Body: primitives.NewConstantString("var is defined"),
+					},
+					conditions.IfPair{
+						Head: conditions.NewBooleanTrue(),
+						Body: primitives.NewConstantString("var is not defined"),
+					},
+				),
+			),
+			conditions.NewIf(
+				conditions.IfPair{
+					Head: conditions.NewExpressionPointer(primitives.NewTokenPointer(conditions.NewVariableDefined("var", map[string]token.Token{}))),
+					Body: primitives.NewConstantString("var is defined"),
+				},
+				conditions.IfPair{
+					Head: conditions.NewBooleanTrue(),
+					Body: primitives.NewConstantString("var is not defined"),
+				},
+			),
+		)
+
+		Equal(t, tok, ll)
+
+		Equal(t, "abcvar is definedvar is not defined", tok.String())
+		Equal(t, 1, tok.Permutations())
+	}
 }

@@ -56,10 +56,6 @@ func (p *Pointer) Set(o token.Token) error {
 	return nil
 }
 
-func (p *Pointer) Use() {
-	p.cloneOnFirstUse()
-}
-
 // Token interface methods
 
 func (p *Pointer) Clone() token.Token {
