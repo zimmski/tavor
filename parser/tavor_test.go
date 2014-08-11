@@ -1241,6 +1241,28 @@ func TestTavorParserVariables(t *testing.T) {
 
 		Equal(t, "1122", tok.String())
 	}
+	// not in with variables
+	{
+		tok, err := ParseTavor(strings.NewReader(`
+			$Literal = type: Sequence
+
+			And = $Literal.Next<x> " " ${Literal.Existing not in (x)} " " ${Literal.Existing not in (x)} "\n"
+
+			START = $Literal.Reset $Literal.Next "\n" And And
+		`))
+		Nil(t, err)
+
+		/* TODO if this example finally is correct.... do the token graph
+		seq := sequences.NewSequence(1, 1)
+
+		Equal(t, tok, lists.NewAll(
+			seq.ResetItem(),
+			seq.Item(),
+
+		))*/
+
+		Equal(t, "2\n1 1 1\n1 1 1\n", tok.String())
+	}
 }
 
 func TestTavorParserIfElseIfElsedd(t *testing.T) {
