@@ -35,7 +35,7 @@ const zeroRune = 0
 type tokenUsage struct {
 	token         token.Token
 	position      scanner.Position
-	variableScope map[string]*variables.Variable
+	variableScope map[string]token.Token
 }
 
 type attributeForwardUsage struct {
@@ -45,7 +45,7 @@ type attributeForwardUsage struct {
 	attribute         string
 	attributePosition scanner.Position
 	pointer           *primitives.Pointer
-	variableScope     map[string]*variables.Variable
+	variableScope     map[string]token.Token
 }
 
 type tavorParser struct {
@@ -83,7 +83,7 @@ func (p *tavorParser) expectScanRune(expect rune) (rune, error) {
 	return p.expectRune(expect, got)
 }
 
-func (p *tavorParser) parseGlobalScope(variableScope map[string]*variables.Variable) error {
+func (p *tavorParser) parseGlobalScope(variableScope map[string]token.Token) error {
 	var err error
 
 	c := p.scan.Scan()
@@ -122,7 +122,7 @@ func (p *tavorParser) parseGlobalScope(variableScope map[string]*variables.Varia
 	return nil
 }
 
-func (p *tavorParser) parseTerm(definitionName string, c rune, variableScope map[string]*variables.Variable) (rune, []token.Token, []map[string]struct{}, error) {
+func (p *tavorParser) parseTerm(definitionName string, c rune, variableScope map[string]token.Token) (rune, []token.Token, []map[string]struct{}, error) {
 	var err error
 	var embeddedTokens = make([]map[string]struct{}, 0)
 	var embeddedToks = make(map[string]struct{}, 0)
@@ -137,6 +137,11 @@ OUT:
 		switch c {
 		case scanner.Ident:
 			name := p.scan.TokenText()
+
+			nVariableScope := make(map[string]token.Token, len(variableScope))
+			for k, v := range variableScope {
+				nVariableScope[k] = v
+			}
 
 			_, ok := p.lookup[name]
 			if !ok {
@@ -153,7 +158,7 @@ OUT:
 				p.earlyUse[name] = append(p.earlyUse[name], tokenUsage{
 					token:         b,
 					position:      p.scan.Position,
-					variableScope: variableScope,
+					variableScope: nVariableScope,
 				})
 			}
 
@@ -161,7 +166,7 @@ OUT:
 			p.used[name] = append(p.used[name], tokenUsage{
 				token:         nil,
 				position:      p.scan.Position,
-				variableScope: variableScope,
+				variableScope: nVariableScope,
 			})
 
 			/*
@@ -226,7 +231,7 @@ OUT:
 						p.earlyUse[name] = append(p.earlyUse[name], tokenUsage{
 							token:         ntok,
 							position:      p.scan.Position,
-							variableScope: variableScope,
+							variableScope: nVariableScope,
 						})
 					}
 
@@ -464,7 +469,7 @@ OUT:
 
 			// TODO do not overwrite Token names... this sould lead to an already defined error, only variables can overwrite each other
 
-			variable := variables.NewVariable(tokens[len(tokens)-1])
+			variable := variables.NewVariable(variableName, tokens[len(tokens)-1])
 
 			tokens[len(tokens)-1] = variable
 			variableScope[variableName] = variable
@@ -505,7 +510,7 @@ OUT:
 	return c, tokens, embeddedTokens, nil
 }
 
-func (p *tavorParser) parseExpression(definitionName string, variableScope map[string]*variables.Variable) (rune, token.Token, error) {
+func (p *tavorParser) parseExpression(definitionName string, variableScope map[string]token.Token) (rune, token.Token, error) {
 	log.Debug("START expression")
 
 	c := p.scan.Scan()
@@ -527,7 +532,7 @@ func (p *tavorParser) parseExpression(definitionName string, variableScope map[s
 	return c, tok, nil
 }
 
-func (p *tavorParser) parseExpressionTerm(definitionName string, c rune, variableScope map[string]*variables.Variable) (rune, token.Token, error) {
+func (p *tavorParser) parseExpressionTerm(definitionName string, c rune, variableScope map[string]token.Token) (rune, token.Token, error) {
 	var tok token.Token
 	var err error
 
@@ -586,7 +591,7 @@ func (p *tavorParser) parseExpressionTerm(definitionName string, c rune, variabl
 	return c, tok, nil
 }
 
-func (p *tavorParser) parseTokenAttribute(definitionName string, c rune, variableScope map[string]*variables.Variable) (token.Token, error) {
+func (p *tavorParser) parseTokenAttribute(definitionName string, c rune, variableScope map[string]token.Token) (token.Token, error) {
 	log.Debug("new token attribute")
 
 	_, err := p.expectRune(scanner.Ident, c)
@@ -619,12 +624,27 @@ func (p *tavorParser) parseTokenAttribute(definitionName string, c rune, variabl
 	} else {
 		tok, ok = variableScope[name]
 
-		if !ok {
+		isPointer := false
+
+		if ok {
+			if _, pp := tok.(*primitives.Pointer); pp {
+				isPointer = true
+			}
+		}
+
+		if !ok || isPointer {
 			log.Debugf("parseTokenAttribute use empty pointer for %s.%s", name, attribute)
 
 			var tokenInterface *token.Token
 
 			pointer := primitives.NewEmptyPointer(tokenInterface)
+
+			variableScope[name] = pointer
+
+			nVariableScope := make(map[string]token.Token, len(variableScope))
+			for k, v := range variableScope {
+				nVariableScope[k] = v
+			}
 
 			p.forwardAttributeUsage = append(p.forwardAttributeUsage, attributeForwardUsage{
 				definitionName:    definitionName,
@@ -633,7 +653,7 @@ func (p *tavorParser) parseTokenAttribute(definitionName string, c rune, variabl
 				attribute:         attribute,
 				attributePosition: attributePosition,
 				pointer:           pointer,
-				variableScope:     variableScope,
+				variableScope:     nVariableScope,
 			})
 
 			return pointer, nil
@@ -692,7 +712,7 @@ func (p *tavorParser) selectTokenAttribute(tok token.Token, attribute string, at
 	}
 }
 
-func (p *tavorParser) parseScope(definitionName string, c rune, variableScope map[string]*variables.Variable) (rune, []token.Token, []map[string]struct{}, error) {
+func (p *tavorParser) parseScope(definitionName string, c rune, variableScope map[string]token.Token) (rune, []token.Token, []map[string]struct{}, error) {
 	var err error
 	var embeddedTokens = make([]map[string]struct{}, 0)
 	var tokens []token.Token
@@ -876,7 +896,7 @@ SCOPE:
 	return c, tokens, embeddedTokens, nil
 }
 
-func (p *tavorParser) parseConditionExpression(definitionName string, variableScope map[string]*variables.Variable) (rune, conditions.BooleanExpression, error) {
+func (p *tavorParser) parseConditionExpression(definitionName string, variableScope map[string]token.Token) (rune, conditions.BooleanExpression, error) {
 	c, a, err := p.parseExpression(definitionName, variableScope)
 	if err != nil {
 		return zeroRune, nil, err
@@ -904,7 +924,7 @@ func (p *tavorParser) parseConditionExpression(definitionName string, variableSc
 	return c, conditions.NewBooleanEqual(a, b), nil
 }
 
-func (p *tavorParser) parseTokenDefinition(variableScope map[string]*variables.Variable) (rune, error) {
+func (p *tavorParser) parseTokenDefinition(variableScope map[string]token.Token) (rune, error) {
 	var c rune
 	var err error
 
@@ -937,7 +957,7 @@ func (p *tavorParser) parseTokenDefinition(variableScope map[string]*variables.V
 	}
 
 	// each definition start its own scope
-	nVariableScope := make(map[string]*variables.Variable, len(variableScope))
+	nVariableScope := make(map[string]token.Token, len(variableScope))
 	for k, v := range variableScope {
 		nVariableScope[k] = v
 	}
@@ -1308,7 +1328,7 @@ func ParseTavor(src io.Reader) (token.Token, error) {
 	}
 	p.scan.Whitespace = 1<<'\t' | 1<<' ' | 1<<'\r'
 
-	variableScope := make(map[string]*variables.Variable)
+	variableScope := make(map[string]token.Token)
 
 	if err := p.parseGlobalScope(variableScope); err != nil {
 		return nil, err
@@ -1376,6 +1396,23 @@ func ParseTavor(src io.Reader) (token.Token, error) {
 			}
 		}
 
+		if po, ok := tok.(*primitives.Pointer); ok {
+			log.Debugf("Found pointer in forwardAttributeUsage %#v", forwardUse)
+
+			for {
+				c := po.InternalGet()
+
+				po, ok = c.(*primitives.Pointer)
+				if !ok {
+					log.Debugf("Replaced pointer %p(%#v) with %p(%#v)", tok, tok, c, c)
+
+					tok = c
+
+					break
+				}
+			}
+		}
+
 		rtok, err := p.selectTokenAttribute(tok, forwardUse.attribute, forwardUse.attributePosition)
 		if err != nil {
 			return nil, err
@@ -1427,6 +1464,9 @@ func ParseTavor(src io.Reader) (token.Token, error) {
 	start := p.lookup["START"].token
 
 	start = tavor.UnrollPointers(start)
+
+	variableScope = make(map[string]token.Token)
+	tavor.SetScope(start, variableScope)
 
 	log.Debug("finished parsing")
 

@@ -3,17 +3,22 @@ package variables
 import (
 	"github.com/zimmski/tavor/rand"
 	"github.com/zimmski/tavor/token"
+	"github.com/zimmski/tavor/token/primitives"
 )
 
 type Variable struct {
+	name  string
 	token token.Token
 }
 
-func NewVariable(token token.Token) *Variable {
+func NewVariable(name string, token token.Token) *Variable {
 	return &Variable{
+		name:  name,
 		token: token,
 	}
 }
+
+// Token interface methods
 
 func (v *Variable) Clone() token.Token {
 	/*return &Variable{
@@ -74,6 +79,12 @@ func (v *Variable) InternalReplace(oldToken, newToken token.Token) {
 	}
 }
 
+// ScopeToken interface methods
+
+func (v *Variable) SetScope(variableScope map[string]token.Token) {
+	variableScope[v.name] = v
+}
+
 type VariableValue struct {
 	variable *Variable
 }
@@ -83,6 +94,8 @@ func NewVariableValue(variable *Variable) *VariableValue {
 		variable: variable,
 	}
 }
+
+// Token interface methods
 
 func (v *VariableValue) Clone() token.Token {
 	return &VariableValue{
@@ -118,4 +131,27 @@ func (v *VariableValue) PermutationsAll() int {
 
 func (v *VariableValue) String() string {
 	return v.variable.InternalGet().String()
+}
+
+// ScopeToken interface methods
+
+func (v *VariableValue) SetScope(variableScope map[string]token.Token) {
+	tok := variableScope[v.variable.name]
+
+	if p, ok := tok.(*primitives.Pointer); ok {
+		for {
+			tok = p.InternalGet()
+
+			p, ok = tok.(*primitives.Pointer)
+			if !ok {
+				break
+			}
+		}
+	}
+
+	if t, ok := tok.(*VariableValue); ok {
+		v.variable = t.variable
+	} else {
+		v.variable = tok.(*Variable)
+	}
 }

@@ -91,6 +91,10 @@ type ReduceToken interface {
 	Reduces() int
 }
 
+type ScopeToken interface {
+	SetScope(variableScope map[string]Token)
+}
+
 type InternalParser struct { // TODO move this some place else
 	Data    string
 	DataLen int

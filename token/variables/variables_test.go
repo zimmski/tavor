@@ -17,7 +17,7 @@ func TestVariablesTokensToBeTokens(t *testing.T) {
 }
 
 func TestVariable(t *testing.T) {
-	o := NewVariable(primitives.NewConstantInt(10))
+	o := NewVariable("var", primitives.NewConstantInt(10))
 	Equal(t, "10", o.String())
 
 	r := test.NewRandTest(0)

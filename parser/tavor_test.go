@@ -1206,13 +1206,32 @@ func TestTavorParserVariables(t *testing.T) {
 			Print = $var.Value
 		`))
 		Nil(t, err)
-		variable := variables.NewVariable(primitives.NewConstantString("text"))
+		variable := variables.NewVariable("var", primitives.NewConstantString("text"))
 		Equal(t, tok, lists.NewAll(
 			variable,
 			variables.NewVariableValue(variable),
 		))
 
 		Equal(t, "texttext", tok.String())
+	}
+	// correct scope of variables
+	{
+		tok, err := ParseTavor(strings.NewReader(`
+			START = 1<var> Print 2<var> Print
+
+			Print = $var.Value
+		`))
+		Nil(t, err)
+
+		v1 := variables.NewVariable("var", primitives.NewConstantInt(1))
+		v2 := variables.NewVariable("var", primitives.NewConstantInt(2))
+
+		Equal(t, tok, lists.NewAll(
+			v1, variables.NewVariableValue(v1),
+			v2, variables.NewVariableValue(v2),
+		))
+
+		Equal(t, "1122", tok.String())
 	}
 }
 
@@ -1236,7 +1255,7 @@ func TestTavorParserIfElseIfElsedd(t *testing.T) {
 			primitives.NewConstantInt(2),
 			primitives.NewConstantInt(3),
 		)
-		nVariable := variables.NewVariable(nOne)
+		nVariable := variables.NewVariable("var", nOne)
 
 		Equal(t, tok, lists.NewAll(
 			nVariable,

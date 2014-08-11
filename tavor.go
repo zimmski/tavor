@@ -336,3 +336,30 @@ func UnrollPointers(root token.Token) token.Token {
 
 	return root
 }
+
+func SetScope(root token.Token, scope map[string]token.Token) {
+	queue := linkedlist.New()
+
+	queue.Push(root)
+
+	for !queue.Empty() {
+		tok, _ := queue.Shift()
+
+		if t, ok := tok.(token.ScopeToken); ok {
+			t.SetScope(scope)
+		}
+
+		switch t := tok.(type) {
+		case token.ForwardToken:
+			if v := t.InternalGet(); v != nil {
+				queue.Push(v)
+			}
+		case lists.List:
+			for i := 0; i < t.InternalLen(); i++ {
+				c, _ := t.InternalGet(i)
+
+				queue.Push(c)
+			}
+		}
+	}
+}
