@@ -1315,6 +1315,29 @@ func TestTavorParserIfElseIfElsedd(t *testing.T) {
 		one.Permutation(3)
 		Equal(t, "3var is three", tok.String())
 	}
+	// continued definition
+	{
+		tok, err := ParseTavor(strings.NewReader(`
+			START = 1<var> {if var.Value == 1} 2 {endif} 3
+		`))
+		Nil(t, err)
+
+		nVariable := variables.NewVariable("var", primitives.NewConstantInt(1))
+
+		Equal(t, tok, lists.NewAll(
+			nVariable,
+			conditions.NewIf(
+				conditions.IfPair{
+					Head: conditions.NewBooleanEqual(variables.NewVariableValue(nVariable), primitives.NewConstantInt(1)),
+					Body: primitives.NewConstantInt(2),
+				},
+			),
+			primitives.NewConstantInt(3),
+		))
+
+		Equal(t, "123", tok.String())
+		Equal(t, 1, tok.Permutations())
+	}
 	// if defined
 	{
 		tok, err := ParseTavor(strings.NewReader(`

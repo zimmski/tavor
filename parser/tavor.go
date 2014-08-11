@@ -1043,11 +1043,17 @@ SCOPE:
 
 				ifPairs = append(ifPairs, ifPart)
 			} else {
-				tokens = []token.Token{conditions.NewIf(ifPairs...)}
+				tokens = append(tokens, conditions.NewIf(ifPairs...))
 
 				ifPairs = nil
 
-				break SCOPE
+				c, toks, embeddedToks, err = p.parseTerm(definitionName, c, variableScope) // TODO this should be a a global scope or so ... we can do nesting
+				if err != nil {
+					return zeroRune, nil, nil, err
+				}
+
+				tokens = append(tokens, toks...)
+				embeddedTokens = append(embeddedTokens, embeddedToks...)
 			}
 
 			log.Debug("END condition")
