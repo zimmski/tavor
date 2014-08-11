@@ -21,14 +21,14 @@ func NewVariable(name string, token token.Token) *Variable {
 // Token interface methods
 
 func (v *Variable) Clone() token.Token {
-	/*return &Variable{
-		token: v.token,
-	}*/
-	return v
+	return &Variable{
+		name:  v.name,
+		token: v.token.Clone(),
+	}
 }
 
 func (v *Variable) Fuzz(r rand.Rand) {
-	// do nothing
+	v.token.Fuzz(r)
 }
 
 func (v *Variable) FuzzAll(r rand.Rand) {
@@ -76,6 +76,14 @@ func (v *Variable) InternalLogicalRemove(tok token.Token) token.Token {
 func (v *Variable) InternalReplace(oldToken, newToken token.Token) {
 	if v.token == oldToken {
 		v.token = newToken
+	}
+}
+
+// ResetToken interface methods
+
+func (v *Variable) Reset() {
+	if p, ok := v.token.(token.ResetToken); ok {
+		p.Reset()
 	}
 }
 

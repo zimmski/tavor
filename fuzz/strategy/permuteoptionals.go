@@ -73,9 +73,11 @@ func (s *PermuteOptionalsStrategy) findOptionals(r rand.Rand, root token.Token, 
 		case token.ForwardToken:
 			c := t.Get()
 
-			c.Fuzz(r)
+			if c != nil {
+				c.Fuzz(r)
 
-			queue.Push(c)
+				queue.Push(c)
+			}
 		case lists.List:
 			l := t.Len()
 

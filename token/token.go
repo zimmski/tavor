@@ -121,6 +121,7 @@ const (
 	ParseErrorTokenAlreadyDefined
 	ParseErrorTokenNotDefined
 	ParseErrorExpectRune
+	ParseErrorExpectOperator
 	ParseErrorUnknownBooleanOperator
 	ParseErrorUnknownCondition
 	ParseErrorUnknownSpecialTokenArgument

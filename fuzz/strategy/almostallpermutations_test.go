@@ -330,7 +330,7 @@ func TestAlmostAllPermutationsStrategy(t *testing.T) {
 			constraints.NewOptional(primitives.NewConstantString("b")),
 			s.ResetItem(),
 			s.Item(),
-			s.ExistingItem(),
+			s.ExistingItem(nil),
 		)
 		b := lists.NewRepeat(a, 0, 1)
 

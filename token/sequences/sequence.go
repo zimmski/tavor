@@ -21,7 +21,7 @@ func NewSequence(start, step int) *Sequence {
 	}
 }
 
-func (s *Sequence) existing(r rand.Rand) int {
+func (s *Sequence) existing(r rand.Rand, except token.Token) int {
 	n := s.value - s.start
 
 	if n == 0 {
@@ -30,10 +30,29 @@ func (s *Sequence) existing(r rand.Rand) int {
 
 	n /= s.step
 
-	return r.Intn(n)*s.step + s.start
+	if except == nil {
+		return r.Intn(n)*s.step + s.start
+	}
+
+	ex, err := strconv.Atoi(except.String())
+	if err != nil {
+		panic(err) // TODO
+	}
+
+	if n == 1 && s.start == ex {
+		return s.start
+	}
+
+	for {
+		i := r.Intn(n)*s.step + s.start
+
+		if i != ex {
+			return i
+		}
+	}
 }
 
-func (s *Sequence) ExistingItem() *sequenceExistingItem {
+func (s *Sequence) ExistingItem(except token.Token) *sequenceExistingItem {
 	v := -1 // TODO there should be some kind of real nil value
 
 	if s.value != s.start {
@@ -43,6 +62,7 @@ func (s *Sequence) ExistingItem() *sequenceExistingItem {
 	return &sequenceExistingItem{
 		sequence: s,
 		value:    v,
+		except:   except,
 	}
 }
 
@@ -147,17 +167,24 @@ func (s *sequenceItem) Reset() {
 type sequenceExistingItem struct {
 	sequence *Sequence
 	value    int
+	except   token.Token
 }
 
 func (s *sequenceExistingItem) Clone() token.Token {
+	ex := s.except
+	if ex != nil {
+		ex = ex.Clone()
+	}
+
 	return &sequenceExistingItem{
 		sequence: s.sequence,
 		value:    s.value,
+		except:   ex,
 	}
 }
 
 func (s *sequenceExistingItem) Fuzz(r rand.Rand) {
-	s.permutation(r)
+	s.value = s.sequence.existing(r, s.except)
 }
 
 func (s *sequenceExistingItem) FuzzAll(r rand.Rand) {
@@ -169,7 +196,7 @@ func (s *sequenceExistingItem) Parse(pars *token.InternalParser, cur int) (int, 
 }
 
 func (s *sequenceExistingItem) permutation(r rand.Rand) {
-	s.value = s.sequence.existing(r)
+	s.value = s.sequence.existing(r, s.except)
 }
 
 func (s *sequenceExistingItem) Permutation(i int) error {
@@ -202,6 +229,16 @@ func (s *sequenceExistingItem) String() string {
 
 func (s *sequenceExistingItem) Reset() {
 	s.permutation(rand.NewConstantRand(0))
+}
+
+// ScopeToken interface methods
+
+func (s *sequenceExistingItem) SetScope(variableScope map[string]token.Token) {
+	if s.except != nil {
+		if tok, ok := s.except.(token.ScopeToken); ok {
+			tok.SetScope(variableScope)
+		}
+	}
 }
 
 type sequenceResetItem struct {

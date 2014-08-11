@@ -590,7 +590,7 @@ func TestTavorParserSpecialTokens(t *testing.T) {
 		"$Spec = type: Sequence\nSTART = $Spec.Existing\n",
 	))
 	Nil(t, err)
-	Equal(t, tok, sequences.NewSequence(1, 1).ExistingItem())
+	Equal(t, tok, sequences.NewSequence(1, 1).ExistingItem(nil))
 
 	tok, err = ParseTavor(strings.NewReader(
 		"$Spec = type: Sequence\nSTART = $Spec.Reset\n",

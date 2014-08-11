@@ -44,6 +44,8 @@ type attributeForwardUsage struct {
 	tokenPosition     scanner.Position
 	attribute         string
 	attributePosition scanner.Position
+	operator          string
+	operatorToken     token.Token
 	pointer           *primitives.Pointer
 	variableScope     map[string]token.Token
 }
@@ -413,8 +415,10 @@ OUT:
 				if err != nil {
 					return zeroRune, nil, nil, err
 				}
+
+				c = p.scan.Scan()
 			} else {
-				tok, err = p.parseTokenAttribute(definitionName, c, variableScope)
+				c, tok, err = p.parseTokenAttribute(definitionName, c, variableScope)
 			}
 
 			if err != nil {
@@ -422,6 +426,8 @@ OUT:
 			}
 
 			addToken(tok)
+
+			continue
 		case '[':
 			log.Debug("NEW character class")
 
@@ -539,10 +545,10 @@ func (p *tavorParser) parseExpressionTerm(definitionName string, c rune, variabl
 	// single term
 	switch c {
 	case scanner.Ident:
-		op := p.scan.TokenText()
-		opPosition := p.scan.Position
+		attribute := p.scan.TokenText()
+		attributePosition := p.scan.Position
 
-		switch op {
+		switch attribute {
 		case "defined":
 			_, err := p.expectScanRune(scanner.Ident)
 			if err != nil {
@@ -568,7 +574,7 @@ func (p *tavorParser) parseExpressionTerm(definitionName string, c rune, variabl
 			}
 
 			if !ok || isPointer {
-				log.Debugf("parseTokenAttribute use empty pointer for %s.%s", name, op)
+				log.Debugf("parseTokenAttribute use empty pointer for %s.%s", name, attribute)
 
 				var tokenInterface *token.Token
 
@@ -578,15 +584,15 @@ func (p *tavorParser) parseExpressionTerm(definitionName string, c rune, variabl
 					definitionName:    definitionName,
 					tokenName:         name,
 					tokenPosition:     namePosition,
-					attribute:         op,
-					attributePosition: opPosition,
+					attribute:         attribute,
+					attributePosition: attributePosition,
 					pointer:           pointer,
 					variableScope:     nVariableScope,
 				})
 
 				tok = pointer
 			} else {
-				tok, err = p.selectTokenAttribute(tok, name, op, opPosition, nVariableScope)
+				tok, err = p.selectTokenAttribute(tok, name, attribute, attributePosition, "", nil, nVariableScope)
 				if err != nil {
 					return zeroRune, nil, err
 				}
@@ -599,7 +605,7 @@ func (p *tavorParser) parseExpressionTerm(definitionName string, c rune, variabl
 
 			return c, conditions.NewExpressionPointer(tok), nil
 		default:
-			tok, err = p.parseTokenAttribute(definitionName, c, variableScope)
+			c, tok, err = p.parseTokenAttribute(definitionName, c, variableScope)
 			if err != nil {
 				return zeroRune, nil, err
 			}
@@ -608,13 +614,14 @@ func (p *tavorParser) parseExpressionTerm(definitionName string, c rune, variabl
 		v, _ := strconv.Atoi(p.scan.TokenText())
 
 		tok = primitives.NewConstantInt(v)
+
+		c = p.scan.Scan()
 	}
 
 	if tok == nil {
 		return zeroRune, nil, nil
 	}
 
-	c = p.scan.Scan()
 	log.Debugf("parseExpressionTerm %d:%v -> %v", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
 
 	// operators
@@ -652,12 +659,12 @@ func (p *tavorParser) parseExpressionTerm(definitionName string, c rune, variabl
 	return c, tok, nil
 }
 
-func (p *tavorParser) parseTokenAttribute(definitionName string, c rune, variableScope map[string]token.Token) (token.Token, error) {
+func (p *tavorParser) parseTokenAttribute(definitionName string, c rune, variableScope map[string]token.Token) (rune, token.Token, error) {
 	log.Debug("new token attribute")
 
 	_, err := p.expectRune(scanner.Ident, c)
 	if err != nil {
-		return nil, err
+		return zeroRune, nil, err
 	}
 
 	name := p.scan.TokenText()
@@ -666,16 +673,105 @@ func (p *tavorParser) parseTokenAttribute(definitionName string, c rune, variabl
 
 	_, err = p.expectScanRune('.')
 	if err != nil {
-		return nil, err
+		return zeroRune, nil, err
 	}
 
 	_, err = p.expectScanRune(scanner.Ident)
 	if err != nil {
-		return nil, err
+		return zeroRune, nil, err
 	}
 
 	attribute := p.scan.TokenText()
 	attributePosition := p.scan.Position
+
+	var op string
+	var opToken token.Token
+
+	c = p.scan.Scan()
+
+	if c == scanner.Ident && p.scan.TokenText() == "not" {
+		_, err := p.expectScanRune(scanner.Ident)
+		if err != nil {
+			return zeroRune, nil, err
+		}
+
+		if p.scan.TokenText() != "in" {
+			return zeroRune, nil, &token.ParserError{
+				Message:  fmt.Sprintf("expected operator %q not %q", "in", p.scan.TokenText()),
+				Type:     token.ParseErrorExpectOperator,
+				Position: p.scan.Pos(),
+			}
+		}
+
+		log.Debug("operator: not in")
+
+		_, err = p.expectScanRune('(')
+		if err != nil {
+			return zeroRune, nil, err
+		}
+
+		_, err = p.expectScanRune(scanner.Ident)
+		if err != nil {
+			return zeroRune, nil, err
+		}
+
+		expectName := p.scan.TokenText()
+		expectNamePosition := p.scan.Position
+
+		expectTok, ok := variableScope[expectName]
+
+		isPointer := false
+
+		if ok {
+			if _, pp := expectTok.(*primitives.Pointer); pp {
+				isPointer = true
+			}
+		}
+
+		attribute := "Value"
+
+		if !ok || isPointer {
+			log.Debugf("parseTokenAttribute use empty pointer for %s.%s", expectName, attribute)
+
+			var tokenInterface *token.Token
+
+			pointer := primitives.NewEmptyPointer(tokenInterface)
+
+			variableScope[expectName] = pointer
+
+			nVariableScope := make(map[string]token.Token, len(variableScope))
+			for k, v := range variableScope {
+				nVariableScope[k] = v
+			}
+
+			p.forwardAttributeUsage = append(p.forwardAttributeUsage, attributeForwardUsage{
+				definitionName:    definitionName,
+				tokenName:         expectName,
+				tokenPosition:     expectNamePosition,
+				attribute:         attribute,
+				attributePosition: expectNamePosition,
+				pointer:           pointer,
+				variableScope:     nVariableScope,
+			})
+
+			expectTok = pointer
+		} else {
+			expectTok, err = p.selectTokenAttribute(expectTok, name, attribute, expectNamePosition, "", nil, variableScope)
+			if err != nil {
+				return zeroRune, nil, err
+			}
+		}
+
+		_, err = p.expectScanRune(')')
+		if err != nil {
+			return zeroRune, nil, err
+		}
+
+		op = "not in"
+		opToken = expectTok
+
+		c = p.scan.Scan()
+	}
 
 	var tok token.Token
 
@@ -713,11 +809,13 @@ func (p *tavorParser) parseTokenAttribute(definitionName string, c rune, variabl
 				tokenPosition:     tokenPosition,
 				attribute:         attribute,
 				attributePosition: attributePosition,
+				operator:          op,
+				operatorToken:     opToken,
 				pointer:           pointer,
 				variableScope:     nVariableScope,
 			})
 
-			return pointer, nil
+			return c, pointer, nil
 		}
 	}
 
@@ -727,10 +825,14 @@ func (p *tavorParser) parseTokenAttribute(definitionName string, c rune, variabl
 		variableScope: variableScope,
 	})
 
-	return p.selectTokenAttribute(tok, name, attribute, attributePosition, variableScope)
+	rtok, err := p.selectTokenAttribute(tok, name, attribute, attributePosition, op, opToken, variableScope)
+
+	log.Debugf("Insert token attribute %p(%#v)", rtok, rtok)
+
+	return c, rtok, err
 }
 
-func (p *tavorParser) selectTokenAttribute(tok token.Token, tokenName string, attribute string, attributePosition scanner.Position, variableScope map[string]token.Token) (token.Token, error) {
+func (p *tavorParser) selectTokenAttribute(tok token.Token, tokenName string, attribute string, attributePosition scanner.Position, operator string, operatorToken token.Token, variableScope map[string]token.Token) (token.Token, error) {
 	log.Debugf("use (%p)%#v as token", tok, tok)
 
 	log.Debug("finished token attribute (or will be unknown token attribute)")
@@ -744,7 +846,11 @@ func (p *tavorParser) selectTokenAttribute(tok token.Token, tokenName string, at
 	case *sequences.Sequence:
 		switch attribute {
 		case "Existing":
-			return i.ExistingItem(), nil
+			if operator == "not in" {
+				return i.ExistingItem(operatorToken), nil
+			} else {
+				return i.ExistingItem(nil), nil
+			}
 		case "Next":
 			return i.Item(), nil
 		case "Reset":
@@ -1490,7 +1596,7 @@ func ParseTavor(src io.Reader) (token.Token, error) {
 			}
 		}
 
-		rtok, err := p.selectTokenAttribute(tok, forwardUse.tokenName, forwardUse.attribute, forwardUse.attributePosition, variableScope)
+		rtok, err := p.selectTokenAttribute(tok, forwardUse.tokenName, forwardUse.attribute, forwardUse.attributePosition, forwardUse.operator, forwardUse.operatorToken, variableScope)
 		if err != nil {
 			return nil, err
 		}

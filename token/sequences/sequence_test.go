@@ -51,14 +51,14 @@ func TestSequenceItem(t *testing.T) {
 func TestExistingSequenceItem(t *testing.T) {
 	s := NewSequence(10, 2)
 
-	o := s.ExistingItem()
+	o := s.ExistingItem(nil)
 	Equal(t, "-1", o.String())
 
 	Equal(t, 10, s.Next())
 	Equal(t, 12, s.Next())
 	Equal(t, 14, s.Next())
 
-	o = s.ExistingItem()
+	o = s.ExistingItem(nil)
 	Equal(t, "10", o.String())
 
 	r := test.NewRandTest(0)
