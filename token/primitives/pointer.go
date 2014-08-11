@@ -56,6 +56,10 @@ func (p *Pointer) Set(o token.Token) error {
 	return nil
 }
 
+func (p *Pointer) Use() {
+	p.cloneOnFirstUse()
+}
+
 // Token interface methods
 
 func (p *Pointer) Clone() token.Token {
@@ -157,3 +161,13 @@ func (p *Pointer) InternalReplace(oldToken, newToken token.Token) {
 		p.token = newToken
 	}
 }
+
+// BooleanExpression interface methods
+
+/*func (p *Pointer) Evaluate() bool {
+	if tok, ok := p.token.(conditions.BooleanExpression); ok {
+		return tok.Evaluate()
+	} else {
+		panic(fmt.Errorf("TODO token %p(%#v) is not a BooleanExpression", p.token, p.token))
+	}
+}*/

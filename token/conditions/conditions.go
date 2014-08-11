@@ -3,6 +3,7 @@ package conditions
 import (
 	"fmt"
 
+	"github.com/zimmski/tavor"
 	"github.com/zimmski/tavor/rand"
 	"github.com/zimmski/tavor/token"
 	"github.com/zimmski/tavor/token/lists"
@@ -15,10 +16,10 @@ type IfPair struct {
 
 // Token interface methods
 
-func (c *IfPair) Clone() token.Token {
-	return &IfPair{
-		Head: c.Head,
-		Body: c.Body,
+func (c *IfPair) Clone() IfPair {
+	return IfPair{
+		Head: c.Head.Clone().(BooleanExpression),
+		Body: c.Body.Clone(),
 	}
 }
 
@@ -106,8 +107,13 @@ func NewIf(Pairs ...IfPair) *If {
 // Token interface methods
 
 func (c *If) Clone() token.Token {
+	nPairs := make([]IfPair, len(c.Pairs))
+	for i := 0; i < len(c.Pairs); i++ {
+		nPairs[i] = c.Pairs[i].Clone()
+	}
+
 	return &If{
-		Pairs: c.Pairs,
+		Pairs: nPairs,
 	}
 }
 
@@ -190,3 +196,12 @@ func (c *If) InternalReplace(oldToken, newToken token.Token) {
 	panic("TODO")
 }
 */
+
+// ScopeToken interface methods
+
+func (c *If) SetScope(variableScope map[string]token.Token) {
+	for _, pair := range c.Pairs {
+		tavor.SetScope(pair.Head, variableScope)
+		tavor.SetScope(pair.Body, variableScope)
+	}
+}

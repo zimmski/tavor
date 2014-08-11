@@ -3,13 +3,15 @@ package conditions
 import (
 	"fmt"
 
+	"github.com/zimmski/tavor/log"
 	"github.com/zimmski/tavor/rand"
 	"github.com/zimmski/tavor/token"
 	"github.com/zimmski/tavor/token/lists"
+	"github.com/zimmski/tavor/token/primitives"
 )
 
 type BooleanExpression interface {
-	lists.List
+	token.Token
 
 	Evaluate() bool
 }
@@ -187,5 +189,177 @@ func (c *BooleanEqual) InternalReplace(oldToken, newToken token.Token) {
 	}
 	if oldToken == c.b {
 		c.b = newToken
+	}
+}
+
+type VariableDefined struct {
+	name          string
+	variableScope map[string]token.Token
+}
+
+func NewVariableDefined(name string, variableScope map[string]token.Token) *VariableDefined {
+	return &VariableDefined{
+		name:          name,
+		variableScope: variableScope,
+	}
+}
+
+func (c *VariableDefined) Evaluate() bool {
+	_, ok := c.variableScope[c.name]
+
+	return ok
+}
+
+// Token interface methods
+
+func (c *VariableDefined) Clone() token.Token {
+	return &VariableDefined{
+		name:          c.name,
+		variableScope: c.variableScope,
+	}
+}
+
+func (c *VariableDefined) Fuzz(r rand.Rand) {
+	// do nothing
+}
+
+func (c *VariableDefined) FuzzAll(r rand.Rand) {
+	// do nothing
+}
+
+func (c *VariableDefined) Parse(pars *token.InternalParser, cur int) (int, []error) {
+	panic("This should never happen")
+}
+
+func (c *VariableDefined) Permutation(i int) error {
+	// do nothing
+
+	return nil
+}
+
+func (c *VariableDefined) Permutations() int {
+	return 1
+}
+
+func (c *VariableDefined) PermutationsAll() int {
+	return 1
+}
+
+func (c *VariableDefined) String() string {
+	return fmt.Sprintf("defined(%q)", c.name)
+}
+
+// ScopeToken interface methods
+
+func (c *VariableDefined) SetScope(variableScope map[string]token.Token) {
+	nScope := make(map[string]token.Token, len(variableScope))
+	for k, v := range variableScope {
+		nScope[k] = v
+	}
+
+	c.variableScope = nScope
+}
+
+type ExpressionPointer struct {
+	token token.Token
+}
+
+func NewExpressionPointer(token token.Token) *ExpressionPointer {
+	return &ExpressionPointer{
+		token: token,
+	}
+}
+
+func (c *ExpressionPointer) Evaluate() bool {
+	tok := c.token
+
+	if po, ok := tok.(*primitives.Pointer); ok {
+		log.Debugf("Found pointer in ExpressionPointer %p(%#v)", c, c)
+
+		for {
+			po.Use()
+			c := po.InternalGet()
+
+			po, ok = c.(*primitives.Pointer)
+			if !ok {
+				log.Debugf("Replaced pointer %p(%#v) with %p(%#v)", tok, tok, c, c)
+
+				tok = c
+
+				break
+			}
+		}
+	}
+
+	if t, ok := tok.(BooleanExpression); ok {
+		return t.Evaluate()
+	}
+
+	panic(fmt.Sprintf("token %p(%#v) does not implement BooleanExpression interface", c.token, c.token))
+}
+
+// Token interface methods
+
+func (c *ExpressionPointer) Clone() token.Token {
+	return &ExpressionPointer{
+		token: c.token.Clone(),
+	}
+}
+
+func (c *ExpressionPointer) Fuzz(r rand.Rand) {
+	// do nothing
+}
+
+func (c *ExpressionPointer) FuzzAll(r rand.Rand) {
+	// do nothing
+}
+
+func (c *ExpressionPointer) Parse(pars *token.InternalParser, cur int) (int, []error) {
+	panic("This should never happen")
+}
+
+func (c *ExpressionPointer) Permutation(i int) error {
+	// do nothing
+
+	return nil
+}
+
+func (c *ExpressionPointer) Permutations() int {
+	return 1
+}
+
+func (c *ExpressionPointer) PermutationsAll() int {
+	return 1
+}
+
+func (c *ExpressionPointer) String() string {
+	return c.token.String()
+}
+
+// ScopeToken interface methods
+
+func (c *ExpressionPointer) SetScope(variableScope map[string]token.Token) {
+	tok := c.token
+
+	if po, ok := tok.(*primitives.Pointer); ok {
+		log.Debugf("Found pointer in ExpressionPointer %p(%#v)", c, c)
+
+		for {
+			po.Use()
+			c := po.InternalGet()
+
+			po, ok = c.(*primitives.Pointer)
+			if !ok {
+				log.Debugf("Replaced pointer %p(%#v) with %p(%#v)", tok, tok, c, c)
+
+				tok = c
+
+				break
+			}
+		}
+	}
+
+	if t, ok := tok.(token.ScopeToken); ok {
+		t.SetScope(variableScope)
 	}
 }
