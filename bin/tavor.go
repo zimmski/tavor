@@ -347,12 +347,16 @@ func main() {
 
 	log.Info("format file is valid")
 
-	if opts.Format.Print {
-		tavor.PrettyPrintTree(os.Stdout, doc)
+	if opts.Format.PrintInternal {
+		log.Info("Internal AST:")
+
+		tavor.PrettyPrintInternalTree(os.Stdout, doc)
 	}
 
-	if opts.Format.PrintInternal {
-		tavor.PrettyPrintInternalTree(os.Stdout, doc)
+	if opts.Format.Print {
+		log.Info("AST:")
+
+		tavor.PrettyPrintTree(os.Stdout, doc)
 	}
 
 	if opts.Format.Validate {
