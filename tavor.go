@@ -352,6 +352,34 @@ func SetScope(root token.Token, scope map[string]token.Token) {
 		tok, _ := queue.Shift()
 
 		if t, ok := tok.(token.ScopeToken); ok {
+			log.Errorf("set scope %p(%#v) -> %#v", t, t, scope)
+			t.SetScope(scope)
+		}
+
+		switch t := tok.(type) {
+		case token.ForwardToken:
+			if v := t.Get(); v != nil {
+				queue.Push(v)
+			}
+		case lists.List:
+			for i := 0; i < t.Len(); i++ {
+				c, _ := t.Get(i)
+
+				queue.Push(c)
+			}
+		}
+	}
+}
+
+func SetInternalScope(root token.Token, scope map[string]token.Token) {
+	queue := linkedlist.New()
+
+	queue.Push(root)
+
+	for !queue.Empty() {
+		tok, _ := queue.Shift()
+
+		if t, ok := tok.(token.ScopeToken); ok {
 			t.SetScope(scope)
 		}
 

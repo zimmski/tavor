@@ -201,7 +201,7 @@ func (c *If) InternalReplace(oldToken, newToken token.Token) {
 
 func (c *If) SetScope(variableScope map[string]token.Token) {
 	for _, pair := range c.Pairs {
-		tavor.SetScope(pair.Head, variableScope)
-		tavor.SetScope(pair.Body, variableScope)
+		tavor.SetInternalScope(pair.Head, variableScope)
+		tavor.SetInternalScope(pair.Body, variableScope)
 	}
 }
