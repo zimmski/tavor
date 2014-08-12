@@ -579,6 +579,7 @@ func (p *tavorParser) parseExpressionTerm(definitionName string, c rune, variabl
 				var tokenInterface *token.Token
 
 				pointer := primitives.NewEmptyPointer(tokenInterface)
+				nPointer := primitives.NewPointer(pointer)
 
 				p.forwardAttributeUsage = append(p.forwardAttributeUsage, attributeForwardUsage{
 					definitionName:    definitionName,
@@ -590,7 +591,7 @@ func (p *tavorParser) parseExpressionTerm(definitionName string, c rune, variabl
 					variableScope:     nVariableScope,
 				})
 
-				tok = pointer
+				tok = nPointer
 			} else {
 				tok, err = p.selectTokenAttribute(tok, name, attribute, attributePosition, "", nil, nVariableScope)
 				if err != nil {
@@ -736,8 +737,9 @@ func (p *tavorParser) parseTokenAttribute(definitionName string, c rune, variabl
 			var tokenInterface *token.Token
 
 			pointer := primitives.NewEmptyPointer(tokenInterface)
+			nPointer := primitives.NewPointer(pointer)
 
-			variableScope[expectName] = pointer
+			variableScope[expectName] = nPointer
 
 			nVariableScope := make(map[string]token.Token, len(variableScope))
 			for k, v := range variableScope {
@@ -754,7 +756,7 @@ func (p *tavorParser) parseTokenAttribute(definitionName string, c rune, variabl
 				variableScope:     nVariableScope,
 			})
 
-			expectTok = pointer
+			expectTok = nPointer
 		} else {
 			expectTok, err = p.selectTokenAttribute(expectTok, name, attribute, expectNamePosition, "", nil, variableScope)
 			if err != nil {
@@ -795,8 +797,9 @@ func (p *tavorParser) parseTokenAttribute(definitionName string, c rune, variabl
 			var tokenInterface *token.Token
 
 			pointer := primitives.NewEmptyPointer(tokenInterface)
+			nPointer := primitives.NewPointer(pointer)
 
-			variableScope[name] = pointer
+			variableScope[name] = nPointer
 
 			nVariableScope := make(map[string]token.Token, len(variableScope))
 			for k, v := range variableScope {
@@ -815,7 +818,7 @@ func (p *tavorParser) parseTokenAttribute(definitionName string, c rune, variabl
 				variableScope:     nVariableScope,
 			})
 
-			return c, pointer, nil
+			return c, nPointer, nil
 		}
 	}
 

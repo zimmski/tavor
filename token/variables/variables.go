@@ -141,6 +141,30 @@ func (v *VariableValue) String() string {
 	return v.variable.InternalGet().String()
 }
 
+// ForwardToken interface methods
+
+func (v *VariableValue) Get() token.Token {
+	return nil
+}
+
+func (v *VariableValue) InternalGet() token.Token {
+	return v.variable
+}
+
+func (v *VariableValue) InternalLogicalRemove(tok token.Token) token.Token {
+	if v.variable == tok {
+		return nil
+	}
+
+	return v
+}
+
+func (v *VariableValue) InternalReplace(oldToken, newToken token.Token) {
+	if v.variable == oldToken {
+		v.variable = newToken.(*Variable)
+	}
+}
+
 // ScopeToken interface methods
 
 func (v *VariableValue) SetScope(variableScope map[string]token.Token) {

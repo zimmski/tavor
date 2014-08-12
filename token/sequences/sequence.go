@@ -225,6 +225,30 @@ func (s *sequenceExistingItem) String() string {
 	return strconv.Itoa(s.value)
 }
 
+// ForwardToken interface methods
+
+func (s *sequenceExistingItem) Get() token.Token {
+	return nil
+}
+
+func (s *sequenceExistingItem) InternalGet() token.Token {
+	return s.except
+}
+
+func (s *sequenceExistingItem) InternalLogicalRemove(tok token.Token) token.Token {
+	if s.except == tok {
+		return nil
+	}
+
+	return s
+}
+
+func (s *sequenceExistingItem) InternalReplace(oldToken, newToken token.Token) {
+	if s.except == oldToken {
+		s.except = newToken
+	}
+}
+
 // ResetToken interface methods
 
 func (s *sequenceExistingItem) Reset() {

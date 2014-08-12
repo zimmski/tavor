@@ -132,6 +132,12 @@ func UnrollPointers(root token.Token) token.Token {
 		case *primitives.Pointer:
 			child := t.InternalGet()
 
+			if child == nil {
+				log.Debugf("Child is nil")
+
+				continue
+			}
+
 			replace := true
 
 			if p, ok := child.(*primitives.Pointer); ok {

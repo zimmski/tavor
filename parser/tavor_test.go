@@ -1287,15 +1287,15 @@ func TestTavorParserIfElseIfElsedd(t *testing.T) {
 		)
 		nVariable := variables.NewVariable("var", nOne)
 
-		Equal(t, tok, lists.NewAll(
+		var ll token.Token = lists.NewAll(
 			nVariable,
 			conditions.NewIf(
-				conditions.IfPair{
-					Head: conditions.NewBooleanEqual(primitives.NewTokenPointer(variables.NewVariableValue(nVariable)), primitives.NewConstantInt(1)),
+				conditions.IfPair{ // TODO FIXME AND FIXME!!!!!! allow unrolling of IfPairs and BooleanEquals and pretty much all in token/conditions
+					Head: conditions.NewBooleanEqual(primitives.NewPointer(primitives.NewTokenPointer(variables.NewVariableValue(nVariable))), primitives.NewConstantInt(1)),
 					Body: primitives.NewConstantString("var is one"),
 				},
 				conditions.IfPair{
-					Head: conditions.NewBooleanEqual(primitives.NewTokenPointer(variables.NewVariableValue(nVariable)), primitives.NewConstantInt(2)),
+					Head: conditions.NewBooleanEqual(primitives.NewPointer(primitives.NewTokenPointer(variables.NewVariableValue(nVariable))), primitives.NewConstantInt(2)),
 					Body: primitives.NewConstantString("var is two"),
 				},
 				conditions.IfPair{
@@ -1303,7 +1303,9 @@ func TestTavorParserIfElseIfElsedd(t *testing.T) {
 					Body: primitives.NewConstantString("var is three"),
 				},
 			),
-		))
+		)
+
+		Equal(t, tok, ll)
 
 		Equal(t, "1var is one", tok.String())
 
@@ -1356,7 +1358,7 @@ func TestTavorParserIfElseIfElsedd(t *testing.T) {
 				nVariable,
 				conditions.NewIf(
 					conditions.IfPair{
-						Head: conditions.NewExpressionPointer(primitives.NewTokenPointer(conditions.NewVariableDefined("var", map[string]token.Token{"var": nVariable}))),
+						Head: conditions.NewExpressionPointer(primitives.NewPointer(primitives.NewTokenPointer(conditions.NewVariableDefined("var", map[string]token.Token{"var": nVariable})))),
 						Body: primitives.NewConstantString("var is defined"),
 					},
 					conditions.IfPair{
@@ -1367,7 +1369,7 @@ func TestTavorParserIfElseIfElsedd(t *testing.T) {
 			),
 			conditions.NewIf(
 				conditions.IfPair{
-					Head: conditions.NewExpressionPointer(primitives.NewTokenPointer(conditions.NewVariableDefined("var", map[string]token.Token{}))),
+					Head: conditions.NewExpressionPointer(primitives.NewPointer(primitives.NewTokenPointer(conditions.NewVariableDefined("var", map[string]token.Token{})))),
 					Body: primitives.NewConstantString("var is defined"),
 				},
 				conditions.IfPair{
