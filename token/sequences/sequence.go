@@ -184,7 +184,7 @@ func (s *sequenceExistingItem) Clone() token.Token {
 }
 
 func (s *sequenceExistingItem) Fuzz(r rand.Rand) {
-	s.value = s.sequence.existing(r, s.except)
+	s.permutation(r)
 }
 
 func (s *sequenceExistingItem) FuzzAll(r rand.Rand) {
@@ -208,7 +208,7 @@ func (s *sequenceExistingItem) Permutation(i int) error {
 		}
 	}
 
-	s.permutation(rand.NewConstantRand(0))
+	s.permutation(rand.NewIncrementRand(0))
 
 	return nil
 }
@@ -252,7 +252,7 @@ func (s *sequenceExistingItem) InternalReplace(oldToken, newToken token.Token) {
 // ResetToken interface methods
 
 func (s *sequenceExistingItem) Reset() {
-	s.permutation(rand.NewConstantRand(0))
+	s.permutation(rand.NewIncrementRand(0))
 }
 
 // ScopeToken interface methods
