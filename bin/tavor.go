@@ -51,6 +51,7 @@ var opts struct {
 
 	Format struct {
 		FormatFile    flags.Filename `long:"format-file" description:"Input tavor format file" required:"true"`
+		Print         bool           `long:"print" description:"Prints the AST of the parsed format file"`
 		PrintInternal bool           `long:"print-internal" description:"Prints the internal AST of the parsed format file"`
 		Validate      bool           `long:"validate" description:"Just validate the format file and exit"`
 	} `group:"Format file options"`
@@ -345,6 +346,10 @@ func main() {
 	}
 
 	log.Info("format file is valid")
+
+	if opts.Format.Print {
+		tavor.PrettyPrintTree(os.Stdout, doc)
+	}
 
 	if opts.Format.PrintInternal {
 		tavor.PrettyPrintInternalTree(os.Stdout, doc)
