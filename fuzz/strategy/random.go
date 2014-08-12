@@ -39,6 +39,9 @@ func (s *RandomStrategy) Fuzz(r rand.Rand) (chan struct{}, error) {
 
 		s.fuzz(s.root, r)
 
+		tavor.ResetScope(s.root)
+		tavor.ResetResetTokens(s.root)
+
 		log.Debug("done with fuzzing step")
 
 		// done with the last fuzzing step

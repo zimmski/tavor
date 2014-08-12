@@ -111,7 +111,8 @@ func (s *AlmostAllPermutationsStrategy) Fuzz(r rand.Rand) (chan struct{}, error)
 			}
 		}
 
-		s.resetResetTokens()
+		tavor.ResetScope(s.root)
+		tavor.ResetResetTokens(s.root)
 
 		log.Debug("done with fuzzing step")
 
@@ -128,35 +129,6 @@ func (s *AlmostAllPermutationsStrategy) Fuzz(r rand.Rand) (chan struct{}, error)
 	}()
 
 	return continueFuzzing, nil
-}
-
-func (s *AlmostAllPermutationsStrategy) resetResetTokens() {
-	var queue = linkedlist.New()
-
-	queue.Push(s.root)
-
-	for !queue.Empty() {
-		v, _ := queue.Shift()
-
-		switch tok := v.(type) {
-		case token.ResetToken:
-			log.Debugf("reset %#v(%p)", tok, tok)
-
-			tok.Reset()
-		}
-
-		switch tok := v.(type) {
-		case token.ForwardToken:
-			if v := tok.Get(); v != nil {
-				queue.Push(v)
-			}
-		case lists.List:
-			for i := 0; i < tok.Len(); i++ {
-				c, _ := tok.Get(i)
-				queue.Push(c)
-			}
-		}
-	}
 }
 
 func (s *AlmostAllPermutationsStrategy) setTokenPermutation(tok token.Token, permutation int) {
@@ -230,7 +202,8 @@ STEP:
 			}
 		}
 
-		s.resetResetTokens()
+		tavor.ResetScope(s.root)
+		tavor.ResetResetTokens(s.root)
 
 		log.Debug("done with fuzzing step")
 

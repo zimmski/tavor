@@ -91,35 +91,6 @@ func (s *BinarySearchStrategy) getTree(root token.Token, fromChildren bool) []bi
 	return tree
 }
 
-func (s *BinarySearchStrategy) resetResetTokens() {
-	var queue = linkedlist.New()
-
-	queue.Push(s.root)
-
-	for !queue.Empty() {
-		v, _ := queue.Shift()
-
-		switch tok := v.(type) {
-		case token.ResetToken:
-			log.Debugf("reset %#v(%p)", tok, tok)
-
-			tok.Reset()
-		}
-
-		switch tok := v.(type) {
-		case token.ForwardToken:
-			if v := tok.Get(); v != nil {
-				queue.Push(v)
-			}
-		case lists.List:
-			for i := 0; i < tok.Len(); i++ {
-				c, _ := tok.Get(i)
-				queue.Push(c)
-			}
-		}
-	}
-}
-
 func (s *BinarySearchStrategy) setReduction(tok token.ReduceToken, reduction int) {
 	log.Debugf("set (%p)%#v to reduction %d", tok, tok, reduction)
 
@@ -210,7 +181,8 @@ func (s *BinarySearchStrategy) reduce(continueReducing chan struct{}, feedbackRe
 }
 
 func (s *BinarySearchStrategy) nextStep(continueReducing chan struct{}, feedbackReducing <-chan ReduceFeedbackType) (bool, ReduceFeedbackType) {
-	s.resetResetTokens()
+	tavor.ResetScope(s.root)
+	tavor.ResetResetTokens(s.root)
 
 	log.Debug("done with reducing step")
 

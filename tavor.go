@@ -343,6 +343,39 @@ func UnrollPointers(root token.Token) token.Token {
 	return root
 }
 
+func ResetResetTokens(root token.Token) {
+	var queue = linkedlist.New()
+
+	queue.Push(root)
+
+	for !queue.Empty() {
+		v, _ := queue.Shift()
+
+		switch tok := v.(type) {
+		case token.ResetToken:
+			log.Debugf("reset %#v(%p)", tok, tok)
+
+			tok.Reset()
+		}
+
+		switch tok := v.(type) {
+		case token.ForwardToken:
+			if v := tok.Get(); v != nil {
+				queue.Push(v)
+			}
+		case lists.List:
+			for i := 0; i < tok.Len(); i++ {
+				c, _ := tok.Get(i)
+				queue.Push(c)
+			}
+		}
+	}
+}
+
+func ResetScope(root token.Token) {
+	SetScope(root, make(map[string]token.Token))
+}
+
 func SetScope(root token.Token, scope map[string]token.Token) {
 	queue := linkedlist.New()
 

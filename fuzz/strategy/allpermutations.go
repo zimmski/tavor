@@ -1,8 +1,6 @@
 package strategy
 
 import (
-	"github.com/zimmski/container/list/linkedlist"
-
 	"github.com/zimmski/tavor"
 	"github.com/zimmski/tavor/log"
 	"github.com/zimmski/tavor/rand"
@@ -231,7 +229,8 @@ STEP:
 }
 
 func (s *AllPermutationsStrategy) nextStep(continueFuzzing chan struct{}) bool {
-	s.resetResetTokens()
+	tavor.ResetScope(s.root)
+	tavor.ResetResetTokens(s.root)
 
 	log.Debug("done with fuzzing step")
 
@@ -248,33 +247,4 @@ func (s *AllPermutationsStrategy) nextStep(continueFuzzing chan struct{}) bool {
 	log.Debug("start fuzzing step")
 
 	return true
-}
-
-func (s *AllPermutationsStrategy) resetResetTokens() {
-	var queue = linkedlist.New()
-
-	queue.Push(s.root)
-
-	for !queue.Empty() {
-		v, _ := queue.Shift()
-
-		switch tok := v.(type) {
-		case token.ResetToken:
-			log.Debugf("reset %#v(%p)", tok, tok)
-
-			tok.Reset()
-		}
-
-		switch tok := v.(type) {
-		case token.ForwardToken:
-			if v := tok.Get(); v != nil {
-				queue.Push(v)
-			}
-		case lists.List:
-			for i := 0; i < tok.Len(); i++ {
-				c, _ := tok.Get(i)
-				queue.Push(c)
-			}
-		}
-	}
 }
