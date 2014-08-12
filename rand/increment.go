@@ -19,13 +19,16 @@ func (r *IncrementRand) Int() int {
 func (r *IncrementRand) Intn(n int) int {
 	if n <= int(r.value) {
 		r.value = 0
-	} else {
-		r.value++
 	}
 
-	return int(r.value)
+	v := r.value
+
+	r.value++
+
+	return int(v)
 }
 
 func (r *IncrementRand) Seed(seed int64) {
 	r.seed = seed
+	r.value = 0
 }
