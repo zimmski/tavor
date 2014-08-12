@@ -14,7 +14,7 @@ func TestSequenceTokensToBeTokens(t *testing.T) {
 
 	Implements(t, tok, &Sequence{})
 	Implements(t, tok, &sequenceItem{})
-	Implements(t, tok, &sequenceExistingItem{})
+	Implements(t, tok, &SequenceExistingItem{})
 }
 
 func TestSequence(t *testing.T) {

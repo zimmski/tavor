@@ -1,11 +1,14 @@
 package strategy
 
 import (
+	"github.com/zimmski/container/list/linkedlist"
+
 	"github.com/zimmski/tavor"
 	"github.com/zimmski/tavor/log"
 	"github.com/zimmski/tavor/rand"
 	"github.com/zimmski/tavor/token"
 	"github.com/zimmski/tavor/token/lists"
+	"github.com/zimmski/tavor/token/sequences"
 )
 
 type RandomStrategy struct {
@@ -41,6 +44,7 @@ func (s *RandomStrategy) Fuzz(r rand.Rand) (chan struct{}, error) {
 
 		tavor.ResetScope(s.root)
 		tavor.ResetResetTokens(s.root)
+		s.fuzzYADDA(s.root, r)
 
 		log.Debug("done with fuzzing step")
 
@@ -73,6 +77,38 @@ func (s *RandomStrategy) fuzz(tok token.Token, r rand.Rand) {
 		for i := 0; i < l; i++ {
 			c, _ := t.Get(i)
 			s.fuzz(c, r)
+		}
+	}
+}
+
+func (s *RandomStrategy) fuzzYADDA(root token.Token, r rand.Rand) {
+
+	// TODO FIXME AND FIXME FIXME FIXME this should be done automatically somehow
+
+	queue := linkedlist.New()
+
+	queue.Push(root)
+
+	for !queue.Empty() {
+		tok, _ := queue.Shift()
+
+		if t, ok := tok.(*sequences.SequenceExistingItem); ok {
+			log.Debugf("fuzz again %#v(%p)", t, t)
+
+			t.Fuzz(r)
+		}
+
+		switch t := tok.(type) {
+		case token.ForwardToken:
+			if v := t.Get(); v != nil {
+				queue.Push(v)
+			}
+		case lists.List:
+			for i := 0; i < t.Len(); i++ {
+				c, _ := t.Get(i)
+
+				queue.Push(c)
+			}
 		}
 	}
 }

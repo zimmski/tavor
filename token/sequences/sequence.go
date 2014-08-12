@@ -1,6 +1,7 @@
 package sequences
 
 import (
+	"fmt"
 	"strconv"
 
 	"github.com/zimmski/tavor/rand"
@@ -40,7 +41,7 @@ func (s *Sequence) existing(r rand.Rand, except token.Token) int {
 	}
 
 	if n == 1 && s.start == ex {
-		return s.start
+		panic(fmt.Sprintf("There is no sequence value to choose from")) // TODO
 	}
 
 	for {
@@ -52,14 +53,14 @@ func (s *Sequence) existing(r rand.Rand, except token.Token) int {
 	}
 }
 
-func (s *Sequence) ExistingItem(except token.Token) *sequenceExistingItem {
+func (s *Sequence) ExistingItem(except token.Token) *SequenceExistingItem {
 	v := -1 // TODO there should be some kind of real nil value
 
 	if s.value != s.start {
 		v = s.start
 	}
 
-	return &sequenceExistingItem{
+	return &SequenceExistingItem{
 		sequence: s,
 		value:    v,
 		except:   except,
@@ -164,42 +165,42 @@ func (s *sequenceItem) Reset() {
 	s.permutation(0)
 }
 
-type sequenceExistingItem struct {
+type SequenceExistingItem struct {
 	sequence *Sequence
 	value    int
 	except   token.Token
 }
 
-func (s *sequenceExistingItem) Clone() token.Token {
+func (s *SequenceExistingItem) Clone() token.Token {
 	ex := s.except
 	if ex != nil {
 		ex = ex.Clone()
 	}
 
-	return &sequenceExistingItem{
+	return &SequenceExistingItem{
 		sequence: s.sequence,
 		value:    s.value,
 		except:   ex,
 	}
 }
 
-func (s *sequenceExistingItem) Fuzz(r rand.Rand) {
+func (s *SequenceExistingItem) Fuzz(r rand.Rand) {
 	s.permutation(r)
 }
 
-func (s *sequenceExistingItem) FuzzAll(r rand.Rand) {
+func (s *SequenceExistingItem) FuzzAll(r rand.Rand) {
 	s.Fuzz(r)
 }
 
-func (s *sequenceExistingItem) Parse(pars *token.InternalParser, cur int) (int, []error) {
+func (s *SequenceExistingItem) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	panic("TODO implement")
 }
 
-func (s *sequenceExistingItem) permutation(r rand.Rand) {
+func (s *SequenceExistingItem) permutation(r rand.Rand) {
 	s.value = s.sequence.existing(r, s.except)
 }
 
-func (s *sequenceExistingItem) Permutation(i int) error {
+func (s *SequenceExistingItem) Permutation(i int) error {
 	permutations := s.Permutations()
 
 	if i < 1 || i > permutations {
@@ -213,29 +214,29 @@ func (s *sequenceExistingItem) Permutation(i int) error {
 	return nil
 }
 
-func (s *sequenceExistingItem) Permutations() int {
+func (s *SequenceExistingItem) Permutations() int {
 	return 1
 }
 
-func (s *sequenceExistingItem) PermutationsAll() int {
+func (s *SequenceExistingItem) PermutationsAll() int {
 	return s.Permutations()
 }
 
-func (s *sequenceExistingItem) String() string {
+func (s *SequenceExistingItem) String() string {
 	return strconv.Itoa(s.value)
 }
 
 // ForwardToken interface methods
 
-func (s *sequenceExistingItem) Get() token.Token {
+func (s *SequenceExistingItem) Get() token.Token {
 	return nil
 }
 
-func (s *sequenceExistingItem) InternalGet() token.Token {
+func (s *SequenceExistingItem) InternalGet() token.Token {
 	return s.except
 }
 
-func (s *sequenceExistingItem) InternalLogicalRemove(tok token.Token) token.Token {
+func (s *SequenceExistingItem) InternalLogicalRemove(tok token.Token) token.Token {
 	if s.except == tok {
 		return nil
 	}
@@ -243,7 +244,7 @@ func (s *sequenceExistingItem) InternalLogicalRemove(tok token.Token) token.Toke
 	return s
 }
 
-func (s *sequenceExistingItem) InternalReplace(oldToken, newToken token.Token) {
+func (s *SequenceExistingItem) InternalReplace(oldToken, newToken token.Token) {
 	if s.except == oldToken {
 		s.except = newToken
 	}
@@ -251,13 +252,13 @@ func (s *sequenceExistingItem) InternalReplace(oldToken, newToken token.Token) {
 
 // ResetToken interface methods
 
-func (s *sequenceExistingItem) Reset() {
+func (s *SequenceExistingItem) Reset() {
 	s.permutation(rand.NewIncrementRand(0))
 }
 
 // ScopeToken interface methods
 
-func (s *sequenceExistingItem) SetScope(variableScope map[string]token.Token) {
+func (s *SequenceExistingItem) SetScope(variableScope map[string]token.Token) {
 	if s.except != nil {
 		if tok, ok := s.except.(token.ScopeToken); ok {
 			tok.SetScope(variableScope)

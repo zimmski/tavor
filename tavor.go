@@ -379,26 +379,47 @@ func ResetScope(root token.Token) {
 func SetScope(root token.Token, scope map[string]token.Token) {
 	queue := linkedlist.New()
 
-	queue.Push(root)
+	type set struct {
+		token token.Token
+		scope map[string]token.Token
+	}
+
+	queue.Push(set{
+		token: root,
+		scope: scope,
+	})
 
 	for !queue.Empty() {
-		tok, _ := queue.Shift()
+		v, _ := queue.Shift()
+		s := v.(set)
 
-		if t, ok := tok.(token.ScopeToken); ok {
-			log.Errorf("set scope %p(%#v) -> %#v", t, t, scope)
-			t.SetScope(scope)
+		if t, ok := s.token.(token.ScopeToken); ok {
+			log.Debugf("setScope %#v(%p)", t, t)
+
+			t.SetScope(s.scope)
 		}
 
-		switch t := tok.(type) {
+		nScope := make(map[string]token.Token, len(s.scope))
+		for k, v := range s.scope {
+			nScope[k] = v
+		}
+
+		switch t := s.token.(type) {
 		case token.ForwardToken:
 			if v := t.Get(); v != nil {
-				queue.Push(v)
+				queue.Push(set{
+					token: v,
+					scope: nScope,
+				})
 			}
 		case lists.List:
 			for i := 0; i < t.Len(); i++ {
 				c, _ := t.Get(i)
 
-				queue.Push(c)
+				queue.Push(set{
+					token: c,
+					scope: nScope,
+				})
 			}
 		}
 	}
@@ -413,6 +434,8 @@ func SetInternalScope(root token.Token, scope map[string]token.Token) {
 		tok, _ := queue.Shift()
 
 		if t, ok := tok.(token.ScopeToken); ok {
+			log.Debugf("setScope %#v(%p)", t, t)
+
 			t.SetScope(scope)
 		}
 

@@ -1,6 +1,7 @@
 package variables
 
 import (
+	"github.com/zimmski/tavor/log"
 	"github.com/zimmski/tavor/rand"
 	"github.com/zimmski/tavor/token"
 	"github.com/zimmski/tavor/token/primitives"
@@ -179,6 +180,12 @@ func (v *VariableValue) SetScope(variableScope map[string]token.Token) {
 				break
 			}
 		}
+	}
+
+	if tok == nil { // TODO
+		log.Debugf("TODO this should not happen")
+
+		return
 	}
 
 	if t, ok := tok.(*VariableValue); ok {
