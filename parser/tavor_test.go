@@ -779,6 +779,28 @@ func TestTavorParserAndCuriousCaseOfFuzzing(t *testing.T) {
 
 		Equal(t, "211", tok.String())
 	}
+
+	// Attributes in repeats
+	{
+		tok, err = ParseTavor(strings.NewReader(`
+			As = +3("a")
+			Bs = +$As.Count("b")
+			START = As Bs
+		`))
+		Nil(t, err)
+
+		Equal(t, "aaabbb", tok.String())
+	}
+	{
+		tok, err = ParseTavor(strings.NewReader(`
+			As = +3("a")
+			Bs = +2,$As.Count("b")
+			START = As Bs
+		`))
+		Nil(t, err)
+
+		Equal(t, "aaabb", tok.String())
+	}
 }
 
 func TestTavorParserLoops(t *testing.T) {

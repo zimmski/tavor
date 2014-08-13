@@ -333,21 +333,33 @@ OUT:
 			c = p.scan.Scan()
 			log.Debugf("parseTerm repeat before ( %d:%v -> %v", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
 
-			var from, to int
+			var from, to token.Token
 
 			if sym == '*' {
-				from, to = 0, tavor.MaxRepeat
+				from, to = primitives.NewConstantInt(0), primitives.NewConstantInt(tavor.MaxRepeat)
 			} else {
 				if c == scanner.Int {
-					from, _ = strconv.Atoi(p.scan.TokenText())
+					iFrom, _ := strconv.Atoi(p.scan.TokenText())
+					from = primitives.NewConstantInt(iFrom)
 
 					c = p.scan.Scan()
 					log.Debugf("parseTerm repeat after from ( %d:%v -> %v", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
 
 					// until there is an explicit "to" we can assume to==from
-					to = from
+					to = from.Clone()
+				} else if c == '$' {
+					c = p.scan.Scan()
+
+					c, from, err = p.parseTokenAttribute(definitionName, c, variableScope)
+
+					if err != nil {
+						return zeroRune, nil, nil, err
+					}
+
+					// until there is an explicit "to" we can assume to==from
+					to = from.Clone()
 				} else {
-					from, to = 1, tavor.MaxRepeat
+					from, to = primitives.NewConstantInt(1), primitives.NewConstantInt(tavor.MaxRepeat)
 				}
 
 				if c == ',' {
@@ -355,12 +367,21 @@ OUT:
 					log.Debugf("parseTerm repeat after , ( %d:%v -> %v", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
 
 					if c == scanner.Int {
-						to, _ = strconv.Atoi(p.scan.TokenText())
+						iTo, _ := strconv.Atoi(p.scan.TokenText())
+						to = primitives.NewConstantInt(iTo)
 
 						c = p.scan.Scan()
 						log.Debugf("parseTerm repeat after to ( %d:%v -> %v", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
+					} else if c == '$' {
+						c = p.scan.Scan()
+
+						c, to, err = p.parseTokenAttribute(definitionName, c, variableScope)
+
+						if err != nil {
+							return zeroRune, nil, nil, err
+						}
 					} else {
-						to = tavor.MaxRepeat
+						to = primitives.NewConstantInt(tavor.MaxRepeat)
 					}
 				}
 			}
@@ -389,12 +410,12 @@ OUT:
 			case 0:
 				// ignore
 			case 1:
-				addToken(lists.NewRepeat(toks[0], int64(from), int64(to)))
+				addToken(lists.NewRepeatWithTokens(toks[0], from, to))
 			default:
-				addToken(lists.NewRepeat(lists.NewAll(toks...), int64(from), int64(to)))
+				addToken(lists.NewRepeatWithTokens(lists.NewAll(toks...), from, to))
 			}
 
-			if from > 0 && len(embeddedToks) != 0 {
+			if len(embeddedToks) != 0 {
 				embeddedTokens = append(embeddedTokens, embeddedToks...)
 			}
 

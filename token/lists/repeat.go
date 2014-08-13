@@ -3,14 +3,16 @@ package lists
 import (
 	"bytes"
 	"math"
+	"strconv"
 
 	"github.com/zimmski/tavor/rand"
 	"github.com/zimmski/tavor/token"
+	"github.com/zimmski/tavor/token/primitives"
 )
 
 type Repeat struct {
-	from  int64
-	to    int64
+	from  token.Token
+	to    token.Token
 	token token.Token
 	value []token.Token
 
@@ -18,12 +20,21 @@ type Repeat struct {
 	reducingOriginalValue []token.Token
 }
 
-func NewRepeat(tok token.Token, from, to int64) *Repeat {
+func NewRepeat(tok token.Token, from int64, to int64) *Repeat {
+	return NewRepeatWithTokens(tok, primitives.NewConstantInt(int(from)), primitives.NewConstantInt(int(to)))
+}
+
+func NewRepeatWithTokens(tok token.Token, from token.Token, to token.Token) *Repeat {
+	iFrom, err := strconv.Atoi(from.String())
+	if err != nil {
+		panic(err) // TODO
+	}
+
 	l := &Repeat{
 		from:  from,
 		to:    to,
 		token: tok,
-		value: make([]token.Token, from),
+		value: make([]token.Token, iFrom),
 	}
 
 	for i := range l.value {
@@ -34,11 +45,21 @@ func NewRepeat(tok token.Token, from, to int64) *Repeat {
 }
 
 func (l *Repeat) From() int64 {
-	return l.from
+	iFrom, err := strconv.Atoi(l.from.String())
+	if err != nil {
+		panic(err) // TODO
+	}
+
+	return int64(iFrom)
 }
 
 func (l *Repeat) To() int64 {
-	return l.to
+	iTo, err := strconv.Atoi(l.to.String())
+	if err != nil {
+		panic(err) // TODO
+	}
+
+	return int64(iTo)
 }
 
 // Token interface methods
@@ -59,7 +80,7 @@ func (l *Repeat) Clone() token.Token {
 }
 
 func (l *Repeat) Fuzz(r rand.Rand) {
-	i := r.Intn(int(l.to - l.from + 1))
+	i := r.Intn(int(l.To() - l.From() + 1))
 
 	l.permutation(i)
 }
@@ -75,7 +96,7 @@ func (l *Repeat) FuzzAll(r rand.Rand) {
 func (l *Repeat) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	var toks []token.Token
 
-	for i := 1; i <= int(l.from); i++ {
+	for i := 1; i <= int(l.From()); i++ {
 		tok := l.token.Clone()
 
 		nex, errs := tok.Parse(pars, cur)
@@ -88,7 +109,7 @@ func (l *Repeat) Parse(pars *token.InternalParser, cur int) (int, []error) {
 		toks = append(toks, tok)
 	}
 
-	for i := l.from; i < l.to; i++ {
+	for i := l.From(); i < l.To(); i++ {
 		tok := l.token.Clone()
 
 		nex, errs := tok.Parse(pars, cur)
@@ -107,7 +128,7 @@ func (l *Repeat) Parse(pars *token.InternalParser, cur int) (int, []error) {
 }
 
 func (l *Repeat) permutation(i int) {
-	toks := make([]token.Token, i+int(l.from))
+	toks := make([]token.Token, i+int(l.From()))
 
 	for i := range toks {
 		toks[i] = l.token.Clone()
@@ -131,21 +152,21 @@ func (l *Repeat) Permutation(i int) error {
 }
 
 func (l *Repeat) Permutations() int {
-	return int(l.to - l.from + 1)
+	return int(l.To() - l.From() + 1)
 }
 
 func (l *Repeat) PermutationsAll() int {
 	sum := 0
-	from := l.from
+	from := l.From()
 
-	if l.from == 0 {
+	if l.From() == 0 {
 		sum++
 		from++
 	}
 
 	tokenPermutations := l.token.PermutationsAll()
 
-	for i := from; i <= l.to; i++ {
+	for i := from; i <= l.To(); i++ {
 		sum += int(math.Pow(float64(tokenPermutations), float64(i)))
 	}
 
@@ -208,9 +229,9 @@ func (l *Repeat) InternalReplace(oldToken, newToken token.Token) {
 
 // OptionalToken interface methods
 
-func (l *Repeat) IsOptional() bool { return l.from == 0 }
+func (l *Repeat) IsOptional() bool { return l.From() == 0 }
 func (l *Repeat) Activate() {
-	if l.from != 0 {
+	if l.From() != 0 {
 		return
 	}
 
@@ -219,7 +240,7 @@ func (l *Repeat) Activate() {
 	}
 }
 func (l *Repeat) Deactivate() {
-	if l.from != 0 {
+	if l.From() != 0 {
 		return
 	}
 
@@ -327,7 +348,7 @@ func (l *Repeat) Reduce(i int) error {
 
 	j := 0
 
-	if l.from == 0 {
+	if l.From() == 0 {
 		if i == 1 {
 			l.value = []token.Token{}
 
@@ -347,7 +368,7 @@ func (l *Repeat) Reduce(i int) error {
 
 	var sel []int
 
-	for c := range combinations(len(l.reducingOriginalValue), j+int(l.from)) {
+	for c := range combinations(len(l.reducingOriginalValue), j+int(l.From())) {
 		if i == 0 {
 			sel = c
 
@@ -386,11 +407,11 @@ func (l *Repeat) reduces() []int {
 		n = len(l.reducingOriginalValue)
 	}
 
-	le := int(n - int(l.from) + 1)
+	le := int(n - int(l.From()) + 1)
 	reduces := make([]int, le)
 
 	j := 0
-	k := int(l.from)
+	k := int(l.From())
 
 	if k == 0 {
 		reduces[0] = 1
@@ -410,7 +431,7 @@ func (l *Repeat) reduces() []int {
 }
 
 func (l *Repeat) Reduces() int {
-	if l.reducing || int(l.from) < len(l.value) {
+	if l.reducing || int(l.From()) < len(l.value) {
 		count := 0
 		r := l.reduces()
 		for _, le := range r {
