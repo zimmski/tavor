@@ -549,6 +549,38 @@ func TestAllPermutationsStrategy(t *testing.T) {
 			"2",
 		})
 	}
+	{
+		// dynamic repeat
+		o, err := parser.ParseTavor(strings.NewReader(`
+			As = +0,3(A)
+			A = "a"
+
+			Bs = +$As.Count(B)
+			B = "b"
+
+			START = As Bs
+		`))
+		Nil(t, err)
+
+		s := NewAllPermutationsStrategy(o)
+
+		var got []string
+
+		ch, err := s.Fuzz(r)
+		Nil(t, err)
+		for i := range ch {
+			got = append(got, o.String())
+
+			ch <- i
+		}
+
+		Equal(t, got, []string{
+			"",
+			"ab",
+			"aabb",
+			"aaabbb",
+		})
+	}
 }
 
 func TestAllPermutationsStrategyLoopDetection(t *testing.T) {

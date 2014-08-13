@@ -82,6 +82,8 @@ func (s *Sequence) Next() int {
 	return c
 }
 
+// ResetToken interface methods
+
 func (s *Sequence) Reset() {
 	s.value = s.start
 }

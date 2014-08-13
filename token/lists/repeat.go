@@ -443,3 +443,15 @@ func (l *Repeat) Reduces() int {
 
 	return 0
 }
+
+// ResetToken interface methods
+
+func (l *Repeat) Reset() {
+	// TODO reset the list if we depend on something else. this could and should be done in another way...
+	_, okFrom := l.from.(*primitives.ConstantInt)
+	_, okTo := l.to.(*primitives.ConstantInt)
+
+	if !okFrom || !okTo {
+		l.permutation(l.Permutations() - 1)
+	}
+}

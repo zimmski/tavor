@@ -346,7 +346,7 @@ OUT:
 					log.Debugf("parseTerm repeat after from ( %d:%v -> %v", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
 
 					// until there is an explicit "to" we can assume to==from
-					to = from.Clone()
+					to = from // do not clone here! since really to==from
 				} else if c == '$' {
 					c = p.scan.Scan()
 
@@ -357,7 +357,7 @@ OUT:
 					}
 
 					// until there is an explicit "to" we can assume to==from
-					to = from.Clone()
+					to = from // do not clone here! since really to==from
 				} else {
 					from, to = primitives.NewConstantInt(1), primitives.NewConstantInt(tavor.MaxRepeat)
 				}
