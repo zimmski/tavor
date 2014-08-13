@@ -117,7 +117,7 @@ $Id = type: Sequence,
       start: 0,
       step: 2
 NextId = $Id.Next
-
+```
 
 ### Expressions
 
@@ -154,7 +154,6 @@ Pair = $Id.Next<id> " " ${Id.Existing not in (id)}
 ```
 
 This will search through the existing sequenced IDs without the one saved in the variable "id".
-```
 
 ### If, If else and else
 
@@ -168,11 +167,14 @@ Print = {if var.Value == 1} "var is one" {else if var.Value == 2} "var is two" {
 
 ### Condition operators
 
-* ==
+* "=="
+
   ```
   Print = (1 | 2 | 3)<var> {if var.Value == 1} "var is 1" {else} "var is not 1" {endif}
   ```
-* defined
+  
+* "defined"
+
   ```
   START = Print "save this text"<var> Print
 
