@@ -117,7 +117,7 @@ $Id = type: Sequence,
       start: 0,
       step: 2
 NextId = $Id.Next
-```
+
 
 ### Expressions
 
@@ -143,6 +143,19 @@ Save = "text"<var>
 Print = <var>.Value
 ```
 
+### Set operators
+
+Some attributes can be combined with set operators. For example
+
+```
+$Id = type: Sequence
+
+Pair = $Id.Next<id> " " ${Id.Existing not in (id)}
+```
+
+This will search through the existing sequenced IDs without the one saved in the variable "id".
+```
+
 ### If, If else and else
 
 ```
@@ -152,3 +165,16 @@ Choose = 1 | 2 | 3
 
 Print = {if var.Value == 1} "var is one" {else if var.Value == 2} "var is two" {else} "var is three" {endif}
 ```
+
+### Condition operators
+
+* ==
+  ```
+  Print = (1 | 2 | 3)<var> {if var.Value == 1} "var is 1" {else} "var is not 1" {endif}
+  ```
+* defined
+  ```
+  START = Print "save this text"<var> Print
+
+  Print = {if defined var} "var is: " $var.Value {else} "var is not defined" {endif}
+  ```
