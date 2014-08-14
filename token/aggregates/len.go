@@ -5,14 +5,13 @@ import (
 
 	"github.com/zimmski/tavor/rand"
 	"github.com/zimmski/tavor/token"
-	"github.com/zimmski/tavor/token/lists"
 )
 
 type Len struct {
-	list lists.List
+	list token.List
 }
 
-func NewLen(list lists.List) *Len {
+func NewLen(list token.List) *Len {
 	return &Len{
 		list: list,
 	}

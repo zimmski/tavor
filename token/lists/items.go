@@ -9,10 +9,10 @@ import (
 
 type ListItem struct {
 	index int
-	list  List
+	list  token.List
 }
 
-func NewListItem(index int, list List) *ListItem {
+func NewListItem(index int, list token.List) *ListItem {
 	return &ListItem{
 		index: index,
 		list:  list,
@@ -133,14 +133,23 @@ func (l *IndexItem) String() string {
 	return strconv.Itoa(l.token.Index())
 }
 
+// ScopeToken interface methods
+
+func (l *IndexItem) SetScope(variableScope map[string]token.Token) {
+	if tok, ok := l.token.(token.ScopeToken); ok {
+		tok.SetScope(variableScope)
+	}
+}
+
 type UniqueItem struct {
-	list   List
-	picked map[int]struct{}
+	original *UniqueItem
+	list     token.List
+	picked   map[int]struct{}
 
 	index int
 }
 
-func NewUniqueItem(list List) *UniqueItem {
+func NewUniqueItem(list token.List) *UniqueItem {
 	l := &UniqueItem{
 		list:   list,
 		picked: make(map[int]struct{}),

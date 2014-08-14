@@ -5,6 +5,7 @@ import (
 	"math"
 	"strconv"
 
+	"github.com/zimmski/tavor"
 	"github.com/zimmski/tavor/rand"
 	"github.com/zimmski/tavor/token"
 	"github.com/zimmski/tavor/token/primitives"

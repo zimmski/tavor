@@ -5,7 +5,6 @@ import (
 	"github.com/zimmski/tavor/log"
 	"github.com/zimmski/tavor/rand"
 	"github.com/zimmski/tavor/token"
-	"github.com/zimmski/tavor/token/lists"
 )
 
 type allPermutationsLevel struct {
@@ -55,7 +54,7 @@ func (s *AllPermutationsStrategy) getTree(root token.Token, fromChildren bool) [
 			if v := t.Get(); v != nil {
 				add(v)
 			}
-		case lists.List:
+		case token.List:
 			for i := 0; i < t.Len(); i++ {
 				c, _ := t.Get(i)
 

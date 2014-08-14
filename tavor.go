@@ -9,7 +9,6 @@ import (
 
 	"github.com/zimmski/tavor/log"
 	"github.com/zimmski/tavor/token"
-	"github.com/zimmski/tavor/token/lists"
 	"github.com/zimmski/tavor/token/primitives"
 )
 
@@ -31,7 +30,7 @@ func prettyPrintTreeRek(w io.Writer, tok token.Token, level int) {
 		if v := t.Get(); v != nil {
 			prettyPrintTreeRek(w, v, level+1)
 		}
-	case lists.List:
+	case token.List:
 		for i := 0; i < t.Len(); i++ {
 			c, _ := t.Get(i)
 
@@ -52,7 +51,7 @@ func prettyPrintInternalTreeRek(w io.Writer, tok token.Token, level int) {
 		if v := t.InternalGet(); v != nil {
 			prettyPrintInternalTreeRek(w, v, level+1)
 		}
-	case lists.List:
+	case token.List:
 		for i := 0; i < t.InternalLen(); i++ {
 			c, _ := t.InternalGet(i)
 
@@ -88,7 +87,7 @@ func LoopExists(root token.Token) bool {
 			if v := tok.InternalGet(); v != nil {
 				queue.Push(v)
 			}
-		case lists.List:
+		case token.List:
 			for i := 0; i < tok.InternalLen(); i++ {
 				c, _ := tok.InternalGet(i)
 
@@ -214,7 +213,7 @@ func UnrollPointers(root token.Token) token.Token {
 					switch tt := iTok.parent.tok.(type) {
 					case token.ForwardToken:
 						tt.InternalReplace(t, c)
-					case lists.List:
+					case token.List:
 						tt.InternalReplace(t, c)
 					}
 				} else {
@@ -246,7 +245,7 @@ func UnrollPointers(root token.Token) token.Token {
 						switch tt := parent.(type) {
 						case token.ForwardToken:
 							tt.InternalReplace(this, that)
-						case lists.List:
+						case token.List:
 							tt.InternalReplace(this, that)
 						}
 					} else {
@@ -277,7 +276,7 @@ func UnrollPointers(root token.Token) token.Token {
 
 						ta = l
 						tt = tt.parent
-					case lists.List:
+					case token.List:
 						log.Debugf("remove (%p)%#v from (%p)%#v", ta, ta, l, l)
 
 						c := l.InternalLogicalRemove(ta)
@@ -305,7 +304,7 @@ func UnrollPointers(root token.Token) token.Token {
 
 				parents[v] = iTok.tok
 			}
-		case lists.List:
+		case token.List:
 			for i := 0; i < t.InternalLen(); i++ {
 				c, _ := t.InternalGet(i)
 
@@ -333,7 +332,7 @@ func UnrollPointers(root token.Token) token.Token {
 		switch tt := parent.(type) {
 		case token.ForwardToken:
 			tt.InternalReplace(child, child)
-		case lists.List:
+		case token.List:
 			tt.InternalReplace(child, child)
 		}
 	}
@@ -363,7 +362,7 @@ func ResetResetTokens(root token.Token) {
 			if v := tok.Get(); v != nil {
 				queue.Push(v)
 			}
-		case lists.List:
+		case token.List:
 			for i := 0; i < tok.Len(); i++ {
 				c, _ := tok.Get(i)
 				queue.Push(c)
@@ -412,7 +411,7 @@ func SetScope(root token.Token, scope map[string]token.Token) {
 					scope: nScope,
 				})
 			}
-		case lists.List:
+		case token.List:
 			for i := 0; i < t.Len(); i++ {
 				c, _ := t.Get(i)
 
@@ -444,7 +443,7 @@ func SetInternalScope(root token.Token, scope map[string]token.Token) {
 			if v := t.InternalGet(); v != nil {
 				queue.Push(v)
 			}
-		case lists.List:
+		case token.List:
 			for i := 0; i < t.InternalLen(); i++ {
 				c, _ := t.InternalGet(i)
 

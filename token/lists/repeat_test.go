@@ -11,7 +11,7 @@ import (
 )
 
 func TestRepeatTokensToBeTokens(t *testing.T) {
-	var tok *List
+	var tok *token.List
 
 	Implements(t, tok, &Repeat{})
 }

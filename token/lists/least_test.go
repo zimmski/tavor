@@ -6,11 +6,12 @@ import (
 	. "github.com/stretchr/testify/assert"
 
 	"github.com/zimmski/tavor/test"
+	"github.com/zimmski/tavor/token"
 	"github.com/zimmski/tavor/token/primitives"
 )
 
 func TestLeastTokensToBeTokens(t *testing.T) {
-	var tok *List
+	var tok *token.List
 
 	Implements(t, tok, &Least{})
 }

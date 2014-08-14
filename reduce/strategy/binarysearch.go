@@ -6,7 +6,6 @@ import (
 	"github.com/zimmski/tavor"
 	"github.com/zimmski/tavor/log"
 	"github.com/zimmski/tavor/token"
-	"github.com/zimmski/tavor/token/lists"
 )
 
 type binarySearchLevel struct {
@@ -43,7 +42,7 @@ func (s *BinarySearchStrategy) getTree(root token.Token, fromChildren bool) []bi
 		switch t := root.(type) {
 		case token.ForwardToken:
 			queue.Push(t.Get())
-		case lists.List:
+		case token.List:
 			l := t.Len()
 
 			for i := 0; i < l; i++ {
@@ -77,7 +76,7 @@ func (s *BinarySearchStrategy) getTree(root token.Token, fromChildren bool) []bi
 			c := t.Get()
 
 			queue.Push(c)
-		case lists.List:
+		case token.List:
 			l := t.Len()
 
 			for i := 0; i < l; i++ {

@@ -11,7 +11,7 @@ import (
 )
 
 func TestMostTokensToBeTokens(t *testing.T) {
-	var tok *List
+	var tok *token.List
 
 	Implements(t, tok, &Most{})
 }

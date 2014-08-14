@@ -7,7 +7,6 @@ import (
 	"github.com/zimmski/tavor/log"
 	"github.com/zimmski/tavor/rand"
 	"github.com/zimmski/tavor/token"
-	"github.com/zimmski/tavor/token/lists"
 )
 
 /*
@@ -58,7 +57,7 @@ func (s *AlmostAllPermutationsStrategy) getLevel(root token.Token, fromChildren 
 			if v := t.Get(); v != nil {
 				queue.Push(v)
 			}
-		case lists.List:
+		case token.List:
 			l := t.Len()
 
 			for i := 0; i < l; i++ {

@@ -22,6 +22,18 @@ type Token interface {
 	Parse(pars *InternalParser, cur int) (int, []error)
 }
 
+type List interface {
+	Token
+
+	Get(i int) (Token, error)
+	Len() int
+
+	InternalGet(i int) (Token, error)
+	InternalLen() int
+	InternalLogicalRemove(tok Token) Token
+	InternalReplace(oldToken, newToken Token)
+}
+
 type Forward interface {
 	Get() Token
 

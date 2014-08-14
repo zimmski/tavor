@@ -9,7 +9,6 @@ import (
 	"github.com/zimmski/tavor/log"
 	"github.com/zimmski/tavor/rand"
 	"github.com/zimmski/tavor/token"
-	"github.com/zimmski/tavor/token/lists"
 )
 
 type PermuteOptionalsStrategy struct {
@@ -38,7 +37,7 @@ func (s *PermuteOptionalsStrategy) findOptionals(r rand.Rand, root token.Token, 
 		switch t := root.(type) {
 		case token.ForwardToken:
 			queue.Push(t.Get())
-		case lists.List:
+		case token.List:
 			l := t.Len()
 
 			for i := 0; i < l; i++ {
@@ -78,7 +77,7 @@ func (s *PermuteOptionalsStrategy) findOptionals(r rand.Rand, root token.Token, 
 
 				queue.Push(c)
 			}
-		case lists.List:
+		case token.List:
 			l := t.Len()
 
 			for i := 0; i < l; i++ {

@@ -104,7 +104,7 @@ func ApplyFilters(filters []Filter, root token.Token) (token.Token, error) {
 					switch t := pair.parent.(type) {
 					case token.ForwardToken:
 						t.InternalReplace(pair.token, tok)
-					case lists.List:
+					case token.List:
 						t.InternalReplace(pair.token, tok)
 					}
 				}
@@ -120,7 +120,7 @@ func ApplyFilters(filters []Filter, root token.Token) (token.Token, error) {
 				token:  c,
 				parent: tok,
 			})
-		case lists.List:
+		case token.List:
 			l := t.InternalLen()
 
 			for i := 0; i < l; i++ {

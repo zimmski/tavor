@@ -187,7 +187,7 @@ func (g *dotGraph) addDot(tok token.Token) (start, next map[token.Token]bool) {
 			start[a] = false
 			next[b] = false
 		}
-	case lists.List:
+	case token.List:
 		panic(fmt.Errorf("%#v not implemented", t))
 	case *primitives.RangeInt:
 		label := fmt.Sprintf("%d..%d", t.From(), t.To())

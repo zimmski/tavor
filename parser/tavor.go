@@ -880,7 +880,7 @@ func (p *tavorParser) selectTokenAttribute(tok token.Token, tokenName string, at
 	log.Debug("finished token attribute (or will be unknown token attribute)")
 
 	switch i := tok.(type) {
-	case lists.List:
+	case token.List:
 		switch attribute {
 		case "Count":
 			return aggregates.NewLen(i), nil
