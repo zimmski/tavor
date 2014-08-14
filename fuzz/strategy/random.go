@@ -42,9 +42,6 @@ func (s *RandomStrategy) Fuzz(r rand.Rand) (chan struct{}, error) {
 
 		s.fuzz(s.root, r)
 
-		tavor.ResetScope(s.root)
-		tavor.ResetResetTokens(s.root)
-		tavor.ResetScope(s.root)
 		s.fuzzYADDA(s.root, r)
 
 		log.Debug("done with fuzzing step")
@@ -85,33 +82,74 @@ func (s *RandomStrategy) fuzz(tok token.Token, r rand.Rand) {
 func (s *RandomStrategy) fuzzYADDA(root token.Token, r rand.Rand) {
 
 	// TODO FIXME AND FIXME FIXME FIXME this should be done automatically somehow
+	// since this doesn't work in other heuristics...
 
+	scope := make(map[string]token.Token)
 	queue := linkedlist.New()
 
-	queue.Push(root)
+	type set struct {
+		token token.Token
+		scope map[string]token.Token
+	}
+
+	queue.Push(set{
+		token: root,
+		scope: scope,
+	})
+
+	fuzzAgain := make(map[token.Token]struct{})
 
 	for !queue.Empty() {
-		t, _ := queue.Shift()
-		tok := t.(token.Token)
+		v, _ := queue.Shift()
+		s := v.(set)
 
-		switch tok.(type) {
-		case *sequences.SequenceExistingItem, *lists.UniqueItem:
-			log.Debugf("fuzz again %#v(%p)", tok, tok)
+		if tok, ok := s.token.(token.ResetToken); ok {
+			log.Debugf("reset %#v(%p)", tok, tok)
 
-			tok.Fuzz(r)
+			tok.Reset()
+
+			fuzzAgain[tok] = struct{}{}
 		}
 
-		switch t := tok.(type) {
+		if tok, ok := s.token.(token.ScopeToken); ok {
+			log.Debugf("setScope %#v(%p)", tok, tok)
+
+			tok.SetScope(s.scope)
+
+			fuzzAgain[tok] = struct{}{}
+		}
+
+		nScope := make(map[string]token.Token, len(s.scope))
+		for k, v := range s.scope {
+			nScope[k] = v
+		}
+
+		switch t := s.token.(type) {
 		case token.ForwardToken:
 			if v := t.Get(); v != nil {
-				queue.Push(v)
+				queue.Push(set{
+					token: v,
+					scope: nScope,
+				})
 			}
 		case token.List:
 			for i := 0; i < t.Len(); i++ {
 				c, _ := t.Get(i)
 
-				queue.Push(c)
+				queue.Push(set{
+					token: c,
+					scope: nScope,
+				})
 			}
+		}
+	}
+
+	for tok := range fuzzAgain {
+		switch tok.(type) {
+		case *sequences.SequenceExistingItem, *lists.UniqueItem:
+			log.Debugf("Fuzz again %p(%#v)", tok, tok)
+
+			tok.Fuzz(r)
 		}
 	}
 }
