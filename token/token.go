@@ -35,6 +35,15 @@ type ForwardToken interface {
 	Forward
 }
 
+type Index interface {
+	Index() int
+}
+
+type IndexToken interface {
+	Token
+	Index
+}
+
 type Optional interface {
 	IsOptional() bool
 	Activate()
@@ -114,6 +123,7 @@ type ScopeToken interface {
 
 type Variable interface {
 	Forward
+	Index
 	Reset
 	Scope
 

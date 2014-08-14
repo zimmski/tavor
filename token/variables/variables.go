@@ -84,6 +84,16 @@ func (v *Variable) InternalReplace(oldToken, newToken token.Token) {
 	}
 }
 
+// IndexToken interface methods
+
+func (v *Variable) Index() int {
+	if p, ok := v.token.(token.IndexToken); ok {
+		return p.Index()
+	}
+
+	return -1
+}
+
 // ResetToken interface methods
 
 func (v *Variable) Reset() {
@@ -185,6 +195,12 @@ func (v *VariableValue) InternalReplace(oldToken, newToken token.Token) {
 	if v.variable == oldToken {
 		v.variable = newToken.(token.VariableToken)
 	}
+}
+
+// IndexToken interface methods
+
+func (v *VariableValue) Index() int {
+	return v.variable.Index()
 }
 
 // ScopeToken interface methods

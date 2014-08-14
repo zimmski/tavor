@@ -867,7 +867,9 @@ func (p *tavorParser) parseTokenAttribute(definitionName string, c rune, variabl
 
 	rtok, err := p.selectTokenAttribute(tok, name, attribute, attributePosition, op, opToken, variableScope)
 
-	log.Debugf("Insert token attribute %p(%#v)", rtok, rtok)
+	if err == nil {
+		log.Debugf("Insert token attribute %p(%#v)", rtok, rtok)
+	}
 
 	return c, rtok, err
 }
@@ -882,6 +884,8 @@ func (p *tavorParser) selectTokenAttribute(tok token.Token, tokenName string, at
 		switch attribute {
 		case "Count":
 			return aggregates.NewLen(i), nil
+		case "Unique":
+			return lists.NewUniqueItem(i), nil
 		}
 	case *sequences.Sequence:
 		switch attribute {
@@ -905,6 +909,8 @@ func (p *tavorParser) selectTokenAttribute(tok token.Token, tokenName string, at
 		switch attribute {
 		case "defined":
 			return conditions.NewVariableDefined(tokenName, variableScope), nil
+		case "Index":
+			return lists.NewIndexItem(i), nil
 		case "Value":
 			v := variables.NewVariableValue(i)
 
