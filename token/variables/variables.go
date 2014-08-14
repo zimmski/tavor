@@ -112,6 +112,17 @@ type VariableSave struct {
 	Variable
 }
 
+// Overwrite Variable methods
+
+func (v *VariableSave) Clone() token.Token {
+	return &VariableSave{
+		Variable: Variable{
+			name:  v.name,
+			token: v.token.Clone(),
+		},
+	}
+}
+
 func (v *VariableSave) String() string {
 	return ""
 }
