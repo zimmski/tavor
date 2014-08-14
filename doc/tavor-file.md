@@ -83,6 +83,8 @@ LetterCount = $Letters.Count // LetterCount then holds the count of the repeater
 
 Possible token attributes are:
 * Count - Holds the count of this token. Must be a repeater.
+* Index - Holds the index of a token. Must be a token of a repeater.
+* Unique - Chooses at random a token of a repeater.
 
 ### Special tokens
 
