@@ -133,13 +133,22 @@ DoubleTheCount = ${Letter.Count + Letter.Count}
 
 ### Variables
 
-Every token in the right side of a definition can be saved into a variable.
+Every token on the right side of a definition can be saved into a variable.
 
 
 ```
-START = Save Print
+START = "text"<var> Print
 
-Save = "text"<var>
+Print = <var>.Value
+```
+
+This will save the string "text" into the variable "var" without preventing the relay of the string to the output stream.
+
+Since there are circumstances where a token should be just saved into a variable but not relayed to the output stream a second syntax can be used.
+
+```
+START = "text"<=var> Print
+
 Print = <var>.Value
 ```
 
@@ -172,7 +181,7 @@ Print = {if var.Value == 1} "var is one" {else if var.Value == 2} "var is two" {
   ```
   Print = (1 | 2 | 3)<var> {if var.Value == 1} "var is 1" {else} "var is not 1" {endif}
   ```
-  
+
 * "defined"
 
   ```
