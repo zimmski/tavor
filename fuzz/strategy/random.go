@@ -8,6 +8,7 @@ import (
 	"github.com/zimmski/tavor/rand"
 	"github.com/zimmski/tavor/token"
 	"github.com/zimmski/tavor/token/lists"
+	"github.com/zimmski/tavor/token/primitives"
 	"github.com/zimmski/tavor/token/sequences"
 )
 
@@ -83,6 +84,7 @@ func (s *RandomStrategy) fuzzYADDA(root token.Token, r rand.Rand) {
 
 	// TODO FIXME AND FIXME FIXME FIXME this should be done automatically somehow
 	// since this doesn't work in other heuristics...
+	// especially the fuzz again part is tricky. the whole reason is because of dynamic repeats that clone during a reset. so the "reset" or regenerating of new child tokens has to be done better
 
 	scope := make(map[string]token.Token)
 	queue := linkedlist.New()
@@ -144,12 +146,40 @@ func (s *RandomStrategy) fuzzYADDA(root token.Token, r rand.Rand) {
 		}
 	}
 
+	alreadyFuzzed := make(map[token.Token]struct{})
+
 	for tok := range fuzzAgain {
+		queue.Push(tok)
+	}
+
+	for !queue.Empty() {
+		v, _ := queue.Shift()
+		tok := v.(token.Token)
+
+		if _, ok := alreadyFuzzed[tok]; ok {
+			continue
+		}
+
+		alreadyFuzzed[tok] = struct{}{}
+
 		switch tok.(type) {
-		case *sequences.SequenceExistingItem, *lists.UniqueItem:
+		case *sequences.SequenceExistingItem, *lists.UniqueItem, *primitives.CharacterClass:
 			log.Debugf("Fuzz again %p(%#v)", tok, tok)
 
 			tok.Fuzz(r)
+		}
+
+		switch t := tok.(type) {
+		case token.ForwardToken:
+			if v := t.Get(); v != nil {
+				queue.Push(v)
+			}
+		case token.List:
+			for i := 0; i < t.Len(); i++ {
+				c, _ := t.Get(i)
+
+				queue.Push(c)
+			}
 		}
 	}
 }
