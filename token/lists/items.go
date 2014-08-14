@@ -81,9 +81,9 @@ type IndexItem struct {
 	token token.IndexToken
 }
 
-func NewIndexItem(token token.IndexToken) *IndexItem {
+func NewIndexItem(tok token.IndexToken) *IndexItem {
 	return &IndexItem{
-		token: token,
+		token: tok.Clone().(token.IndexToken),
 	}
 }
 
@@ -91,7 +91,7 @@ func NewIndexItem(token token.IndexToken) *IndexItem {
 
 func (l *IndexItem) Clone() token.Token {
 	return &IndexItem{
-		token: l.token,
+		token: l.token.Clone().(token.IndexToken),
 	}
 }
 
@@ -157,12 +157,14 @@ func NewUniqueItem(list token.List) *UniqueItem {
 		index: -1,
 	}
 
+	l.original = l
+
 	return l
 }
 
 func (l *UniqueItem) pick(r rand.Rand) {
-	nList := l.list.Len()
-	nPicked := len(l.picked)
+	nList := l.original.list.Len()
+	nPicked := len(l.original.picked)
 
 	if nPicked >= nList {
 		panic("already picked everything!") // TODO
@@ -172,9 +174,9 @@ func (l *UniqueItem) pick(r rand.Rand) {
 	for {
 		c := r.Intn(nList)
 
-		if _, ok := l.picked[c]; !ok {
+		if _, ok := l.original.picked[c]; !ok {
 			l.index = c
-			l.picked[c] = struct{}{}
+			l.original.picked[c] = struct{}{}
 
 			break
 		}
@@ -185,8 +187,9 @@ func (l *UniqueItem) pick(r rand.Rand) {
 
 func (l *UniqueItem) Clone() token.Token {
 	n := &UniqueItem{
-		list:   l.list,
-		picked: l.picked,
+		original: l.original,
+		list:     nil,
+		picked:   nil,
 
 		index: -1,
 	}
@@ -233,7 +236,7 @@ func (l *UniqueItem) PermutationsAll() int {
 func (l *UniqueItem) String() string {
 	i := l.Index()
 
-	tok, err := l.list.Get(i)
+	tok, err := l.original.list.Get(i)
 	if err != nil {
 		panic(err) // TODO
 	}
@@ -245,8 +248,18 @@ func (l *UniqueItem) String() string {
 
 func (l *UniqueItem) Index() int {
 	if l.index == -1 {
-		l.pick(rand.NewConstantRand(0))
+		l.pick(rand.NewIncrementRand(0))
 	}
 
 	return l.index
+}
+
+// ResetToken interface methods
+
+func (l *UniqueItem) Reset() {
+	if l.index != -1 {
+		delete(l.original.picked, l.index)
+
+		l.index = -1
+	}
 }

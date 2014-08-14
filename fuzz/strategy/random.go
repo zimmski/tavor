@@ -44,6 +44,7 @@ func (s *RandomStrategy) Fuzz(r rand.Rand) (chan struct{}, error) {
 
 		tavor.ResetScope(s.root)
 		tavor.ResetResetTokens(s.root)
+		tavor.ResetScope(s.root)
 		s.fuzzYADDA(s.root, r)
 
 		log.Debug("done with fuzzing step")
@@ -90,12 +91,14 @@ func (s *RandomStrategy) fuzzYADDA(root token.Token, r rand.Rand) {
 	queue.Push(root)
 
 	for !queue.Empty() {
-		tok, _ := queue.Shift()
+		t, _ := queue.Shift()
+		tok := t.(token.Token)
 
-		if t, ok := tok.(*sequences.SequenceExistingItem); ok {
-			log.Debugf("fuzz again %#v(%p)", t, t)
+		switch tok.(type) {
+		case *sequences.SequenceExistingItem, *lists.UniqueItem:
+			log.Debugf("fuzz again %#v(%p)", tok, tok)
 
-			t.Fuzz(r)
+			tok.Fuzz(r)
 		}
 
 		switch t := tok.(type) {

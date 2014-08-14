@@ -910,7 +910,7 @@ func (p *tavorParser) selectTokenAttribute(tok token.Token, tokenName string, at
 		case "defined":
 			return conditions.NewVariableDefined(tokenName, variableScope), nil
 		case "Index":
-			return lists.NewIndexItem(i), nil
+			return lists.NewIndexItem(variables.NewVariableValue(i)), nil
 		case "Value":
 			v := variables.NewVariableValue(i)
 

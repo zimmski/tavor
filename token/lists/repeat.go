@@ -453,6 +453,10 @@ func (l *Repeat) Reset() {
 	_, okTo := l.to.(*primitives.ConstantInt)
 
 	if !okFrom || !okTo {
+		for _, tok := range l.value {
+			tavor.ResetResetTokens(tok)
+		}
+
 		l.permutation(l.Permutations() - 1)
 	}
 }
