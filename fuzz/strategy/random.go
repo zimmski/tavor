@@ -99,7 +99,7 @@ func (s *RandomStrategy) fuzzYADDA(root token.Token, r rand.Rand) {
 		scope: scope,
 	})
 
-	fuzzAgain := make(map[token.Token]struct{})
+	var fuzzAgain []token.Token
 
 	for !queue.Empty() {
 		v, _ := queue.Shift()
@@ -110,7 +110,7 @@ func (s *RandomStrategy) fuzzYADDA(root token.Token, r rand.Rand) {
 
 			tok.Reset()
 
-			fuzzAgain[tok] = struct{}{}
+			fuzzAgain = append(fuzzAgain, tok)
 		}
 
 		if tok, ok := s.token.(token.ScopeToken); ok {
@@ -118,7 +118,7 @@ func (s *RandomStrategy) fuzzYADDA(root token.Token, r rand.Rand) {
 
 			tok.SetScope(s.scope)
 
-			fuzzAgain[tok] = struct{}{}
+			fuzzAgain = append(fuzzAgain, tok)
 		}
 
 		nScope := make(map[string]token.Token, len(s.scope))
@@ -148,7 +148,7 @@ func (s *RandomStrategy) fuzzYADDA(root token.Token, r rand.Rand) {
 
 	alreadyFuzzed := make(map[token.Token]struct{})
 
-	for tok := range fuzzAgain {
+	for _, tok := range fuzzAgain {
 		queue.Push(tok)
 	}
 
