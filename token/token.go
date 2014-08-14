@@ -22,9 +22,7 @@ type Token interface {
 	Parse(pars *InternalParser, cur int) (int, []error)
 }
 
-type ForwardToken interface {
-	Token
-
+type Forward interface {
 	Get() Token
 
 	InternalGet() Token
@@ -32,12 +30,20 @@ type ForwardToken interface {
 	InternalReplace(oldToken, newToken Token)
 }
 
-type OptionalToken interface {
+type ForwardToken interface {
 	Token
+	Forward
+}
 
+type Optional interface {
 	IsOptional() bool
 	Activate()
 	Deactivate()
+}
+
+type OptionalToken interface {
+	Token
+	Optional
 }
 
 type PermutationErrorType int
@@ -59,10 +65,13 @@ func (err *PermutationError) Error() string {
 	}
 }
 
+type Reset interface {
+	Reset()
+}
+
 type ResetToken interface {
 	Token
-
-	Reset()
+	Reset
 }
 
 type ReduceErrorType int
@@ -84,15 +93,36 @@ func (err *ReduceError) Error() string {
 	}
 }
 
-type ReduceToken interface {
-	Token
-
+type Reduce interface {
 	Reduce(i int) error
 	Reduces() int
 }
 
-type ScopeToken interface {
+type ReduceToken interface {
+	Token
+	Reduce
+}
+
+type Scope interface {
 	SetScope(variableScope map[string]Token)
+}
+
+type ScopeToken interface {
+	Token
+	Scope
+}
+
+type Variable interface {
+	Forward
+	Reset
+	Scope
+
+	Name() string
+}
+
+type VariableToken interface {
+	Token
+	Variable
 }
 
 type InternalParser struct { // TODO move this some place else

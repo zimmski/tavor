@@ -60,7 +60,7 @@ type tavorParser struct {
 	lookup               map[string]tokenUsage
 	lookupUsage          map[token.Token]struct{}
 	used                 map[string][]tokenUsage
-	variableUsages       []*variables.Variable
+	variableUsages       []token.Token
 
 	forwardAttributeUsage []attributeForwardUsage
 }
@@ -474,7 +474,17 @@ OUT:
 		case '<':
 			log.Debug("NEW variable")
 
-			_, err = p.expectScanRune(scanner.Ident)
+			c = p.scan.Scan()
+
+			justSave := false
+
+			if c == '=' {
+				justSave = true
+
+				c = p.scan.Scan()
+			}
+
+			_, err = p.expectRune(scanner.Ident, c)
 			if err != nil {
 				return zeroRune, nil, nil, err
 			}
@@ -496,7 +506,13 @@ OUT:
 
 			// TODO do not overwrite Token names... this sould lead to an already defined error, only variables can overwrite each other
 
-			variable := variables.NewVariable(variableName, tokens[len(tokens)-1])
+			var variable token.Token
+
+			if justSave {
+				variable = variables.NewVariableSave(variableName, tokens[len(tokens)-1])
+			} else {
+				variable = variables.NewVariable(variableName, tokens[len(tokens)-1])
+			}
 
 			tokens[len(tokens)-1] = variable
 			variableScope[variableName] = variable
@@ -885,7 +901,7 @@ func (p *tavorParser) selectTokenAttribute(tok token.Token, tokenName string, at
 		case "Value":
 			return i.Clone(), nil
 		}
-	case *variables.Variable:
+	case token.VariableToken:
 		switch attribute {
 		case "defined":
 			return conditions.NewVariableDefined(tokenName, variableScope), nil
@@ -1654,7 +1670,7 @@ func ParseTavor(src io.Reader) (token.Token, error) {
 	}
 
 	for _, variable := range p.variableUsages {
-		tok := variable.InternalGet()
+		tok := variable.(token.ForwardToken).InternalGet()
 
 		if po, ok := tok.(*primitives.Pointer); ok {
 			log.Debugf("Found pointer in variable %p(%#v)", variable, variable)
@@ -1666,7 +1682,7 @@ func ParseTavor(src io.Reader) (token.Token, error) {
 				if !ok {
 					log.Debugf("Replaced pointer %p(%#v) with %p(%#v)", tok, tok, c, c)
 
-					variable.InternalReplace(tok, c)
+					variable.(token.ForwardToken).InternalReplace(tok, c)
 
 					break
 				}

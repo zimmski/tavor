@@ -19,6 +19,10 @@ func NewVariable(name string, token token.Token) *Variable {
 	}
 }
 
+func (v *Variable) Name() string {
+	return v.name
+}
+
 // Token interface methods
 
 func (v *Variable) Clone() token.Token {
@@ -94,11 +98,28 @@ func (v *Variable) SetScope(variableScope map[string]token.Token) {
 	variableScope[v.name] = v
 }
 
-type VariableValue struct {
-	variable *Variable
+type VariableSave struct {
+	Variable
 }
 
-func NewVariableValue(variable *Variable) *VariableValue {
+func (v *VariableSave) String() string {
+	return ""
+}
+
+func NewVariableSave(name string, token token.Token) *VariableSave {
+	return &VariableSave{
+		Variable: Variable{
+			name:  name,
+			token: token,
+		},
+	}
+}
+
+type VariableValue struct {
+	variable token.VariableToken
+}
+
+func NewVariableValue(variable token.VariableToken) *VariableValue {
 	return &VariableValue{
 		variable: variable,
 	}
@@ -162,14 +183,14 @@ func (v *VariableValue) InternalLogicalRemove(tok token.Token) token.Token {
 
 func (v *VariableValue) InternalReplace(oldToken, newToken token.Token) {
 	if v.variable == oldToken {
-		v.variable = newToken.(*Variable)
+		v.variable = newToken.(token.VariableToken)
 	}
 }
 
 // ScopeToken interface methods
 
 func (v *VariableValue) SetScope(variableScope map[string]token.Token) {
-	tok := variableScope[v.variable.name]
+	tok := variableScope[v.variable.Name()]
 
 	if p, ok := tok.(*primitives.Pointer); ok {
 		for {
@@ -191,6 +212,6 @@ func (v *VariableValue) SetScope(variableScope map[string]token.Token) {
 	if t, ok := tok.(*VariableValue); ok {
 		v.variable = t.variable
 	} else {
-		v.variable = tok.(*Variable)
+		v.variable = tok.(token.VariableToken)
 	}
 }

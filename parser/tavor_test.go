@@ -801,6 +801,24 @@ func TestTavorParserAndCuriousCaseOfFuzzing(t *testing.T) {
 
 		Equal(t, "aaabb", tok.String())
 	}
+
+	// save variable
+	{
+		tok, err = ParseTavor(strings.NewReader(`
+			START = "abc"<v> $v.Value
+		`))
+		Nil(t, err)
+
+		Equal(t, "abcabc", tok.String())
+	}
+	{
+		tok, err = ParseTavor(strings.NewReader(`
+			START = "abc"<=v> $v.Value
+		`))
+		Nil(t, err)
+
+		Equal(t, "abc", tok.String())
+	}
 }
 
 func TestTavorParserLoops(t *testing.T) {
