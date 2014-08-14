@@ -63,7 +63,7 @@ func (v *Variable) String() string {
 // ForwardToken interface methods
 
 func (v *Variable) Get() token.Token {
-	return nil
+	return v.token
 }
 
 func (v *Variable) InternalGet() token.Token {
