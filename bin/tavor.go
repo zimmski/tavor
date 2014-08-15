@@ -57,42 +57,53 @@ var opts struct {
 	} `group:"Format file options"`
 
 	Fuzz struct {
-		Filters          FuzzFilters    `long:"filter" description:"Fuzzing filter to apply"`
-		ListFilters      bool           `long:"list-filters" description:"List all available fuzzing filters"`
-		Strategy         FuzzStrategy   `long:"strategy" description:"The fuzzing strategy" default:"random"`
-		ListStrategies   bool           `long:"list-strategies" description:"List all available fuzzing strategies"`
+		Filter optsFuzzingFilters
+
+		Strategy       FuzzStrategy `long:"strategy" description:"The fuzzing strategy" default:"random"`
+		ListStrategies bool         `long:"list-strategies" description:"List all available fuzzing strategies"`
+
 		ResultFolder     flags.Filename `long:"result-folder" description:"Save every fuzzing result with the MD5 checksum as filename in this folder"`
 		ResultExtensions string         `long:"result-extension" description:"If result-folder is used this will be the extension of every filename"`
 		ResultSeparator  string         `long:"result-separator" description:"Separates result outputs of each fuzzing step" default:"\n"`
 	} `command:"fuzz" description:"Fuzz the given format file"`
 
 	Graph struct {
-		Filters     FuzzFilters `long:"filter" description:"Fuzzing filter to apply"`
-		ListFilters bool        `long:"list-filters" description:"List all available fuzzing filters"`
+		Filter optsFuzzingFilters
 	} `command:"graph" description:"Generate a DOT file out of the internal AST"`
 
 	Reduce struct {
-		Exec                    string           `long:"exec" description:"Execute this binary with possible arguments to test a delta-debugging step"`
-		ExecExactExitCode       bool             `long:"exec-exact-exit-code" description:"Same exit code has to be present to reduce further"`
-		ExecExactStderr         bool             `long:"exec-exact-stderr" description:"Same stderr output has to be present to reduce further"`
-		ExecExactStdout         bool             `long:"exec-exact-stdout" description:"Same stdout output has to be present to reduce further"`
-		ExecMatchStderr         string           `long:"exec-match-stderr" description:"Searches through stderr via the given regex. A match has to be present to reduce further"`
-		ExecMatchStdout         string           `long:"exec-match-stdout" description:"Searches through stdout via the given regex. A match has to be present to reduce further"`
-		ExecDoNotRemoveTmpFiles bool             `long:"exec-do-not-remove-tmp-files" description:"If set tmp files for delta debugging are not removed"`
-		ExecArgumentType        ExecArgumentType `long:"exec-argument-type" description:"How the delta-debugging step is given to the binary" default:"environment"`
-		ListExecArgumentTypes   bool             `long:"list-exec-argument-types" description:"List all available exec argument types"`
+		Exec optsExec
 
-		Script string `long:"script" description:"Execute this binary which gets fed with delta-debugging steps and should return feedback to the steps"`
+		InputFile flags.Filename `long:"input-file" description:"Input file which gets parsed, validated and delta-debugged via the format file" required:"true"`
 
-		InputFile       flags.Filename `long:"input-file" description:"Input file which gets parsed, validated and delta-debugged via the format file" required:"true"`
-		Strategy        ReduceStrategy `long:"strategy" description:"The reducing strategy" default:"BinarySearch"`
-		ListStrategies  bool           `long:"list-strategies" description:"List all available reducing strategies"`
-		ResultSeparator string         `long:"result-separator" description:"Separates result outputs of each reducing step" default:"\n"`
+		Strategy       ReduceStrategy `long:"strategy" description:"The reducing strategy" default:"BinarySearch"`
+		ListStrategies bool           `long:"list-strategies" description:"List all available reducing strategies"`
+
+		ResultSeparator string `long:"result-separator" description:"Separates result outputs of each reducing step" default:"\n"`
 	} `command:"reduce" description:"Reduce the given input file"`
 
 	Validate struct {
 		InputFile flags.Filename `long:"input-file" description:"Input file which gets parsed and validated via the format file" required:"true"`
 	} `command:"validate" description:"Validate the given input file"`
+}
+
+type optsExec struct {
+	Exec                    string           `long:"exec" description:"Execute this binary with possible arguments to test a generation"`
+	ExecExactExitCode       bool             `long:"exec-exact-exit-code" description:"Same exit code has to be present"`
+	ExecExactStderr         bool             `long:"exec-exact-stderr" description:"Same stderr output has to be present"`
+	ExecExactStdout         bool             `long:"exec-exact-stdout" description:"Same stdout output has to be present"`
+	ExecMatchStderr         string           `long:"exec-match-stderr" description:"Searches through stderr via the given regex. A match has to be present"`
+	ExecMatchStdout         string           `long:"exec-match-stdout" description:"Searches through stdout via the given regex. A match has to be present"`
+	ExecDoNotRemoveTmpFiles bool             `long:"exec-do-not-remove-tmp-files" description:"If set, tmp files are not removed"`
+	ExecArgumentType        ExecArgumentType `long:"exec-argument-type" description:"How the generation is given to the binary" default:"environment"`
+	ListExecArgumentTypes   bool             `long:"list-exec-argument-types" description:"List all available exec argument types"`
+
+	Script string `long:"script" description:"Execute this binary which gets fed with the generation and should return feedback"`
+}
+
+type optsFuzzingFilters struct {
+	Filters     FuzzFilters `long:"filter" description:"Fuzzing filter to apply"`
+	ListFilters bool        `long:"list-filters" description:"List all available fuzzing filters"`
 }
 
 var ExecArgumentTypes = []string{
@@ -184,7 +195,7 @@ func checkArguments() string {
 		fmt.Printf("Tavor v%s\n", tavor.Version)
 
 		os.Exit(returnOk)
-	} else if opts.Fuzz.ListFilters || opts.Graph.ListFilters {
+	} else if opts.Fuzz.Filter.ListFilters || opts.Graph.Filter.ListFilters {
 		for _, name := range fuzzFilter.List() {
 			fmt.Println(name)
 		}
@@ -196,7 +207,7 @@ func checkArguments() string {
 		}
 
 		os.Exit(returnOk)
-	} else if opts.Reduce.ListExecArgumentTypes {
+	} else if opts.Reduce.Exec.ListExecArgumentTypes {
 		for _, name := range ExecArgumentTypes {
 			fmt.Println(name)
 		}
@@ -245,11 +256,11 @@ func checkArguments() string {
 		}
 	}
 
-	if opts.Reduce.ExecArgumentType != "" {
+	if opts.Reduce.Exec.ExecArgumentType != "" {
 		found := false
 
 		for _, v := range ExecArgumentTypes {
-			if string(opts.Reduce.ExecArgumentType) == v {
+			if string(opts.Reduce.Exec.ExecArgumentType) == v {
 				found = true
 
 				break
@@ -257,11 +268,11 @@ func checkArguments() string {
 		}
 
 		if !found {
-			exitError(fmt.Sprintf("%q is an unknown exec argument type", opts.Reduce.ExecArgumentType))
+			exitError(fmt.Sprintf("%q is an unknown exec argument type", opts.Reduce.Exec.ExecArgumentType))
 		}
 	}
-	if opts.Reduce.Exec != "" {
-		if !opts.Reduce.ExecExactExitCode && !opts.Reduce.ExecExactStderr && !opts.Reduce.ExecExactStdout && opts.Reduce.ExecMatchStderr == "" && opts.Reduce.ExecMatchStdout == "" {
+	if opts.Reduce.Exec.Exec != "" {
+		if !opts.Reduce.Exec.ExecExactExitCode && !opts.Reduce.Exec.ExecExactStderr && !opts.Reduce.Exec.ExecExactStdout && opts.Reduce.Exec.ExecMatchStderr == "" && opts.Reduce.Exec.ExecMatchStdout == "" {
 			exitError("At least one exec-exact or exec-match argument has to be given")
 		}
 	}
@@ -367,7 +378,7 @@ func main() {
 
 	switch command {
 	case "fuzz":
-		doc = applyFilters(opts.Fuzz.Filters, doc)
+		doc = applyFilters(opts.Fuzz.Filter.Filters, doc)
 
 		log.Infof("counted %d overall permutations", doc.PermutationsAll())
 
@@ -418,7 +429,7 @@ func main() {
 			ch <- i
 		}
 	case "graph":
-		doc = applyFilters(opts.Graph.Filters, doc)
+		doc = applyFilters(opts.Graph.Filter.Filters, doc)
 
 		graph.WriteDot(doc, os.Stdout)
 	case "reduce", "validate":
@@ -456,8 +467,8 @@ func main() {
 
 			log.Infof("using %s reducing strategy", opts.Reduce.Strategy)
 
-			if opts.Reduce.Exec != "" {
-				execs := strings.Split(opts.Reduce.Exec, " ")
+			if opts.Reduce.Exec.Exec != "" {
+				execs := strings.Split(opts.Reduce.Exec.Exec, " ")
 				var execDDFileArguments []int
 				for i, v := range execs {
 					if v == "TAVOR_DD_FILE" {
@@ -478,7 +489,7 @@ func main() {
 					exitError("Cannot write to tmp file: %s", err)
 				}
 
-				log.Infof("Execute %q to get original outputs with %q", opts.Reduce.Exec, tmp.Name())
+				log.Infof("Execute %q to get original outputs with %q", opts.Reduce.Exec.Exec, tmp.Name())
 
 				var execExitCode int
 				var execStderr bytes.Buffer
@@ -487,14 +498,14 @@ func main() {
 				var matchStderr *regexp.Regexp
 				var matchStdout *regexp.Regexp
 
-				if opts.Reduce.ExecMatchStderr != "" {
-					matchStderr = regexp.MustCompile(opts.Reduce.ExecMatchStderr)
+				if opts.Reduce.Exec.ExecMatchStderr != "" {
+					matchStderr = regexp.MustCompile(opts.Reduce.Exec.ExecMatchStderr)
 				}
-				if opts.Reduce.ExecMatchStdout != "" {
-					matchStdout = regexp.MustCompile(opts.Reduce.ExecMatchStdout)
+				if opts.Reduce.Exec.ExecMatchStdout != "" {
+					matchStdout = regexp.MustCompile(opts.Reduce.Exec.ExecMatchStdout)
 				}
 
-				if string(opts.Reduce.ExecArgumentType) == "argument" {
+				if string(opts.Reduce.Exec.ExecArgumentType) == "argument" {
 					for _, v := range execDDFileArguments {
 						execs[v] = tmp.Name()
 					}
@@ -502,7 +513,7 @@ func main() {
 
 				execCommand := exec.Command(execs[0], execs[1:]...)
 
-				if string(opts.Reduce.ExecArgumentType) == "environment" {
+				if string(opts.Reduce.Exec.ExecArgumentType) == "environment" {
 					execCommand.Env = []string{fmt.Sprintf("TAVOR_DD_FILE=%s", tmp.Name())}
 				}
 
@@ -519,7 +530,7 @@ func main() {
 					exitError("Could not start exce: %s", err)
 				}
 
-				if string(opts.Reduce.ExecArgumentType) == "stdin" {
+				if string(opts.Reduce.Exec.ExecArgumentType) == "stdin" {
 					_, err := stdin.Write([]byte(docOut))
 					if err != nil {
 						exitError("Could not write stdin to exec: %s", err)
@@ -547,7 +558,7 @@ func main() {
 					exitError("Original output does not match stdout match pattern")
 				}
 
-				if !opts.Reduce.ExecDoNotRemoveTmpFiles {
+				if !opts.Reduce.Exec.ExecDoNotRemoveTmpFiles {
 					err = os.Remove(tmp.Name())
 					if err != nil {
 						log.Errorf("Could not remove tmp file %q: %s", tmp.Name(), err)
@@ -579,7 +590,7 @@ func main() {
 					var ddStderr bytes.Buffer
 					var ddStdout bytes.Buffer
 
-					if string(opts.Reduce.ExecArgumentType) == "argument" {
+					if string(opts.Reduce.Exec.ExecArgumentType) == "argument" {
 						for _, v := range execDDFileArguments {
 							execs[v] = tmp.Name()
 						}
@@ -587,7 +598,7 @@ func main() {
 
 					execCommand := exec.Command(execs[0], execs[1:]...)
 
-					if string(opts.Reduce.ExecArgumentType) == "environment" {
+					if string(opts.Reduce.Exec.ExecArgumentType) == "environment" {
 						execCommand.Env = []string{fmt.Sprintf("TAVOR_DD_FILE=%s", tmp.Name())}
 					}
 
@@ -604,7 +615,7 @@ func main() {
 						exitError("Could not start exce: %s", err)
 					}
 
-					if string(opts.Reduce.ExecArgumentType) == "stdin" {
+					if string(opts.Reduce.Exec.ExecArgumentType) == "stdin" {
 						_, err := stdin.Write([]byte(docOut))
 						if err != nil {
 							exitError("Could not write stdin to exec: %s", err)
@@ -625,7 +636,7 @@ func main() {
 
 					log.Infof("Exit status was %d", ddExitCode)
 
-					if !opts.Reduce.ExecDoNotRemoveTmpFiles {
+					if !opts.Reduce.Exec.ExecDoNotRemoveTmpFiles {
 						err = os.Remove(tmp.Name())
 						if err != nil {
 							log.Errorf("Could not remove tmp file %q: %s", tmp.Name(), err)
@@ -635,7 +646,7 @@ func main() {
 					oks := 0
 					oksNeeded := 0
 
-					if opts.Reduce.ExecExactExitCode {
+					if opts.Reduce.Exec.ExecExactExitCode {
 						oksNeeded++
 
 						if execExitCode == ddExitCode {
@@ -646,7 +657,7 @@ func main() {
 							log.Infof("Not the same exit code")
 						}
 					}
-					if opts.Reduce.ExecExactStderr {
+					if opts.Reduce.Exec.ExecExactStderr {
 						oksNeeded++
 
 						if execStderr.String() == ddStderr.String() {
@@ -657,7 +668,7 @@ func main() {
 							log.Infof("Not the same stderr")
 						}
 					}
-					if opts.Reduce.ExecExactStdout {
+					if opts.Reduce.Exec.ExecExactStdout {
 						oksNeeded++
 
 						if execStdout.String() == ddStdout.String() {
@@ -703,8 +714,8 @@ func main() {
 
 					contin <- i
 				}
-			} else if opts.Reduce.Script != "" {
-				execs := strings.Split(opts.Reduce.Script, " ")
+			} else if opts.Reduce.Exec.Script != "" {
+				execs := strings.Split(opts.Reduce.Exec.Script, " ")
 
 				execCommand := exec.Command(execs[0], execs[1:]...)
 
@@ -724,7 +735,7 @@ func main() {
 
 				stdoutReader := bufio.NewReader(stdout)
 
-				log.Infof("Execute script %q", opts.Reduce.Script)
+				log.Infof("Execute script %q", opts.Reduce.Exec.Script)
 
 				err = execCommand.Start()
 				if err != nil {
