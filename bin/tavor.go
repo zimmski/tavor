@@ -503,6 +503,8 @@ func main() {
 				oks := 0
 				oksNeeded := 0
 
+				gotError := false
+
 				if opts.Fuzz.Exec.ExecExactExitCode != -1 {
 					oksNeeded++
 
@@ -568,12 +570,14 @@ func main() {
 						log.Infof("Not the same output")
 
 						if opts.Fuzz.Exec.ExitOnError {
+							gotError = true
+
 							break GENERATION
 						}
 					}
 				}
 
-				if !opts.Fuzz.Exec.ExecDoNotRemoveTmpFiles && !opts.Fuzz.Exec.ExecDoNotRemoveTmpFilesOnError {
+				if !opts.Fuzz.Exec.ExecDoNotRemoveTmpFiles && (!opts.Fuzz.Exec.ExecDoNotRemoveTmpFilesOnError || !gotError) {
 					err = os.Remove(tmp.Name())
 					if err != nil {
 						log.Errorf("Could not remove tmp file %q: %s", tmp.Name(), err)
