@@ -33,11 +33,13 @@ func (v *Variable) Clone() token.Token {
 }
 
 func (v *Variable) Fuzz(r rand.Rand) {
-	v.token.Fuzz(r)
+	// do nothing
 }
 
 func (v *Variable) FuzzAll(r rand.Rand) {
 	v.Fuzz(r)
+
+	v.token.Fuzz(r)
 }
 
 func (v *Variable) Parse(pars *token.InternalParser, cur int) (int, []error) {
@@ -45,11 +47,20 @@ func (v *Variable) Parse(pars *token.InternalParser, cur int) (int, []error) {
 }
 
 func (v *Variable) Permutation(i int) error {
-	return v.token.Permutation(i)
+	permutations := v.Permutations()
+
+	if i < 1 || i > permutations {
+		return &token.PermutationError{
+			Type: token.PermutationErrorIndexOutOfBound,
+		}
+	}
+	// do nothing
+
+	return nil
 }
 
 func (v *Variable) Permutations() int {
-	return v.token.Permutations()
+	return 1
 }
 
 func (v *Variable) PermutationsAll() int {
@@ -92,14 +103,6 @@ func (v *Variable) Index() int {
 	}
 
 	return -1
-}
-
-// ResetToken interface methods
-
-func (v *Variable) Reset() {
-	if p, ok := v.token.(token.ResetToken); ok {
-		p.Reset()
-	}
 }
 
 // ScopeToken interface methods

@@ -136,7 +136,6 @@ type ScopeToken interface {
 type Variable interface {
 	Forward
 	Index
-	Reset
 	Scope
 
 	Name() string
