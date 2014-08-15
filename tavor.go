@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	Version = "0.2"
+	Version = "0.3"
 )
 
 var MaxRepeat int = 2
