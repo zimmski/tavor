@@ -58,15 +58,16 @@ var opts struct {
 
 	Fuzz struct {
 		Exec struct {
-			Exec                    string           `long:"exec" description:"Execute this binary with possible arguments to test a generation"`
-			ExecExactExitCode       int              `long:"exec-exact-exit-code" description:"Same exit code has to be present" default:"-1"`
-			ExecExactStderr         string           `long:"exec-exact-stderr" description:"Same stderr output has to be present"`
-			ExecExactStdout         string           `long:"exec-exact-stdout" description:"Same stdout output has to be present"`
-			ExecMatchStderr         string           `long:"exec-match-stderr" description:"Searches through stderr via the given regex. A match has to be present"`
-			ExecMatchStdout         string           `long:"exec-match-stdout" description:"Searches through stdout via the given regex. A match has to be present"`
-			ExecDoNotRemoveTmpFiles bool             `long:"exec-do-not-remove-tmp-files" description:"If set, tmp files are not removed"`
-			ExecArgumentType        ExecArgumentType `long:"exec-argument-type" description:"How the generation is given to the binary" default:"environment"`
-			ListExecArgumentTypes   bool             `long:"list-exec-argument-types" description:"List all available exec argument types"`
+			Exec                           string           `long:"exec" description:"Execute this binary with possible arguments to test a generation"`
+			ExecExactExitCode              int              `long:"exec-exact-exit-code" description:"Same exit code has to be present" default:"-1"`
+			ExecExactStderr                string           `long:"exec-exact-stderr" description:"Same stderr output has to be present"`
+			ExecExactStdout                string           `long:"exec-exact-stdout" description:"Same stdout output has to be present"`
+			ExecMatchStderr                string           `long:"exec-match-stderr" description:"Searches through stderr via the given regex. A match has to be present"`
+			ExecMatchStdout                string           `long:"exec-match-stdout" description:"Searches through stdout via the given regex. A match has to be present"`
+			ExecDoNotRemoveTmpFiles        bool             `long:"exec-do-not-remove-tmp-files" description:"If set, tmp files are not removed"`
+			ExecDoNotRemoveTmpFilesOnError bool             `long:"exec-do-not-remove-tmp-files-on-error" description:"If set, tmp files are not removed on error"`
+			ExecArgumentType               ExecArgumentType `long:"exec-argument-type" description:"How the generation is given to the binary" default:"environment"`
+			ListExecArgumentTypes          bool             `long:"list-exec-argument-types" description:"List all available exec argument types"`
 
 			Script string `long:"script" description:"Execute this binary which gets fed with the generation and should return feedback"`
 
@@ -499,13 +500,6 @@ func main() {
 
 				log.Infof("Exit status was %d", cmdExitCode)
 
-				if !opts.Fuzz.Exec.ExecDoNotRemoveTmpFiles {
-					err = os.Remove(tmp.Name())
-					if err != nil {
-						log.Errorf("Could not remove tmp file %q: %s", tmp.Name(), err)
-					}
-				}
-
 				oks := 0
 				oksNeeded := 0
 
@@ -576,6 +570,13 @@ func main() {
 						if opts.Fuzz.Exec.ExitOnError {
 							break GENERATION
 						}
+					}
+				}
+
+				if !opts.Fuzz.Exec.ExecDoNotRemoveTmpFiles && !opts.Fuzz.Exec.ExecDoNotRemoveTmpFilesOnError {
+					err = os.Remove(tmp.Name())
+					if err != nil {
+						log.Errorf("Could not remove tmp file %q: %s", tmp.Name(), err)
 					}
 				}
 
@@ -908,13 +909,6 @@ func main() {
 
 					log.Infof("Exit status was %d", cmdExitCode)
 
-					if !opts.Reduce.Exec.ExecDoNotRemoveTmpFiles {
-						err = os.Remove(tmp.Name())
-						if err != nil {
-							log.Errorf("Could not remove tmp file %q: %s", tmp.Name(), err)
-						}
-					}
-
 					oks := 0
 					oksNeeded := 0
 
@@ -985,6 +979,13 @@ func main() {
 							log.Infof("Not the same output, do another step")
 
 							feedback <- reduceStrategy.Good
+						}
+					}
+
+					if !opts.Reduce.Exec.ExecDoNotRemoveTmpFiles {
+						err = os.Remove(tmp.Name())
+						if err != nil {
+							log.Errorf("Could not remove tmp file %q: %s", tmp.Name(), err)
 						}
 					}
 
