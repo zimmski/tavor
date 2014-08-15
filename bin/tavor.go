@@ -57,6 +57,22 @@ var opts struct {
 	} `group:"Format file options"`
 
 	Fuzz struct {
+		Exec struct {
+			Exec                    string           `long:"exec" description:"Execute this binary with possible arguments to test a generation"`
+			ExecExactExitCode       int              `long:"exec-exact-exit-code" description:"Same exit code has to be present" default:"-1"`
+			ExecExactStderr         string           `long:"exec-exact-stderr" description:"Same stderr output has to be present"`
+			ExecExactStdout         string           `long:"exec-exact-stdout" description:"Same stdout output has to be present"`
+			ExecMatchStderr         string           `long:"exec-match-stderr" description:"Searches through stderr via the given regex. A match has to be present"`
+			ExecMatchStdout         string           `long:"exec-match-stdout" description:"Searches through stdout via the given regex. A match has to be present"`
+			ExecDoNotRemoveTmpFiles bool             `long:"exec-do-not-remove-tmp-files" description:"If set, tmp files are not removed"`
+			ExecArgumentType        ExecArgumentType `long:"exec-argument-type" description:"How the generation is given to the binary" default:"environment"`
+			ListExecArgumentTypes   bool             `long:"list-exec-argument-types" description:"List all available exec argument types"`
+
+			Script string `long:"script" description:"Execute this binary which gets fed with the generation and should return feedback"`
+
+			ExitOnError bool `long:"exit-on-error" description:"Exit if an execution fails"`
+		}
+
 		Filter optsFuzzingFilters
 
 		Strategy       FuzzStrategy `long:"strategy" description:"The fuzzing strategy" default:"random"`
@@ -72,7 +88,19 @@ var opts struct {
 	} `command:"graph" description:"Generate a DOT file out of the internal AST"`
 
 	Reduce struct {
-		Exec optsExec
+		Exec struct {
+			Exec                    string           `long:"exec" description:"Execute this binary with possible arguments to test a generation"`
+			ExecExactExitCode       bool             `long:"exec-exact-exit-code" description:"Same exit code has to be present"`
+			ExecExactStderr         bool             `long:"exec-exact-stderr" description:"Same stderr output has to be present"`
+			ExecExactStdout         bool             `long:"exec-exact-stdout" description:"Same stdout output has to be present"`
+			ExecMatchStderr         string           `long:"exec-match-stderr" description:"Searches through stderr via the given regex. A match has to be present"`
+			ExecMatchStdout         string           `long:"exec-match-stdout" description:"Searches through stdout via the given regex. A match has to be present"`
+			ExecDoNotRemoveTmpFiles bool             `long:"exec-do-not-remove-tmp-files" description:"If set, tmp files are not removed"`
+			ExecArgumentType        ExecArgumentType `long:"exec-argument-type" description:"How the generation is given to the binary" default:"environment"`
+			ListExecArgumentTypes   bool             `long:"list-exec-argument-types" description:"List all available exec argument types"`
+
+			Script string `long:"script" description:"Execute this binary which gets fed with the generation and should return feedback"`
+		}
 
 		InputFile flags.Filename `long:"input-file" description:"Input file which gets parsed, validated and delta-debugged via the format file" required:"true"`
 
@@ -85,20 +113,6 @@ var opts struct {
 	Validate struct {
 		InputFile flags.Filename `long:"input-file" description:"Input file which gets parsed and validated via the format file" required:"true"`
 	} `command:"validate" description:"Validate the given input file"`
-}
-
-type optsExec struct {
-	Exec                    string           `long:"exec" description:"Execute this binary with possible arguments to test a generation"`
-	ExecExactExitCode       bool             `long:"exec-exact-exit-code" description:"Same exit code has to be present"`
-	ExecExactStderr         bool             `long:"exec-exact-stderr" description:"Same stderr output has to be present"`
-	ExecExactStdout         bool             `long:"exec-exact-stdout" description:"Same stdout output has to be present"`
-	ExecMatchStderr         string           `long:"exec-match-stderr" description:"Searches through stderr via the given regex. A match has to be present"`
-	ExecMatchStdout         string           `long:"exec-match-stdout" description:"Searches through stdout via the given regex. A match has to be present"`
-	ExecDoNotRemoveTmpFiles bool             `long:"exec-do-not-remove-tmp-files" description:"If set, tmp files are not removed"`
-	ExecArgumentType        ExecArgumentType `long:"exec-argument-type" description:"How the generation is given to the binary" default:"environment"`
-	ListExecArgumentTypes   bool             `long:"list-exec-argument-types" description:"List all available exec argument types"`
-
-	Script string `long:"script" description:"Execute this binary which gets fed with the generation and should return feedback"`
 }
 
 type optsFuzzingFilters struct {
@@ -389,44 +403,302 @@ func main() {
 
 		log.Infof("using %s fuzzing strategy", opts.Fuzz.Strategy)
 
-		ch, err := strat.Fuzz(r)
-		if err != nil {
-			exitError(err.Error())
-		}
-
 		folder := opts.Fuzz.ResultFolder
 		if len(folder) != 0 && folder[len(folder)-1] != '/' {
 			folder += "/"
 		}
 
-		another := false
-		for i := range ch {
-			if folder == "" {
-				if !opts.General.Debug {
-					if another {
-						fmt.Println()
-					} else {
-						another = true
-					}
-				}
+		ch, err := strat.Fuzz(r)
+		if err != nil {
+			exitError(err.Error())
+		}
 
-				log.Debug("result:")
-				fmt.Print(doc.String())
-				fmt.Print(opts.Fuzz.ResultSeparator)
-			} else {
-				out := doc.String()
-				sum := md5.Sum([]byte(out))
-
-				file := fmt.Sprintf("%s%x%s", folder, sum, opts.Fuzz.ResultExtensions)
-
-				log.Infof("write result to %s", file)
-
-				if err := ioutil.WriteFile(file, []byte(out), 0644); err != nil {
-					exitError("error writing to %s: %v", file, err)
+		if opts.Fuzz.Exec.Exec != "" {
+			execs := strings.Split(opts.Fuzz.Exec.Exec, " ")
+			var execFileArguments []int
+			for i, v := range execs {
+				if v == "TAVOR_FUZZ_FILE" {
+					execFileArguments = append(execFileArguments, i)
 				}
 			}
 
-			ch <- i
+			var matchStderr *regexp.Regexp
+			var matchStdout *regexp.Regexp
+
+			if opts.Fuzz.Exec.ExecMatchStderr != "" {
+				matchStderr = regexp.MustCompile(opts.Fuzz.Exec.ExecMatchStderr)
+			}
+			if opts.Fuzz.Exec.ExecMatchStdout != "" {
+				matchStdout = regexp.MustCompile(opts.Fuzz.Exec.ExecMatchStdout)
+			}
+
+			stepId := 0
+
+		GENERATION:
+			for i := range ch {
+				docOut := doc.String()
+
+				tmp, err := ioutil.TempFile(string(folder), fmt.Sprintf("fuzz-%d-", stepId))
+				if err != nil {
+					exitError("Cannot create tmp file: %s", err)
+				}
+				_, err = tmp.WriteString(docOut)
+				if err != nil {
+					exitError("Cannot write to tmp file: %s", err)
+				}
+
+				log.Infof("Test %q", tmp.Name())
+
+				var cmdExitCode int
+				var cmdStderr bytes.Buffer
+				var cmdStdout bytes.Buffer
+
+				if string(opts.Fuzz.Exec.ExecArgumentType) == "argument" {
+					for _, v := range execFileArguments {
+						execs[v] = tmp.Name()
+					}
+				}
+
+				execCommand := exec.Command(execs[0], execs[1:]...)
+
+				if string(opts.Fuzz.Exec.ExecArgumentType) == "environment" {
+					execCommand.Env = []string{fmt.Sprintf("TAVOR_FUZZ_FILE=%s", tmp.Name())}
+				}
+
+				execCommand.Stderr = io.MultiWriter(&cmdStderr, os.Stderr)
+				execCommand.Stdout = io.MultiWriter(&cmdStdout, os.Stdout)
+
+				stdin, err := execCommand.StdinPipe()
+				if err != nil {
+					exitError("Could not get stdin pipe: %s", err)
+				}
+
+				err = execCommand.Start()
+				if err != nil {
+					exitError("Could not start exce: %s", err)
+				}
+
+				if string(opts.Fuzz.Exec.ExecArgumentType) == "stdin" {
+					_, err := stdin.Write([]byte(docOut))
+					if err != nil {
+						exitError("Could not write stdin to exec: %s", err)
+					}
+
+					stdin.Close()
+				}
+
+				err = execCommand.Wait()
+
+				if err == nil {
+					cmdExitCode = 0
+				} else if e, ok := err.(*exec.ExitError); ok {
+					cmdExitCode = e.Sys().(syscall.WaitStatus).ExitStatus()
+				} else {
+					exitError("Could not execute exec successfully: %s", err)
+				}
+
+				log.Infof("Exit status was %d", cmdExitCode)
+
+				if !opts.Fuzz.Exec.ExecDoNotRemoveTmpFiles {
+					err = os.Remove(tmp.Name())
+					if err != nil {
+						log.Errorf("Could not remove tmp file %q: %s", tmp.Name(), err)
+					}
+				}
+
+				oks := 0
+				oksNeeded := 0
+
+				if opts.Fuzz.Exec.ExecExactExitCode != -1 {
+					oksNeeded++
+
+					if opts.Fuzz.Exec.ExecExactExitCode == cmdExitCode {
+						log.Infof("Same exit code")
+
+						oks++
+					} else {
+						log.Infof("Not the same exit code")
+					}
+				}
+				if opts.Fuzz.Exec.ExecExactStderr != "" {
+					oksNeeded++
+
+					if opts.Fuzz.Exec.ExecExactStderr == cmdStderr.String() {
+						log.Infof("Same stderr")
+
+						oks++
+					} else {
+						log.Infof("Not the same stderr")
+					}
+				}
+				if opts.Fuzz.Exec.ExecExactStdout != "" {
+					oksNeeded++
+
+					if opts.Fuzz.Exec.ExecExactStdout == cmdStdout.String() {
+						log.Infof("Same stdout")
+
+						oks++
+					} else {
+						log.Infof("Not the same stdout")
+					}
+				}
+				if matchStderr != nil {
+					oksNeeded++
+
+					if matchStderr.Match(cmdStderr.Bytes()) {
+						log.Infof("Same stderr matching")
+
+						oks++
+					} else {
+						log.Infof("Not the same stderr matching")
+					}
+				}
+				if matchStdout != nil {
+					oksNeeded++
+
+					if matchStdout.Match(cmdStdout.Bytes()) {
+						log.Infof("Same stdout matching")
+
+						oks++
+					} else {
+						log.Infof("Not the same stdout matching")
+					}
+				}
+
+				if oksNeeded == 0 {
+					log.Warnf("Not defined what to compare")
+				} else {
+					if oks == oksNeeded {
+						log.Infof("Same output")
+					} else {
+						log.Infof("Not the same output")
+
+						if opts.Fuzz.Exec.ExitOnError {
+							break GENERATION
+						}
+					}
+				}
+
+				ch <- i
+
+				stepId++
+			}
+		} else if opts.Fuzz.Exec.Script != "" {
+			execs := strings.Split(opts.Fuzz.Exec.Script, " ")
+
+			execCommand := exec.Command(execs[0], execs[1:]...)
+
+			stdin, err := execCommand.StdinPipe()
+			if err != nil {
+				exitError("Could not get stdin pipe: %s", err)
+			}
+			defer stdin.Close()
+
+			stdout, err := execCommand.StdoutPipe()
+			if err != nil {
+				exitError("Could not get stdout pipe: %s", err)
+			}
+			defer stdout.Close()
+
+			execCommand.Stderr = os.Stderr
+
+			stdoutReader := bufio.NewReader(stdout)
+
+			log.Infof("Execute script %q", opts.Fuzz.Exec.Script)
+
+			err = execCommand.Start()
+			if err != nil {
+				exitError("Could not start script: %s", err)
+			}
+
+		GENERATIONSC:
+			for i := range ch {
+				_, err = stdin.Write([]byte("Generation\n"))
+				if err != nil {
+					exitError("Could not write stdin to script: %s", err)
+				}
+				_, err = stdin.Write([]byte(doc.String()))
+				if err != nil {
+					exitError("Could not write stdin to script: %s", err)
+				}
+				_, err = stdin.Write([]byte(opts.Fuzz.ResultSeparator))
+				if err != nil {
+					exitError("Could not write stdin to script: %s", err)
+				}
+
+				feed, err := stdoutReader.ReadString('\n')
+				if err != nil {
+					exitError("Could not read stdout from script: %s", err)
+				}
+
+				switch feed {
+				case "YES\n":
+					log.Infof("Same output")
+				case "NO\n":
+					log.Infof("Not the same output")
+
+					if opts.Fuzz.Exec.ExitOnError {
+						break GENERATIONSC
+					}
+				default:
+					exitError("Feedback from script was not YES nor NO: %s", feed)
+				}
+
+				ch <- i
+			}
+
+			_, err = stdin.Write([]byte("Exit\n"))
+			if err != nil {
+				exitError("Could not write stdin to script: %s", err)
+			}
+
+			stdin.Close()
+			stdout.Close()
+
+			err = execCommand.Wait()
+
+			var execExitCode int
+
+			if err == nil {
+				execExitCode = 0
+			} else if e, ok := err.(*exec.ExitError); ok {
+				execExitCode = e.Sys().(syscall.WaitStatus).ExitStatus()
+			} else {
+				exitError("Could not execute exec successfully: %s", err)
+			}
+
+			log.Infof("Exit status was %d", execExitCode)
+		} else {
+			another := false
+
+			for i := range ch {
+				if folder == "" {
+					if !opts.General.Debug {
+						if another {
+							fmt.Println()
+						} else {
+							another = true
+						}
+					}
+
+					log.Debug("result:")
+					fmt.Print(doc.String())
+					fmt.Print(opts.Fuzz.ResultSeparator)
+				} else {
+					out := doc.String()
+					sum := md5.Sum([]byte(out))
+
+					file := fmt.Sprintf("%s%x%s", folder, sum, opts.Fuzz.ResultExtensions)
+
+					log.Infof("write result to %s", file)
+
+					if err := ioutil.WriteFile(file, []byte(out), 0644); err != nil {
+						exitError("error writing to %s: %v", file, err)
+					}
+				}
+
+				ch <- i
+			}
 		}
 	case "graph":
 		doc = applyFilters(opts.Graph.Filter.Filters, doc)
@@ -469,10 +741,10 @@ func main() {
 
 			if opts.Reduce.Exec.Exec != "" {
 				execs := strings.Split(opts.Reduce.Exec.Exec, " ")
-				var execDDFileArguments []int
+				var execFileArguments []int
 				for i, v := range execs {
 					if v == "TAVOR_DD_FILE" {
-						execDDFileArguments = append(execDDFileArguments, i)
+						execFileArguments = append(execFileArguments, i)
 					}
 				}
 
@@ -506,7 +778,7 @@ func main() {
 				}
 
 				if string(opts.Reduce.Exec.ExecArgumentType) == "argument" {
-					for _, v := range execDDFileArguments {
+					for _, v := range execFileArguments {
 						execs[v] = tmp.Name()
 					}
 				}
@@ -586,12 +858,12 @@ func main() {
 
 					log.Infof("Test %q", tmp.Name())
 
-					var ddExitCode int
-					var ddStderr bytes.Buffer
-					var ddStdout bytes.Buffer
+					var cmdExitCode int
+					var cmdStderr bytes.Buffer
+					var cmdStdout bytes.Buffer
 
 					if string(opts.Reduce.Exec.ExecArgumentType) == "argument" {
-						for _, v := range execDDFileArguments {
+						for _, v := range execFileArguments {
 							execs[v] = tmp.Name()
 						}
 					}
@@ -602,8 +874,8 @@ func main() {
 						execCommand.Env = []string{fmt.Sprintf("TAVOR_DD_FILE=%s", tmp.Name())}
 					}
 
-					execCommand.Stderr = io.MultiWriter(&ddStderr, os.Stderr)
-					execCommand.Stdout = io.MultiWriter(&ddStdout, os.Stdout)
+					execCommand.Stderr = io.MultiWriter(&cmdStderr, os.Stderr)
+					execCommand.Stdout = io.MultiWriter(&cmdStdout, os.Stdout)
 
 					stdin, err := execCommand.StdinPipe()
 					if err != nil {
@@ -627,14 +899,14 @@ func main() {
 					err = execCommand.Wait()
 
 					if err == nil {
-						ddExitCode = 0
+						cmdExitCode = 0
 					} else if e, ok := err.(*exec.ExitError); ok {
-						ddExitCode = e.Sys().(syscall.WaitStatus).ExitStatus()
+						cmdExitCode = e.Sys().(syscall.WaitStatus).ExitStatus()
 					} else {
 						exitError("Could not execute exec successfully: %s", err)
 					}
 
-					log.Infof("Exit status was %d", ddExitCode)
+					log.Infof("Exit status was %d", cmdExitCode)
 
 					if !opts.Reduce.Exec.ExecDoNotRemoveTmpFiles {
 						err = os.Remove(tmp.Name())
@@ -649,7 +921,7 @@ func main() {
 					if opts.Reduce.Exec.ExecExactExitCode {
 						oksNeeded++
 
-						if execExitCode == ddExitCode {
+						if execExitCode == cmdExitCode {
 							log.Infof("Same exit code")
 
 							oks++
@@ -660,7 +932,7 @@ func main() {
 					if opts.Reduce.Exec.ExecExactStderr {
 						oksNeeded++
 
-						if execStderr.String() == ddStderr.String() {
+						if execStderr.String() == cmdStderr.String() {
 							log.Infof("Same stderr")
 
 							oks++
@@ -671,7 +943,7 @@ func main() {
 					if opts.Reduce.Exec.ExecExactStdout {
 						oksNeeded++
 
-						if execStdout.String() == ddStdout.String() {
+						if execStdout.String() == cmdStdout.String() {
 							log.Infof("Same stdout")
 
 							oks++
@@ -682,7 +954,7 @@ func main() {
 					if matchStderr != nil {
 						oksNeeded++
 
-						if matchStderr.Match(ddStderr.Bytes()) {
+						if matchStderr.Match(cmdStderr.Bytes()) {
 							log.Infof("Same stderr matching")
 
 							oks++
@@ -693,7 +965,7 @@ func main() {
 					if matchStdout != nil {
 						oksNeeded++
 
-						if matchStdout.Match(ddStdout.Bytes()) {
+						if matchStdout.Match(cmdStdout.Bytes()) {
 							log.Infof("Same stdout matching")
 
 							oks++
@@ -702,14 +974,18 @@ func main() {
 						}
 					}
 
-					if oks == oksNeeded {
-						log.Infof("Same output, continue delta")
-
-						feedback <- reduceStrategy.Bad
+					if oksNeeded == 0 {
+						log.Warnf("Not defined what to compare")
 					} else {
-						log.Infof("Not the same output, do another step")
+						if oks == oksNeeded {
+							log.Infof("Same output, continue delta")
 
-						feedback <- reduceStrategy.Good
+							feedback <- reduceStrategy.Bad
+						} else {
+							log.Infof("Not the same output, do another step")
+
+							feedback <- reduceStrategy.Good
+						}
 					}
 
 					contin <- i
