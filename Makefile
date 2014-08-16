@@ -1,24 +1,26 @@
 .PHONY: all binaries clean fmt install lint test tools
 
+ROOT_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
+
 all: clean install test install binaries
 
 binaries:
-	go install $(GOPATH)/src/github.com/zimmski/tavor/bin/tavor.go
+	go install $(ROOT_DIR)/bin/tavor.go
 clean:
 	go clean -i ./...
 coverage:
 	go test -coverprofile=coverage.out
 	go tool cover -html=coverage.out
 debugbinaries:
-	go install -race $(GOPATH)/src/github.com/zimmski/tavor/bin/tavor.go
+	go install -race $(ROOT_DIR)/bin/tavor.go
 fmt:
-	gofmt -l -w $(GOPATH)/src/github.com/zimmski/tavor
+	gofmt -l -w $(ROOT_DIR)/
 install:
 	go install ./...
 	go install -race ./...
 lint: clean install
-	go tool vet -all=true -v=true $(GOPATH)/src/github.com/zimmski/tavor
-	golint $(GOPATH)/src/github.com/zimmski/tavor
+	go tool vet -all=true -v=true $(ROOT_DIR)/
+	golint $(ROOT_DIR)/
 test: clean
 	go test -race ./...
 tools:
