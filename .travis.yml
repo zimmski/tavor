@@ -4,7 +4,9 @@ go:
 
 install:
 	- go get -d -v ./... && go build -v ./...
-	- go install -race bin/tavor.go
 
 script:
-	- go test -race -v ./...
+	- make clean
+	- make install
+	- make test
+	- make debugbinaries
