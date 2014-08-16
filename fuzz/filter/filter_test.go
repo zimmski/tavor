@@ -3,7 +3,7 @@ package filter
 import (
 	"testing"
 
-	. "github.com/stretchr/testify/assert"
+	. "github.com/zimmski/tavor/test/assert"
 
 	"github.com/zimmski/tavor/token"
 	"github.com/zimmski/tavor/token/lists"

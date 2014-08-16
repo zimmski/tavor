@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	. "github.com/stretchr/testify/assert"
+	. "github.com/zimmski/tavor/test/assert"
 
 	"github.com/zimmski/tavor/parser"
 	"github.com/zimmski/tavor/test"

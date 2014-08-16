@@ -3,7 +3,7 @@ package strategy
 import (
 	"testing"
 
-	. "github.com/stretchr/testify/assert"
+	. "github.com/zimmski/tavor/test/assert"
 
 	"github.com/zimmski/tavor/rand"
 	"github.com/zimmski/tavor/test"

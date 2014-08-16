@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	. "github.com/stretchr/testify/assert"
+	. "github.com/zimmski/tavor/test/assert"
 
 	"github.com/zimmski/tavor"
 	"github.com/zimmski/tavor/test"

@@ -3,7 +3,7 @@ package rand
 import (
 	"testing"
 
-	. "github.com/stretchr/testify/assert"
+	. "github.com/zimmski/tavor/test/assert"
 )
 
 func TestRandTest(t *testing.T) {

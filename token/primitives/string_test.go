@@ -3,7 +3,7 @@ package primitives
 import (
 	"testing"
 
-	. "github.com/stretchr/testify/assert"
+	. "github.com/zimmski/tavor/test/assert"
 
 	"github.com/zimmski/tavor/test"
 	"github.com/zimmski/tavor/token"
