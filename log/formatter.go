@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/Sirupsen/logrus"
 )
@@ -25,8 +26,16 @@ const (
 
 type LogFormatter struct{}
 
+type TextFormatter struct {
+	// Set to true to bypass checking for a TTY before outputting colors.
+	ForceColors   bool
+	DisableColors bool
+}
+
 func (f *LogFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 	b := &bytes.Buffer{}
+
+	prefixFieldClashes(entry)
 
 	if logrus.IsTerminal() {
 		levelText := strings.ToUpper(entry.Data["level"].(string))[0:4]
@@ -57,12 +66,12 @@ func (f *LogFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 			fmt.Fprintf(b, " \x1b[%dm%s\x1b[0m=%v", levelColor, k, v)
 		}
 	} else {
-		f.AppendKeyValue(b, "level", entry.Data["level"].(string))
-		f.AppendKeyValue(b, "msg", entry.Data["msg"].(string))
+		appendKeyValue(b, "level", entry.Data["level"].(string))
+		appendKeyValue(b, "msg", entry.Data["msg"].(string))
 
 		for k, v := range entry.Data {
 			if k != "level" && k != "msg" && k != "time" {
-				f.AppendKeyValue(b, k, v)
+				appendKeyValue(b, k, v)
 			}
 		}
 	}
@@ -71,10 +80,33 @@ func (f *LogFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 	return b.Bytes(), nil
 }
 
-func (f *LogFormatter) AppendKeyValue(b *bytes.Buffer, key, value interface{}) {
+func appendKeyValue(b *bytes.Buffer, key, value interface{}) {
 	if _, ok := value.(string); ok {
 		fmt.Fprintf(b, "%v=%q ", key, value)
 	} else {
 		fmt.Fprintf(b, "%v=%v ", key, value)
 	}
+}
+
+func prefixFieldClashes(entry *logrus.Entry) {
+	_, ok := entry.Data["time"]
+	if ok {
+		entry.Data["fields.time"] = entry.Data["time"]
+	}
+
+	entry.Data["time"] = entry.Time.Format(time.RFC3339)
+
+	_, ok = entry.Data["msg"]
+	if ok {
+		entry.Data["fields.msg"] = entry.Data["msg"]
+	}
+
+	entry.Data["msg"] = entry.Message
+
+	_, ok = entry.Data["level"]
+	if ok {
+		entry.Data["fields.level"] = entry.Data["level"]
+	}
+
+	entry.Data["level"] = entry.Level.String()
 }
