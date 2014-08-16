@@ -19,10 +19,10 @@ func Level(level logrus.Level) {
 	log.Level = level
 }
 
-func LevelDebug() { log.Level = logrus.Debug }
-func LevelInfo()  { log.Level = logrus.Info }
-func LevelWarn()  { log.Level = logrus.Warn }
-func LevelError() { log.Level = logrus.Error }
+func LevelDebug() { log.Level = logrus.DebugLevel }
+func LevelInfo()  { log.Level = logrus.InfoLevel }
+func LevelWarn()  { log.Level = logrus.WarnLevel }
+func LevelError() { log.Level = logrus.ErrorLevel }
 
 // logging functions
 
