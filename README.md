@@ -44,7 +44,7 @@ You now have a binary "tavor" in your GOBIN folder which can be used without any
 
 ## Where are the precompiled binaries?<a name="precompiled"/>
 
-You can find all precompiled binaries on the [release page](/releases). The binaries are packed into archives that currently only hold the Tavor binary itself.
+You can find all precompiled binaries on the [release page](https://github.com/zimmski/tavor/releases). The binaries are packed into archives that currently only hold the Tavor binary itself.
 
 ### Bash Completion
 
