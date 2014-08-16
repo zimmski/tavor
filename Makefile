@@ -13,6 +13,8 @@ coverage:
 	go tool cover -html=coverage.out
 debugbinaries:
 	go install -race $(ROOT_DIR)/bin/tavor.go
+dependencies:
+    go get -d -v ./...
 fmt:
 	gofmt -l -w $(ROOT_DIR)/
 install:
