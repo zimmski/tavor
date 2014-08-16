@@ -1,0 +1,10 @@
+language: go
+go:
+	- 1.3
+
+install:
+	- go get -d -v ./... && go build -v ./...
+	- go install -race bin/tavor.go
+
+script:
+	- go test -race -v ./...
