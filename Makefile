@@ -14,7 +14,9 @@ coverage:
 debugbinaries:
 	go install -race $(ROOT_DIR)/bin/tavor.go
 dependencies:
-	go get -d -v -u ./...
+	go get -d -t -u -v ./...
+	go build -v ./...
+	go get -t -u -v github.com/jessevdk/go-flags
 fmt:
 	gofmt -l -w $(ROOT_DIR)/
 install:

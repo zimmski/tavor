@@ -15,7 +15,7 @@ If you do not want to use the [precompiled binaries](#precompiled) but instead w
 2. Go-get Tavor
 
 	```bash
-	go get -t github.com/zimmski/tavor
+	go get -t -v github.com/zimmski/tavor
 	```
 
 3. Install dependencies
