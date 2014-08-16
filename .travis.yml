@@ -6,6 +6,8 @@ install:
   - go get -d -v ./... && go build -v ./...
 
 script:
+  - export GOBIN=~/gobin
+  - mkdir GOBIN
   - make clean
   - make install
   - make test
