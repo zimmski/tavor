@@ -2,11 +2,64 @@
 
 Tavor ([Sindarin](https://en.wikipedia.org/wiki/Sindarin) for "woodpecker") is a fuzzing and delta-debugging platform.
 
+TODO SHORT description on what you can do with the platform and what is the purpose of it
+
+### A quick example
+
+TODO demonstrate a small Tavor format file, fuzzing and delta debugging
+TODO mention bigger example scenario -> link to it
+
+## What is fuzzing?
+
+TODO in general, which types of fuzzing are there, what you can do with them, what are the pros and cons
+TODO mention that it is pretty much just data generation and can be used for example for genetic programming
+
+## What is delta-debugging?
+
+TODO in general, which types of delta-debugging are there, what you can do with them, what are the pros and cons
+TODO mention that delta-debugging and reducing are synonyms
+
+## How does Tavor work and what does it provide?
+
+TODO model-based concept with format files, doing almost everything with format files should be possible
+TODO how fuzzing works in general with the model-based concept
+TODO how delta-debugging works in general with the model-based concept, reading the input, delta-debug on it
+TODO mention missing features -> link to it
+TODO mention that it is a platform to extend on, so researchers and testers do not have to implement everything from scratch
+
+## The Tavor format file
+
+TODO -> put this in its own .md and do not skimp on examples
+TODO explain every aspect. basics first
+
 ## How do I use Tavor?<a name="use"/>
 
-### The Tavor binary
+TODO explain the currently three ways to use Tavor: binary, programmatically using Tavor and extending Tavor itself
 
-The Tavor binary provides fuzzing and delta-debugging functionality for Tavor format files as well as some other commands. Sane default arguments should provide a pleasant experience.
+TODO explain that all three ways work in the same way filters fuzzing and delta debugging
+TODO mention bigger example scenario -> link to it
+
+### What are fuzzing filters?
+
+TODO
+
+TODO available filters -> link to godoc and explain the filters in the code
+
+### What are fuzzing strategies?
+
+TODO
+
+TODO available strategies -> link to godoc and explain the strategies in the code
+
+### What are delta-debugging strategies?
+
+TODO
+
+TODO available strategies -> link to godoc and explain the strategies in the code
+
+## The Tavor binary<a name="binary"/>
+
+The [Tavor binary](#precompiled) provides fuzzing and delta-debugging functionality for Tavor format files as well as some other commands. Sane default arguments should provide a pleasant experience.
 
 Since the binary acts on Tavor format files, the <code>--format-file</code> argument has to be used for every non-informational action. E.g. the following commands fuzzes the given format file with the default fuzzing strategy:
 
@@ -94,6 +147,65 @@ Available commands:
       --input-file=   Input file which gets parsed and validated via the format file
 ```
 
+### Graphing
+
+TODO with examples
+
+### Fuzzing
+
+TODO bigger example with example commands and files
+
+### Delta-debugging
+
+TODO bigger example with example commands and files
+
+## A complete example for fuzzing, executing and delta-debugging<a name="bigexample"/>
+
+TODO this example should give a complete overview of how Tavor can be used.
+TODO do a key-word driven format-file
+TODO executor for the key-words
+TODO delta-debug keywords because of an intentional error
+
+## How do I use the Tavor platform programmatically?<a name="programmatically"/>
+
+TODO
+TODO explain creating internal structures (instead of using a format file) with examples
+TODO explain how to use filters, fuzzers and delta debugging
+
+## How do I extend Tavor?<a name="extend"/>
+
+TODO
+TODO mention feature request section, but if someone is interested in really extending Tavor by her/himself... read on
+
+### Filters
+
+TODO
+
+### Fuzzing strategies
+
+TODO
+
+### Delta-debugging strategies
+
+TODO
+
+### Tokens
+
+TODO
+TODO explain the different interfaces for tokens
+
+### Attributes for tokens
+
+TODO
+
+### Special tokens
+
+TODO
+
+### Something else?
+
+TODO explain if the reader has not find what she/he looks for -> link to the feature request section
+
 ## How do I build Tavor?<a name="build"/>
 
 Tavor provides [precompiled 64 bit Linux binaries](#precompiled). Other platforms are currently not supported, but might work. Please have a look at the [feature request section](#feature-request) if you need them to work or you want more binaries.
@@ -153,6 +265,10 @@ Bash Completion for Tavor should now be working. If not, one reason could be tha
 echo ". ~/.bash_completion/tavor-bash_completion.sh" >> ~/.bashrc
 . ~/.bashrc
 ```
+
+## Missing features
+
+TODO
 
 ## Can I make feature requests, report bugs and problems?<a name="feature-request"/>
 
