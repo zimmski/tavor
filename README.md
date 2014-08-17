@@ -23,24 +23,23 @@ If you do not want to use the [precompiled binaries](#precompiled) but instead w
 	```bash
 	cd $GOPATH/src/github.com/zimmski/tavor
 	make dependencies
+	```
+
+3. Compile
+
+	```bash
+	cd $GOPATH/src/github.com/zimmski/tavor
 	make install
 	```
 
-3. Run tests
+4. Run tests
 
 	```bash
 	cd $GOPATH/src/github.com/zimmski/tavor
 	make test
 	```
 
-4. Compile
-
-	```bash
-	cd $GOPATH/src/github.com/zimmski/tavor
-	make binaries
-	```
-
-You now have a binary "tavor" in your GOBIN folder which can be used without any further actions.
+You now have a binary "tavor" in your GOPATH/bin (or if set GOBIN folder) folder which can be used without any further actions.
 
 ## Where are the precompiled binaries?<a name="precompiled"/>
 

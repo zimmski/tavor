@@ -1,28 +1,25 @@
-.PHONY: all binaries clean fmt install lint test tools
+.PHONY: all clean coverage debug-install dependencies fmt install lint test tools
 
 ROOT_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 
-all: clean install test install binaries
+all: clean install test
 
-binaries:
-	go install $(ROOT_DIR)/bin/tavor.go
 clean:
 	go clean -i ./...
+	go clean -i -race ./...
 coverage:
 	go test -coverprofile=coverage.out
 	go tool cover -html=coverage.out
-debugbinaries:
-	go install -race $(ROOT_DIR)/bin/tavor.go
+debug-install: clean
+	go install -race -v ./...
 dependencies:
 	go get -d -t -u -v ./...
 	go build -v ./...
-	go get -t -u -v github.com/jessevdk/go-flags
 fmt:
 	gofmt -l -w $(ROOT_DIR)/
-install:
-	go install ./...
-	go install -race ./...
-lint: clean install
+install: clean
+	go install -v ./...
+lint: install
 	go tool vet -all=true -v=true $(ROOT_DIR)/
 	golint $(ROOT_DIR)/
 test: clean
@@ -32,3 +29,4 @@ tools:
 	go get -u code.google.com/p/go.tools/cmd/godoc
 	go get -u code.google.com/p/go.tools/cmd/vet
 	go get -u github.com/golang/lint
+	go install github.com/golang/lint/golint

@@ -1,5 +1,3 @@
-// +build tavor-binary
-
 package main
 
 import (

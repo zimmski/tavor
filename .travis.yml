@@ -3,12 +3,8 @@ go:
   - 1.3
 
 install:
-  - make clean
   - make dependencies
   - make install
 
 script:
-  - export GOBIN=~/gobin
-  - mkdir GOBIN
   - make test
-  - make debugbinaries
