@@ -2,6 +2,98 @@
 
 Tavor ([Sindarin](https://en.wikipedia.org/wiki/Sindarin) for "woodpecker") is a fuzzing and delta-debugging platform.
 
+## How do I use Tavor?<a name="use"/>
+
+### The Tavor binary
+
+The Tavor binary provides fuzzing and delta-debugging functionality for Tavor format files as well as some other commands. Sane default arguments should provide a pleasant experience.
+
+Since the binary acts on Tavor format files, the <code>--format-file</code> argument has to be used for every non-informational action. E.g. the following commands fuzzes the given format file with the default fuzzing strategy:
+
+```bash
+tavor --format-file file.tavor fuzz
+```
+
+In contrast listing all available fuzzing strategies does not require the <code>--format-file</code> argument:
+
+```bash
+tavor fuzz --list-strategies
+```
+
+To learn more about available arguments and commands, you can invoke the binary's help by executing the binary without any arguments or with the <code>--help</code> argument. Here is a complete overview of all arguments, commands and their options.
+
+```
+Usage:
+  tavor <options> <command> <command options>
+
+General options:
+  --debug             Debug log output
+  --help              Show this help message
+  --verbose           Verbose log output
+  --version           Print the version of this program
+
+Global options:
+  --seed=             Seed for all the randomness
+  --max-repeat=       How many times loops and repetitions should be repeated (2)
+
+Format file options:
+  --format-file=      Input tavor format file
+  --print             Prints the AST of the parsed format file
+  --print-internal    Prints the internal AST of the parsed format file
+  --validate          Just validate the format file and exit
+
+Available commands:
+  fuzz      Fuzz the given format file
+  graph     Generate a DOT file out of the internal AST
+  reduce    Reduce the given input file
+  validate  Validate the given input file
+
+[fuzz command options]
+      --exec=                                    Execute this binary with possible arguments to test a generation
+      --exec-exact-exit-code=                    Same exit code has to be present (-1)
+      --exec-exact-stderr=                       Same stderr output has to be present
+      --exec-exact-stdout=                       Same stdout output has to be present
+      --exec-match-stderr=                       Searches through stderr via the given regex. A match has to be present
+      --exec-match-stdout=                       Searches through stdout via the given regex. A match has to be present
+      --exec-do-not-remove-tmp-files             If set, tmp files are not removed
+      --exec-do-not-remove-tmp-files-on-error    If set, tmp files are not removed on error
+      --exec-argument-type=                      How the generation is given to the binary (environment)
+      --list-exec-argument-types                 List all available exec argument types
+      --script=                                  Execute this binary which gets fed with the generation and should return
+                                                 feedback
+      --exit-on-error                            Exit if an execution fails
+      --filter=                                  Fuzzing filter to apply
+      --list-filters                             List all available fuzzing filters
+      --strategy=                                The fuzzing strategy (random)
+      --list-strategies                          List all available fuzzing strategies
+      --result-folder=                           Save every fuzzing result with the MD5 checksum as filename in this folder
+      --result-extension=                        If result-folder is used this will be the extension of every filename
+      --result-separator=                        Separates result outputs of each fuzzing step ("\n")
+
+[graph command options]
+      --filter=         Fuzzing filter to apply
+      --list-filters    List all available fuzzing filters
+
+[reduce command options]
+      --exec=                           Execute this binary with possible arguments to test a generation
+      --exec-exact-exit-code            Same exit code has to be present
+      --exec-exact-stderr               Same stderr output has to be present
+      --exec-exact-stdout               Same stdout output has to be present
+      --exec-match-stderr=              Searches through stderr via the given regex. A match has to be present
+      --exec-match-stdout=              Searches through stdout via the given regex. A match has to be present
+      --exec-do-not-remove-tmp-files    If set, tmp files are not removed
+      --exec-argument-type=             How the generation is given to the binary (environment)
+      --list-exec-argument-types        List all available exec argument types
+      --script=                         Execute this binary which gets fed with the generation and should return feedback
+      --input-file=                     Input file which gets parsed, validated and delta-debugged via the format file
+      --strategy=                       The reducing strategy (BinarySearch)
+      --list-strategies                 List all available reducing strategies
+      --result-separator=               Separates result outputs of each reducing step ("\n")
+
+[validate command options]
+      --input-file=   Input file which gets parsed and validated via the format file
+```
+
 ## How do I build Tavor?<a name="build"/>
 
 Tavor provides [precompiled 64 bit Linux binaries](#precompiled). Other platforms are currently not supported, but might work. Please have a look at the [feature request section](#feature-request) if you need them to work or you want more binaries.
