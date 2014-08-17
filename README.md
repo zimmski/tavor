@@ -268,7 +268,15 @@ echo ". ~/.bash_completion/tavor-bash_completion.sh" >> ~/.bashrc
 
 ## Missing features
 
-TODO<br/>
+- Format: Format files for binary data and different character sets (currently only UTF-8 is supported)
+- General: Direct support for protocols (can be currently only done with fuzzing an output and putting this input into an executor)
+- Format: Functions with parameters to reduce clutter
+- Format: Includes of external format files
+- Fuzzing: Feedback-driven fuzzing -> transition into completely stateful fuzzing
+- General: Parallel execution of fuzzing, delta-debugging, ...
+- Binary: Online fuzzing
+- Fuzzing: Mutation based fuzzing
+- General: Encoding/Decoding of data e.g. to encrypt parts of data
 
 ## Can I make feature requests, report bugs and problems?<a name="feature-request"/>
 
