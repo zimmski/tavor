@@ -22,7 +22,7 @@ install: clean
 lint: install
 	go tool vet -all=true -v=true $(ROOT_DIR)/
 	golint $(ROOT_DIR)/
-test: clean
+test:
 	go test -race ./...
 tools:
 	go get -u code.google.com/p/go.tools/cmd/cover
