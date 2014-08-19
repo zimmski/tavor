@@ -32,7 +32,7 @@ TODO mention that it is a platform to extend on, so researchers and testers do n
 TODO -> put this in its own .md and do not skimp on examples<br/>
 TODO explain every aspect. basics first<br/>
 
-## How do I use Tavor?<a name="use"/>
+## <a name="use"></a>How do I use Tavor?
 
 TODO explain the currently three ways to use Tavor: binary, programmatically using Tavor and extending Tavor itself<br/>
 
@@ -57,7 +57,7 @@ TODO<br/>
 
 TODO available strategies -> link to godoc and explain the strategies in the code<br/>
 
-## The Tavor binary<a name="binary"/>
+## <a name="binary"></a>The Tavor binary
 
 The [Tavor binary](#precompiled) provides fuzzing and delta-debugging functionality for Tavor format files as well as some other commands. Sane default arguments should provide a pleasant experience.
 
@@ -159,20 +159,20 @@ TODO bigger example with example commands and files<br/>
 
 TODO bigger example with example commands and files<br/>
 
-## A complete example for fuzzing, executing and delta-debugging<a name="bigexample"/>
+## <a name="bigexample"></a>A complete example for fuzzing, executing and delta-debugging
 
 TODO this example should give a complete overview of how Tavor can be used.<br/>
 TODO do a key-word driven format-file<br/>
 TODO executor for the key-words<br/>
 TODO delta-debug keywords because of an intentional error<br/>
 
-## How do I use the Tavor platform programmatically?<a name="programmatically"/>
+## <a name="programmatically"></a>How do I use the Tavor platform programmatically?
 
 TODO<br/>
 TODO explain creating internal structures (instead of using a format file) with examples<br/>
 TODO explain how to use filters, fuzzers and delta debugging<br/>
 
-## How do I extend Tavor?<a name="extend"/>
+## <a name="extend"></a>How do I extend Tavor?
 
 TODO<br/>
 TODO mention feature request section, but if someone is interested in really extending Tavor by her/himself... read on<br/>
@@ -206,7 +206,7 @@ TODO<br/>
 
 TODO explain if the reader has not find what she/he looks for -> link to the feature request section<br/>
 
-## How do I build Tavor?<a name="build"/>
+## <a name="build"></a>How do I build Tavor?
 
 Tavor provides [precompiled 64 bit Linux binaries](#precompiled). Other platforms are currently not supported, but might work. Please have a look at the [feature request section](#feature-request) if you need them to work or you want more binaries.
 
@@ -245,7 +245,7 @@ If you do not want to use the [precompiled binaries](#precompiled) but instead w
 
 You now have a binary "tavor" in your GOPATH/bin (or if set GOBIN folder) folder which can be used without any further actions.
 
-## Where are the precompiled binaries?<a name="precompiled"/>
+## <a name="precompiled"></a>Where are the precompiled binaries?
 
 You can find all precompiled binaries on the [release page](https://github.com/zimmski/tavor/releases). The binaries are packed into archives that currently only hold the Tavor binary itself.
 
@@ -278,6 +278,6 @@ echo ". ~/.bash_completion/tavor-bash_completion.sh" >> ~/.bashrc
 - Fuzzing: Mutation based fuzzing
 - General: Encoding/Decoding of data e.g. to encrypt parts of data
 
-## Can I make feature requests, report bugs and problems?<a name="feature-request"/>
+## <a name="feature-request"></a>Can I make feature requests, report bugs and problems?
 
 Sure, just submit an [issue via the project tracker](https://github.com/zimmski/tavor/issues/new) and I will see what I can do. Please note that I do not guarantee to implement anything soon and bugs and problems are more important to me than new features. If you need something implemented or fixed right away you can contact me via mail <mz@nethead.at> to do contract work for you.
