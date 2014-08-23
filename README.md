@@ -4,7 +4,7 @@ Tavor ([Sindarin](https://en.wikipedia.org/wiki/Sindarin) for "woodpecker") is a
 
 TODO SHORT description on what you can do with the platform and what is the purpose of it<br/>
 
-### <a name="quick-example">A quick example
+### <a name="quick-example"></a>A quick example
 
 Imagine a vending machine which ejects a product after receiving 100 worth of credits. It is possible to input 25 and 50 credit coins into the machine. After receiving enough credits the machine ejects a product and resets the credit counter to zero. To keep it simple, we specify that the machine does not handle credit overflows. A representation of the states and actions of the machine could look like this:
 
@@ -99,7 +99,7 @@ TODO explain the currently three ways to use Tavor: binary, programmatically usi
 TODO explain that all three ways work in the same way filters fuzzing and delta debugging<br/>
 TODO mention bigger example scenario -> link to it<br/>
 
-### <a name="fuzzing-filter">What are fuzzing filters?
+### <a name="fuzzing-filter"></a>What are fuzzing filters?
 
 TODO<br/>
 
@@ -111,7 +111,7 @@ TODO<br/>
 
 TODO available strategies -> link to godoc and explain the strategies in the code<br/>
 
-### <a name="delta-debugging-strategy">What are delta-debugging strategies?
+### <a name="delta-debugging-strategy"></a>What are delta-debugging strategies?
 
 TODO<br/>
 
@@ -311,7 +311,7 @@ You now have a binary "tavor" in your GOPATH/bin (or if set GOBIN folder) folder
 
 You can find all precompiled binaries on the [release page](https://github.com/zimmski/tavor/releases). The binaries are packed into archives that currently only hold the Tavor binary itself.
 
-### <a name="bash-completion">Bash Completion
+### <a name="bash-completion"></a>Bash Completion
 
 If you like Bash Completion for Tavor make sure that you have Bash Completion installed and then copy the [bash completion Tavor script](https://raw.githubusercontent.com/zimmski/tavor/master/bin/tavor-bash_completion.sh) into your Bash Completion folder.
 
@@ -328,7 +328,7 @@ echo ". ~/.bash_completion/tavor-bash_completion.sh" >> ~/.bashrc
 . ~/.bashrc
 ```
 
-## <a name="missing-features">Missing features
+## <a name="missing-features"></a>Missing features
 
 - Format: Format files for binary data and different character sets (currently only UTF-8 is supported)
 - General: Direct support for protocols (can be currently only done with fuzzing an output and putting this input into an executor)
