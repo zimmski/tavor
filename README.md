@@ -4,13 +4,13 @@ Tavor ([Sindarin](https://en.wikipedia.org/wiki/Sindarin) for "woodpecker") is a
 
 TODO SHORT description on what you can do with the platform and what is the purpose of it<br/>
 
-### A quick example
+### <a name="quick-example">A quick example
 
 Imagine a vending machine which ejects a product after receiving 100 worth of credits. It is possible to input 25 and 50 credit coins into the machine. After receiving enough credits the machine ejects a product and resets the credit counter to zero. To keep it simple, we specify that the machine does not handle credit overflows. A representation of the states and actions of the machine could look like this:
 
 ![Basic states and actions](examples/quick/basic.png "Basic states and actions")
 
-This graph can be defined using the following [Tavor format file](#format):
+This state machine can be defined using the following [Tavor format file](#format):
 
 ```
 START = Credit0
@@ -35,7 +35,7 @@ Now we can use Tavor to [fuzz](#fuzzing) the format by issuing the following com
 tavor --format-file basic.tavor fuzz
 ```
 
-This command outputs on every call random paths through the defined graph, since the default [fuzzing strategy](#fuzzing-strategy) of Tavor is the <code>random</code> strategy.
+On every call this command outputs random paths through the defined graph, since the default [fuzzing strategy](#fuzzing-strategy) of Tavor is the <code>random</code> strategy.
 
 Here are some example outputs:
 
@@ -67,7 +67,7 @@ Credit0
 
 Generating data like this is just one example of the capabilities of Tavor. More interesting than generating data, is what you can do with it. Forwarding the data to a program to test the given vending machine is another possible use case of Tavor.
 
-Please have a look [here](#bigexample) if you like to see a bigger example with a complete overview over the basic features or just keep reading.
+Please have a look [here](#bigexample) if you like to see a bigger example with a complete overview over the basic features or keep reading to find out more about the background and capabilities of Tavor.
 
 ## <a name="fuzzing"></a>What is fuzzing?
 
@@ -82,7 +82,7 @@ TODO mention that delta-debugging and reducing are synonyms<br/>
 ## How does Tavor work and what does it provide?
 
 TODO model-based concept with format files, doing almost everything with format files should be possible<br/>
-TODO how fuzzing works in general with the model-based concept<br/>
+TODO how fuzzing works in general with the model-based concept and the unrolling<br/>
 TODO how delta-debugging works in general with the model-based concept, reading the input, delta-debug on it<br/>
 TODO mention missing features -> link to it<br/>
 TODO mention that it is a platform to extend on, so researchers and testers do not have to implement everything from scratch<br/>
@@ -99,7 +99,7 @@ TODO explain the currently three ways to use Tavor: binary, programmatically usi
 TODO explain that all three ways work in the same way filters fuzzing and delta debugging<br/>
 TODO mention bigger example scenario -> link to it<br/>
 
-### What are fuzzing filters?
+### <a name="fuzzing-filter">What are fuzzing filters?
 
 TODO<br/>
 
@@ -111,7 +111,7 @@ TODO<br/>
 
 TODO available strategies -> link to godoc and explain the strategies in the code<br/>
 
-### What are delta-debugging strategies?
+### <a name="delta-debugging-strategy">What are delta-debugging strategies?
 
 TODO<br/>
 
@@ -311,7 +311,7 @@ You now have a binary "tavor" in your GOPATH/bin (or if set GOBIN folder) folder
 
 You can find all precompiled binaries on the [release page](https://github.com/zimmski/tavor/releases). The binaries are packed into archives that currently only hold the Tavor binary itself.
 
-### Bash Completion
+### <a name="bash-completion">Bash Completion
 
 If you like Bash Completion for Tavor make sure that you have Bash Completion installed and then copy the [bash completion Tavor script](https://raw.githubusercontent.com/zimmski/tavor/master/bin/tavor-bash_completion.sh) into your Bash Completion folder.
 
@@ -328,7 +328,7 @@ echo ". ~/.bash_completion/tavor-bash_completion.sh" >> ~/.bashrc
 . ~/.bashrc
 ```
 
-## Missing features
+## <a name="missing-features">Missing features
 
 - Format: Format files for binary data and different character sets (currently only UTF-8 is supported)
 - General: Direct support for protocols (can be currently only done with fuzzing an output and putting this input into an executor)
