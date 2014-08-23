@@ -8,8 +8,6 @@ import (
 	"strconv"
 	"text/scanner"
 
-	"github.com/zimmski/container/list/linkedlist"
-
 	"github.com/zimmski/tavor"
 	"github.com/zimmski/tavor/log"
 	"github.com/zimmski/tavor/token"
@@ -55,12 +53,11 @@ type tavorParser struct {
 
 	err string
 
-	earlyUse             map[string][]tokenUsage
-	embeddedTokensInTerm map[string][]map[string]struct{}
-	lookup               map[string]tokenUsage
-	lookupUsage          map[token.Token]struct{}
-	used                 map[string][]tokenUsage
-	variableUsages       []token.Token
+	earlyUse       map[string][]tokenUsage
+	lookup         map[string]tokenUsage
+	lookupUsage    map[token.Token]struct{}
+	used           map[string][]tokenUsage
+	variableUsages []token.Token
 
 	forwardAttributeUsage []attributeForwardUsage
 }
@@ -124,10 +121,8 @@ func (p *tavorParser) parseGlobalScope(variableScope map[string]token.Token) err
 	return nil
 }
 
-func (p *tavorParser) parseTerm(definitionName string, c rune, variableScope map[string]token.Token) (rune, []token.Token, []map[string]struct{}, error) {
+func (p *tavorParser) parseTerm(definitionName string, c rune, variableScope map[string]token.Token) (rune, []token.Token, error) {
 	var err error
-	var embeddedTokens = make([]map[string]struct{}, 0)
-	var embeddedToks = make(map[string]struct{}, 0)
 	var tokens []token.Token
 
 	addToken := func(tok token.Token) {
@@ -164,7 +159,6 @@ OUT:
 				})
 			}
 
-			embeddedToks[name] = struct{}{}
 			p.used[name] = append(p.used[name], tokenUsage{
 				token:         nil,
 				position:      p.scan.Position,
@@ -254,7 +248,7 @@ OUT:
 			s := p.scan.TokenText()
 
 			if s[len(s)-1] != '"' {
-				return zeroRune, nil, nil, &token.ParserError{
+				return zeroRune, nil, &token.ParserError{
 					Message:  "string is not terminated",
 					Type:     token.ParseErrorNonTerminatedString,
 					Position: p.scan.Pos(),
@@ -270,14 +264,14 @@ OUT:
 			c = p.scan.Scan()
 			log.Debugf("parseTerm Group %d:%v -> %v", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
 
-			c, toks, embeddedToks, err := p.parseScope(definitionName, c, variableScope)
+			c, toks, err := p.parseScope(definitionName, c, variableScope)
 			if err != nil {
-				return zeroRune, nil, nil, err
+				return zeroRune, nil, err
 			}
 
 			_, err = p.expectRune(')', c)
 			if err != nil {
-				return zeroRune, nil, nil, err
+				return zeroRune, nil, err
 			}
 
 			switch len(toks) {
@@ -289,30 +283,26 @@ OUT:
 				addToken(lists.NewAll(toks...))
 			}
 
-			if len(embeddedToks) != 0 {
-				embeddedTokens = append(embeddedTokens, embeddedToks...)
-			}
-
 			log.Debug("END group")
 		case '?':
 			log.Debug("NEW optional")
 
 			_, err = p.expectScanRune('(')
 			if err != nil {
-				return zeroRune, nil, nil, err
+				return zeroRune, nil, err
 			}
 
 			c = p.scan.Scan()
 			log.Debugf("parseTerm optional after ( %d:%v -> %v", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
 
-			c, toks, _, err := p.parseScope(definitionName, c, variableScope)
+			c, toks, err := p.parseScope(definitionName, c, variableScope)
 			if err != nil {
-				return zeroRune, nil, nil, err
+				return zeroRune, nil, err
 			}
 
 			_, err = p.expectRune(')', c)
 			if err != nil {
-				return zeroRune, nil, nil, err
+				return zeroRune, nil, err
 			}
 
 			switch len(toks) {
@@ -353,7 +343,7 @@ OUT:
 					c, from, err = p.parseTokenAttribute(definitionName, c, variableScope)
 
 					if err != nil {
-						return zeroRune, nil, nil, err
+						return zeroRune, nil, err
 					}
 
 					// until there is an explicit "to" we can assume to==from
@@ -378,7 +368,7 @@ OUT:
 						c, to, err = p.parseTokenAttribute(definitionName, c, variableScope)
 
 						if err != nil {
-							return zeroRune, nil, nil, err
+							return zeroRune, nil, err
 						}
 					} else {
 						to = primitives.NewConstantInt(tavor.MaxRepeat)
@@ -388,7 +378,7 @@ OUT:
 
 			_, err = p.expectRune('(', c)
 			if err != nil {
-				return zeroRune, nil, nil, err
+				return zeroRune, nil, err
 			}
 
 			log.Debugf("repeat from %v to %v", from, to)
@@ -396,14 +386,14 @@ OUT:
 			c = p.scan.Scan()
 			log.Debugf("parseTerm repeat after ( %d:%v -> %v", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
 
-			c, toks, embeddedToks, err := p.parseScope(definitionName, c, variableScope)
+			c, toks, err := p.parseScope(definitionName, c, variableScope)
 			if err != nil {
-				return zeroRune, nil, nil, err
+				return zeroRune, nil, err
 			}
 
 			_, err = p.expectRune(')', c)
 			if err != nil {
-				return zeroRune, nil, nil, err
+				return zeroRune, nil, err
 			}
 
 			switch len(toks) {
@@ -413,10 +403,6 @@ OUT:
 				addToken(lists.NewRepeatWithTokens(toks[0], from, to))
 			default:
 				addToken(lists.NewRepeatWithTokens(lists.NewAll(toks...), from, to))
-			}
-
-			if len(embeddedToks) != 0 {
-				embeddedTokens = append(embeddedTokens, embeddedToks...)
 			}
 
 			log.Debug("END repeat")
@@ -429,12 +415,12 @@ OUT:
 			if c == '{' {
 				c, tok, err = p.parseExpression(definitionName, variableScope)
 				if err != nil {
-					return zeroRune, nil, nil, err
+					return zeroRune, nil, err
 				}
 
 				_, err = p.expectRune('}', c)
 				if err != nil {
-					return zeroRune, nil, nil, err
+					return zeroRune, nil, err
 				}
 
 				c = p.scan.Scan()
@@ -443,7 +429,7 @@ OUT:
 			}
 
 			if err != nil {
-				return zeroRune, nil, nil, err
+				return zeroRune, nil, err
 			}
 
 			addToken(tok)
@@ -465,7 +451,7 @@ OUT:
 			if c != ']' {
 				_, err := p.expectRune(']', c)
 
-				return zeroRune, nil, nil, err
+				return zeroRune, nil, err
 			}
 
 			addToken(primitives.NewCharacterClass(pattern.String()))
@@ -486,11 +472,11 @@ OUT:
 
 			_, err = p.expectRune(scanner.Ident, c)
 			if err != nil {
-				return zeroRune, nil, nil, err
+				return zeroRune, nil, err
 			}
 
 			if len(tokens) == 0 {
-				return zeroRune, nil, nil, &token.ParserError{
+				return zeroRune, nil, &token.ParserError{
 					Message:  "Variable has to be assigned to a token",
 					Type:     token.ParseErrorNoTokenForVariable,
 					Position: p.scan.Pos(),
@@ -501,7 +487,7 @@ OUT:
 
 			_, err = p.expectScanRune('>')
 			if err != nil {
-				return zeroRune, nil, nil, err
+				return zeroRune, nil, err
 			}
 
 			// TODO do not overwrite Token names... this sould lead to an already defined error, only variables can overwrite each other
@@ -522,14 +508,14 @@ OUT:
 			log.Debug("END variable")
 		case ',': // multi line token
 			if _, err := p.expectScanRune('\n'); err != nil {
-				return zeroRune, nil, nil, err
+				return zeroRune, nil, err
 			}
 
 			c = p.scan.Scan()
 			log.Debugf("parseTerm multiline %d:%v -> %v", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
 
 			if c == '\n' {
-				return zeroRune, nil, nil, &token.ParserError{
+				return zeroRune, nil, &token.ParserError{
 					Message:  "multi line token definition unexpectedly terminated",
 					Type:     token.ParseErrorUnexpectedTokenDefinitionTermination,
 					Position: p.scan.Pos(),
@@ -546,11 +532,7 @@ OUT:
 		log.Debugf("parseTerm %d:%v -> %v", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
 	}
 
-	if len(embeddedToks) != 0 {
-		embeddedTokens = append(embeddedTokens, embeddedToks)
-	}
-
-	return c, tokens, embeddedTokens, nil
+	return c, tokens, nil
 }
 
 func (p *tavorParser) parseExpression(definitionName string, variableScope map[string]token.Token) (rune, token.Token, error) {
@@ -927,17 +909,15 @@ func (p *tavorParser) selectTokenAttribute(tok token.Token, tokenName string, at
 	}
 }
 
-func (p *tavorParser) parseScope(definitionName string, c rune, variableScope map[string]token.Token) (rune, []token.Token, []map[string]struct{}, error) {
+func (p *tavorParser) parseScope(definitionName string, c rune, variableScope map[string]token.Token) (rune, []token.Token, error) {
 	var err error
-	var embeddedTokens = make([]map[string]struct{}, 0)
 	var tokens []token.Token
 
 	var toks []token.Token
-	var embeddedToks []map[string]struct{}
 
-	c, toks, embeddedToks, err = p.parseTerm(definitionName, c, variableScope)
+	c, toks, err = p.parseTerm(definitionName, c, variableScope)
 	if err != nil {
-		return zeroRune, nil, nil, err
+		return zeroRune, nil, err
 	} else if toks != nil {
 		tokens = toks
 	}
@@ -966,16 +946,6 @@ SCOPE:
 					orTerms = append(orTerms, lists.NewAll(toks...))
 				}
 
-				if embeddedTokens != nil {
-					if len(embeddedToks) == 0 {
-						// since there is a Or term without any token embedded we can say
-						// that we can break out of a loop at this point
-						embeddedTokens = nil
-					} else {
-						embeddedTokens = append(embeddedTokens, embeddedToks...)
-					}
-				}
-
 				if c == '|' {
 					c = p.scan.Scan()
 					log.Debugf("parseScope Or %d:%v -> %v", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
@@ -985,9 +955,9 @@ SCOPE:
 					break OR
 				}
 
-				c, toks, embeddedToks, err = p.parseTerm(definitionName, c, variableScope)
+				c, toks, err = p.parseTerm(definitionName, c, variableScope)
 				if err != nil {
-					return zeroRune, nil, nil, err
+					return zeroRune, nil, err
 				}
 			}
 
@@ -995,8 +965,6 @@ SCOPE:
 
 			if optional {
 				tokens = []token.Token{constraints.NewOptional(or)}
-
-				embeddedTokens = nil
 			} else {
 				tokens = []token.Token{or}
 			}
@@ -1016,7 +984,7 @@ SCOPE:
 
 				c, conditionExpression, err = p.parseConditionExpression(definitionName, variableScope)
 				if err != nil {
-					return zeroRune, nil, nil, err
+					return zeroRune, nil, err
 				}
 			case "else":
 				if len(ifPairs) == 0 {
@@ -1030,7 +998,7 @@ SCOPE:
 
 					c, conditionExpression, err = p.parseConditionExpression(definitionName, variableScope)
 					if err != nil {
-						return zeroRune, nil, nil, err
+						return zeroRune, nil, err
 					}
 				} else {
 					log.Debug("found ELSE")
@@ -1046,7 +1014,7 @@ SCOPE:
 
 				c = p.scan.Scan()
 			default:
-				return zeroRune, nil, nil, &token.ParserError{
+				return zeroRune, nil, &token.ParserError{
 					Message:  fmt.Sprintf("unknown condition %q", condition),
 					Type:     token.ParseErrorUnknownCondition,
 					Position: p.scan.Pos(),
@@ -1055,19 +1023,16 @@ SCOPE:
 
 			_, err = p.expectRune('}', c)
 			if err != nil {
-				return zeroRune, nil, nil, err
+				return zeroRune, nil, err
 			}
 
 			c = p.scan.Scan()
 
 			if condition != "endif" {
-				// TODO do something with embeddedTOks here
-				c, toks, embeddedToks, err = p.parseTerm(definitionName, c, variableScope) // TODO this should be a a global scope or so ... we can do nesting
+				c, toks, err = p.parseTerm(definitionName, c, variableScope) // TODO this should be a a global scope or so ... we can do nesting
 				if err != nil {
-					return zeroRune, nil, nil, err
+					return zeroRune, nil, err
 				}
-
-				embeddedTokens = append(embeddedTokens, embeddedToks...)
 
 				var tok token.Token
 
@@ -1093,22 +1058,17 @@ SCOPE:
 
 				ifPairs = nil
 
-				c, toks, embeddedToks, err = p.parseTerm(definitionName, c, variableScope) // TODO this should be a a global scope or so ... we can do nesting
+				c, toks, err = p.parseTerm(definitionName, c, variableScope) // TODO this should be a a global scope or so ... we can do nesting
 				if err != nil {
-					return zeroRune, nil, nil, err
+					return zeroRune, nil, err
 				}
 
 				tokens = append(tokens, toks...)
-				embeddedTokens = append(embeddedTokens, embeddedToks...)
 			}
 
 			log.Debug("END condition")
 
 			continue SCOPE
-		default:
-			if len(embeddedToks) != 0 {
-				embeddedTokens = append(embeddedTokens, embeddedToks...)
-			}
 		}
 
 		break SCOPE
@@ -1118,7 +1078,7 @@ SCOPE:
 		panic("TODO if without endif")
 	}
 
-	return c, tokens, embeddedTokens, nil
+	return c, tokens, nil
 }
 
 func (p *tavorParser) parseConditionExpression(definitionName string, variableScope map[string]token.Token) (rune, conditions.BooleanExpression, error) {
@@ -1196,14 +1156,10 @@ func (p *tavorParser) parseTokenDefinition(variableScope map[string]token.Token)
 	c = p.scan.Scan()
 	log.Debugf("parseTokenDefinition after = %d:%v -> %v", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
 
-	c, tokens, embeddedToks, err := p.parseScope(name, c, variableScope)
+	c, tokens, err := p.parseScope(name, c, variableScope)
 	if err != nil {
 		return zeroRune, err
 	}
-
-	p.embeddedTokensInTerm[name] = embeddedToks
-
-	log.Debugf("token %s embeds %+v", name, embeddedToks)
 
 	log.Debugf("back to token definition with c=%c", c)
 
@@ -1253,61 +1209,6 @@ func (p *tavorParser) parseTokenDefinition(variableScope map[string]token.Token)
 		}
 
 		delete(p.earlyUse, name)
-	}
-
-	// check for endless loop
-	if len(embeddedToks) != 0 {
-		foundExit := false
-
-		log.Debugf("need to check for loops in %s with embedding %+v", name, embeddedToks)
-		log.Debugf("use embedding lookup map %+v", p.embeddedTokensInTerm)
-
-	EMBEDDEDTOKS:
-		for _, toks := range embeddedToks {
-			checked := make(map[string]struct{})
-			l := linkedlist.New()
-
-			for n := range toks {
-				l.Push(n)
-			}
-
-			for !l.Empty() {
-				i, _ := l.Shift()
-				n := i.(string)
-
-				if name == n {
-					log.Debug("found one loop")
-
-					continue EMBEDDEDTOKS
-				}
-
-				checked[n] = struct{}{}
-
-				for _, toks := range p.embeddedTokensInTerm[n] {
-					for n := range toks {
-						if _, ok := checked[n]; !ok {
-							l.Push(n)
-						}
-					}
-				}
-			}
-
-			log.Debug("found exit, everything is fine.")
-
-			foundExit = true
-
-			break
-		}
-
-		if !foundExit {
-			log.Debug("there is no loop exit for this token, I'll throw an error.")
-
-			return zeroRune, &token.ParserError{
-				Message:  fmt.Sprintf("token %q has an endless loop without exit\n", name),
-				Type:     token.ParseErrorEndlessLoopDetected,
-				Position: p.scan.Pos(), // TODO correct position
-			}
-		}
 	}
 
 	p.lookup[name] = tokenUsage{
@@ -1541,11 +1442,10 @@ func (p *tavorParser) parseSpecialTokenDefinition() (rune, error) {
 
 func ParseTavor(src io.Reader) (token.Token, error) {
 	p := &tavorParser{
-		earlyUse:             make(map[string][]tokenUsage),
-		embeddedTokensInTerm: make(map[string][]map[string]struct{}),
-		lookup:               make(map[string]tokenUsage),
-		lookupUsage:          make(map[token.Token]struct{}),
-		used:                 make(map[string][]tokenUsage),
+		earlyUse:    make(map[string][]tokenUsage),
+		lookup:      make(map[string]tokenUsage),
+		lookupUsage: make(map[token.Token]struct{}),
+		used:        make(map[string][]tokenUsage),
 	}
 
 	log.Debug("start parsing tavor file")

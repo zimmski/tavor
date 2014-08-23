@@ -679,31 +679,6 @@ func TestTavorParserAndCuriousCaseOfFuzzing(t *testing.T) {
 	var tok token.Token
 	var err error
 
-	// detect endless loops
-	tok, err = ParseTavor(strings.NewReader(
-		"B = 123\nA = A B\nSTART = A\n",
-	))
-	Equal(t, token.ParseErrorEndlessLoopDetected, err.(*token.ParserError).Type)
-	Nil(t, tok)
-
-	tok, err = ParseTavor(strings.NewReader(
-		"A = B\nB = A\nSTART = A\n",
-	))
-	Equal(t, token.ParseErrorEndlessLoopDetected, err.(*token.ParserError).Type)
-	Nil(t, tok)
-
-	tok, err = ParseTavor(strings.NewReader(
-		"B = A\nA = B A | B\nSTART = A\n",
-	))
-	Equal(t, token.ParseErrorEndlessLoopDetected, err.(*token.ParserError).Type)
-	Nil(t, tok)
-
-	tok, err = ParseTavor(strings.NewReader(
-		"B = A\nA = (A | 1)(B | 2) A\nSTART = A\n",
-	))
-	Equal(t, token.ParseErrorEndlessLoopDetected, err.(*token.ParserError).Type)
-	Nil(t, tok)
-
 	// Additional forward declaration check
 	tok, err = ParseTavor(strings.NewReader(
 		"START = Token\nToken = 123\n",
