@@ -15,10 +15,10 @@ This graph can be defined using the following [Tavor format file](#format):
 ```
 START = Credit0
 
-Credit0   = "Credit0" "\n"   ( Coin25 Credit25 | Coin50 Credit50 | )
-Credit25  = "Credit25" "\n"  ( Coin25 Credit50 | Coin50 Credit75 )
-Credit50  = "Credit50" "\n"  ( Coin25 Credit75 | Coin50 Credit100 )
-Credit75  = "Credit75" "\n"  Coin25 Credit100
+Credit0   = "Credit0"   "\n" ( Coin25 Credit25 | Coin50 Credit50 | )
+Credit25  = "Credit25"  "\n" ( Coin25 Credit50 | Coin50 Credit75 )
+Credit50  = "Credit50"  "\n" ( Coin25 Credit75 | Coin50 Credit100 )
+Credit75  = "Credit75"  "\n" Coin25 Credit100
 Credit100 = "Credit100" "\n" Vend Credit0
 
 Coin25 = "Coin25" "\n"
