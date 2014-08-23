@@ -6,15 +6,75 @@ TODO SHORT description on what you can do with the platform and what is the purp
 
 ### A quick example
 
-TODO demonstrate a small Tavor format file, fuzzing and delta debugging<br/>
-TODO mention bigger example scenario -> link to it<br/>
+Imagine a vending machine which ejects a product after receiving 100 worth of credits. It is possible to input 25 and 50 credit coins into the machine. After receiving enough credits the machine ejects a product and resets the credit counter to zero. To keep it simple, we specify that the machine does not handle credit overflows. A representation of the states and actions of the machine could look like this:
 
-## What is fuzzing?
+![Basic states and actions](examples/quick/basic.png "Basic states and actions")
+
+This graph can be defined using the following [Tavor format file](#format):
+
+```
+START = Credit0
+
+Credit0   = "Credit0" "\n"   ( Coin25 Credit25 | Coin50 Credit50 | )
+Credit25  = "Credit25" "\n"  ( Coin25 Credit50 | Coin50 Credit75 )
+Credit50  = "Credit50" "\n"  ( Coin25 Credit75 | Coin50 Credit100 )
+Credit75  = "Credit75" "\n"  Coin25 Credit100
+Credit100 = "Credit100" "\n" Vend Credit0
+
+Coin25 = "Coin25" "\n"
+Coin50 = "Coin50" "\n"
+
+Vend = "Vend" "\n"
+```
+
+You can download this file called [<code>basic.tavor</code> from here](examples/quick/basic.tavor).
+
+Now we can use Tavor to [fuzz](#fuzzing) the format by issuing the following command:
+
+```bash
+tavor --format-file basic.tavor fuzz
+```
+
+This command outputs on every call random paths through the defined graph, since the default [fuzzing strategy](#fuzzing-strategy) of Tavor is the <code>random</code> strategy.
+
+Here are some example outputs:
+
+```
+Credit0
+```
+
+```
+Credit0
+Coin50
+Credit50
+Coin50
+Credit100
+Vend
+Credit0
+```
+
+```
+Credit0
+Coin25
+Credit25
+Coin50
+Credit75
+Coin25
+Credit100
+Vend
+Credit0
+```
+
+Generating data like this is just one example of the capabilities of Tavor. More interesting than generating data, is what you can do with it. Forwarding the data to a program to test the given vending machine is another possible use case of Tavor.
+
+Please have a look [here](#bigexample) if you like to see a bigger example with a complete overview over the basic features or just keep reading.
+
+## <a name="fuzzing"></a>What is fuzzing?
 
 TODO in general, which types of fuzzing are there, what you can do with them, what are the pros and cons<br/>
 TODO mention that it is pretty much just data generation and can be used for example for genetic programming<br/>
 
-## What is delta-debugging?
+## <a name="delta-debugging"></a>What is delta-debugging?
 
 TODO in general, which types of delta-debugging are there, what you can do with them, what are the pros and cons<br/>
 TODO mention that delta-debugging and reducing are synonyms<br/>
@@ -27,7 +87,7 @@ TODO how delta-debugging works in general with the model-based concept, reading 
 TODO mention missing features -> link to it<br/>
 TODO mention that it is a platform to extend on, so researchers and testers do not have to implement everything from scratch<br/>
 
-## The Tavor format file
+## <a name="format"></a>The Tavor format file
 
 TODO -> put this in its own .md and do not skimp on examples<br/>
 TODO explain every aspect. basics first<br/>
@@ -45,7 +105,7 @@ TODO<br/>
 
 TODO available filters -> link to godoc and explain the filters in the code<br/>
 
-### What are fuzzing strategies?
+### <a name="fuzzing-strategy"></a>What are fuzzing strategies?
 
 TODO<br/>
 
@@ -151,6 +211,8 @@ Available commands:
 
 TODO with examples<br/>
 
+ | dot -Tsvg -o outfile.svg
+
 ### Fuzzing
 
 TODO bigger example with example commands and files<br/>
@@ -202,7 +264,7 @@ TODO<br/>
 
 TODO<br/>
 
-### Something else?
+### Still looking for something else?
 
 TODO explain if the reader has not find what she/he looks for -> link to the feature request section<br/>
 

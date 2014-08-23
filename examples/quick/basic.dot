@@ -1,0 +1,71 @@
+digraph Graphing {
+	graph[rankdir=LR]
+
+	node [shape = doublecircle]; Credit0;
+	node [shape = point] START;
+	node [shape = ellipse];
+
+	Credit0 [label="Credit0"]
+	Credit0Coin25 [label="Coin25"]
+	Credit0Coin50 [label="Coin50"]
+
+	Credit25 [label="Credit25"]
+	Credit25Coin25 [label="Coin25"]
+	Credit25Coin50 [label="Coin50"]
+
+	Credit0Credit50 [label="Credit50"]
+	Credit0Credit50Coin25 [label="Coin25"]
+	Credit0Credit50Coin50 [label="Coin50"]
+
+	Credit25Credit50 [label="Credit50"]
+	Credit25Credit50Coin25 [label="Coin25"]
+	Credit25Credit50Coin50 [label="Coin50"]
+
+	Credit25Credit75 [label="Credit75"]
+	Credit25Credit75Coin25 [label="Coin25"]
+
+	Credit0Credit50Credit75 [label="Credit75"]
+	Credit0Credit50Credit75Coin25 [label="Coin25"]
+
+	Credit25Credit50Credit75 [label="Credit75"]
+	Credit25Credit50Credit75Coin25 [label="Coin25"]
+
+	Credit100 [label="Credit100"]
+
+	Vend [label="Vend"]
+
+	START -> Credit0;
+
+	Credit0 -> Credit0Coin25;
+	Credit0Coin25 -> Credit25;
+	Credit0 -> Credit0Coin50;
+	Credit0Coin50 -> Credit0Credit50;
+
+	Credit25 -> Credit25Coin25
+	Credit25Coin25 -> Credit25Credit50
+	Credit25 -> Credit25Coin50
+	Credit25Coin50 -> Credit25Credit75
+
+	Credit0Credit50 -> Credit0Credit50Coin25
+	Credit0Credit50Coin25 -> Credit0Credit50Credit75
+	Credit0Credit50 -> Credit0Credit50Coin50
+	Credit0Credit50Coin50 -> Credit100
+
+	Credit25Credit50 -> Credit25Credit50Coin25
+	Credit25Credit50Coin25 -> Credit25Credit50Credit75
+	Credit25Credit50 -> Credit25Credit50Coin50
+	Credit25Credit50Coin50 -> Credit100
+
+	Credit25Credit75 -> Credit25Credit75Coin25
+	Credit25Credit75Coin25 -> Credit100
+
+	Credit0Credit50Credit75 -> Credit0Credit50Credit75Coin25
+	Credit0Credit50Credit75Coin25 -> Credit100
+
+	Credit25Credit50Credit75 -> Credit25Credit50Credit75Coin25
+	Credit25Credit50Credit75Coin25 -> Credit100
+
+	Credit100 -> Vend
+
+	Vend -> Credit0
+}
