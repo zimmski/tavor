@@ -26,6 +26,7 @@ Coin50 = "Coin50" "\n"
 
 Vend = "Vend" "\n"
 ```
+(Please note that the new line escape sequences "\n" are just defined to make the output prettier)
 
 You can download this file called [<code>basic.tavor</code> from here](examples/quick/basic.tavor).
 
