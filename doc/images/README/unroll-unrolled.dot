@@ -1,0 +1,20 @@
+digraph Graphing {
+	graph[rankdir=LR]
+
+	node [shape = doublecircle]; c208037790 c208037760 c208037700;
+	node [shape = point] START;
+	node [shape = ellipse];
+
+	c208037750 [label="Action"]
+	c208037760 [label="Idle"]
+	c208037780 [label="Action"]
+	c208037790 [label="Idle"]
+	c208037700 [label="Idle"]
+
+	START -> c208037700;
+	c208037780 -> c208037790;
+	c208037760 -> c208037780[ style=dotted];
+	c208037750 -> c208037760;
+	c208037700 -> c208037750[ style=dotted];
+}
+

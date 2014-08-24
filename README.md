@@ -110,11 +110,23 @@ Although delta-debugging is described as method to isolate failure causes, it ca
 
 ## How does Tavor work and what does it provide?
 
-TODO model-based concept with format files, doing almost everything with format files should be possible<br/>
-TODO how fuzzing works in general with the model-based concept and the unrolling<br/>
-TODO how delta-debugging works in general with the model-based concept, reading the input, delta-debug on it<br/>
-TODO mention missing features -> link to it<br/>
-TODO mention that it is a platform to extend on, so researchers and testers do not have to implement everything from scratch<br/>
+Tavor combines both fuzzing and delta-debugging into one platform by allowing all implemented methods to operate on one internal model-based structure represented by a graph. This structure can be defined and generated programmatically or by using a format file. Out of the box Tavor comes with its own [format](#format) which covers all functionality of the Tavor framework itself.
+
+Tavor's fuzzing implementation is generically and not fixed to one technique nor format. Instead different fuzzing techniques and heuristics can be implemented and executed independently as [Tavor fuzzing strategies](fuzzing-strategy). The same principle is used for delta-debugging where so called [Tavor reduce strategies](#reduce-strategy) can be implemented and used. Both types of strategies operate on the same internal structure independent of the format.
+
+Even tough Tavor provides loads of functionality out of the box a lot is still missing. A list of missing but planed features can be found in the [missing features section](#missing-features). For feature request please have a look at the [feature request section](#feature-request).
+
+### Unrolling loops
+
+Although the internal structure allows loops in its graph, Tavor currently unrolles loops for easier usage. This is a trade-off that is currently in place but will be eliminated in future versions of Tavor.
+
+E.g. This graph loops between the states <code>Idle</code> and <code>Action</code>:
+
+![Looping](/doc/images/README/unroll-loop.png "Looping")
+
+Will result in the following internal graph given a maximum of two repetitions:
+
+![Unrolled](/doc/images/README/unroll-unrolled.png "Unrolled")
 
 ## <a name="format"></a>The Tavor format file
 
@@ -140,7 +152,7 @@ TODO<br/>
 
 TODO available strategies -> link to godoc and explain the strategies in the code<br/>
 
-### <a name="delta-debugging-strategy"></a>What are delta-debugging strategies?
+### <a name="reduce-strategy"></a>What are reduce strategies?
 
 TODO<br/>
 
@@ -362,6 +374,7 @@ echo ". ~/.bash_completion/tavor-bash_completion.sh" >> ~/.bashrc
 - Format: Format files for binary data and different character sets (currently only UTF-8 is supported)
 - General: Direct support for protocols (can be currently only done with fuzzing an output and putting this input into an executor)
 - Format: Functions with parameters to reduce clutter
+- General: Remove the need for unrolling and allow real loops
 - Format: Includes of external format files
 - Fuzzing: Feedback-driven fuzzing -> transition into completely stateful fuzzing
 - General: Parallel execution of fuzzing, delta-debugging, ...

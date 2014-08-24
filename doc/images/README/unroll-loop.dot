@@ -1,0 +1,15 @@
+digraph Graphing {
+	graph[rankdir=LR]
+
+	node [shape = doublecircle]; Idle;
+	node [shape = point] START;
+	node [shape = ellipse];
+
+	Action [label="Action"]
+	Idle [label="Idle"]
+
+	START -> Idle;
+	Idle -> Action;
+	Action -> Idle;
+
+}

@@ -1,0 +1,6 @@
+ START = Idle
+ 
+ Idle = "Idle" (Action | )
+ 
+ Action = "Action" Idle
+ 
