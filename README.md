@@ -94,12 +94,26 @@ Fuzzing algorithms can be categorized into two areas:
 
 	Generation-based algorithms have one big advantage over mutation-based in that they have to understand and obey the underlying constraints and rules of the data itself. This property can be used to generate valid as well as invalid data. Another property is that generation-based algorithms generate data from scratch which eliminates the need for gathering data and keeping it up to date.
 
-	There are no common techniques for generation-based fuzzing but most algorithms choose a graph as underlying representation of the data model. The graph is then traversed and each node outputs a part of the data. The traversal algorithms and the complexity and abilities of the model like constraints between nodes or adding nodes during the traversal distinguish generation-based fuzzers and contribute in general to their mightiness.
+	There are no common techniques for generation-based fuzzing but most algorithms choose a graph as underlying representation of the data model. The graph is then traversed and each node outputs a part of the data. The traversal algorithms and the complexity and abilities of the data model like constraints between nodes or adding nodes during the traversal distinguish generation-based fuzzers and contribute in general to their mightiness.
 
 ## <a name="delta-debugging"></a>What is delta-debugging?
 
-TODO in general, which types of delta-debugging are there, what you can do with them, what are the pros and cons<br/>
-TODO mention that delta-debugging and reducing are synonyms<br/>
+> The Delta Debugging algorithm isolates failure causes automatically - by systematically narrowing down failure-inducing circumstances until a minimal set remains.
+> -- <cite>[https://en.wikipedia.org/wiki/Delta_Debugging](https://en.wikipedia.org/wiki/Delta_Debugging)</cite>
+
+E.g. we feed a given data to a program which fails on executing. By delta-debugging this data we can reduce it to its minimum while still failing the execution. The reduction of the data is handled by software heuristics (semi-)automatically. The obvious advantage of this method, besides being done (semi-)automatically, is that we do not need to handle uninteresting parts of the data while debugging the problem, we can focus on the important parts which actually lead to the failure.
+
+**Note**: Since delta-debugging reduces data it is also called <code>reducing</code>.
+
+Delta-debugging consists of three areas:
+- A heuristic has to decide which parts of the data will be reduced next
+- The reduction itself e.g.
+	- Remove repetitions
+	- Remove optional data
+	- Replace data with something else e.g. replace an uninteresting complex function with a constant value
+- Testing the new resulting data concerning the failure
+
+Although delta-debugging is described as method to isolate failure causes, it can be also used to isolate anything given isolating constraints. For example we could reduce an input for a program which leads to a positive outcome to its minimum.
 
 ## How does Tavor work and what does it provide?
 
