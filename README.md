@@ -34,9 +34,7 @@ Now we can use Tavor to [fuzz](#fuzzing) the format by issuing the following com
 tavor --format-file basic.tavor fuzz
 ```
 
-On every call this command outputs random paths through the defined graph, since the default [fuzzing strategy](#fuzzing-strategy) of Tavor is the <code>random</code> strategy.
-
-Here are some example outputs:
+On every call this command outputs random paths through the defined graph. Here are some example outputs:
 
 ```
 Credit0
@@ -64,9 +62,7 @@ Vend
 Credit0
 ```
 
-Generating data like this is just one example of the capabilities of Tavor. More interesting than generating data, is what you can do with it. Forwarding the data to a program to test the given vending machine is another possible use case of Tavor.
-
-Please have a look [here](#bigexample) if you like to see a bigger example with a complete overview over the basic features or keep reading to find out more about the background and capabilities of Tavor.
+Generating data like this is just one example of the capabilities of Tavor. Please have a look [here](#bigexample) if you like to see a bigger example with a complete overview over the basic features or keep reading to find out more about the background and capabilities of Tavor.
 
 ## <a name="fuzzing"></a>What is fuzzing?
 
