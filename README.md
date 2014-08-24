@@ -1,9 +1,6 @@
 # Tavor [![GoDoc](https://godoc.org/github.com/zimmski/tavor?status.png)](https://godoc.org/github.com/zimmski/tavor) [![Build Status](https://travis-ci.org/zimmski/tavor.svg?branch=master)](https://travis-ci.org/zimmski/tavor) [![Coverage Status](https://coveralls.io/repos/zimmski/tavor/badge.png)](https://coveralls.io/r/zimmski/tavor)
 
-Tavor ([Sindarin](https://en.wikipedia.org/wiki/Sindarin) for "woodpecker") is a fuzzing and delta-debugging platform.
-
-TODO SHORT description on what you can do with the platform and what is the purpose of it<br/>
-TODO write that Tavor does more than the general definition of fuzzing and delta-debugging. we generate data in general for example
+Tavor ([Sindarin](https://en.wikipedia.org/wiki/Sindarin) for "woodpecker") is a fuzzing and delta-debugging platform, which provides a framework and binary to not only implement and do everyday fuzzing and delta-debugging but to also do research on new methods without implementing basics again. A EBNF-like notations allows the definition of data (e.g. file formats and protocols) without the need of programming. Tavor relaxes on the definitions of fuzzing and delta-debugging allowing to use these techniques in general.
 
 ### <a name="quick-example"></a>A quick example
 
