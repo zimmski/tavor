@@ -1,6 +1,6 @@
 # Tavor [![GoDoc](https://godoc.org/github.com/zimmski/tavor?status.png)](https://godoc.org/github.com/zimmski/tavor) [![Build Status](https://travis-ci.org/zimmski/tavor.svg?branch=master)](https://travis-ci.org/zimmski/tavor) [![Coverage Status](https://coveralls.io/repos/zimmski/tavor/badge.png)](https://coveralls.io/r/zimmski/tavor)
 
-Tavor ([Sindarin](https://en.wikipedia.org/wiki/Sindarin) for "woodpecker") is a fuzzing and delta-debugging platform, which provides a framework and binary to not only implement and do everyday fuzzing and delta-debugging but to also do research on new methods without implementing basics again. A EBNF-like notations allows the definition of data (e.g. file formats and protocols) without the need of programming. Tavor also relaxes on the definitions of fuzzing and delta-debugging allowing the user to utilize implemented techniques universally e.g. for key-driven testing, model-based testing, simulating user-behavior and genetic programming.
+Tavor ([Sindarin](https://en.wikipedia.org/wiki/Sindarin) for "woodpecker") is a [fuzzing](#fuzzing) and [delta-debugging](#delta-debugging) platform, which provides a framework and binary to not only implement and do everyday fuzzing and delta-debugging but to also do research on new methods without implementing basics again. A [EBNF-like notations](#format) allows the definition of data (e.g. file formats and protocols) without the need of programming. Tavor also relaxes on the definitions of fuzzing and delta-debugging allowing the user to utilize implemented techniques universally e.g. for key-driven testing, model-based testing, simulating user-behavior and genetic programming.
 
 ### <a name="quick-example"></a>A quick example
 
@@ -135,10 +135,10 @@ TODO explain every aspect. basics first<br/>
 
 ## <a name="use"></a>How do I use Tavor?
 
-TODO explain the currently three ways to use Tavor: binary, programmatically using Tavor and extending Tavor itself<br/>
-
-TODO explain that all three ways work in the same way filters fuzzing and delta debugging<br/>
-TODO mention bigger example scenario -> link to it<br/>
+Tavor can be used in three different ways:
+- [Using the binary](#binary) which makes everything provided officially by the Tavor project available via the command line backed by the [Tavor format file](#format) to create the internal structure.
+- [Programmatically](#programmatically) by implementing the internal structure via code using the Tavor framework and doing everything else like fuzzing and delta-debugging too.
+- [Programmatically extending Tavor](#extend) because of missing features or strategies.
 
 ### <a name="fuzzing-filter"></a>What are fuzzing filters?
 
