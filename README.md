@@ -1,6 +1,6 @@
 # Tavor [![GoDoc](https://godoc.org/github.com/zimmski/tavor?status.png)](https://godoc.org/github.com/zimmski/tavor) [![Build Status](https://travis-ci.org/zimmski/tavor.svg?branch=master)](https://travis-ci.org/zimmski/tavor) [![Coverage Status](https://coveralls.io/repos/zimmski/tavor/badge.png)](https://coveralls.io/r/zimmski/tavor)
 
-Tavor ([Sindarin](https://en.wikipedia.org/wiki/Sindarin) for "woodpecker") is a [fuzzing](#fuzzing) and [delta-debugging](#delta-debugging) platform, which provides a framework and binary to not only implement and do everyday fuzzing and delta-debugging but to also do research on new methods without implementing basics again. A [EBNF-like notations](#format) allows the definition of data (e.g. file formats and protocols) without the need of programming. Tavor also relaxes on the definitions of fuzzing and delta-debugging allowing the user to utilize implemented techniques universally e.g. for key-driven testing, model-based testing, simulating user-behavior and genetic programming.
+Tavor ([Sindarin](https://en.wikipedia.org/wiki/Sindarin) for "woodpecker") is a [fuzzing](#fuzzing) and [delta-debugging](#delta-debugging) platform, which provides a framework and binary to not only implement and do everyday fuzzing and delta-debugging but to also do research on new methods without implementing basic algorithms again. A [EBNF-like notations](#format) allows the definition of data (e.g. file formats and protocols) without the need of programming. Tavor also relaxes on the definitions of fuzzing and delta-debugging allowing the user to utilize implemented techniques universally e.g. for key-driven testing, model-based testing, simulating user-behavior and genetic programming.
 
 ### <a name="quick-example"></a>A quick example
 
@@ -142,9 +142,11 @@ Tavor can be used in three different ways:
 
 ### <a name="fuzzing-filter"></a>What are fuzzing filters?
 
-TODO<br/>
+Fuzzing filters mutate the internal structure and can be applied after the internal structure is ready for fuzzing thus after creating it e.g. after parsing and unrolling. In contrast to [mutation-based fuzzing](#fuzzing) they do not mutate the output data itself, instead they focus solely on the internal structure which then can be used to generate data.
 
-TODO available filters -> link to godoc and explain the filters in the code<br/>
+An example use-case for fuzzing filters is the [boundary-value analysis](https://en.wikipedia.org/wiki/Boundary-value_analysis) software testing technique. Imagine an integer which has valid values from 1 to 100. This would lead to 100 possible values just for this one integer and thus to at least 100 permutations of the internal structure. Boundary-value analysis reduces these permutations to e.g. 1, 50 and 100 so just three instead of 100 cases. This is exactly what the [PositiveBoundaryValueAnalysis fuzzing filter](https://godoc.org/github.com/zimmski/tavor/fuzz/filter#PositiveBoundaryValueAnalysisFilter) does. It traverses the whole internal structure and replaces every range integer with its boundary values.
+
+Please have a look at [the documentation](https://godoc.org/github.com/zimmski/tavor/fuzz/filter) for an overview of all available fuzzing filters of Tavor.
 
 ### <a name="fuzzing-strategy"></a>What are fuzzing strategies?
 
@@ -278,6 +280,7 @@ TODO explain how to use filters, fuzzers and delta debugging<br/>
 ## <a name="extend"></a>How do I extend Tavor?
 
 TODO<br/>
+TODO Mention that if [Programmatically](#programmatically) is not enough because of missing features or so Tavor can be extend easily<br/>
 TODO mention feature request section, but if someone is interested in really extending Tavor by her/himself... read on<br/>
 
 ### Filters
