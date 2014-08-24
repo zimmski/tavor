@@ -116,6 +116,12 @@ Tavor's fuzzing implementation is generically and not fixed to one technique nor
 
 Even tough Tavor provides loads of functionality out of the box a lot is still missing. A list of missing but planed features can be found in the [missing features section](#missing-features). For feature request please have a look at the [feature request section](#feature-request).
 
+### <a name="token"></a>What are tokens?
+
+TODO mention in "How does Tavor work and what does it provide?" tokens
+
+TODO write about tokens
+
 ### Unrolling loops
 
 Although the internal structure allows loops in its graph, Tavor currently unrolles loops for easier usage. This is a trade-off that is currently in place but will be eliminated in future versions of Tavor.
@@ -150,15 +156,17 @@ Please have a look at [the documentation](https://godoc.org/github.com/zimmski/t
 
 ### <a name="fuzzing-strategy"></a>What are fuzzing strategies?
 
-TODO<br/>
+Each fuzzing strategies represents one fuzzing technique. This can be a heuristic for walking through the internal structure, how the tokens of the structure are fuzzed or even both. Tavor currently distinguishes between two kinds of token fuzzing. One is to deterministically set one possible permutation of the token the other is choosing randomly one permutation out of all permutations of a token. Strategies can even mix these two kinds or implement their own.
 
-TODO available strategies -> link to godoc and explain the strategies in the code<br/>
+An example for a fuzzing strategy is the [random fuzzing strategy](https://godoc.org/github.com/zimmski/tavor/fuzz/strategy#RandomStrategy) which is Tavor's default. It traverses through the whole internal structure and randomly permutes each token.
+
+Please have a look at [the documentation](https://godoc.org/github.com/zimmski/tavor/fuzz/strategy) for an overview of all available fuzzing strategies of Tavor.
 
 ### <a name="reduce-strategy"></a>What are reduce strategies?
 
 TODO<br/>
 
-TODO available strategies -> link to godoc and explain the strategies in the code<br/>
+Please have a look at [the documentation](https://godoc.org/github.com/zimmski/tavor/reduce/strategy) for an overview of all available reduce strategies of Tavor.
 
 ## <a name="binary"></a>The Tavor binary
 
