@@ -156,7 +156,7 @@ Please have a look at [the documentation](https://godoc.org/github.com/zimmski/t
 
 ### <a name="fuzzing-strategy"></a>What are fuzzing strategies?
 
-Each fuzzing strategies represents one fuzzing technique. This can be a heuristic for walking through the internal structure, how the tokens of the structure are fuzzed or even both. Tavor currently distinguishes between two kinds of token fuzzing. One is to deterministically set one possible permutation of the token the other is choosing randomly one permutation out of all permutations of a token. Strategies can even mix these two kinds or implement their own.
+Each fuzzing strategy represents one fuzzing technique. This can be a heuristic for walking through the internal structure, how tokens of the structure are fuzzed or even both. Tavor currently distinguishes between two kinds of token fuzzing. One is to deterministically set one possible permutation of the token the other is choosing randomly one permutation out of all permutations of a token. Strategies can even mix these two kinds or implement their own.
 
 An example for a fuzzing strategy is the [random fuzzing strategy](https://godoc.org/github.com/zimmski/tavor/fuzz/strategy#RandomStrategy) which is Tavor's default. It traverses through the whole internal structure and randomly permutes each token.
 
@@ -164,7 +164,7 @@ Please have a look at [the documentation](https://godoc.org/github.com/zimmski/t
 
 ### <a name="reduce-strategy"></a>What are reduce strategies?
 
-TODO<br/>
+Reduce strategies are strongly comparable to fuzzing strategies in their range of functions. Each reduce strategy represents one reduce/delta-debugging technique. This can be a heuristic for walking through the internal structure, how tokens of the structure are reduce or even both. The reduction method is depending on the token type. For example a constant integer cannot be reduced any further but a repetition of optional strings can be minimized or even left out.
 
 Please have a look at [the documentation](https://godoc.org/github.com/zimmski/tavor/reduce/strategy) for an overview of all available reduce strategies of Tavor.
 
