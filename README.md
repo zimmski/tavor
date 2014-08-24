@@ -3,6 +3,7 @@
 Tavor ([Sindarin](https://en.wikipedia.org/wiki/Sindarin) for "woodpecker") is a fuzzing and delta-debugging platform.
 
 TODO SHORT description on what you can do with the platform and what is the purpose of it<br/>
+TODO write that Tavor does more than the general definition of fuzzing and delta-debugging. we generate data in general for example
 
 ### <a name="quick-example"></a>A quick example
 
@@ -72,8 +73,28 @@ Please have a look [here](#bigexample) if you like to see a bigger example with 
 
 ## <a name="fuzzing"></a>What is fuzzing?
 
-TODO in general, which types of fuzzing are there, what you can do with them, what are the pros and cons<br/>
-TODO mention that it is pretty much just data generation and can be used for example for genetic programming<br/>
+> Fuzz testing or fuzzing is a software testing technique, often automated or semi-automated, that involves providing invalid, unexpected, or random data to the inputs of a computer program. The program is then monitored for exceptions such as crashes, or failing built-in code assertions or for finding potential memory leaks. Fuzzing is commonly used to test for security problems in software or computer systems.
+> -- <cite>[https://en.wikipedia.org/wiki/Fuzz_testing](https://en.wikipedia.org/wiki/Fuzz_testing)</cite>
+
+Although this is the common definition of fuzzing, it is nowadays often just one view on capabilities of fuzzing tools. Fuzzing is in general just the generation of data and it does not matter if it is invalid or valid and what the type of data (e.g. files, protocol data) is. The use case of the data itself is also often broadly defined as it can be used to test algorithms, programs or hardware but it can be practically used everywhere where data is needed.
+
+Fuzzing algorithms can be categorized into two areas:
+
+- **mutation-based**
+
+	Mutation-based fuzzing takes existing data and simply changes it. This often leads to invalid data, as most techniques are not obeying constraints nor rules of the underlying data.
+
+	Some common technique for mutation-based fuzzing are:
+	- Bit flipping: Random chosen bits of the data are flipped.
+	- Prepending/Appending: New data is prepended/appended to the given data.
+	- Repeating: Random chosen parts of the given data are repeated.
+	- Removal: Random chosen parts of the given data are removed.
+
+- **generation-based**
+
+	Generation-based algorithms have one big advantage over mutation-based in that they have to understand and obey the underlying constraints and rules of the data itself. This property can be used to generate valid as well as invalid data. Another property is that generation-based algorithms generate data from scratch which eliminates the need for gathering data and keeping it up to date.
+
+	There are no common techniques for generation-based fuzzing but most algorithms choose a graph as underlying representation of the data model. The graph is then traversed and each node outputs a part of the data. The traversal algorithms and the complexity and abilities of the model like constraints between nodes or adding nodes during the traversal distinguish generation-based fuzzers and contribute in general to their mightiness.
 
 ## <a name="delta-debugging"></a>What is delta-debugging?
 
