@@ -260,9 +260,35 @@ Available commands:
 
 ### Graphing
 
-TODO with examples<br/>
+The Tavor binary allows to print out a graph of the internal structure, since textual formats like the [Tavor format](#format) can be often difficult to visualize. Currently only the DOT format is supported therefore third-party tools like [Graphviz](http://graphviz.org/) have to be used to convert the DOT data to other formats like JPEG, PNG or SVG.
 
- | dot -Tsvg -o outfile.svg
+Use the following command to print out the DOT graph of a format file to STDOUT:
+
+```bash
+tavor --format-file file.tavor graph
+```
+
+To save the graph to a file you can simply redirect the output of the command:
+
+```bash
+tavor --format-file file.tavor graph > file.dot
+```
+
+You can even pipe the command directly into the <code>dot</code> command of [Graphviz](http://graphviz.org/):
+
+```
+tavor --format-file file.tavor graph | dot -Tsvg -o outfile.svg
+```
+
+To define the graph notation, the following image will be explained:
+
+![Graph notation](doc/images/README/graph-notaton.png "Graph notation")
+
+- Each circle represents a token of the internal structure (a to f)
+- Arrows represents connections between tokens, meaning the token the arrow points to can come next (e.g a to c, c to d, d to f)
+- Dotted arrows represent optional connections (a to b)
+- The small dot is the start of the whole graph (arrow to a)
+- Double bordered circles represent end-state tokens (f)
 
 ### Fuzzing
 
