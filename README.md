@@ -8,7 +8,7 @@ Imagine a vending machine which ejects a product after receiving 100 worth of cr
 
 ![Basic states and actions](examples/quick/basic.png "Basic states and actions")
 
-This state machine can be defined using the following [Tavor format file](#format):
+This state machine can be defined using the following [Tavor format](#format):
 
 ```
 START = Credit0
@@ -112,15 +112,15 @@ Although delta-debugging is described as method to isolate failure causes, it ca
 
 Tavor combines both fuzzing and delta-debugging into one platform by allowing all implemented methods to operate on one internal model-based structure represented by a graph. This structure can be defined and generated programmatically or by using a format file. Out of the box Tavor comes with its own [format](#format) which covers all functionality of the Tavor framework itself.
 
-Tavor's fuzzing implementation is generically and not fixed to one technique nor format. Instead different fuzzing techniques and heuristics can be implemented and executed independently as [Tavor fuzzing strategies](fuzzing-strategy). The same principle is used for delta-debugging where so called [Tavor reduce strategies](#reduce-strategy) can be implemented and used. Both types of strategies operate on the same internal structure independent of the format.
+Tavor's generic fuzzing implementation is not fixed to one technique nor format. Instead different fuzzing techniques and heuristics can be implemented and executed independently as [Tavor fuzzing strategies](fuzzing-strategy). The same principle is used for delta-debugging where so called [Tavor reduce strategies](#reduce-strategy) can be implemented and used. Both types of strategies operate on the same internal structure independent of the format. This structure is basically a graph of nodes which are called [tokens](#token) throughout the Tavor platform.
 
-Even tough Tavor provides loads of functionality out of the box a lot is still missing. A list of missing but planed features can be found in the [missing features section](#missing-features). For feature request please have a look at the [feature request section](#feature-request).
+Even tough Tavor provides loads of functionality out of the box, a lot is still missing. A list of missing but planed features can be found in the [missing features section](#missing-features). For feature request please have a look at the [feature request section](#feature-request).
 
 ### <a name="token"></a>What are tokens?
 
-TODO mention in "How does Tavor work and what does it provide?" tokens
+Tavor's tokens differ from *lexical analysis tokens* in that they represent not just a group of characters but different kind of data with additional properties and abilities. Tokens can be constant integers and strings of all kind but also dynamic data like integer ranges, sequences and character classes. Furthermore tokens can encapsulate other tokens to not only group them together but to create building blocks that can be reused to, for example, repeat a group of tokens. Tokens can have states, conditions and logic. They can create new tokens dynamically and can depend on other tokens to generate data. Tavor's tokens are basically the foundation of the whole platform and every algorithm for fuzzing, parsing and delta-debugging uses them.
 
-TODO write about tokens
+If you want to know more about Tavor's tokens you can read through [Tavor's format definition](#format) or you can read about them in depth in the [programming](#programmatically) and [extending](#extend) sections.
 
 ### Unrolling loops
 
@@ -134,7 +134,7 @@ Will result in the following internal graph given a maximum of two repetitions:
 
 ![Unrolled](/doc/images/README/unroll-unrolled.png "Unrolled")
 
-## <a name="format"></a>The Tavor format file
+## <a name="format"></a>The Tavor format
 
 TODO -> put this in its own .md and do not skimp on examples<br/>
 TODO explain every aspect. basics first<br/>
@@ -142,7 +142,7 @@ TODO explain every aspect. basics first<br/>
 ## <a name="use"></a>How do I use Tavor?
 
 Tavor can be used in three different ways:
-- [Using the binary](#binary) which makes everything provided officially by the Tavor project available via the command line backed by the [Tavor format file](#format) to create the internal structure.
+- [Using the binary](#binary) which makes everything provided officially by the Tavor project available via the command line backed by the [Tavor format](#format) to create the internal structure.
 - [Programmatically](#programmatically) by implementing the internal structure via code using the Tavor framework and doing everything else like fuzzing and delta-debugging too.
 - [Programmatically extending Tavor](#extend) because of missing features or strategies.
 
