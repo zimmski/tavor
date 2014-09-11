@@ -193,7 +193,7 @@ func (s *ReduceStrategy) Complete(match string) []flags.Completion {
 }
 
 func checkArguments() string {
-	p := flags.NewNamedParser("tavor", flags.PassDoubleDash)
+	p := flags.NewNamedParser("tavor", flags.None)
 
 	p.ShortDescription = "A fuzzing and delta-debugging platform."
 
