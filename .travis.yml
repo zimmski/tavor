@@ -13,6 +13,7 @@ install:
 
 script:
   # Tavor
+  - $(exit $(gofmt -l . | wc -l))
   - make test
 
   # Code coverage
