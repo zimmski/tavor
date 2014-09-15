@@ -28,8 +28,8 @@ type dotVertice struct {
 	typ   string
 }
 
-func pointerWithoutx0(tok token.Token) string {
-	return fmt.Sprintf("%p", tok)[2:]
+func nodeUID(tok token.Token) string {
+	return fmt.Sprintf("%p", tok)[1:]
 }
 
 func (g *dotGraph) addDot(tok token.Token) (start, next map[token.Token]bool) {
@@ -250,7 +250,7 @@ func WriteDot(root token.Token, dst io.Writer) {
 
 	fmt.Fprintf(dst, "\tnode [shape = doublecircle];")
 	for tok := range next {
-		fmt.Fprintf(dst, " %s", pointerWithoutx0(tok))
+		fmt.Fprintf(dst, " %s", nodeUID(tok))
 	}
 	fmt.Fprintf(dst, ";\n")
 
@@ -258,7 +258,7 @@ func WriteDot(root token.Token, dst io.Writer) {
 
 	for tok, vertice := range g.vertices {
 		if vertice.typ != "" {
-			fmt.Fprintf(dst, "\tnode [shape = %s] %s;\n", vertice.typ, pointerWithoutx0(tok))
+			fmt.Fprintf(dst, "\tnode [shape = %s] %s;\n", vertice.typ, nodeUID(tok))
 		}
 	}
 
@@ -267,7 +267,7 @@ func WriteDot(root token.Token, dst io.Writer) {
 	fmt.Fprintln(dst)
 
 	for tok, vertice := range g.vertices {
-		fmt.Fprintf(dst, "\t%s [label=%q]\n", pointerWithoutx0(tok), vertice.label)
+		fmt.Fprintf(dst, "\t%s [label=%q]\n", nodeUID(tok), vertice.label)
 	}
 
 	fmt.Fprintln(dst)
@@ -275,7 +275,7 @@ func WriteDot(root token.Token, dst io.Writer) {
 	found := false
 
 	for tok, opt := range start {
-		fmt.Fprintf(dst, "\tSTART -> %s", pointerWithoutx0(tok))
+		fmt.Fprintf(dst, "\tSTART -> %s", nodeUID(tok))
 
 		if opt {
 			fmt.Fprintf(dst, " [style=dotted]")
@@ -289,13 +289,13 @@ func WriteDot(root token.Token, dst io.Writer) {
 	if found {
 		for _, edge := range g.edges {
 			if edge.optional {
-				fmt.Fprintf(dst, "\tSTART -> %s;\n", pointerWithoutx0(edge.to))
+				fmt.Fprintf(dst, "\tSTART -> %s;\n", nodeUID(edge.to))
 			}
 		}
 	}
 
 	for _, edge := range g.edges {
-		fmt.Fprintf(dst, "\t%s -> %s", pointerWithoutx0(edge.from), pointerWithoutx0(edge.to))
+		fmt.Fprintf(dst, "\t%s -> %s", nodeUID(edge.from), nodeUID(edge.to))
 
 		if edge.optional || edge.label != "" {
 			fmt.Fprint(dst, "[")
