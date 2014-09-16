@@ -201,8 +201,10 @@ func checkArguments() string {
 		exitError(err.Error())
 	}
 
+	completion := len(os.Getenv("GO_FLAGS_COMPLETION")) != 0
+
 	_, err := p.Parse()
-	if opts.General.Help || len(os.Args) == 1 {
+	if (opts.General.Help || len(os.Args) == 1) && !completion {
 		p.WriteHelp(os.Stdout)
 
 		os.Exit(returnHelp)
@@ -240,7 +242,7 @@ func checkArguments() string {
 		exitError(err.Error())
 	}
 
-	if len(os.Getenv("GO_FLAGS_COMPLETION")) != 0 {
+	if completion {
 		os.Exit(returnBashCompletion)
 	}
 
