@@ -24,7 +24,7 @@ const (
 	blue    = 34
 )
 
-type LogFormatter struct{}
+type Formatter struct{}
 
 type TextFormatter struct {
 	// Set to true to bypass checking for a TTY before outputting colors.
@@ -32,7 +32,7 @@ type TextFormatter struct {
 	DisableColors bool
 }
 
-func (f *LogFormatter) Format(entry *logrus.Entry) ([]byte, error) {
+func (f *Formatter) Format(entry *logrus.Entry) ([]byte, error) {
 	b := &bytes.Buffer{}
 
 	prefixFieldClashes(entry)

@@ -100,9 +100,9 @@ func (s *BinarySearchStrategy) setReduction(tok token.ReduceToken, reduction int
 
 func (s *BinarySearchStrategy) Reduce() (chan struct{}, chan<- ReduceFeedbackType, error) {
 	if tavor.LoopExists(s.root) {
-		return nil, nil, &StrategyError{
+		return nil, nil, &Error{
 			Message: "found endless loop in graph. Cannot proceed.",
-			Type:    StrategyErrorEndlessLoopDetected,
+			Type:    ErrorEndlessLoopDetected,
 		}
 	}
 

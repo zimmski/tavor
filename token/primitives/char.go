@@ -123,7 +123,7 @@ func (c *CharacterClass) Parse(pars *token.InternalParser, cur int) (int, []erro
 
 	if _, ok := c.charsLookup[v]; !ok {
 		return cur, []error{&token.ParserError{
-			Message: fmt.Sprintf("expected %q but got %q", v),
+			Message: fmt.Sprintf("expected %q but got %q", c.charsLookup, v),
 			Type:    token.ParseErrorUnexpectedData,
 		}}
 	}

@@ -874,9 +874,9 @@ func (p *tavorParser) selectTokenAttribute(tok token.Token, tokenName string, at
 		case "Existing":
 			if operator == "not in" {
 				return i.ExistingItem(operatorToken), nil
-			} else {
-				return i.ExistingItem(nil), nil
 			}
+
+			return i.ExistingItem(nil), nil
 		case "Next":
 			return i.Item(), nil
 		case "Reset":

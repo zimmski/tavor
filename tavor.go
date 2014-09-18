@@ -16,7 +16,7 @@ const (
 	Version = "0.3"
 )
 
-var MaxRepeat int = 2
+var MaxRepeat = 2
 
 func PrettyPrintTree(w io.Writer, root token.Token) {
 	prettyPrintTreeRek(w, root, 0)

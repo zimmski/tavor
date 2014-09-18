@@ -9,7 +9,7 @@ import (
 var log = logrus.New()
 
 func init() {
-	log.Formatter = &LogFormatter{}
+	log.Formatter = &Formatter{}
 	log.Out = os.Stderr
 }
 

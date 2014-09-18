@@ -125,7 +125,7 @@ func testStrategyLoopDetection(t *testing.T, newStrategy func(root token.Token) 
 
 		ch, err := s.Fuzz(r)
 		Nil(t, ch)
-		Equal(t, StrategyErrorEndlessLoopDetected, err.(*StrategyError).Type)
+		Equal(t, ErrorEndlessLoopDetected, err.(*Error).Type)
 
 		p = primitives.NewEmptyPointer(tok)
 		o = lists.NewAll(
@@ -138,7 +138,7 @@ func testStrategyLoopDetection(t *testing.T, newStrategy func(root token.Token) 
 
 		ch, err = s.Fuzz(r)
 		Nil(t, ch)
-		Equal(t, StrategyErrorEndlessLoopDetected, err.(*StrategyError).Type)
+		Equal(t, ErrorEndlessLoopDetected, err.(*Error).Type)
 	}
 	{
 		// deeper loops
@@ -163,6 +163,6 @@ func testStrategyLoopDetection(t *testing.T, newStrategy func(root token.Token) 
 
 		ch, err := s.Fuzz(r)
 		Nil(t, ch)
-		Equal(t, StrategyErrorEndlessLoopDetected, err.(*StrategyError).Type)
+		Equal(t, ErrorEndlessLoopDetected, err.(*Error).Type)
 	}
 }

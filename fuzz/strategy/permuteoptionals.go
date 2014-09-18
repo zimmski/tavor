@@ -95,9 +95,9 @@ func (s *PermuteOptionalsStrategy) findOptionals(r rand.Rand, root token.Token, 
 
 func (s *PermuteOptionalsStrategy) Fuzz(r rand.Rand) (chan struct{}, error) {
 	if tavor.LoopExists(s.root) {
-		return nil, &StrategyError{
+		return nil, &Error{
 			Message: "found endless loop in graph. Cannot proceed.",
-			Type:    StrategyErrorEndlessLoopDetected,
+			Type:    ErrorEndlessLoopDetected,
 		}
 	}
 

@@ -435,13 +435,13 @@ func main() {
 				matchStdout = regexp.MustCompile(opts.Fuzz.Exec.ExecMatchStdout)
 			}
 
-			stepId := 0
+			stepID := 0
 
 		GENERATION:
 			for i := range ch {
 				docOut := doc.String()
 
-				tmp, err := ioutil.TempFile(string(folder), fmt.Sprintf("fuzz-%d-", stepId))
+				tmp, err := ioutil.TempFile(string(folder), fmt.Sprintf("fuzz-%d-", stepID))
 				if err != nil {
 					exitError("Cannot create tmp file: %s", err)
 				}
@@ -588,7 +588,7 @@ func main() {
 
 				ch <- i
 
-				stepId++
+				stepID++
 			}
 		} else if opts.Fuzz.Exec.Script != "" {
 			execs := strings.Split(opts.Fuzz.Exec.Script, " ")
@@ -755,11 +755,11 @@ func main() {
 					}
 				}
 
-				stepId := 0
+				stepID := 0
 
 				docOut := doc.String()
 
-				tmp, err := ioutil.TempFile("", fmt.Sprintf("dd-%d-", stepId))
+				tmp, err := ioutil.TempFile("", fmt.Sprintf("dd-%d-", stepID))
 				if err != nil {
 					exitError("Cannot create tmp file: %s", err)
 				}
@@ -850,11 +850,11 @@ func main() {
 				}
 
 				for i := range contin {
-					stepId++
+					stepID++
 
 					docOut := doc.String()
 
-					tmp, err := ioutil.TempFile("", fmt.Sprintf("dd-%d-", stepId))
+					tmp, err := ioutil.TempFile("", fmt.Sprintf("dd-%d-", stepID))
 					if err != nil {
 						exitError("Cannot create tmp file: %s", err)
 					}

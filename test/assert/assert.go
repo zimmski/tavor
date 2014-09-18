@@ -630,21 +630,6 @@ func NoError(t TestingT, err error, msgAndArgs ...interface{}) bool {
 	return Fail(t, fmt.Sprintf("No error is expected but got %v", err), msgAndArgs...)
 }
 
-// Error asserts that a function returned an error (i.e. not `nil`).
-//
-//   actualObj, err := SomeFunction()
-//   if assert.Error(t, err, "An error was expected") {
-//	   assert.Equal(t, err, expectedError)
-//   }
-//
-// Returns whether the assertion was successful (true) or not (false).
-func Error(t TestingT, err error, msgAndArgs ...interface{}) bool {
-
-	message := messageFromMsgAndArgs(msgAndArgs...)
-	return NotNil(t, err, "An error is expected but got nil. %s", message)
-
-}
-
 // EqualError asserts that a function returned an error (i.e. not `nil`)
 // and that it is equal to the provided error.
 //

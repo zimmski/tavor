@@ -78,9 +78,9 @@ func (s *AllPermutationsStrategy) setPermutation(tok token.Token, permutation in
 
 func (s *AllPermutationsStrategy) Fuzz(r rand.Rand) (chan struct{}, error) {
 	if tavor.LoopExists(s.root) {
-		return nil, &StrategyError{
+		return nil, &Error{
 			Message: "found endless loop in graph. Cannot proceed.",
-			Type:    StrategyErrorEndlessLoopDetected,
+			Type:    ErrorEndlessLoopDetected,
 		}
 	}
 

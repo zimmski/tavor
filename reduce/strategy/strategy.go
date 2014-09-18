@@ -7,18 +7,18 @@ import (
 	"github.com/zimmski/tavor/token"
 )
 
-type StrategyErrorType int
+type ErrorType int
 
 const (
-	StrategyErrorEndlessLoopDetected StrategyErrorType = iota
+	ErrorEndlessLoopDetected ErrorType = iota
 )
 
-type StrategyError struct {
+type Error struct {
 	Message string
-	Type    StrategyErrorType
+	Type    ErrorType
 }
 
-func (err *StrategyError) Error() string {
+func (err *Error) Error() string {
 	return err.Message
 }
 

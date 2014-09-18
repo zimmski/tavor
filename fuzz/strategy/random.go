@@ -30,9 +30,9 @@ func init() {
 
 func (s *RandomStrategy) Fuzz(r rand.Rand) (chan struct{}, error) {
 	if tavor.LoopExists(s.root) {
-		return nil, &StrategyError{
+		return nil, &Error{
 			Message: "found endless loop in graph. Cannot proceed.",
-			Type:    StrategyErrorEndlessLoopDetected,
+			Type:    ErrorEndlessLoopDetected,
 		}
 	}
 
