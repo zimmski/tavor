@@ -2,6 +2,7 @@ package primitives
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 
 	"github.com/zimmski/tavor/rand"
@@ -282,7 +283,14 @@ func (p *RangeInt) Permutation(i int) error {
 }
 
 func (p *RangeInt) Permutations() int {
-	return (p.to-p.from)/p.step + 1
+	// TODO FIXME this
+	perms := (p.to-p.from)/p.step + 1
+
+	if perms < 0 {
+		return math.MaxInt64
+	} else {
+		return perms
+	}
 }
 
 func (p *RangeInt) PermutationsAll() int {
