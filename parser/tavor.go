@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"math"
 	"reflect"
 	"strconv"
 	"text/scanner"
@@ -1323,35 +1324,27 @@ func (p *tavorParser) parseSpecialTokenDefinition() (rune, error) {
 		rawTo, okTo := arguments["to"]
 
 		if okFrom || okTo {
-			if okFrom && !okTo {
-				return zeroRune, &token.ParserError{
-					Message:  "argument \"to\" is missing",
-					Type:     token.ParseErrorMissingSpecialTokenArgument,
-					Position: p.scan.Pos(),
-				}
-			} else if !okFrom && okTo {
-				return zeroRune, &token.ParserError{
-					Message:  "argument \"from\" is missing",
-					Type:     token.ParseErrorMissingSpecialTokenArgument,
-					Position: p.scan.Pos(),
+			from := 0
+			if okFrom {
+				from, err = strconv.Atoi(rawFrom)
+				if err != nil {
+					return zeroRune, &token.ParserError{
+						Message:  "\"from\" needs an integer value",
+						Type:     token.ParseErrorInvalidArgumentValue,
+						Position: p.scan.Pos(),
+					}
 				}
 			}
 
-			from, err := strconv.Atoi(rawFrom)
-			if err != nil {
-				return zeroRune, &token.ParserError{
-					Message:  "\"from\" needs an integer value",
-					Type:     token.ParseErrorInvalidArgumentValue,
-					Position: p.scan.Pos(),
-				}
-			}
-
-			to, err := strconv.Atoi(rawTo)
-			if err != nil {
-				return zeroRune, &token.ParserError{
-					Message:  "\"to\" needs an integer value",
-					Type:     token.ParseErrorInvalidArgumentValue,
-					Position: p.scan.Pos(),
+			to := math.MaxInt64
+			if okTo {
+				to, err = strconv.Atoi(rawTo)
+				if err != nil {
+					return zeroRune, &token.ParserError{
+						Message:  "\"to\" needs an integer value",
+						Type:     token.ParseErrorInvalidArgumentValue,
+						Position: p.scan.Pos(),
+					}
 				}
 			}
 

@@ -2,6 +2,7 @@ package parser
 
 import (
 	"fmt"
+	"math"
 	"strings"
 	"testing"
 
@@ -151,15 +152,6 @@ func TestTavorParseErrors(t *testing.T) {
 	// unknown special token argument
 	tok, err = ParseTavor(strings.NewReader("$START = type: Int,\nok: value\n"))
 	Equal(t, token.ParseErrorUnknownSpecialTokenArgument, err.(*token.ParserError).Type)
-	Nil(t, tok)
-
-	// missing arguments for special token Int
-	tok, err = ParseTavor(strings.NewReader("$START = type: Int,\nto:123\n"))
-	Equal(t, token.ParseErrorMissingSpecialTokenArgument, err.(*token.ParserError).Type)
-	Nil(t, tok)
-
-	tok, err = ParseTavor(strings.NewReader("$START = type: Int,\nfrom:123\n"))
-	Equal(t, token.ParseErrorMissingSpecialTokenArgument, err.(*token.ParserError).Type)
 	Nil(t, tok)
 
 	// invalid arguments for special token Int
@@ -566,6 +558,18 @@ func TestTavorParserSpecialTokens(t *testing.T) {
 	))
 	Nil(t, err)
 	Equal(t, tok, primitives.NewRangeIntWithStep(2, 10, 2))
+
+	tok, err = ParseTavor(strings.NewReader(
+		"$Spec = type: Int,\nto: 10,\nstep: 2\nSTART = Spec\n",
+	))
+	Nil(t, err)
+	Equal(t, tok, primitives.NewRangeIntWithStep(0, 10, 2))
+
+	tok, err = ParseTavor(strings.NewReader(
+		"$Spec = type: Int,\nfrom: 2,\nstep: 2\nSTART = Spec\n",
+	))
+	Nil(t, err)
+	Equal(t, tok, primitives.NewRangeIntWithStep(2, math.MaxInt64, 2))
 
 	// Sequence
 	tok, err = ParseTavor(strings.NewReader(
