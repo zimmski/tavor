@@ -65,7 +65,7 @@ type tavorParser struct {
 func (p *tavorParser) expectRune(expect rune, got rune) (rune, error) {
 	if got != expect {
 		return got, &token.ParserError{
-			Message:  fmt.Sprintf("expected %q but got %q", scanner.TokenString(expect), scanner.TokenString(got)),
+			Message:  fmt.Sprintf("expected %s but got %s", scanner.TokenString(expect), scanner.TokenString(got)),
 			Type:     token.ParseErrorExpectRune,
 			Position: p.scan.Pos(),
 		}
