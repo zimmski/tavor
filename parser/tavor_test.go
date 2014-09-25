@@ -502,6 +502,15 @@ func TestTavorParserAlternationsAndGroupings(t *testing.T) {
 		primitives.NewConstantInt(1),
 		lists.NewRepeat(primitives.NewConstantInt(2), 2, 3),
 	))
+
+	// once list
+	tok, err = ParseTavor(strings.NewReader("START = @(1 | 2 | 3)\n"))
+	Nil(t, err)
+	Equal(t, tok, lists.NewOnce(
+		primitives.NewConstantInt(1),
+		primitives.NewConstantInt(2),
+		primitives.NewConstantInt(3),
+	))
 }
 
 func TestTavorParserTokenAttributes(t *testing.T) {

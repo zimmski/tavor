@@ -51,6 +51,7 @@ Alternation = 1 | 2 | 3 // The token "Alternation" can hold either 1, 2 or 3.
 SameAlternationAsShortage = [123] // This is the same as the "Alternation" token except it is much shorter to define.
 AnotherAlternation = "a string" | [123] | Token // Alternations can hold every kind of token.
 Grouping = ("old" | "new") "letter" // Everything between parenthesis is a group. The token "Grouping" can therefore hold "oldletter" or "newletter". Groups can be nested too.
+Permutations = @(1 | 2 | 3) // Alternation groups can become permutation groups with the "@" right before the opening parenthesis. Each entry will be used once but the order is nonrelevant. For example the token "Permutations" can hold 123, 132, 213, 231, 312 or 321.
 ```
 
 ### Optionals and repeats

@@ -407,6 +407,45 @@ OUT:
 			}
 
 			log.Debug("END repeat")
+		case '@':
+			log.Debug("NEW once")
+
+			_, err = p.expectScanRune('(')
+			if err != nil {
+				return zeroRune, nil, err
+			}
+
+			c = p.scan.Scan()
+			log.Debugf("parseTerm once after ( %d:%v -> %v", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
+
+			c, toks, err := p.parseScope(definitionName, c, variableScope)
+			if err != nil {
+				return zeroRune, nil, err
+			}
+
+			_, err = p.expectRune(')', c)
+			if err != nil {
+				return zeroRune, nil, err
+			}
+
+			switch len(toks) {
+			case 1:
+				if t, ok := toks[0].(*lists.One); ok {
+					le := t.InternalLen()
+					tl := make([]token.Token, le)
+					for i := 0; i < le; i++ {
+						tl[i], _ = t.InternalGet(i)
+					}
+
+					addToken(lists.NewOnce(tl...))
+				} else {
+					addToken(lists.NewOnce(toks[0]))
+				}
+			default:
+				addToken(lists.NewOnce(toks...))
+			}
+
+			log.Debug("END once")
 		case '$':
 			c = p.scan.Scan()
 			log.Debugf("parseTerm after $ ( %d:%v -> %v", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
