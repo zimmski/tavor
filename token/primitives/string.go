@@ -53,7 +53,7 @@ func (p *ConstantString) Parse(pars *token.InternalParser, cur int) (int, []erro
 	return nextIndex, nil
 }
 
-func (p *ConstantString) Permutation(i int) error {
+func (p *ConstantString) Permutation(i uint) error {
 	permutations := p.Permutations()
 
 	if i < 1 || i > permutations {
@@ -67,11 +67,11 @@ func (p *ConstantString) Permutation(i int) error {
 	return nil
 }
 
-func (p *ConstantString) Permutations() int {
+func (p *ConstantString) Permutations() uint {
 	return 1
 }
 
-func (p *ConstantString) PermutationsAll() int {
+func (p *ConstantString) PermutationsAll() uint {
 	return p.Permutations()
 }
 

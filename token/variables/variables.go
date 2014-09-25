@@ -46,7 +46,7 @@ func (v *Variable) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	panic("TODO implement")
 }
 
-func (v *Variable) Permutation(i int) error {
+func (v *Variable) Permutation(i uint) error {
 	permutations := v.Permutations()
 
 	if i < 1 || i > permutations {
@@ -59,11 +59,11 @@ func (v *Variable) Permutation(i int) error {
 	return nil
 }
 
-func (v *Variable) Permutations() int {
+func (v *Variable) Permutations() uint {
 	return 1
 }
 
-func (v *Variable) PermutationsAll() int {
+func (v *Variable) PermutationsAll() uint {
 	return v.token.PermutationsAll()
 }
 
@@ -169,17 +169,17 @@ func (v *VariableValue) Parse(pars *token.InternalParser, cur int) (int, []error
 	panic("TODO implement")
 }
 
-func (v *VariableValue) Permutation(i int) error {
+func (v *VariableValue) Permutation(i uint) error {
 	// do nothing
 
 	return nil
 }
 
-func (v *VariableValue) Permutations() int {
+func (v *VariableValue) Permutations() uint {
 	return 1
 }
 
-func (v *VariableValue) PermutationsAll() int {
+func (v *VariableValue) PermutationsAll() uint {
 	return 1
 }
 

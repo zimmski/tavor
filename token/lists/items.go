@@ -40,7 +40,7 @@ func (l *ListItem) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	panic("TODO implement")
 }
 
-func (l *ListItem) Permutation(i int) error {
+func (l *ListItem) Permutation(i uint) error {
 	permutations := l.Permutations()
 
 	if i < 1 || i > permutations {
@@ -54,11 +54,11 @@ func (l *ListItem) Permutation(i int) error {
 	return nil
 }
 
-func (l *ListItem) Permutations() int {
+func (l *ListItem) Permutations() uint {
 	return 1
 }
 
-func (l *ListItem) PermutationsAll() int {
+func (l *ListItem) PermutationsAll() uint {
 	return l.Permutations()
 }
 
@@ -107,7 +107,7 @@ func (l *IndexItem) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	panic("TODO implement")
 }
 
-func (l *IndexItem) Permutation(i int) error {
+func (l *IndexItem) Permutation(i uint) error {
 	permutations := l.Permutations()
 
 	if i < 1 || i > permutations {
@@ -121,11 +121,11 @@ func (l *IndexItem) Permutation(i int) error {
 	return nil
 }
 
-func (l *IndexItem) Permutations() int {
+func (l *IndexItem) Permutations() uint {
 	return 1
 }
 
-func (l *IndexItem) PermutationsAll() int {
+func (l *IndexItem) PermutationsAll() uint {
 	return l.Permutations()
 }
 
@@ -211,7 +211,7 @@ func (l *UniqueItem) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	panic("TODO implement")
 }
 
-func (l *UniqueItem) Permutation(i int) error {
+func (l *UniqueItem) Permutation(i uint) error {
 	permutations := l.Permutations()
 
 	if i < 1 || i > permutations {
@@ -225,11 +225,11 @@ func (l *UniqueItem) Permutation(i int) error {
 	return nil
 }
 
-func (l *UniqueItem) Permutations() int {
+func (l *UniqueItem) Permutations() uint {
 	return 1
 }
 
-func (l *UniqueItem) PermutationsAll() int {
+func (l *UniqueItem) PermutationsAll() uint {
 	return l.Permutations()
 }
 

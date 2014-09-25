@@ -35,7 +35,7 @@ func (a *Len) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	panic("TODO implement")
 }
 
-func (a *Len) Permutation(i int) error {
+func (a *Len) Permutation(i uint) error {
 	permutations := a.Permutations()
 
 	if i < 1 || i > permutations {
@@ -49,11 +49,11 @@ func (a *Len) Permutation(i int) error {
 	return nil
 }
 
-func (a *Len) Permutations() int {
+func (a *Len) Permutations() uint {
 	return 1
 }
 
-func (a *Len) PermutationsAll() int {
+func (a *Len) PermutationsAll() uint {
 	return a.Permutations()
 }
 

@@ -9,12 +9,12 @@ import (
 )
 
 type Most struct {
-	n     int64
+	n     uint
 	token token.Token
 	value []token.Token
 }
 
-func NewMost(tok token.Token, n int64) *Most {
+func NewMost(tok token.Token, n uint) *Most {
 	l := &Most{
 		n:     n,
 		token: tok,
@@ -45,9 +45,9 @@ func (l *Most) Clone() token.Token {
 }
 
 func (l *Most) Fuzz(r rand.Rand) {
-	i := r.Intn(int(l.n) + 1)
+	i := r.Int63n(int64(l.n + 1))
 
-	l.permutation(i)
+	l.permutation(uint(i))
 }
 
 func (l *Most) FuzzAll(r rand.Rand) {
@@ -62,7 +62,7 @@ func (l *Most) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	panic("TODO implement")
 }
 
-func (l *Most) permutation(i int) {
+func (l *Most) permutation(i uint) {
 	toks := make([]token.Token, i)
 
 	for i := range toks {
@@ -72,7 +72,7 @@ func (l *Most) permutation(i int) {
 	l.value = toks
 }
 
-func (l *Most) Permutation(i int) error {
+func (l *Most) Permutation(i uint) error {
 	permutations := l.Permutations()
 
 	if i < 1 || i > permutations {
@@ -86,17 +86,17 @@ func (l *Most) Permutation(i int) error {
 	return nil
 }
 
-func (l *Most) Permutations() int {
-	return int(l.n) + 1
+func (l *Most) Permutations() uint {
+	return l.n + 1
 }
 
-func (l *Most) PermutationsAll() int {
-	sum := 1
+func (l *Most) PermutationsAll() uint {
+	var sum uint = 1
 
 	tokenPermutations := l.token.PermutationsAll()
 
 	for i := 1; i <= int(l.n); i++ {
-		sum += int(math.Pow(float64(tokenPermutations), float64(i)))
+		sum += uint(math.Pow(float64(tokenPermutations), float64(i)))
 	}
 
 	return sum

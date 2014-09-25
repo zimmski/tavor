@@ -83,7 +83,7 @@ func (l *Repeat) Clone() token.Token {
 func (l *Repeat) Fuzz(r rand.Rand) {
 	i := r.Intn(int(l.To() - l.From() + 1))
 
-	l.permutation(i)
+	l.permutation(uint(i))
 }
 
 func (l *Repeat) FuzzAll(r rand.Rand) {
@@ -128,8 +128,8 @@ func (l *Repeat) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	return cur, nil
 }
 
-func (l *Repeat) permutation(i int) {
-	toks := make([]token.Token, i+int(l.From()))
+func (l *Repeat) permutation(i uint) {
+	toks := make([]token.Token, int(i)+int(l.From()))
 
 	for i := range toks {
 		toks[i] = l.token.Clone()
@@ -138,7 +138,7 @@ func (l *Repeat) permutation(i int) {
 	l.value = toks
 }
 
-func (l *Repeat) Permutation(i int) error {
+func (l *Repeat) Permutation(i uint) error {
 	permutations := l.Permutations()
 
 	if i < 1 || i > permutations {
@@ -152,12 +152,12 @@ func (l *Repeat) Permutation(i int) error {
 	return nil
 }
 
-func (l *Repeat) Permutations() int {
-	return int(l.To() - l.From() + 1)
+func (l *Repeat) Permutations() uint {
+	return uint(l.To() - l.From() + 1)
 }
 
-func (l *Repeat) PermutationsAll() int {
-	sum := 0
+func (l *Repeat) PermutationsAll() uint {
+	var sum uint = 0
 	from := l.From()
 
 	if l.From() == 0 {
@@ -168,7 +168,7 @@ func (l *Repeat) PermutationsAll() int {
 	tokenPermutations := l.token.PermutationsAll()
 
 	for i := from; i <= l.To(); i++ {
-		sum += int(math.Pow(float64(tokenPermutations), float64(i)))
+		sum += uint(math.Pow(float64(tokenPermutations), float64(i)))
 	}
 
 	return sum
@@ -329,11 +329,11 @@ func combinations(n int, k int) <-chan []int {
 	return ret
 }
 
-func (l *Repeat) Reduce(i int) error {
-	count := 0
+func (l *Repeat) Reduce(i uint) error {
+	var count uint = 0
 	reduces := l.reduces()
 	for _, le := range reduces {
-		count += le
+		count += uint(le)
 	}
 
 	if count <= 1 || i < 1 || i > count {
@@ -390,7 +390,7 @@ func (l *Repeat) Reduce(i int) error {
 	return nil
 }
 
-func factorial(n int) int {
+func factorial(n uint) uint {
 	c := n
 	n--
 
@@ -402,17 +402,17 @@ func factorial(n int) int {
 	return c
 }
 
-func (l *Repeat) reduces() []int {
-	n := len(l.value)
+func (l *Repeat) reduces() []uint {
+	n := uint(len(l.value))
 	if l.reducing {
-		n = len(l.reducingOriginalValue)
+		n = uint(len(l.reducingOriginalValue))
 	}
 
-	le := int(n - int(l.From()) + 1)
-	reduces := make([]int, le)
+	le := n - uint(l.From()) + 1
+	reduces := make([]uint, le)
 
 	j := 0
-	k := int(l.From())
+	k := uint(l.From())
 
 	if k == 0 {
 		reduces[0] = 1
@@ -431,9 +431,9 @@ func (l *Repeat) reduces() []int {
 	return reduces
 }
 
-func (l *Repeat) Reduces() int {
+func (l *Repeat) Reduces() uint {
 	if l.reducing || int(l.From()) < len(l.value) {
-		count := 0
+		var count uint = 0
 		r := l.reduces()
 		for _, le := range r {
 			count += le

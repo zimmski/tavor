@@ -77,15 +77,15 @@ func (l *Many) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	panic("TODO implement")
 }
 
-func (l *Many) Permutation(i int) error {
+func (l *Many) Permutation(i uint) error {
 	panic("TODO not implemented")
 }
 
-func (l *Many) Permutations() int {
+func (l *Many) Permutations() uint {
 	panic("TODO make this precise")
 }
 
-func (l *Many) PermutationsAll() int {
+func (l *Many) PermutationsAll() uint {
 	panic("TODO make this precise")
 }
 

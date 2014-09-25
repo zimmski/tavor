@@ -33,15 +33,15 @@ func (e *FuncExpression) Parse(pars *token.InternalParser, cur int) (int, []erro
 	panic("TODO implement")
 }
 
-func (e *FuncExpression) Permutation(i int) error {
+func (e *FuncExpression) Permutation(i uint) error {
 	panic("TODO Not implemented")
 }
 
-func (e *FuncExpression) Permutations() int {
+func (e *FuncExpression) Permutations() uint {
 	return 1 // TODO this depends on the function
 }
 
-func (e *FuncExpression) PermutationsAll() int {
+func (e *FuncExpression) PermutationsAll() uint {
 	return e.Permutations()
 }
 

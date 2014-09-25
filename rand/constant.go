@@ -22,6 +22,14 @@ func (r *ConstantRand) Intn(n int) int {
 	return int(r.seed)
 }
 
+func (r *ConstantRand) Int63() int64 {
+	return int64(r.Int())
+}
+
+func (r *ConstantRand) Int63n(n int64) int64 {
+	return int64(r.Intn(int(n)))
+}
+
 func (r *ConstantRand) Seed(seed int64) {
 	r.seed = seed
 }

@@ -30,7 +30,7 @@ func (c *Optional) Clone() token.Token {
 }
 
 func (c *Optional) Fuzz(r rand.Rand) {
-	c.permutation(r.Int() % 2)
+	c.permutation(uint(r.Int() % 2))
 }
 
 func (c *Optional) FuzzAll(r rand.Rand) {
@@ -55,11 +55,11 @@ func (c *Optional) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	return cur, nil
 }
 
-func (c *Optional) permutation(i int) {
+func (c *Optional) permutation(i uint) {
 	c.value = i == 0
 }
 
-func (c *Optional) Permutation(i int) error {
+func (c *Optional) Permutation(i uint) error {
 	permutations := c.Permutations()
 
 	if i < 1 || i > permutations {
@@ -73,11 +73,11 @@ func (c *Optional) Permutation(i int) error {
 	return nil
 }
 
-func (c *Optional) Permutations() int {
+func (c *Optional) Permutations() uint {
 	return 2
 }
 
-func (c *Optional) PermutationsAll() int {
+func (c *Optional) PermutationsAll() uint {
 	return 1 + c.token.PermutationsAll()
 }
 
@@ -125,7 +125,7 @@ func (c *Optional) Deactivate()      { c.value = true }
 
 // ReduceToken interface methods
 
-func (c *Optional) Reduce(i int) error {
+func (c *Optional) Reduce(i uint) error {
 	reduces := c.Permutations()
 
 	if reduces == 0 || i < 1 || i > reduces {
@@ -144,7 +144,7 @@ func (c *Optional) Reduce(i int) error {
 	return nil
 }
 
-func (c *Optional) Reduces() int {
+func (c *Optional) Reduces() uint {
 	if c.reducing || !c.value {
 		return 2
 	}

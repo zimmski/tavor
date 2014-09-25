@@ -44,17 +44,17 @@ func (c *BooleanTrue) Parse(pars *token.InternalParser, cur int) (int, []error) 
 	panic("This should never happen")
 }
 
-func (c *BooleanTrue) Permutation(i int) error {
+func (c *BooleanTrue) Permutation(i uint) error {
 	// do nothing
 
 	return nil
 }
 
-func (c *BooleanTrue) Permutations() int {
+func (c *BooleanTrue) Permutations() uint {
 	return 1
 }
 
-func (c *BooleanTrue) PermutationsAll() int {
+func (c *BooleanTrue) PermutationsAll() uint {
 	return 1
 }
 
@@ -128,17 +128,17 @@ func (c *BooleanEqual) Parse(pars *token.InternalParser, cur int) (int, []error)
 	panic("This should never happen")
 }
 
-func (c *BooleanEqual) Permutation(i int) error {
+func (c *BooleanEqual) Permutation(i uint) error {
 	// do nothing
 
 	return nil
 }
 
-func (c *BooleanEqual) Permutations() int {
+func (c *BooleanEqual) Permutations() uint {
 	return 1
 }
 
-func (c *BooleanEqual) PermutationsAll() int {
+func (c *BooleanEqual) PermutationsAll() uint {
 	return 1
 }
 
@@ -231,17 +231,17 @@ func (c *VariableDefined) Parse(pars *token.InternalParser, cur int) (int, []err
 	panic("This should never happen")
 }
 
-func (c *VariableDefined) Permutation(i int) error {
+func (c *VariableDefined) Permutation(i uint) error {
 	// do nothing
 
 	return nil
 }
 
-func (c *VariableDefined) Permutations() int {
+func (c *VariableDefined) Permutations() uint {
 	return 1
 }
 
-func (c *VariableDefined) PermutationsAll() int {
+func (c *VariableDefined) PermutationsAll() uint {
 	return 1
 }
 
@@ -319,17 +319,17 @@ func (c *ExpressionPointer) Parse(pars *token.InternalParser, cur int) (int, []e
 	panic("This should never happen")
 }
 
-func (c *ExpressionPointer) Permutation(i int) error {
+func (c *ExpressionPointer) Permutation(i uint) error {
 	// do nothing
 
 	return nil
 }
 
-func (c *ExpressionPointer) Permutations() int {
+func (c *ExpressionPointer) Permutations() uint {
 	return 1
 }
 
-func (c *ExpressionPointer) PermutationsAll() int {
+func (c *ExpressionPointer) PermutationsAll() uint {
 	return 1
 }
 

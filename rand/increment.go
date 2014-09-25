@@ -28,6 +28,14 @@ func (r *IncrementRand) Intn(n int) int {
 	return int(v)
 }
 
+func (r *IncrementRand) Int63() int64 {
+	return int64(r.Int())
+}
+
+func (r *IncrementRand) Int63n(n int64) int64 {
+	return int64(r.Intn(int(n)))
+}
+
 func (r *IncrementRand) Seed(seed int64) {
 	r.seed = seed
 	r.value = 0

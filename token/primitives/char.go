@@ -108,7 +108,7 @@ func (c *CharacterClass) Clone() token.Token {
 }
 
 func (c *CharacterClass) Fuzz(r rand.Rand) {
-	i := r.Intn(len(c.chars))
+	i := uint(r.Intn(len(c.chars)))
 
 	c.permutation(i)
 }
@@ -133,11 +133,11 @@ func (c *CharacterClass) Parse(pars *token.InternalParser, cur int) (int, []erro
 	return cur + 1, nil
 }
 
-func (c *CharacterClass) permutation(i int) {
+func (c *CharacterClass) permutation(i uint) {
 	c.value = c.chars[i]
 }
 
-func (c *CharacterClass) Permutation(i int) error {
+func (c *CharacterClass) Permutation(i uint) error {
 	permutations := c.Permutations()
 
 	if i < 1 || i > permutations {
@@ -151,11 +151,11 @@ func (c *CharacterClass) Permutation(i int) error {
 	return nil
 }
 
-func (c *CharacterClass) Permutations() int {
-	return len(c.chars)
+func (c *CharacterClass) Permutations() uint {
+	return uint(len(c.chars))
 }
 
-func (c *CharacterClass) PermutationsAll() int {
+func (c *CharacterClass) PermutationsAll() uint {
 	return c.Permutations()
 }
 

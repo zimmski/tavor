@@ -10,8 +10,8 @@ import (
 
 type binarySearchLevel struct {
 	token         token.ReduceToken
-	reduction     int
-	maxReductions int
+	reduction     uint
+	maxReductions uint
 
 	children []binarySearchLevel
 }
@@ -90,7 +90,7 @@ func (s *BinarySearchStrategy) getTree(root token.Token, fromChildren bool) []bi
 	return tree
 }
 
-func (s *BinarySearchStrategy) setReduction(tok token.ReduceToken, reduction int) {
+func (s *BinarySearchStrategy) setReduction(tok token.ReduceToken, reduction uint) {
 	log.Debugf("set (%p)%#v to reduction %d", tok, tok, reduction)
 
 	if err := tok.Reduce(reduction); err != nil {

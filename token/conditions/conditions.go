@@ -35,17 +35,17 @@ func (c *IfPair) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	panic("This should never happen")
 }
 
-func (c *IfPair) Permutation(i int) error {
+func (c *IfPair) Permutation(i uint) error {
 	// do nothing
 
 	return nil
 }
 
-func (c *IfPair) Permutations() int {
+func (c *IfPair) Permutations() uint {
 	return 1
 }
 
-func (c *IfPair) PermutationsAll() int {
+func (c *IfPair) PermutationsAll() uint {
 	return 1
 }
 
@@ -129,7 +129,7 @@ func (c *If) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	panic("TODO implement")
 }
 
-func (c *If) Permutation(i int) error {
+func (c *If) Permutation(i uint) error {
 	permutations := c.Permutations()
 
 	if i < 1 || i > permutations {
@@ -143,11 +143,11 @@ func (c *If) Permutation(i int) error {
 	return nil
 }
 
-func (c *If) Permutations() int {
+func (c *If) Permutations() uint {
 	return 1
 }
 
-func (c *If) PermutationsAll() int {
+func (c *If) PermutationsAll() uint {
 	return c.Permutations()
 }
 

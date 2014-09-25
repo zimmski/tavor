@@ -42,7 +42,7 @@ func (e *AddArithmetic) Parse(pars *token.InternalParser, cur int) (int, []error
 	panic("TODO implement")
 }
 
-func (e *AddArithmetic) Permutation(i int) error {
+func (e *AddArithmetic) Permutation(i uint) error {
 	permutations := e.Permutations()
 
 	if i < 1 || i > permutations {
@@ -55,11 +55,11 @@ func (e *AddArithmetic) Permutation(i int) error {
 	return nil
 }
 
-func (e *AddArithmetic) Permutations() int {
+func (e *AddArithmetic) Permutations() uint {
 	return 1
 }
 
-func (e *AddArithmetic) PermutationsAll() int {
+func (e *AddArithmetic) PermutationsAll() uint {
 	return e.a.PermutationsAll() * e.b.PermutationsAll()
 }
 
@@ -154,7 +154,7 @@ func (e *SubArithmetic) Parse(pars *token.InternalParser, cur int) (int, []error
 	panic("TODO implement")
 }
 
-func (e *SubArithmetic) Permutation(i int) error {
+func (e *SubArithmetic) Permutation(i uint) error {
 	permutations := e.Permutations()
 
 	if i < 1 || i > permutations {
@@ -167,11 +167,11 @@ func (e *SubArithmetic) Permutation(i int) error {
 	return nil
 }
 
-func (e *SubArithmetic) Permutations() int {
+func (e *SubArithmetic) Permutations() uint {
 	return 1
 }
 
-func (e *SubArithmetic) PermutationsAll() int {
+func (e *SubArithmetic) PermutationsAll() uint {
 	return e.a.PermutationsAll() * e.b.PermutationsAll()
 }
 
@@ -266,7 +266,7 @@ func (e *MulArithmetic) Parse(pars *token.InternalParser, cur int) (int, []error
 	panic("TODO implement")
 }
 
-func (e *MulArithmetic) Permutation(i int) error {
+func (e *MulArithmetic) Permutation(i uint) error {
 	permutations := e.Permutations()
 
 	if i < 1 || i > permutations {
@@ -279,11 +279,11 @@ func (e *MulArithmetic) Permutation(i int) error {
 	return nil
 }
 
-func (e *MulArithmetic) Permutations() int {
+func (e *MulArithmetic) Permutations() uint {
 	return 1
 }
 
-func (e *MulArithmetic) PermutationsAll() int {
+func (e *MulArithmetic) PermutationsAll() uint {
 	return e.a.PermutationsAll() * e.b.PermutationsAll()
 }
 
@@ -378,7 +378,7 @@ func (e *DivArithmetic) Parse(pars *token.InternalParser, cur int) (int, []error
 	panic("TODO implement")
 }
 
-func (e *DivArithmetic) Permutation(i int) error {
+func (e *DivArithmetic) Permutation(i uint) error {
 	permutations := e.Permutations()
 
 	if i < 1 || i > permutations {
@@ -391,11 +391,11 @@ func (e *DivArithmetic) Permutation(i int) error {
 	return nil
 }
 
-func (e *DivArithmetic) Permutations() int {
+func (e *DivArithmetic) Permutations() uint {
 	return 1
 }
 
-func (e *DivArithmetic) PermutationsAll() int {
+func (e *DivArithmetic) PermutationsAll() uint {
 	return e.a.PermutationsAll() * e.b.PermutationsAll()
 }
 

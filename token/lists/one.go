@@ -39,7 +39,7 @@ func (l *One) Clone() token.Token {
 func (l *One) Fuzz(r rand.Rand) {
 	i := r.Intn(len(l.tokens))
 
-	l.permutation(i)
+	l.permutation(uint(i))
 }
 
 func (l *One) FuzzAll(r rand.Rand) {
@@ -67,11 +67,11 @@ func (l *One) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	return cur, errs
 }
 
-func (l *One) permutation(i int) {
-	l.value = i
+func (l *One) permutation(i uint) {
+	l.value = int(i)
 }
 
-func (l *One) Permutation(i int) error {
+func (l *One) Permutation(i uint) error {
 	permutations := l.Permutations()
 
 	if i < 1 || i > permutations {
@@ -85,12 +85,12 @@ func (l *One) Permutation(i int) error {
 	return nil
 }
 
-func (l *One) Permutations() int {
-	return len(l.tokens)
+func (l *One) Permutations() uint {
+	return uint(len(l.tokens))
 }
 
-func (l *One) PermutationsAll() int {
-	sum := 0
+func (l *One) PermutationsAll() uint {
+	var sum uint = 0
 
 	for _, tok := range l.tokens {
 		sum += tok.PermutationsAll()

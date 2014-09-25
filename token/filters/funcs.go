@@ -46,15 +46,15 @@ func (f *FuncFilter) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	panic("TODO implement")
 }
 
-func (f *FuncFilter) Permutation(i int) error {
+func (f *FuncFilter) Permutation(i uint) error {
 	panic("TODO implemented")
 }
 
-func (f *FuncFilter) Permutations() int {
+func (f *FuncFilter) Permutations() uint {
 	return 1 // TODO this depends on the function
 }
 
-func (f *FuncFilter) PermutationsAll() int {
+func (f *FuncFilter) PermutationsAll() uint {
 	return f.Permutations()
 }
 

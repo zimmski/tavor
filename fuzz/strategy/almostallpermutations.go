@@ -21,21 +21,21 @@ does not result in 16 permutations but just 7
 
 type almostAllPermutationsLevel struct {
 	token           token.Token
-	permutation     int
-	maxPermutations int
+	permutation     uint
+	maxPermutations uint
 }
 
 type AlmostAllPermutationsStrategy struct {
 	root token.Token
 
-	resetedLookup map[token.Token]int
+	resetedLookup map[token.Token]uint
 }
 
 func NewAlmostAllPermutationsStrategy(tok token.Token) *AlmostAllPermutationsStrategy {
 	s := &AlmostAllPermutationsStrategy{
 		root: tok,
 
-		resetedLookup: make(map[token.Token]int),
+		resetedLookup: make(map[token.Token]uint),
 	}
 
 	return s
@@ -95,7 +95,7 @@ func (s *AlmostAllPermutationsStrategy) Fuzz(r rand.Rand) (chan struct{}, error)
 
 	continueFuzzing := make(chan struct{})
 
-	s.resetedLookup = make(map[token.Token]int)
+	s.resetedLookup = make(map[token.Token]uint)
 
 	go func() {
 		log.Debug("start almost all permutations routine")
@@ -130,7 +130,7 @@ func (s *AlmostAllPermutationsStrategy) Fuzz(r rand.Rand) (chan struct{}, error)
 	return continueFuzzing, nil
 }
 
-func (s *AlmostAllPermutationsStrategy) setTokenPermutation(tok token.Token, permutation int) {
+func (s *AlmostAllPermutationsStrategy) setTokenPermutation(tok token.Token, permutation uint) {
 	if per, ok := s.resetedLookup[tok]; ok && per == permutation {
 		// Permutation already set in this step
 	} else {
@@ -218,7 +218,7 @@ STEP:
 
 		log.Debug("start fuzzing step")
 
-		s.resetedLookup = make(map[token.Token]int)
+		s.resetedLookup = make(map[token.Token]uint)
 	}
 
 	return true

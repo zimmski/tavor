@@ -102,10 +102,10 @@ func (s *Sequence) FuzzAll(r rand.Rand) { panic("unusable token") }
 func (s *Sequence) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	panic("unusable token")
 }
-func (s *Sequence) Permutation(i int) error { panic("unusable token") }
-func (s *Sequence) Permutations() int       { panic("unusable token") }
-func (s *Sequence) PermutationsAll() int    { panic("unusable token") }
-func (s *Sequence) String() string          { panic("unusable token") }
+func (s *Sequence) Permutation(i uint) error { panic("unusable token") }
+func (s *Sequence) Permutations() uint       { panic("unusable token") }
+func (s *Sequence) PermutationsAll() uint    { panic("unusable token") }
+func (s *Sequence) String() string           { panic("unusable token") }
 
 type sequenceItem struct {
 	sequence *Sequence
@@ -131,11 +131,11 @@ func (s *sequenceItem) Parse(pars *token.InternalParser, cur int) (int, []error)
 	panic("TODO implement")
 }
 
-func (s *sequenceItem) permutation(i int) {
+func (s *sequenceItem) permutation(i uint) {
 	s.value = s.sequence.Next()
 }
 
-func (s *sequenceItem) Permutation(i int) error {
+func (s *sequenceItem) Permutation(i uint) error {
 	permutations := s.Permutations()
 
 	if i < 1 || i > permutations {
@@ -149,11 +149,11 @@ func (s *sequenceItem) Permutation(i int) error {
 	return nil
 }
 
-func (s *sequenceItem) Permutations() int {
+func (s *sequenceItem) Permutations() uint {
 	return 1
 }
 
-func (s *sequenceItem) PermutationsAll() int {
+func (s *sequenceItem) PermutationsAll() uint {
 	return s.Permutations()
 }
 
@@ -202,7 +202,7 @@ func (s *SequenceExistingItem) permutation(r rand.Rand) {
 	s.value = s.sequence.existing(r, s.except)
 }
 
-func (s *SequenceExistingItem) Permutation(i int) error {
+func (s *SequenceExistingItem) Permutation(i uint) error {
 	permutations := s.Permutations()
 
 	if i < 1 || i > permutations {
@@ -216,11 +216,11 @@ func (s *SequenceExistingItem) Permutation(i int) error {
 	return nil
 }
 
-func (s *SequenceExistingItem) Permutations() int {
+func (s *SequenceExistingItem) Permutations() uint {
 	return 1
 }
 
-func (s *SequenceExistingItem) PermutationsAll() int {
+func (s *SequenceExistingItem) PermutationsAll() uint {
 	return s.Permutations()
 }
 
@@ -290,11 +290,11 @@ func (s *sequenceResetItem) Parse(pars *token.InternalParser, cur int) (int, []e
 	panic("TODO implement")
 }
 
-func (s *sequenceResetItem) permutation(i int) {
+func (s *sequenceResetItem) permutation(i uint) {
 	s.sequence.Reset()
 }
 
-func (s *sequenceResetItem) Permutation(i int) error {
+func (s *sequenceResetItem) Permutation(i uint) error {
 	permutations := s.Permutations()
 
 	if i < 1 || i > permutations {
@@ -308,11 +308,11 @@ func (s *sequenceResetItem) Permutation(i int) error {
 	return nil
 }
 
-func (s *sequenceResetItem) Permutations() int {
+func (s *sequenceResetItem) Permutations() uint {
 	return 1
 }
 
-func (s *sequenceResetItem) PermutationsAll() int {
+func (s *sequenceResetItem) PermutationsAll() uint {
 	return s.Permutations()
 }
 

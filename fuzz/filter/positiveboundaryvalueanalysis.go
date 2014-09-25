@@ -41,7 +41,7 @@ func (f *PositiveBoundaryValueAnalysisFilter) Apply(tok token.Token) ([]token.To
 
 	// middle
 	if l > 2 {
-		if err := t.Permutation(int(math.Ceil(float64(l) / 2.0))); err != nil {
+		if err := t.Permutation(uint(math.Ceil(float64(l) / 2.0))); err != nil {
 			panic(err)
 		}
 

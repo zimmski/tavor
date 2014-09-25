@@ -56,7 +56,7 @@ func (p *ConstantInt) Parse(pars *token.InternalParser, cur int) (int, []error) 
 	return nextIndex, nil
 }
 
-func (p *ConstantInt) Permutation(i int) error {
+func (p *ConstantInt) Permutation(i uint) error {
 	permutations := p.Permutations()
 
 	if i < 1 || i > permutations {
@@ -70,11 +70,11 @@ func (p *ConstantInt) Permutation(i int) error {
 	return nil
 }
 
-func (p *ConstantInt) Permutations() int {
+func (p *ConstantInt) Permutations() uint {
 	return 1
 }
 
-func (p *ConstantInt) PermutationsAll() int {
+func (p *ConstantInt) PermutationsAll() uint {
 	return p.Permutations()
 }
 
@@ -110,7 +110,7 @@ func (p *RandomInt) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	panic("TODO implement")
 }
 
-func (p *RandomInt) Permutation(i int) error {
+func (p *RandomInt) Permutation(i uint) error {
 	permutations := p.Permutations()
 
 	if i < 1 || i > permutations {
@@ -125,11 +125,11 @@ func (p *RandomInt) Permutation(i int) error {
 	return nil
 }
 
-func (p *RandomInt) Permutations() int {
+func (p *RandomInt) Permutations() uint {
 	return 1 // TODO maybe this should be like RangeInt
 }
 
-func (p *RandomInt) PermutationsAll() int {
+func (p *RandomInt) PermutationsAll() uint {
 	return p.Permutations()
 }
 
@@ -201,9 +201,9 @@ func (p *RangeInt) Clone() token.Token {
 }
 
 func (p *RangeInt) Fuzz(r rand.Rand) {
-	i := r.Intn(p.Permutations())
+	i := r.Int63n(int64(p.Permutations()))
 
-	p.permutation(i)
+	p.permutation(uint(i))
 }
 
 func (p *RangeInt) FuzzAll(r rand.Rand) {
@@ -264,11 +264,11 @@ func (p *RangeInt) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	return i + 1, nil
 }
 
-func (p *RangeInt) permutation(i int) {
-	p.value = p.from + (i * p.step)
+func (p *RangeInt) permutation(i uint) {
+	p.value = p.from + (int(i) * p.step)
 }
 
-func (p *RangeInt) Permutation(i int) error {
+func (p *RangeInt) Permutation(i uint) error {
 	permutations := p.Permutations()
 
 	if i < 1 || i > permutations {
@@ -282,18 +282,18 @@ func (p *RangeInt) Permutation(i int) error {
 	return nil
 }
 
-func (p *RangeInt) Permutations() int {
+func (p *RangeInt) Permutations() uint {
 	// TODO FIXME this
 	perms := (p.to-p.from)/p.step + 1
 
 	if perms < 0 {
 		return math.MaxInt64
 	} else {
-		return perms
+		return uint(perms)
 	}
 }
 
-func (p *RangeInt) PermutationsAll() int {
+func (p *RangeInt) PermutationsAll() uint {
 	return p.Permutations()
 }
 

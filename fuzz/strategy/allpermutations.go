@@ -9,8 +9,8 @@ import (
 
 type allPermutationsLevel struct {
 	token           token.Token
-	permutation     int
-	maxPermutations int
+	permutation     uint
+	maxPermutations uint
 
 	children []allPermutationsLevel
 }
@@ -68,7 +68,7 @@ func (s *AllPermutationsStrategy) getTree(root token.Token, fromChildren bool) [
 	return tree
 }
 
-func (s *AllPermutationsStrategy) setPermutation(tok token.Token, permutation int) {
+func (s *AllPermutationsStrategy) setPermutation(tok token.Token, permutation uint) {
 	log.Debugf("set %#v(%p) to permutation %d", tok, tok, permutation)
 
 	if err := tok.Permutation(permutation); err != nil {

@@ -106,44 +106,44 @@ func TestRepeatReduces(t *testing.T) {
 
 	o := NewRepeat(a, 0, 1)
 	o.Permutation(o.Permutations())
-	Equal(t, o.reduces(), []int{1, 1})
+	Equal(t, o.reduces(), []uint{1, 1})
 	Equal(t, o.Reduces(), 2)
 
 	// cannnot be reduces!
 	o = NewRepeat(a, 1, 1)
 	o.Permutation(o.Permutations())
-	Equal(t, o.reduces(), []int{1})
+	Equal(t, o.reduces(), []uint{1})
 	Equal(t, o.Reduces(), 0)
 
 	o = NewRepeat(a, 0, 2)
 	o.Permutation(o.Permutations())
-	Equal(t, o.reduces(), []int{1, 2, 1})
+	Equal(t, o.reduces(), []uint{1, 2, 1})
 	Equal(t, o.Reduces(), 4)
 
 	o = NewRepeat(a, 1, 2)
 	o.Permutation(o.Permutations())
-	Equal(t, o.reduces(), []int{2, 1})
+	Equal(t, o.reduces(), []uint{2, 1})
 	Equal(t, o.Reduces(), 3)
 
 	o = NewRepeat(a, 0, 3)
 	o.Permutation(o.Permutations())
-	Equal(t, o.reduces(), []int{1, 3, 3, 1})
+	Equal(t, o.reduces(), []uint{1, 3, 3, 1})
 	Equal(t, o.Reduces(), 8)
 
 	o = NewRepeat(a, 1, 3)
 	o.Permutation(o.Permutations())
-	Equal(t, o.reduces(), []int{3, 3, 1})
+	Equal(t, o.reduces(), []uint{3, 3, 1})
 	Equal(t, o.Reduces(), 7)
 
 	o = NewRepeat(a, 2, 3)
 	o.Permutation(o.Permutations())
-	Equal(t, o.reduces(), []int{3, 1})
+	Equal(t, o.reduces(), []uint{3, 1})
 	Equal(t, o.Reduces(), 4)
 
 	// cannnot be reduces!
 	o = NewRepeat(a, 3, 3)
 	o.Permutation(o.Permutations())
-	Equal(t, o.reduces(), []int{1})
+	Equal(t, o.reduces(), []uint{1})
 	Equal(t, o.Reduces(), 0)
 }
 
@@ -352,7 +352,7 @@ func TestRepeatReduce(t *testing.T) {
 			o.value[i] = primitives.NewConstantInt(i)
 		}
 
-		reduces := len(test.expected)
+		reduces := uint(len(test.expected))
 
 		Equal(t, reduces, o.Reduces())
 
@@ -364,7 +364,7 @@ func TestRepeatReduce(t *testing.T) {
 		if reduces != 0 {
 			var actual []string
 
-			for i := 1; i <= reduces; i++ {
+			for i := uint(1); i <= reduces; i++ {
 				err := o.Reduce(i)
 				Nil(t, err)
 

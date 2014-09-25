@@ -94,7 +94,7 @@ func (p *Pointer) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	panic("Pointer token is not allowed during internal parsing")
 }
 
-func (p *Pointer) Permutation(i int) error {
+func (p *Pointer) Permutation(i uint) error {
 	p.cloneOnFirstUse()
 
 	permutations := p.Permutations()
@@ -110,13 +110,13 @@ func (p *Pointer) Permutation(i int) error {
 	return nil
 }
 
-func (p *Pointer) Permutations() int {
+func (p *Pointer) Permutations() uint {
 	p.cloneOnFirstUse()
 
 	return 1
 }
 
-func (p *Pointer) PermutationsAll() int {
+func (p *Pointer) PermutationsAll() uint {
 	p.cloneOnFirstUse()
 
 	if p.token == nil {

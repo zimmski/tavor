@@ -15,9 +15,9 @@ type Token interface {
 	Fuzz(r rand.Rand)
 	FuzzAll(r rand.Rand)
 
-	Permutation(i int) error
-	Permutations() int
-	PermutationsAll() int
+	Permutation(i uint) error
+	Permutations() uint
+	PermutationsAll() uint
 
 	Parse(pars *InternalParser, cur int) (int, []error)
 }
@@ -115,8 +115,8 @@ func (err *ReduceError) Error() string {
 }
 
 type Reduce interface {
-	Reduce(i int) error
-	Reduces() int
+	Reduce(i uint) error
+	Reduces() uint
 }
 
 type ReduceToken interface {

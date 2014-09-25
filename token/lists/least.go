@@ -67,15 +67,15 @@ func (l *Least) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	panic("TODO implement")
 }
 
-func (l *Least) Permutation(i int) error {
+func (l *Least) Permutation(i uint) error {
 	panic("TODO not implemented")
 }
 
-func (l *Least) Permutations() int {
+func (l *Least) Permutations() uint {
 	panic("TODO this might be hard to fit in 64bit")
 }
 
-func (l *Least) PermutationsAll() int {
+func (l *Least) PermutationsAll() uint {
 	panic("TODO this might be hard to fit in 64bit")
 }
 

@@ -61,7 +61,7 @@ func (l *All) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	return cur, nil
 }
 
-func (l *All) Permutation(i int) error {
+func (l *All) Permutation(i uint) error {
 	permutations := l.Permutations()
 
 	if i < 1 || i > permutations {
@@ -75,12 +75,12 @@ func (l *All) Permutation(i int) error {
 	return nil
 }
 
-func (l *All) Permutations() int {
+func (l *All) Permutations() uint {
 	return 1
 }
 
-func (l *All) PermutationsAll() int {
-	sum := 1
+func (l *All) PermutationsAll() uint {
+	var sum uint = 1
 
 	for _, tok := range l.tokens {
 		sum *= tok.PermutationsAll()
