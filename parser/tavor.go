@@ -22,13 +22,6 @@ import (
 	"github.com/zimmski/tavor/token/variables"
 )
 
-/*
-	TODO
-
-	Token names can only consist of letters, digits and "_"
-	Allow correct forward usage of ExistingSequenceItems
-*/
-
 const zeroRune = 0
 
 type tokenUsage struct {
