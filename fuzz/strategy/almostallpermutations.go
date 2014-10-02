@@ -155,7 +155,9 @@ STEP:
 					log.Debugf("max reached redo everything <= %d and increment next", i)
 
 					level[i+1].permutation++
-					s.setTokenPermutation(level[i+1].token, level[i+1].permutation)
+					if level[i+1].permutation <= level[i+1].maxPermutations {
+						s.setTokenPermutation(level[i+1].token, level[i+1].permutation)
+					}
 					s.getLevel(level[i+1].token, true) // set all children to permutation 1
 				}
 
