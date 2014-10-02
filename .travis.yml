@@ -1,25 +1,27 @@
 language: go
 
 install:
-  # Code coverage
-  - go get code.google.com/p/go.tools/cmd/cover
-  - go get github.com/onsi/ginkgo/ginkgo
-  - go get github.com/modocache/gover
-  - go get github.com/mattn/goveralls
-
-  # Tavor
+  # project
   - make dependencies
   - make install
 
-script:
-  # Tavor
-  - $(exit $(gofmt -l . | wc -l))
-  - make test
+  # code coverage
+  - go get code.google.com/p/go.tools/cmd/cover
+  - go get github.com/onsi/ginkgo/ginkgo
+  - go get github.com/modocache/gover
+  - if [ "$TRAVIS_SECURE_ENV_VARS" = "true" ]; then go get github.com/mattn/goveralls; fi
 
-  # Code coverage
-  - $(go env GOPATH | awk 'BEGIN{FS=":"} {print $1}')/bin/ginkgo -r -race -cover
+script:
+  # check if the project's code is ok
+  - $(exit $(gofmt -l . | wc -l))
+
+  # project
+  - go test -v ./...
+
+  # code coverage
+  - $(go env GOPATH | awk 'BEGIN{FS=":"} {print $1}')/bin/ginkgo -r -cover -skipPackage="testdata"
   - $(go env GOPATH | awk 'BEGIN{FS=":"} {print $1}')/bin/gover
-  - $(go env GOPATH | awk 'BEGIN{FS=":"} {print $1}')/bin/goveralls -coverprofile=gover.coverprofile -service=travis-ci -repotoken $COVERALLS_TOKEN
+  - if [ "$TRAVIS_SECURE_ENV_VARS" = "true" ]; then $(go env GOPATH | awk 'BEGIN{FS=":"} {print $1}')/bin/goveralls -coverprofile=gover.coverprofile -service=travis-ci -repotoken $COVERALLS_TOKEN; fi
 
 env:
   # coveralls.io
