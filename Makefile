@@ -22,6 +22,7 @@ install: clean
 lint: install
 	go tool vet -all=true -v=true $(ROOT_DIR)/
 	golint $(ROOT_DIR)/
+	errcheck github.com/zimmski/tavor/...
 test:
 	go test -race ./...
 tools:
@@ -30,3 +31,4 @@ tools:
 	go get -u code.google.com/p/go.tools/cmd/vet
 	go get -u github.com/golang/lint
 	go install github.com/golang/lint/golint
+	go get -u github.com/kisielk/errcheck
