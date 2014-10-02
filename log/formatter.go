@@ -76,7 +76,10 @@ func (f *Formatter) Format(entry *logrus.Entry) ([]byte, error) {
 		}
 	}
 
-	b.WriteByte('\n')
+	if err := b.WriteByte('\n'); err != nil {
+		return nil, err
+	}
+
 	return b.Bytes(), nil
 }
 

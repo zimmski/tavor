@@ -93,7 +93,9 @@ func (l *Many) String() string {
 	var buffer bytes.Buffer
 
 	for _, v := range l.value {
-		buffer.WriteString(l.tokens[v].String())
+		if _, err := buffer.WriteString(l.tokens[v].String()); err != nil {
+			panic(err)
+		}
 	}
 
 	return buffer.String()

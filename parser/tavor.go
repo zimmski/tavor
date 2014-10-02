@@ -203,7 +203,7 @@ OUT:
 					// FIXME if tok is directly given to NewPointer we get a panic: reflect: non-interface type passed to Type.Implements
 					var tokInterface *token.Token
 					ntok := primitives.NewEmptyPointer(tokInterface)
-					ntok.Set(tok)
+					_ = ntok.Set(tok)
 
 					log.Debugf("token %s (%p)%#v is an empty pointer, better just forward to it (%p)%#v", name, tok, tok, ntok, ntok)
 
@@ -476,7 +476,9 @@ OUT:
 			c = p.scan.Scan()
 
 			for c != ']' && c != '\n' && c != scanner.EOF {
-				pattern.WriteString(p.scan.TokenText())
+				if _, err := pattern.WriteString(p.scan.TokenText()); err != nil {
+					panic(err)
+				}
 
 				c = p.scan.Scan()
 			}

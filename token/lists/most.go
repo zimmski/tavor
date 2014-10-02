@@ -106,7 +106,9 @@ func (l *Most) String() string {
 	var buffer bytes.Buffer
 
 	for _, tok := range l.value {
-		buffer.WriteString(tok.String())
+		if _, err := buffer.WriteString(tok.String()); err != nil {
+			panic(err)
+		}
 	}
 
 	return buffer.String()

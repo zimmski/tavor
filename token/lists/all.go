@@ -93,7 +93,9 @@ func (l *All) String() string {
 	var buffer bytes.Buffer
 
 	for _, tok := range l.tokens {
-		buffer.WriteString(tok.String())
+		if _, err := buffer.WriteString(tok.String()); err != nil {
+			panic(err)
+		}
 	}
 
 	return buffer.String()

@@ -203,7 +203,9 @@ func UnrollPointers(root token.Token) token.Token {
 
 				log.Debugf("clone is (%p)%#v", c, c)
 
-				t.Set(c)
+				if err := t.Set(c); err != nil {
+					panic(err)
+				}
 
 				if iTok.parent != nil {
 					log.Debugf("replace in (%p)%#v", iTok.parent.tok, iTok.parent.tok)
@@ -231,7 +233,7 @@ func UnrollPointers(root token.Token) token.Token {
 				// we reached a maximum of repetition, we cut and remove dangling tokens
 				log.Debugf("reached max repeat of %d for (%p)%#v with child (%p)%#v", MaxRepeat, t, t, child, child)
 
-				t.Set(nil)
+				_ = t.Set(nil)
 
 				ta := iTok.tok
 				tt := iTok.parent

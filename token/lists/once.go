@@ -134,7 +134,9 @@ func (l *Once) String() string {
 	var buffer bytes.Buffer
 
 	for i := range l.values {
-		buffer.WriteString(l.tokens[l.values[i]].String())
+		if _, err := buffer.WriteString(l.tokens[l.values[i]].String()); err != nil {
+			panic(err)
+		}
 	}
 
 	return buffer.String()

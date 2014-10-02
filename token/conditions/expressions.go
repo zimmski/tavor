@@ -279,7 +279,7 @@ func (c *ExpressionPointer) Evaluate() bool {
 		for {
 			c := po.InternalGet()
 			c = c.Clone()
-			po.Set(c)
+			_ = po.Set(c)
 
 			po, ok = c.(*primitives.Pointer)
 			if !ok {
@@ -372,7 +372,7 @@ func (c *ExpressionPointer) SetScope(variableScope map[string]token.Token) {
 		for {
 			c := po.InternalGet()
 			c = c.Clone()
-			po.Set(c)
+			_ = po.Set(c)
 
 			po, ok = c.(*primitives.Pointer)
 			if !ok {

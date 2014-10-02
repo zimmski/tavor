@@ -146,7 +146,9 @@ func (s *BinarySearchStrategy) reduce(continueReducing chan struct{}, feedbackRe
 		for {
 			// TODO do a binary search on the 1..maxReductions for this level entry
 			c.reduction++
-			c.token.Reduce(c.reduction)
+			if err := c.token.Reduce(c.reduction); err != nil {
+				panic(err)
+			}
 
 			contin, feedback := s.nextStep(continueReducing, feedbackReducing)
 			if !contin {
@@ -159,7 +161,9 @@ func (s *BinarySearchStrategy) reduce(continueReducing chan struct{}, feedbackRe
 				log.Debug("use initial value, nothing to reduce")
 
 				c.reduction = c.maxReductions
-				c.token.Reduce(c.reduction)
+				if err := c.token.Reduce(c.reduction); err != nil {
+					panic(err)
+				}
 
 				break
 			}

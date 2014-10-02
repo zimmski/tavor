@@ -316,7 +316,11 @@ func folderExists(folder string) error {
 	if err != nil {
 		return fmt.Errorf("%q does not exist", folder)
 	}
-	defer f.Close()
+	defer func() {
+		if err := f.Close(); err != nil {
+			panic(err)
+		}
+	}()
 
 	fi, err := f.Stat()
 	if err != nil {
@@ -366,7 +370,11 @@ func main() {
 	if err != nil {
 		exitError("cannot open tavor file %s: %v", opts.Format.FormatFile, err)
 	}
-	defer file.Close()
+	defer func() {
+		if err := file.Close(); err != nil {
+			panic(err)
+		}
+	}()
 
 	doc, err := parser.ParseTavor(file)
 	if err != nil {
@@ -487,7 +495,11 @@ func main() {
 						exitError("Could not write stdin to exec: %s", err)
 					}
 
-					stdin.Close()
+					defer func() {
+						if err := stdin.Close(); err != nil {
+							panic(err)
+						}
+					}()
 				}
 
 				err = execCommand.Wait()
@@ -599,13 +611,21 @@ func main() {
 			if err != nil {
 				exitError("Could not get stdin pipe: %s", err)
 			}
-			defer stdin.Close()
+			defer func() {
+				if err := stdin.Close(); err != nil {
+					panic(err)
+				}
+			}()
 
 			stdout, err := execCommand.StdoutPipe()
 			if err != nil {
 				exitError("Could not get stdout pipe: %s", err)
 			}
-			defer stdout.Close()
+			defer func() {
+				if err := stdout.Close(); err != nil {
+					panic(err)
+				}
+			}()
 
 			execCommand.Stderr = os.Stderr
 
@@ -659,8 +679,12 @@ func main() {
 				exitError("Could not write stdin to script: %s", err)
 			}
 
-			stdin.Close()
-			stdout.Close()
+			if err := stdin.Close(); err != nil {
+				panic(err)
+			}
+			if err := stdout.Close(); err != nil {
+				panic(err)
+			}
 
 			err = execCommand.Wait()
 
@@ -722,7 +746,11 @@ func main() {
 		if err != nil {
 			exitError("cannot open input file %s: %v", inputFile, err)
 		}
-		defer input.Close()
+		defer func() {
+			if err := input.Close(); err != nil {
+				panic(err)
+			}
+		}()
 
 		errs := parser.ParseInternal(doc, input)
 
@@ -815,7 +843,9 @@ func main() {
 						exitError("Could not write stdin to exec: %s", err)
 					}
 
-					stdin.Close()
+					if err := stdin.Close(); err != nil {
+						panic(err)
+					}
 				}
 
 				err = execCommand.Wait()
@@ -900,7 +930,9 @@ func main() {
 							exitError("Could not write stdin to exec: %s", err)
 						}
 
-						stdin.Close()
+						if err := stdin.Close(); err != nil {
+							panic(err)
+						}
 					}
 
 					err = execCommand.Wait()
@@ -1006,13 +1038,21 @@ func main() {
 				if err != nil {
 					exitError("Could not get stdin pipe: %s", err)
 				}
-				defer stdin.Close()
+				defer func() {
+					if err := stdin.Close(); err != nil {
+						panic(err)
+					}
+				}()
 
 				stdout, err := execCommand.StdoutPipe()
 				if err != nil {
 					exitError("Could not get stdout pipe: %s", err)
 				}
-				defer stdout.Close()
+				defer func() {
+					if err := stdout.Close(); err != nil {
+						panic(err)
+					}
+				}()
 
 				execCommand.Stderr = os.Stderr
 
@@ -1081,8 +1121,12 @@ func main() {
 					contin <- i
 				}
 
-				stdin.Close()
-				stdout.Close()
+				if err := stdin.Close(); err != nil {
+					panic(err)
+				}
+				if err := stdout.Close(); err != nil {
+					panic(err)
+				}
 
 				err = execCommand.Wait()
 

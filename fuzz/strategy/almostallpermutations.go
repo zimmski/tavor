@@ -134,7 +134,9 @@ func (s *AlmostAllPermutationsStrategy) setTokenPermutation(tok token.Token, per
 	if per, ok := s.resetedLookup[tok]; ok && per == permutation {
 		// Permutation already set in this step
 	} else {
-		tok.Permutation(permutation)
+		if err := tok.Permutation(permutation); err != nil {
+			panic(err)
+		}
 
 		s.resetedLookup[tok] = permutation
 	}
