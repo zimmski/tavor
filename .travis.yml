@@ -7,6 +7,9 @@ install:
 
   # checks
   - go get github.com/kisielk/errcheck
+  - go get code.google.com/p/go.tools/cmd/vet
+  - go get github.com/golang/lint
+  - go install github.com/golang/lint/golint
 
   # code coverage
   - go get code.google.com/p/go.tools/cmd/cover
@@ -18,6 +21,8 @@ script:
   # check if the project's code is ok
   - $(exit $(gofmt -l . | wc -l))
   - $(go env GOPATH | awk 'BEGIN{FS=":"} {print $1}')/bin/errcheck github.com/zimmski/tavor/...
+  # - go tool vet -all=true -v=true .
+  - $(go env GOPATH | awk 'BEGIN{FS=":"} {print $1}')/bin/golint ./...
 
   # project
   - go test -v ./...
