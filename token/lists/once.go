@@ -121,7 +121,7 @@ func (l *Once) Permutations() uint {
 }
 
 func (l *Once) PermutationsAll() uint {
-	var sum uint = l.Permutations()
+	sum := l.Permutations()
 
 	for _, tok := range l.tokens {
 		sum *= tok.PermutationsAll()

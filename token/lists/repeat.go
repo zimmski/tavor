@@ -157,7 +157,7 @@ func (l *Repeat) Permutations() uint {
 }
 
 func (l *Repeat) PermutationsAll() uint {
-	var sum uint = 0
+	var sum uint
 	from := l.From()
 
 	if l.From() == 0 {
@@ -332,7 +332,7 @@ func combinations(n int, k int) <-chan []int {
 }
 
 func (l *Repeat) Reduce(i uint) error {
-	var count uint = 0
+	var count uint
 	reduces := l.reduces()
 	for _, le := range reduces {
 		count += uint(le)
@@ -435,7 +435,7 @@ func (l *Repeat) reduces() []uint {
 
 func (l *Repeat) Reduces() uint {
 	if l.reducing || int(l.From()) < len(l.value) {
-		var count uint = 0
+		var count uint
 		r := l.reduces()
 		for _, le := range r {
 			count += le

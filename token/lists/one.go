@@ -90,7 +90,7 @@ func (l *One) Permutations() uint {
 }
 
 func (l *One) PermutationsAll() uint {
-	var sum uint = 0
+	var sum uint
 
 	for _, tok := range l.tokens {
 		sum += tok.PermutationsAll()

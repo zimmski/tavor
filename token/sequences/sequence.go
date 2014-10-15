@@ -67,8 +67,8 @@ func (s *Sequence) ExistingItem(except token.Token) *SequenceExistingItem {
 	}
 }
 
-func (s *Sequence) Item() *sequenceItem {
-	return &sequenceItem{
+func (s *Sequence) Item() *SequenceItem {
+	return &SequenceItem{
 		sequence: s,
 		value:    s.Next(),
 	}
@@ -88,8 +88,8 @@ func (s *Sequence) Reset() {
 	s.value = s.start
 }
 
-func (s *Sequence) ResetItem() *sequenceResetItem {
-	return &sequenceResetItem{
+func (s *Sequence) ResetItem() *SequenceResetItem {
+	return &SequenceResetItem{
 		sequence: s,
 	}
 }
@@ -107,35 +107,35 @@ func (s *Sequence) Permutations() uint       { panic("unusable token") }
 func (s *Sequence) PermutationsAll() uint    { panic("unusable token") }
 func (s *Sequence) String() string           { panic("unusable token") }
 
-type sequenceItem struct {
+type SequenceItem struct {
 	sequence *Sequence
 	value    int
 }
 
-func (s *sequenceItem) Clone() token.Token {
-	return &sequenceItem{
+func (s *SequenceItem) Clone() token.Token {
+	return &SequenceItem{
 		sequence: s.sequence,
 		value:    s.value,
 	}
 }
 
-func (s *sequenceItem) Fuzz(r rand.Rand) {
+func (s *SequenceItem) Fuzz(r rand.Rand) {
 	s.permutation(0)
 }
 
-func (s *sequenceItem) FuzzAll(r rand.Rand) {
+func (s *SequenceItem) FuzzAll(r rand.Rand) {
 	s.Fuzz(r)
 }
 
-func (s *sequenceItem) Parse(pars *token.InternalParser, cur int) (int, []error) {
+func (s *SequenceItem) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	panic("TODO implement")
 }
 
-func (s *sequenceItem) permutation(i uint) {
+func (s *SequenceItem) permutation(i uint) {
 	s.value = s.sequence.Next()
 }
 
-func (s *sequenceItem) Permutation(i uint) error {
+func (s *SequenceItem) Permutation(i uint) error {
 	permutations := s.Permutations()
 
 	if i < 1 || i > permutations {
@@ -149,21 +149,21 @@ func (s *sequenceItem) Permutation(i uint) error {
 	return nil
 }
 
-func (s *sequenceItem) Permutations() uint {
+func (s *SequenceItem) Permutations() uint {
 	return 1
 }
 
-func (s *sequenceItem) PermutationsAll() uint {
+func (s *SequenceItem) PermutationsAll() uint {
 	return s.Permutations()
 }
 
-func (s *sequenceItem) String() string {
+func (s *SequenceItem) String() string {
 	return strconv.Itoa(s.value)
 }
 
 // ResetToken interface methods
 
-func (s *sequenceItem) Reset() {
+func (s *SequenceItem) Reset() {
 	s.permutation(0)
 }
 
@@ -268,33 +268,33 @@ func (s *SequenceExistingItem) SetScope(variableScope map[string]token.Token) {
 	}
 }
 
-type sequenceResetItem struct {
+type SequenceResetItem struct {
 	sequence *Sequence
 }
 
-func (s *sequenceResetItem) Clone() token.Token {
-	return &sequenceResetItem{
+func (s *SequenceResetItem) Clone() token.Token {
+	return &SequenceResetItem{
 		sequence: s.sequence,
 	}
 }
 
-func (s *sequenceResetItem) Fuzz(r rand.Rand) {
+func (s *SequenceResetItem) Fuzz(r rand.Rand) {
 	s.permutation(0)
 }
 
-func (s *sequenceResetItem) FuzzAll(r rand.Rand) {
+func (s *SequenceResetItem) FuzzAll(r rand.Rand) {
 	s.Fuzz(r)
 }
 
-func (s *sequenceResetItem) Parse(pars *token.InternalParser, cur int) (int, []error) {
+func (s *SequenceResetItem) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	panic("TODO implement")
 }
 
-func (s *sequenceResetItem) permutation(i uint) {
+func (s *SequenceResetItem) permutation(i uint) {
 	s.sequence.Reset()
 }
 
-func (s *sequenceResetItem) Permutation(i uint) error {
+func (s *SequenceResetItem) Permutation(i uint) error {
 	permutations := s.Permutations()
 
 	if i < 1 || i > permutations {
@@ -308,20 +308,20 @@ func (s *sequenceResetItem) Permutation(i uint) error {
 	return nil
 }
 
-func (s *sequenceResetItem) Permutations() uint {
+func (s *SequenceResetItem) Permutations() uint {
 	return 1
 }
 
-func (s *sequenceResetItem) PermutationsAll() uint {
+func (s *SequenceResetItem) PermutationsAll() uint {
 	return s.Permutations()
 }
 
-func (s *sequenceResetItem) String() string {
+func (s *SequenceResetItem) String() string {
 	return ""
 }
 
 // ResetToken interface methods
 
-func (s *sequenceResetItem) Reset() {
+func (s *SequenceResetItem) Reset() {
 	s.permutation(0)
 }

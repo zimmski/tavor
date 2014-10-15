@@ -288,9 +288,9 @@ func (p *RangeInt) Permutations() uint {
 
 	if perms < 0 {
 		return math.MaxInt64
-	} else {
-		return uint(perms)
 	}
+
+	return uint(perms)
 }
 
 func (p *RangeInt) PermutationsAll() uint {
