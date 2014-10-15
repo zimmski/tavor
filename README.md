@@ -391,11 +391,11 @@ You can find all precompiled binaries on the [release page](https://github.com/z
 
 ### <a name="bash-completion"></a>Bash Completion
 
-If you like Bash Completion for Tavor make sure that you have Bash Completion installed and then copy the [bash completion Tavor script](https://raw.githubusercontent.com/zimmski/tavor/master/bin/tavor-bash_completion.sh) into your Bash Completion folder.
+If you like Bash Completion for Tavor make sure that you have Bash Completion installed and then copy the [bash completion Tavor script](https://raw.githubusercontent.com/zimmski/tavor/master/cmd/tavor-bash_completion.sh) into your Bash Completion folder.
 
 ```bash
 mkdir -p $HOME/.bash_completion
-wget -P $HOME/.bash_completion https://raw.githubusercontent.com/zimmski/tavor/master/bin/tavor-bash_completion.sh
+wget -P $HOME/.bash_completion https://raw.githubusercontent.com/zimmski/tavor/master/cmd/tavor-bash_completion.sh
 . ~/.bashrc
 ```
 
