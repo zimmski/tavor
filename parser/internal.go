@@ -9,6 +9,8 @@ import (
 	"github.com/zimmski/tavor/token"
 )
 
+// ParseInternal reads and parses an input modelled after the given token graph.
+// The errors return argument is not nil if an error is encountered during reading or parsing the input e.g. if the input does not match the given token graph.
 func ParseInternal(root token.Token, src io.Reader) []error {
 	log.Debug("start internal parsing")
 

@@ -1467,6 +1467,8 @@ func (p *tavorParser) parseSpecialTokenDefinition() (rune, error) {
 	return c, nil
 }
 
+// ParseTavor reads and parses a Tavor formatted input and returns its token graph representation beginning with the START token.
+// The error return argument is not nil if an error is encountered during reading or parsing the file e.g. a syntax or semantic error.
 func ParseTavor(src io.Reader) (token.Token, error) {
 	p := &tavorParser{
 		earlyUse:    make(map[string][]tokenUsage),

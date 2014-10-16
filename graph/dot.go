@@ -214,6 +214,7 @@ func (g *dotGraph) addDot(tok token.Token) (start, next map[token.Token]bool) {
 	return
 }
 
+// WriteDot writes the token graph as DOT format to the writer
 func WriteDot(root token.Token, dst io.Writer) {
 	g := &dotGraph{
 		vertices: make(map[token.Token]dotVertice),

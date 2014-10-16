@@ -24,15 +24,13 @@ const (
 	blue    = 34
 )
 
-type Formatter struct{}
+// TextFormatter implements a text formatter for logrus
+// Only the log level and the log message are printed out for every log entry.
+type TextFormatter struct{}
 
-type TextFormatter struct {
-	// Set to true to bypass checking for a TTY before outputting colors.
-	ForceColors   bool
-	DisableColors bool
-}
-
-func (f *Formatter) Format(entry *logrus.Entry) ([]byte, error) {
+// Format takes a logrus log entry and transforms it to its text format.
+// The error return argument is not nil if the internal buffer is unwritable.
+func (f *TextFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 	b := &bytes.Buffer{}
 
 	prefixFieldClashes(entry)

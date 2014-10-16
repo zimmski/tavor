@@ -7,7 +7,7 @@ import (
 )
 
 func TestRandTest(t *testing.T) {
-	o := NewIncrementRand(0)
+	o := NewIncrementRand(1)
 
 	Equal(t, 0, o.Int())
 	Equal(t, 0, o.Int())
