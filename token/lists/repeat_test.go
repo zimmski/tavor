@@ -41,7 +41,7 @@ func TestRepeat(t *testing.T) {
 
 	Equal(t, o.Permutation(7).(*token.PermutationError).Type, token.PermutationErrorIndexOutOfBound)
 
-	r := test.NewRandTest(1)
+	r := test.NewRandTest(2)
 	o.FuzzAll(r)
 	Equal(t, "aaaaaaa", o.String())
 	Equal(t, 7, o.Len())
@@ -92,7 +92,7 @@ func TestRepeat(t *testing.T) {
 
 	Equal(t, o.Permutation(10).(*token.PermutationError).Type, token.PermutationErrorIndexOutOfBound)
 
-	r.Seed(2)
+	r.Seed(3)
 	o.FuzzAll(r)
 	Equal(t, "12312", o.String())
 	Equal(t, 5, o.Len())

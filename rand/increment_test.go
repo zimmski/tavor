@@ -9,15 +9,15 @@ import (
 func TestRandTest(t *testing.T) {
 	o := NewIncrementRand(1)
 
-	Equal(t, 0, o.Int())
-	Equal(t, 0, o.Int())
-	Equal(t, 0, o.Int())
+	Equal(t, 1, o.Int())
+	Equal(t, 2, o.Int())
+	Equal(t, 3, o.Int())
 
 	o.Seed(2)
-	Equal(t, 0, o.Int())
-	Equal(t, 1, o.Int())
-	Equal(t, 0, o.Int())
-	Equal(t, 1, o.Int())
+	Equal(t, 2, o.Int())
+	Equal(t, 3, o.Int())
+	Equal(t, 4, o.Int())
+	Equal(t, 5, o.Int())
 
 	o.Seed(0)
 	Equal(t, 0, o.Intn(2))

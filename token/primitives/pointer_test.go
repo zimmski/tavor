@@ -27,7 +27,7 @@ func TestPointer(t *testing.T) {
 	Equal(t, 1, o.Permutations())
 	Equal(t, 7, o.PermutationsAll())
 
-	r := test.NewRandTest(0)
+	r := test.NewRandTest(1)
 	o.FuzzAll(r)
 	// this uses a clone
 	Equal(t, "5", o.String())

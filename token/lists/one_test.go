@@ -40,7 +40,7 @@ func TestOne(t *testing.T) {
 
 	Equal(t, o.Permutation(3).(*token.PermutationError).Type, token.PermutationErrorIndexOutOfBound)
 
-	r := test.NewRandTest(0)
+	r := test.NewRandTest(1)
 	o.FuzzAll(r)
 	Equal(t, "b", o.String())
 	Equal(t, 1, o.Len())

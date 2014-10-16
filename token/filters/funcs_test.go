@@ -46,7 +46,7 @@ func TestFuncExpression(t *testing.T) {
 	)
 	Equal(t, "1", o.String())
 
-	r := test.NewRandTest(0)
+	r := test.NewRandTest(1)
 	o.FuzzAll(r)
 	Equal(t, "", o.String())
 

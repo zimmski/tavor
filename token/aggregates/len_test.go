@@ -24,7 +24,7 @@ func TestConstantInt(t *testing.T) {
 	o := NewLen(list)
 	Equal(t, "1", o.String())
 
-	r := test.NewRandTest(0)
+	r := test.NewRandTest(1)
 	list.Fuzz(r)
 	Equal(t, "11", list.String())
 	Equal(t, "2", o.String())

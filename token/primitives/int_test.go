@@ -40,7 +40,7 @@ func TestRandomInt(t *testing.T) {
 	o := NewRandomInt()
 	Equal(t, "0", o.String())
 
-	r := test.NewRandTest(0)
+	r := test.NewRandTest(1)
 	o.FuzzAll(r)
 	Equal(t, "1", o.String())
 
@@ -59,7 +59,7 @@ func TestRangeInt(t *testing.T) {
 	o := NewRangeInt(2, 4)
 	Equal(t, "2", o.String())
 
-	r := test.NewRandTest(0)
+	r := test.NewRandTest(1)
 	o.FuzzAll(r)
 	Equal(t, "3", o.String())
 	o.FuzzAll(r)
@@ -83,7 +83,7 @@ func TestRangeInt(t *testing.T) {
 	o = NewRangeIntWithStep(2, 6, 2)
 	Equal(t, "2", o.String())
 
-	r.Seed(0)
+	r.Seed(1)
 	o.FuzzAll(r)
 	Equal(t, "4", o.String())
 	o.FuzzAll(r)

@@ -54,6 +54,7 @@ func TestAll(t *testing.T) {
 	Nil(t, o.Permutation(1))
 	Equal(t, "10abc1", o.String())
 
+	r.Seed(1)
 	o.FuzzAll(r)
 	Equal(t, "10abc2", o.String())
 	Equal(t, 3, o.Len())

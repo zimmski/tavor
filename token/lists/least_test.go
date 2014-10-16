@@ -30,7 +30,7 @@ func TestLeast(t *testing.T) {
 	Equal(t, err.(*ListError).Type, ListErrorOutOfBound)
 	Nil(t, i)
 
-	r := test.NewRandTest(1)
+	r := test.NewRandTest(2)
 	o.FuzzAll(r)
 	Equal(t, "aaa", o.String())
 	Equal(t, 3, o.Len())
@@ -40,12 +40,12 @@ func TestLeast(t *testing.T) {
 	Equal(t, "11", o.String())
 	Equal(t, 2, o.Len())
 
-	r.Seed(2)
+	r.Seed(3)
 	o.Fuzz(r)
 	Equal(t, "11111", o.String())
 	Equal(t, 5, o.Len())
 
-	r.Seed(2)
+	r.Seed(3)
 	o.FuzzAll(r)
 	Equal(t, "12312", o.String())
 	Equal(t, 5, o.Len())

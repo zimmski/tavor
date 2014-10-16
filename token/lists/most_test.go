@@ -41,7 +41,7 @@ func TestMost(t *testing.T) {
 	Equal(t, err.(*ListError).Type, ListErrorOutOfBound)
 	Nil(t, i)
 
-	r := test.NewRandTest(1)
+	r := test.NewRandTest(2)
 	o.FuzzAll(r)
 	Equal(t, "aa", o.String())
 	Equal(t, 2, o.Len())
@@ -74,7 +74,7 @@ func TestMost(t *testing.T) {
 
 	Equal(t, o.Permutation(6).(*token.PermutationError).Type, token.PermutationErrorIndexOutOfBound)
 
-	r.Seed(2)
+	r.Seed(3)
 	o.FuzzAll(r)
 	Equal(t, "123", o.String())
 	Equal(t, 3, o.Len())

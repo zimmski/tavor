@@ -24,7 +24,7 @@ func TestMany(t *testing.T) {
 	Equal(t, "a", o.String())
 	Equal(t, 1, o.Len())
 
-	r := test.NewRandTest(0)
+	r := test.NewRandTest(1)
 	o.FuzzAll(r)
 	Equal(t, "ab", o.String())
 	Equal(t, 2, o.Len())

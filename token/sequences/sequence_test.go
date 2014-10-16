@@ -61,7 +61,7 @@ func TestExistingSequenceItem(t *testing.T) {
 	o = s.ExistingItem(nil)
 	Equal(t, "10", o.String())
 
-	r := test.NewRandTest(0)
+	r := test.NewRandTest(1)
 	o.FuzzAll(r)
 	Equal(t, "12", o.String())
 

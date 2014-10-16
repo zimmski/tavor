@@ -19,7 +19,7 @@ func TestCharacterClass(t *testing.T) {
 	o := NewCharacterClass("abc")
 	Equal(t, "a", o.String())
 
-	r := test.NewRandTest(-1)
+	r := test.NewRandTest(0)
 	o.FuzzAll(r)
 	Equal(t, "a", o.String())
 

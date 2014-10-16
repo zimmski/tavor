@@ -11,13 +11,13 @@ type IncrementRand struct {
 func NewIncrementRand(seed int64) *IncrementRand {
 	return &IncrementRand{
 		seed:  seed,
-		value: 0,
+		value: seed,
 	}
 }
 
 // Int returns a non-negative pseudo-random int
 func (r *IncrementRand) Int() int {
-	return r.Intn(int(r.seed))
+	return r.Intn(int(r.value + 1))
 }
 
 // Intn returns, as an int, a non-negative pseudo-random number in [0,n). It panics if n <= 0.
@@ -54,5 +54,5 @@ func (r *IncrementRand) Int63n(n int64) int64 {
 // Seed uses the provided seed value to initialize the generator to a deterministic state.
 func (r *IncrementRand) Seed(seed int64) {
 	r.seed = seed
-	r.value = 0
+	r.value = seed
 }

@@ -32,7 +32,7 @@ func TestRandomStrategy(t *testing.T) {
 	NotNil(t, o)
 	Nil(t, err)
 
-	r := test.NewRandTest(0)
+	r := test.NewRandTest(1)
 
 	ch, err := o.Fuzz(r)
 	Nil(t, err)
@@ -50,7 +50,7 @@ func TestRandomStrategy(t *testing.T) {
 	False(t, ok)
 
 	// rerun
-	r.Seed(1)
+	r.Seed(0)
 
 	ch, err = o.Fuzz(r)
 	Nil(t, err)
@@ -65,7 +65,7 @@ func TestRandomStrategy(t *testing.T) {
 	close(ch)
 
 	// run with range
-	r.Seed(0)
+	r.Seed(1)
 
 	ch, err = o.Fuzz(r)
 	Nil(t, err)
@@ -79,7 +79,7 @@ func TestRandomStrategy(t *testing.T) {
 }
 
 func TestRandomStrategyCases(t *testing.T) {
-	r := test.NewRandTest(0)
+	r := test.NewRandTest(1)
 
 	{
 		root, err := parser.ParseTavor(strings.NewReader(`

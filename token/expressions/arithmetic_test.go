@@ -37,7 +37,7 @@ func TestAddArithmetic(t *testing.T) {
 	Equal(t, err.(*lists.ListError).Type, lists.ListErrorOutOfBound)
 	Nil(t, i)
 
-	r := test.NewRandTest(1)
+	r := test.NewRandTest(2)
 	o.FuzzAll(r)
 	Equal(t, "5", o.String())
 
@@ -65,7 +65,7 @@ func TestSubArithmetic(t *testing.T) {
 	Equal(t, err.(*lists.ListError).Type, lists.ListErrorOutOfBound)
 	Nil(t, i)
 
-	r := test.NewRandTest(1)
+	r := test.NewRandTest(2)
 	o.FuzzAll(r)
 	Equal(t, "1", o.String())
 
@@ -93,7 +93,7 @@ func TestMulArithmetic(t *testing.T) {
 	Equal(t, err.(*lists.ListError).Type, lists.ListErrorOutOfBound)
 	Nil(t, i)
 
-	r := test.NewRandTest(1)
+	r := test.NewRandTest(2)
 	o.FuzzAll(r)
 	Equal(t, "6", o.String())
 

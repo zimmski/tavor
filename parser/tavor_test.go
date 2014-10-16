@@ -538,7 +538,7 @@ func TestTavorParserTokenAttributes(t *testing.T) {
 			aggregates.NewLen(list),
 		))
 
-		r := test.NewRandTest(1)
+		r := test.NewRandTest(2)
 		tok.FuzzAll(r)
 		Equal(t, "12->2", tok.String())
 	}
