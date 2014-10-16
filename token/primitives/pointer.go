@@ -58,6 +58,7 @@ func (p *Pointer) Set(o token.Token) error {
 
 // Token interface methods
 
+// Clone returns a copy of the token and all its children
 func (p *Pointer) Clone() token.Token {
 	return &Pointer{
 		token:  p.token, // do not clone further

@@ -17,6 +17,7 @@ func NewConstantString(value string) *ConstantString {
 	}
 }
 
+// Clone returns a copy of the token and all its children
 func (p *ConstantString) Clone() token.Token {
 	return &ConstantString{
 		value: p.value,

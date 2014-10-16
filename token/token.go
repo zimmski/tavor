@@ -7,9 +7,11 @@ import (
 	"github.com/zimmski/tavor/rand"
 )
 
+// Token defines a general token
 type Token interface {
 	fmt.Stringer
 
+	// Clone returns a copy of the token and all its children
 	Clone() Token
 
 	Fuzz(r rand.Rand)
@@ -22,6 +24,7 @@ type Token interface {
 	Parse(pars *InternalParser, cur int) (int, []error)
 }
 
+// List defines a general list token
 type List interface {
 	Token
 
@@ -34,6 +37,7 @@ type List interface {
 	InternalReplace(oldToken, newToken Token)
 }
 
+// Forward defines a forward token which can point to another token
 type Forward interface {
 	Get() Token
 
@@ -42,37 +46,97 @@ type Forward interface {
 	InternalReplace(oldToken, newToken Token)
 }
 
+// ForwardToken combines the Token and Forward interface
 type ForwardToken interface {
 	Token
 	Forward
 }
 
+// Index defines an index token which provides the index in its parent token
 type Index interface {
 	Index() int
 }
 
+// IndexToken combines the Token and Index interface
 type IndexToken interface {
 	Token
 	Index
 }
 
+// Optional defines an optional token which can be (de)activated
 type Optional interface {
 	IsOptional() bool
 	Activate()
 	Deactivate()
 }
 
+// OptionalToken combines the Token and Optional interface
 type OptionalToken interface {
 	Token
 	Optional
 }
 
+// Reset defines a reset token which can reset its (internal) state
+type Reset interface {
+	// Reset resets the (internal) state of this token and its dependences
+	Reset()
+}
+
+// ResetToken combines the Token and Index interface
+type ResetToken interface {
+	Token
+	Reset
+}
+
+// Reduce defines a reduce token which provides methods to reduce itself and its children
+type Reduce interface {
+	Reduce(i uint) error
+	Reduces() uint
+}
+
+// ReduceToken combines the Token and Reduce interface
+type ReduceToken interface {
+	Token
+	Reduce
+}
+
+// Scope defines a scope token which holds a scope
+type Scope interface {
+	SetScope(variableScope map[string]Token)
+}
+
+// ScopeToken combines the Token and Scope interface
+type ScopeToken interface {
+	Token
+	Scope
+}
+
+// Variable defines a variable token which holds a variable
+type Variable interface {
+	Forward
+	Index
+	Scope
+
+	Name() string
+}
+
+// VariableToken combines the Token and Variable interface
+type VariableToken interface {
+	Token
+	Variable
+}
+
+////////////////////////
+
+// PermutationErrorType the permutation error type
 type PermutationErrorType int
 
 const (
+	// PermutationErrorIndexOutOfBound an index not in the bound of available permutations was used.
 	PermutationErrorIndexOutOfBound PermutationErrorType = iota
 )
 
+// PermutationError holds a permutation error
 type PermutationError struct {
 	Type PermutationErrorType
 }
@@ -86,21 +150,15 @@ func (err *PermutationError) Error() string {
 	}
 }
 
-type Reset interface {
-	Reset()
-}
-
-type ResetToken interface {
-	Token
-	Reset
-}
-
+// ReduceErrorType the reduce error type
 type ReduceErrorType int
 
 const (
+	// ReduceErrorIndexOutOfBound an index not in the bound of available reductions was used.
 	ReduceErrorIndexOutOfBound ReduceErrorType = iota
 )
 
+// ReduceError holds a reduce error
 type ReduceError struct {
 	Type ReduceErrorType
 }
@@ -114,38 +172,9 @@ func (err *ReduceError) Error() string {
 	}
 }
 
-type Reduce interface {
-	Reduce(i uint) error
-	Reduces() uint
-}
+////////////////////////
 
-type ReduceToken interface {
-	Token
-	Reduce
-}
-
-type Scope interface {
-	SetScope(variableScope map[string]Token)
-}
-
-type ScopeToken interface {
-	Token
-	Scope
-}
-
-type Variable interface {
-	Forward
-	Index
-	Scope
-
-	Name() string
-}
-
-type VariableToken interface {
-	Token
-	Variable
-}
-
+// InternalParser holds the data information for an internal parser
 type InternalParser struct { // TODO move this some place else
 	Data    string
 	DataLen int
@@ -154,41 +183,72 @@ type InternalParser struct { // TODO move this some place else
 ////////////////////////
 // was in parser.go but "import cycle not allowed" forced me to do this
 
+// ParserErrorType the parser error type
 type ParserErrorType int
 
 const (
+	// ParseErrorNoStart no Start token was defined
 	ParseErrorNoStart ParserErrorType = iota
+	// ParseErrorNewLineNeeded a new line is needed
 	ParseErrorNewLineNeeded
+	// ParseErrorEarlyNewLine an unexpected new line was encountered
 	ParseErrorEarlyNewLine
+	// ParseErrorEmptyExpressionIsInvalid empty expressions are not allowed
 	ParseErrorEmptyExpressionIsInvalid
+	// ParseErrorEmptyTokenDefinition empty token definitions are not allowed
 	ParseErrorEmptyTokenDefinition
+	// ParseErrorInvalidArgumentValue invalid argument value
 	ParseErrorInvalidArgumentValue
+	// ParseErrorInvalidTokenName invalid token name
 	ParseErrorInvalidTokenName
+	// ParseErrorInvalidTokenType invalid token type
 	ParseErrorInvalidTokenType
+	// ParseErrorUnusedToken token is unused
 	ParseErrorUnusedToken
+	// ParseErrorMissingSpecialTokenArgument a special token argument is missing
 	ParseErrorMissingSpecialTokenArgument
+	// ParseErrorNonTerminatedString string is not properly terminated
 	ParseErrorNonTerminatedString
+	// ParseErrorNoTokenForVariable variable is not assigned to a token
 	ParseErrorNoTokenForVariable
+	// ParseErrorTokenAlreadyDefined token name is already in use
 	ParseErrorTokenAlreadyDefined
+	// ParseErrorTokenNotDefined there is no token with this name
 	ParseErrorTokenNotDefined
+	// ParseErrorTypeNotDefinedForSpecialToken type is not defined for this special token
+	ParseErrorTypeNotDefinedForSpecialToken
+	// ParseErrorExpectRune the given rune would be expected
 	ParseErrorExpectRune
+	// ParseErrorExpectOperator the given operator would be expected
 	ParseErrorExpectOperator
+	// ParseErrorUnknownBooleanOperator the boolean operator is unknown
 	ParseErrorUnknownBooleanOperator
+	// ParseErrorUnknownCondition the condition is unknown
 	ParseErrorUnknownCondition
+	// ParseErrorUnknownSpecialTokenArgument the special token argument is unknown
 	ParseErrorUnknownSpecialTokenArgument
+	// ParseErrorUnknownSpecialTokenType the special token type is unknown
 	ParseErrorUnknownSpecialTokenType
+	// ParseErrorUnknownTokenAttribute the token attribute is unknown
 	ParseErrorUnknownTokenAttribute
-	ParseErrorUnknownTypeForSpecialToken
+	// ParseErrorUnexpectedTokenDefinitionTermination token definition was unexpectedly terminated
 	ParseErrorUnexpectedTokenDefinitionTermination
+	// ParseErrorExpectedExpressionTerm expression term is expected
 	ParseErrorExpectedExpressionTerm
+	// ParseErrorEndlessLoopDetected an invalid loop was detected
 	ParseErrorEndlessLoopDetected
 
+	// ParseErrorExpectedEOF expected EOF
 	ParseErrorExpectedEOF
+	// ParseErrorRootIsNil root token is nil
 	ParseErrorRootIsNil
+	// ParseErrorUnexpectedEOF EOF was not expected
 	ParseErrorUnexpectedEOF
+	// ParseErrorUnexpectedData additional data was not expected
 	ParseErrorUnexpectedData
 )
 
+// ParserError holds a parser error
 type ParserError struct {
 	Message string
 	Type    ParserErrorType

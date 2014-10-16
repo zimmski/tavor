@@ -22,6 +22,7 @@ func NewOptional(tok token.Token) *Optional {
 
 // Token interface methods
 
+// Clone returns a copy of the token and all its children
 func (c *Optional) Clone() token.Token {
 	return &Optional{
 		token: c.token.Clone(),

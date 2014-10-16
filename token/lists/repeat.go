@@ -65,6 +65,7 @@ func (l *Repeat) To() int64 {
 
 // Token interface methods
 
+// Clone returns a copy of the token and all its children
 func (l *Repeat) Clone() token.Token {
 	c := Repeat{
 		from:  l.from,
@@ -449,6 +450,7 @@ func (l *Repeat) Reduces() uint {
 
 // ResetToken interface methods
 
+// Reset resets the (internal) state of this token and its dependences
 func (l *Repeat) Reset() {
 	// TODO reset the list if we depend on something else. this could and should be done in another way...
 	_, okFrom := l.from.(*primitives.ConstantInt)

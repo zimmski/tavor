@@ -19,6 +19,7 @@ func NewConstantInt(value int) *ConstantInt {
 	}
 }
 
+// Clone returns a copy of the token and all its children
 func (p *ConstantInt) Clone() token.Token {
 	return &ConstantInt{
 		value: p.value,
@@ -92,6 +93,7 @@ func NewRandomInt() *RandomInt {
 	}
 }
 
+// Clone returns a copy of the token and all its children
 func (p *RandomInt) Clone() token.Token {
 	return &RandomInt{
 		value: p.value,
@@ -190,6 +192,7 @@ func (p *RangeInt) Step() int {
 
 // Token interface methods
 
+// Clone returns a copy of the token and all its children
 func (p *RangeInt) Clone() token.Token {
 	return &RangeInt{
 		from: p.from,

@@ -28,6 +28,7 @@ func (c *BooleanTrue) Evaluate() bool {
 
 // Token interface methods
 
+// Clone returns a copy of the token and all its children
 func (c *BooleanTrue) Clone() token.Token {
 	return &BooleanTrue{}
 }
@@ -109,6 +110,7 @@ func (c *BooleanEqual) Evaluate() bool {
 
 // Token interface methods
 
+// Clone returns a copy of the token and all its children
 func (c *BooleanEqual) Clone() token.Token {
 	return &BooleanEqual{
 		a: c.a,
@@ -212,6 +214,7 @@ func (c *VariableDefined) Evaluate() bool {
 
 // Token interface methods
 
+// Clone returns a copy of the token and all its children
 func (c *VariableDefined) Clone() token.Token {
 	return &VariableDefined{
 		name:          c.name,
@@ -301,6 +304,7 @@ func (c *ExpressionPointer) Evaluate() bool {
 
 // Token interface methods
 
+// Clone returns a copy of the token and all its children
 func (c *ExpressionPointer) Clone() token.Token {
 	return &ExpressionPointer{
 		token: c.token.Clone(),

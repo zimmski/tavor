@@ -15,6 +15,7 @@ func NewFuncExpression(f func() string) *FuncExpression {
 	}
 }
 
+// Clone returns a copy of the token and all its children
 func (e *FuncExpression) Clone() token.Token {
 	return &FuncExpression{
 		function: e.function,

@@ -86,6 +86,7 @@ func NewCharacterClass(pattern string) *CharacterClass {
 	}
 }
 
+// Clone returns a copy of the token and all its children
 func (c *CharacterClass) Clone() token.Token {
 	chars := make([]rune, len(c.chars))
 

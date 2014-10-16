@@ -23,6 +23,7 @@ func NewOne(toks ...token.Token) *One {
 
 // Token interface methods
 
+// Clone returns a copy of the token and all its children
 func (l *One) Clone() token.Token {
 	c := One{
 		tokens: make([]token.Token, len(l.tokens)),

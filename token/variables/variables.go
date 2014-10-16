@@ -25,6 +25,7 @@ func (v *Variable) Name() string {
 
 // Token interface methods
 
+// Clone returns a copy of the token and all its children
 func (v *Variable) Clone() token.Token {
 	return &Variable{
 		name:  v.name,
@@ -117,6 +118,7 @@ type VariableSave struct {
 
 // Overwrite Variable methods
 
+// Clone returns a copy of the token and all its children
 func (v *VariableSave) Clone() token.Token {
 	return &VariableSave{
 		Variable: Variable{
@@ -151,6 +153,7 @@ func NewVariableValue(variable token.VariableToken) *VariableValue {
 
 // Token interface methods
 
+// Clone returns a copy of the token and all its children
 func (v *VariableValue) Clone() token.Token {
 	return &VariableValue{
 		variable: v.variable,

@@ -17,6 +17,7 @@ func NewLen(list token.List) *Len {
 	}
 }
 
+// Clone returns a copy of the token and all its children
 func (a *Len) Clone() token.Token {
 	return &Len{
 		list: a.list,

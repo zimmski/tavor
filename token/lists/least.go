@@ -30,6 +30,7 @@ func NewLeast(tok token.Token, n int64) *Least {
 
 // Token interface methods
 
+// Clone returns a copy of the token and all its children
 func (l *Least) Clone() token.Token {
 	c := Least{
 		n:     l.n,

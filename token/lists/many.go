@@ -25,6 +25,7 @@ func NewMany(toks ...token.Token) *Many {
 
 // Token interface methods
 
+// Clone returns a copy of the token and all its children
 func (l *Many) Clone() token.Token {
 	c := Many{
 		tokens: make([]token.Token, len(l.tokens)),

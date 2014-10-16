@@ -25,6 +25,7 @@ func NewFuncFilter(
 	}
 }
 
+// Clone returns a copy of the token and all its children
 func (f *FuncFilter) Clone() token.Token {
 	return &FuncFilter{
 		fuzzFunc:   f.fuzzFunc,

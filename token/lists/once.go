@@ -31,6 +31,7 @@ func NewOnce(toks ...token.Token) *Once {
 
 // Token interface methods
 
+// Clone returns a copy of the token and all its children
 func (l *Once) Clone() token.Token {
 	c := Once{
 		tokens: make([]token.Token, len(l.tokens)),

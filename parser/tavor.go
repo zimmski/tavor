@@ -1342,7 +1342,7 @@ func (p *tavorParser) parseSpecialTokenDefinition() (rune, error) {
 	if !ok {
 		return zeroRune, &token.ParserError{
 			Message:  "special token has no type argument",
-			Type:     token.ParseErrorUnknownTypeForSpecialToken,
+			Type:     token.ParseErrorTypeNotDefinedForSpecialToken,
 			Position: p.scan.Pos(),
 		}
 	}

@@ -84,6 +84,7 @@ func (s *Sequence) Next() int {
 
 // ResetToken interface methods
 
+// Reset resets the (internal) state of this token and its dependences
 func (s *Sequence) Reset() {
 	s.value = s.start
 }
@@ -112,6 +113,7 @@ type SequenceItem struct {
 	value    int
 }
 
+// Clone returns a copy of the token and all its children
 func (s *SequenceItem) Clone() token.Token {
 	return &SequenceItem{
 		sequence: s.sequence,
@@ -163,6 +165,7 @@ func (s *SequenceItem) String() string {
 
 // ResetToken interface methods
 
+// Reset resets the (internal) state of this token and its dependences
 func (s *SequenceItem) Reset() {
 	s.permutation(0)
 }
@@ -173,6 +176,7 @@ type SequenceExistingItem struct {
 	except   token.Token
 }
 
+// Clone returns a copy of the token and all its children
 func (s *SequenceExistingItem) Clone() token.Token {
 	ex := s.except
 	if ex != nil {
@@ -254,6 +258,7 @@ func (s *SequenceExistingItem) InternalReplace(oldToken, newToken token.Token) {
 
 // ResetToken interface methods
 
+// Reset resets the (internal) state of this token and its dependences
 func (s *SequenceExistingItem) Reset() {
 	s.permutation(rand.NewIncrementRand(0))
 }
@@ -272,6 +277,7 @@ type SequenceResetItem struct {
 	sequence *Sequence
 }
 
+// Clone returns a copy of the token and all its children
 func (s *SequenceResetItem) Clone() token.Token {
 	return &SequenceResetItem{
 		sequence: s.sequence,
@@ -322,6 +328,7 @@ func (s *SequenceResetItem) String() string {
 
 // ResetToken interface methods
 
+// Reset resets the (internal) state of this token and its dependences
 func (s *SequenceResetItem) Reset() {
 	s.permutation(0)
 }

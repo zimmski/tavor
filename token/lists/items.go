@@ -21,6 +21,7 @@ func NewListItem(index int, list token.List) *ListItem {
 
 // Token interface methods
 
+// Clone returns a copy of the token and all its children
 func (l *ListItem) Clone() token.Token {
 	return &ListItem{
 		index: l.index,
@@ -89,6 +90,7 @@ func NewIndexItem(tok token.IndexToken) *IndexItem {
 
 // Token interface methods
 
+// Clone returns a copy of the token and all its children
 func (l *IndexItem) Clone() token.Token {
 	return &IndexItem{
 		token: l.token.Clone().(token.IndexToken),
@@ -185,6 +187,7 @@ func (l *UniqueItem) pick(r rand.Rand) {
 
 // Token interface methods
 
+// Clone returns a copy of the token and all its children
 func (l *UniqueItem) Clone() token.Token {
 	n := &UniqueItem{
 		original: l.original,
@@ -256,6 +259,7 @@ func (l *UniqueItem) Index() int {
 
 // ResetToken interface methods
 
+// Reset resets the (internal) state of this token and its dependences
 func (l *UniqueItem) Reset() {
 	if l.index != -1 {
 		delete(l.original.picked, l.index)

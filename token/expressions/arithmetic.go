@@ -20,6 +20,7 @@ func NewAddArithmetic(a, b token.Token) *AddArithmetic {
 	}
 }
 
+// Clone returns a copy of the token and all its children
 func (e *AddArithmetic) Clone() token.Token {
 	return &AddArithmetic{
 		a: e.a.Clone(),
@@ -132,6 +133,7 @@ func NewSubArithmetic(a, b token.Token) *SubArithmetic {
 	}
 }
 
+// Clone returns a copy of the token and all its children
 func (e *SubArithmetic) Clone() token.Token {
 	return &SubArithmetic{
 		a: e.a.Clone(),
@@ -244,6 +246,7 @@ func NewMulArithmetic(a, b token.Token) *MulArithmetic {
 	}
 }
 
+// Clone returns a copy of the token and all its children
 func (e *MulArithmetic) Clone() token.Token {
 	return &MulArithmetic{
 		a: e.a.Clone(),
@@ -356,6 +359,7 @@ func NewDivArithmetic(a, b token.Token) *DivArithmetic {
 	}
 }
 
+// Clone returns a copy of the token and all its children
 func (e *DivArithmetic) Clone() token.Token {
 	return &DivArithmetic{
 		a: e.a.Clone(),

@@ -106,6 +106,7 @@ func NewIf(Pairs ...IfPair) *If {
 
 // Token interface methods
 
+// Clone returns a copy of the token and all its children
 func (c *If) Clone() token.Token {
 	nPairs := make([]IfPair, len(c.Pairs))
 	for i := 0; i < len(c.Pairs); i++ {

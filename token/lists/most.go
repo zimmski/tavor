@@ -30,6 +30,7 @@ func NewMost(tok token.Token, n uint) *Most {
 
 // Token interface methods
 
+// Clone returns a copy of the token and all its children
 func (l *Most) Clone() token.Token {
 	c := Most{
 		n:     l.n,
