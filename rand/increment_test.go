@@ -6,7 +6,7 @@ import (
 	. "github.com/zimmski/tavor/test/assert"
 )
 
-func TestRandTest(t *testing.T) {
+func TestIncrementRand(t *testing.T) {
 	o := NewIncrementRand(1)
 
 	Equal(t, 1, o.Int())
