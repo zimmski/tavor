@@ -15,10 +15,13 @@ type allPermutationsLevel struct {
 	children []allPermutationsLevel
 }
 
+// AllPermutationsStrategy implements a fuzzing strategy that generates all possible permutations of a token graph.
+// Every iteration of the strategy generates a new permutation. The generation is deterministically. Since this strategy really produces every possible permutation of a token graph, it is advised to only use the strategy on graphs with few states since the state explosion problem manifests itself quite fast.
 type AllPermutationsStrategy struct {
 	root token.Token
 }
 
+// NewAllPermutationsStrategy returns a new instance of the All Permutations fuzzing strategy
 func NewAllPermutationsStrategy(tok token.Token) *AllPermutationsStrategy {
 	s := &AllPermutationsStrategy{
 		root: tok,
@@ -76,6 +79,8 @@ func (s *AllPermutationsStrategy) setPermutation(tok token.Token, permutation ui
 	}
 }
 
+// Fuzz starts the first iteration of the fuzzing strategy returning a channel which controls the iteration flow.
+// The channel returns a value if the iteration is complete and waits with calculating the next iteration until a value is put in. The channel is automatically closed when there are no more iterations. The error return argument is not nil if an error occurs during the setup of the fuzzing strategy.
 func (s *AllPermutationsStrategy) Fuzz(r rand.Rand) (chan struct{}, error) {
 	if tavor.LoopExists(s.root) {
 		return nil, &Error{

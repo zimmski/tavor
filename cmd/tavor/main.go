@@ -19,12 +19,12 @@ import (
 	"github.com/jessevdk/go-flags"
 
 	"github.com/zimmski/tavor"
-	fuzzFilter "github.com/zimmski/tavor/fuzz/filter"
-	fuzzStrategy "github.com/zimmski/tavor/fuzz/strategy"
+	tavorFuzzFilter "github.com/zimmski/tavor/fuzz/filter"
+	tavorFuzzStrategy "github.com/zimmski/tavor/fuzz/strategy"
 	"github.com/zimmski/tavor/graph"
 	"github.com/zimmski/tavor/log"
 	"github.com/zimmski/tavor/parser"
-	reduceStrategy "github.com/zimmski/tavor/reduce/strategy"
+	tavorReduceStrategy "github.com/zimmski/tavor/reduce/strategy"
 	"github.com/zimmski/tavor/token"
 )
 
@@ -66,7 +66,7 @@ var opts struct {
 			ExecMatchStdout                string           `long:"exec-match-stdout" description:"Searches through stdout via the given regex. A match has to be present"`
 			ExecDoNotRemoveTmpFiles        bool             `long:"exec-do-not-remove-tmp-files" description:"If set, tmp files are not removed"`
 			ExecDoNotRemoveTmpFilesOnError bool             `long:"exec-do-not-remove-tmp-files-on-error" description:"If set, tmp files are not removed on error"`
-			ExecArgumentType               ExecArgumentType `long:"exec-argument-type" description:"How the generation is given to the binary" default:"environment"`
+			ExecArgumentType               execArgumentType `long:"exec-argument-type" description:"How the generation is given to the binary" default:"environment"`
 			ListExecArgumentTypes          bool             `long:"list-exec-argument-types" description:"List all available exec argument types"`
 
 			Script string `long:"script" description:"Execute this binary which gets fed with the generation and should return feedback"`
@@ -76,7 +76,7 @@ var opts struct {
 
 		Filter optsFuzzingFilters
 
-		Strategy       FuzzStrategy `long:"strategy" description:"The fuzzing strategy" default:"random"`
+		Strategy       fuzzStrategy `long:"strategy" description:"The fuzzing strategy" default:"random"`
 		ListStrategies bool         `long:"list-strategies" description:"List all available fuzzing strategies"`
 
 		ResultFolder     flags.Filename `long:"result-folder" description:"Save every fuzzing result with the MD5 checksum as filename in this folder"`
@@ -97,7 +97,7 @@ var opts struct {
 			ExecMatchStderr         string           `long:"exec-match-stderr" description:"Searches through stderr via the given regex. A match has to be present"`
 			ExecMatchStdout         string           `long:"exec-match-stdout" description:"Searches through stdout via the given regex. A match has to be present"`
 			ExecDoNotRemoveTmpFiles bool             `long:"exec-do-not-remove-tmp-files" description:"If set, tmp files are not removed"`
-			ExecArgumentType        ExecArgumentType `long:"exec-argument-type" description:"How the generation is given to the binary" default:"environment"`
+			ExecArgumentType        execArgumentType `long:"exec-argument-type" description:"How the generation is given to the binary" default:"environment"`
 			ListExecArgumentTypes   bool             `long:"list-exec-argument-types" description:"List all available exec argument types"`
 
 			Script string `long:"script" description:"Execute this binary which gets fed with the generation and should return feedback"`
@@ -105,7 +105,7 @@ var opts struct {
 
 		InputFile flags.Filename `long:"input-file" description:"Input file which gets parsed, validated and delta-debugged via the format file" required:"true"`
 
-		Strategy       ReduceStrategy `long:"strategy" description:"The reducing strategy" default:"BinarySearch"`
+		Strategy       reduceStrategy `long:"strategy" description:"The reducing strategy" default:"BinarySearch"`
 		ListStrategies bool           `long:"list-strategies" description:"List all available reducing strategies"`
 
 		ResultSeparator string `long:"result-separator" description:"Separates result outputs of each reducing step" default:"\n"`
@@ -117,22 +117,22 @@ var opts struct {
 }
 
 type optsFuzzingFilters struct {
-	Filters     FuzzFilters `long:"filter" description:"Fuzzing filter to apply"`
+	Filters     fuzzFilters `long:"filter" description:"Fuzzing filter to apply"`
 	ListFilters bool        `long:"list-filters" description:"List all available fuzzing filters"`
 }
 
-var ExecArgumentTypes = []string{
+var execArgumentTypes = []string{
 	"argument",
 	"environment",
 	"stdin",
 }
 
-type ExecArgumentType string
+type execArgumentType string
 
-func (e ExecArgumentType) Complete(match string) []flags.Completion {
+func (e execArgumentType) Complete(match string) []flags.Completion {
 	var items []flags.Completion
 
-	for _, name := range ExecArgumentTypes {
+	for _, name := range execArgumentTypes {
 		if strings.HasPrefix(name, match) {
 			items = append(items, flags.Completion{
 				Item: name,
@@ -143,13 +143,13 @@ func (e ExecArgumentType) Complete(match string) []flags.Completion {
 	return items
 }
 
-type FuzzFilter string
-type FuzzFilters []FuzzFilter
+type fuzzFilter string
+type fuzzFilters []fuzzFilter
 
-func (s FuzzFilters) Complete(match string) []flags.Completion {
+func (s fuzzFilters) Complete(match string) []flags.Completion {
 	var items []flags.Completion
 
-	for _, name := range fuzzFilter.List() {
+	for _, name := range tavorFuzzFilter.List() {
 		if strings.HasPrefix(name, match) {
 			items = append(items, flags.Completion{
 				Item: name,
@@ -160,12 +160,12 @@ func (s FuzzFilters) Complete(match string) []flags.Completion {
 	return items
 }
 
-type FuzzStrategy string
+type fuzzStrategy string
 
-func (s *FuzzStrategy) Complete(match string) []flags.Completion {
+func (s *fuzzStrategy) Complete(match string) []flags.Completion {
 	var items []flags.Completion
 
-	for _, name := range fuzzStrategy.List() {
+	for _, name := range tavorFuzzStrategy.List() {
 		if strings.HasPrefix(name, match) {
 			items = append(items, flags.Completion{
 				Item: name,
@@ -176,12 +176,12 @@ func (s *FuzzStrategy) Complete(match string) []flags.Completion {
 	return items
 }
 
-type ReduceStrategy string
+type reduceStrategy string
 
-func (s *ReduceStrategy) Complete(match string) []flags.Completion {
+func (s *reduceStrategy) Complete(match string) []flags.Completion {
 	var items []flags.Completion
 
-	for _, name := range reduceStrategy.List() {
+	for _, name := range tavorReduceStrategy.List() {
 		if strings.HasPrefix(name, match) {
 			items = append(items, flags.Completion{
 				Item: name,
@@ -213,25 +213,25 @@ func checkArguments() string {
 
 		os.Exit(returnOk)
 	} else if opts.Fuzz.Filter.ListFilters || opts.Graph.Filter.ListFilters {
-		for _, name := range fuzzFilter.List() {
+		for _, name := range tavorFuzzFilter.List() {
 			fmt.Println(name)
 		}
 
 		os.Exit(returnOk)
 	} else if opts.Fuzz.ListStrategies {
-		for _, name := range fuzzStrategy.List() {
+		for _, name := range tavorFuzzStrategy.List() {
 			fmt.Println(name)
 		}
 
 		os.Exit(returnOk)
 	} else if opts.Reduce.Exec.ListExecArgumentTypes {
-		for _, name := range ExecArgumentTypes {
+		for _, name := range execArgumentTypes {
 			fmt.Println(name)
 		}
 
 		os.Exit(returnOk)
 	} else if opts.Reduce.ListStrategies {
-		for _, name := range reduceStrategy.List() {
+		for _, name := range tavorReduceStrategy.List() {
 			fmt.Println(name)
 		}
 
@@ -276,7 +276,7 @@ func checkArguments() string {
 	if opts.Reduce.Exec.ExecArgumentType != "" {
 		found := false
 
-		for _, v := range ExecArgumentTypes {
+		for _, v := range execArgumentTypes {
 			if string(opts.Reduce.Exec.ExecArgumentType) == v {
 				found = true
 
@@ -334,13 +334,13 @@ func folderExists(folder string) error {
 	return nil
 }
 
-func applyFilters(filterNames []FuzzFilter, doc token.Token) token.Token {
+func applyFilters(filterNames []fuzzFilter, doc token.Token) token.Token {
 	if len(filterNames) != 0 {
 		var err error
-		var filters []fuzzFilter.Filter
+		var filters []tavorFuzzFilter.Filter
 
 		for _, name := range filterNames {
-			filt, err := fuzzFilter.New(string(name))
+			filt, err := tavorFuzzFilter.New(string(name))
 			if err != nil {
 				exitError(err.Error())
 			}
@@ -350,7 +350,7 @@ func applyFilters(filterNames []FuzzFilter, doc token.Token) token.Token {
 			log.Infof("using %s fuzzing filter", name)
 		}
 
-		doc, err = fuzzFilter.ApplyFilters(filters, doc)
+		doc, err = tavorFuzzFilter.ApplyFilters(filters, doc)
 		if err != nil {
 			exitError(err.Error())
 		}
@@ -407,7 +407,7 @@ func main() {
 
 		log.Infof("counted %d overall permutations", doc.PermutationsAll())
 
-		strat, err := fuzzStrategy.New(string(opts.Fuzz.Strategy), doc)
+		strat, err := tavorFuzzStrategy.New(string(opts.Fuzz.Strategy), doc)
 		if err != nil {
 			exitError(err.Error())
 		}
@@ -767,7 +767,7 @@ func main() {
 		}
 
 		if command == "reduce" {
-			strat, err := reduceStrategy.New(string(opts.Reduce.Strategy), doc)
+			strat, err := tavorReduceStrategy.New(string(opts.Reduce.Strategy), doc)
 			if err != nil {
 				exitError(err.Error())
 			}
@@ -1012,11 +1012,11 @@ func main() {
 						if oks == oksNeeded {
 							log.Infof("Same output, continue delta")
 
-							feedback <- reduceStrategy.Bad
+							feedback <- tavorReduceStrategy.Bad
 						} else {
 							log.Infof("Not the same output, do another step")
 
-							feedback <- reduceStrategy.Good
+							feedback <- tavorReduceStrategy.Good
 						}
 					}
 
@@ -1109,11 +1109,11 @@ func main() {
 					case "YES\n":
 						log.Infof("Same output, continue delta")
 
-						feedback <- reduceStrategy.Bad
+						feedback <- tavorReduceStrategy.Bad
 					case "NO\n":
 						log.Infof("Not the same output, do another step")
 
-						feedback <- reduceStrategy.Good
+						feedback <- tavorReduceStrategy.Good
 					default:
 						exitError("Feedback from script to orignal was not YES nor NO: %s", feed)
 					}
@@ -1163,11 +1163,11 @@ func main() {
 						}
 
 						if s := strings.ToUpper(string(line)); s == "YES" {
-							feedback <- reduceStrategy.Bad
+							feedback <- tavorReduceStrategy.Bad
 
 							break
 						} else if s == "NO" {
-							feedback <- reduceStrategy.Good
+							feedback <- tavorReduceStrategy.Good
 
 							break
 						}

@@ -10,12 +10,17 @@ import (
 	"github.com/zimmski/tavor/token/lists"
 )
 
+// Filter defines a fuzzing filter
 type Filter interface {
+	// Apply applies the fuzzing filter onto the token and returns a replacement token, or nil if there is no replacement.
+	// If a fatal error is encountered the error return argument is not nil.
 	Apply(tok token.Token) ([]token.Token, error)
 }
 
 var filterLookup = make(map[string]func() Filter)
 
+// New returns a new fuzzing filter instance given the registered name of the filter.
+// The error return argument is not nil, if the name does not exist in the registered fuzzing filter list.
 func New(name string) (Filter, error) {
 	filt, ok := filterLookup[name]
 	if !ok {
@@ -25,6 +30,7 @@ func New(name string) (Filter, error) {
 	return filt(), nil
 }
 
+// List returns a list of all registered fuzzing filter names.
 func List() []string {
 	keyFilterLookup := make([]string, 0, len(filterLookup))
 
@@ -37,6 +43,7 @@ func List() []string {
 	return keyFilterLookup
 }
 
+// Register registers a fuzzing filter instance function with the given name.
 func Register(name string, filt func() Filter) {
 	if filt == nil {
 		panic("register fuzzing filter is nil")
@@ -49,6 +56,8 @@ func Register(name string, filt func() Filter) {
 	filterLookup[name] = filt
 }
 
+// ApplyFilters applies a set of filters onto a token.
+// Filters are not applied onto filter generated tokens.
 func ApplyFilters(filters []Filter, root token.Token) (token.Token, error) {
 	type Pair struct {
 		token  token.Token

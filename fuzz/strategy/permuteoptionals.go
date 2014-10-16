@@ -11,10 +11,13 @@ import (
 	"github.com/zimmski/tavor/token"
 )
 
+// PermuteOptionalsStrategy implements a fuzzing strategy that generates permutations of only optional tokens of a token graph.
+// Every iteration of the strategy generates a new permutation. The generation is deterministically. This strategy searches the graph for tokens who implement the OptionalToken interface and permutates over them by deactivating or activating them. The permutations always start from the deactivated states so that minimum data is generated first.
 type PermuteOptionalsStrategy struct {
 	root token.Token
 }
 
+// NewPermuteOptionalsStrategy returns a new instance of the Permute Optionals fuzzing strategy
 func NewPermuteOptionalsStrategy(tok token.Token) *PermuteOptionalsStrategy {
 	s := &PermuteOptionalsStrategy{
 		root: tok,
@@ -93,6 +96,8 @@ func (s *PermuteOptionalsStrategy) findOptionals(r rand.Rand, root token.Token, 
 	return optionals
 }
 
+// Fuzz starts the first iteration of the fuzzing strategy returning a channel which controls the iteration flow.
+// The channel returns a value if the iteration is complete and waits with calculating the next iteration until a value is put in. The channel is automatically closed when there are no more iterations. The error return argument is not nil if an error occurs during the setup of the fuzzing strategy.
 func (s *PermuteOptionalsStrategy) Fuzz(r rand.Rand) (chan struct{}, error) {
 	if tavor.LoopExists(s.root) {
 		return nil, &Error{

@@ -12,10 +12,13 @@ import (
 	"github.com/zimmski/tavor/token/sequences"
 )
 
+// RandomStrategy implements a fuzzing strategy that generates a random permutation of a token graph.
+// The strategy does exactly one iteration which permutates at random all reachable tokens in the graph. The determinism is dependent on the random generator and is therefore for example deterministic if a seed for the random generator produces always the same outputs.
 type RandomStrategy struct {
 	root token.Token
 }
 
+// NewRandomStrategy returns a new instance of the random fuzzing strategy
 func NewRandomStrategy(tok token.Token) *RandomStrategy {
 	return &RandomStrategy{
 		root: tok,
@@ -28,6 +31,8 @@ func init() {
 	})
 }
 
+// Fuzz starts the first iteration of the fuzzing strategy returning a channel which controls the iteration flow.
+// The channel returns a value if the iteration is complete and waits with calculating the next iteration until a value is put in. The channel is automatically closed when there are no more iterations. The error return argument is not nil if an error occurs during the setup of the fuzzing strategy.
 func (s *RandomStrategy) Fuzz(r rand.Rand) (chan struct{}, error) {
 	if tavor.LoopExists(s.root) {
 		return nil, &Error{

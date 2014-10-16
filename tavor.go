@@ -1,3 +1,4 @@
+// Package tavor provides all general properties, constants and functions for the Tavor framework and tools
 package tavor
 
 import (
@@ -13,11 +14,14 @@ import (
 )
 
 const (
+	// Version of the framework and tools
 	Version = "0.3"
 )
 
+// MaxRepeat determines the maximum copies in graph cycles.
 var MaxRepeat = 2
 
+// PrettyPrintTree prints the token represenation as a text tree
 func PrettyPrintTree(w io.Writer, root token.Token) {
 	prettyPrintTreeRek(w, root, 0)
 }
@@ -39,6 +43,7 @@ func prettyPrintTreeRek(w io.Writer, tok token.Token, level int) {
 	}
 }
 
+// PrettyPrintInternalTree prints the internal token represenation as a text tree
 func PrettyPrintInternalTree(w io.Writer, root token.Token) {
 	prettyPrintInternalTreeRek(w, root, 0)
 }
@@ -60,6 +65,7 @@ func prettyPrintInternalTreeRek(w io.Writer, tok token.Token, level int) {
 	}
 }
 
+// LoopExists determines if a cycle exists in the internal token graph
 func LoopExists(root token.Token) bool {
 	lookup := make(map[token.Token]struct{})
 	queue := linkedlist.New()
@@ -99,6 +105,8 @@ func LoopExists(root token.Token) bool {
 	return false
 }
 
+// UnrollPointers unrolls pointer tokens by copying their referenced graphs.
+// Pointers that lead to themselfs are unrolled at maximum MaxRepeat times.
 func UnrollPointers(root token.Token) token.Token {
 	type unrollToken struct {
 		tok    token.Token
@@ -344,6 +352,7 @@ func UnrollPointers(root token.Token) token.Token {
 	return root
 }
 
+// ResetResetTokens resets all tokens in the token graph that fullfill the ResetToken interface
 func ResetResetTokens(root token.Token) {
 	var queue = linkedlist.New()
 
@@ -373,10 +382,12 @@ func ResetResetTokens(root token.Token) {
 	}
 }
 
+// ResetScope resets all scopes of tokens in the token graph that fullfill the ScopeToken interface
 func ResetScope(root token.Token) {
 	SetScope(root, make(map[string]token.Token))
 }
 
+// SetScope sets all scopes of tokens in the token graph that fullfill the ScopeToken interface
 func SetScope(root token.Token, scope map[string]token.Token) {
 	queue := linkedlist.New()
 
@@ -426,6 +437,7 @@ func SetScope(root token.Token, scope map[string]token.Token) {
 	}
 }
 
+// SetInternalScope sets all scopes of internal tokens in the token graph that fullfill the ScopeToken interface
 func SetInternalScope(root token.Token, scope map[string]token.Token) {
 	queue := linkedlist.New()
 

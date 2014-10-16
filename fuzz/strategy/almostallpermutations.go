@@ -9,28 +9,21 @@ import (
 	"github.com/zimmski/tavor/token"
 )
 
-/*
-
-this strategy does not cover all repititional permutations
-this can be helpful when less permutations are needed
-
-e.g. +2(?(1)?(2))
-does not result in 16 permutations but just 7
-
-*/
-
 type almostAllPermutationsLevel struct {
 	token           token.Token
 	permutation     uint
 	maxPermutations uint
 }
 
+// AlmostAllPermutationsStrategy implements a fuzzing strategy that generates "almost" all possible permutations of a token graph.
+// Every iteration of the strategy generates a new permutation. The generation is deterministically. This strategy does not cover all repititional permutations which can be helpful when less permutations are needed but a almost complete permutation coverage is still needed. For example the definition +2(?(1)?(2)) does not result in 16 permutations but instead it results in only 7.
 type AlmostAllPermutationsStrategy struct {
 	root token.Token
 
 	resetedLookup map[token.Token]uint
 }
 
+// NewAlmostAllPermutationsStrategy returns a new instance of the Almost All Permutations fuzzing strategy
 func NewAlmostAllPermutationsStrategy(tok token.Token) *AlmostAllPermutationsStrategy {
 	s := &AlmostAllPermutationsStrategy{
 		root: tok,
@@ -85,6 +78,8 @@ func (s *AlmostAllPermutationsStrategy) getLevel(root token.Token, fromChildren 
 	return level
 }
 
+// Fuzz starts the first iteration of the fuzzing strategy returning a channel which controls the iteration flow.
+// The channel returns a value if the iteration is complete and waits with calculating the next iteration until a value is put in. The channel is automatically closed when there are no more iterations. The error return argument is not nil if an error occurs during the setup of the fuzzing strategy.
 func (s *AlmostAllPermutationsStrategy) Fuzz(r rand.Rand) (chan struct{}, error) {
 	if tavor.LoopExists(s.root) {
 		return nil, &Error{
