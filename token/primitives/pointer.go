@@ -137,14 +137,17 @@ func (p *Pointer) String() string {
 
 // ForwardToken interface methods
 
+// Get returns the current referenced token
 func (p *Pointer) Get() token.Token {
 	return p.token
 }
 
+// InternalGet returns the current referenced internal token
 func (p *Pointer) InternalGet() token.Token {
 	return p.token
 }
 
+// InternalLogicalRemove removes the referenced internal token and returns the replacement for the current token or nil if the current token should be removed.
 func (p *Pointer) InternalLogicalRemove(tok token.Token) token.Token {
 	if p.token == tok {
 		return nil
@@ -153,6 +156,7 @@ func (p *Pointer) InternalLogicalRemove(tok token.Token) token.Token {
 	return p
 }
 
+// InternalReplace replaces an old with a new internal token if it is referenced by this token
 func (p *Pointer) InternalReplace(oldToken, newToken token.Token) {
 	if p.token == oldToken {
 		p.token = newToken

@@ -118,6 +118,7 @@ func (l *Least) InternalLen() int {
 	return 1
 }
 
+// InternalLogicalRemove removes the referenced internal token and returns the replacement for the current token or nil if the current token should be removed.
 func (l *Least) InternalLogicalRemove(tok token.Token) token.Token {
 	if l.token == tok {
 		return nil
@@ -126,6 +127,7 @@ func (l *Least) InternalLogicalRemove(tok token.Token) token.Token {
 	return l
 }
 
+// InternalReplace replaces an old with a new internal token if it is referenced by this token
 func (l *Least) InternalReplace(oldToken, newToken token.Token) {
 	if l.token == oldToken {
 		l.token = newToken
@@ -138,7 +140,10 @@ func (l *Least) InternalReplace(oldToken, newToken token.Token) {
 
 // OptionalToken interface methods
 
+// IsOptional checks dynamically if this token is in the current state optional
 func (l *Least) IsOptional() bool { return l.n == 0 }
+
+// Activate activates this token
 func (l *Least) Activate() {
 	if l.n > 0 {
 		return
@@ -148,6 +153,8 @@ func (l *Least) Activate() {
 		l.token.Clone(),
 	}
 }
+
+// Deactivate deactivates this token
 func (l *Least) Deactivate() {
 	if l.n > 0 {
 		return

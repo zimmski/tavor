@@ -104,6 +104,7 @@ func (e *AddArithmetic) InternalLen() int {
 	return e.Len()
 }
 
+// InternalLogicalRemove removes the referenced internal token and returns the replacement for the current token or nil if the current token should be removed.
 func (e *AddArithmetic) InternalLogicalRemove(tok token.Token) token.Token {
 	if tok == e.a || tok == e.b {
 		return nil
@@ -112,6 +113,7 @@ func (e *AddArithmetic) InternalLogicalRemove(tok token.Token) token.Token {
 	return e
 }
 
+// InternalReplace replaces an old with a new internal token if it is referenced by this token
 func (e *AddArithmetic) InternalReplace(oldToken, newToken token.Token) {
 	if oldToken == e.a {
 		e.a = newToken
@@ -217,6 +219,7 @@ func (e *SubArithmetic) InternalLen() int {
 	return e.Len()
 }
 
+// InternalLogicalRemove removes the referenced internal token and returns the replacement for the current token or nil if the current token should be removed.
 func (e *SubArithmetic) InternalLogicalRemove(tok token.Token) token.Token {
 	if tok == e.a || tok == e.b {
 		return nil
@@ -225,6 +228,7 @@ func (e *SubArithmetic) InternalLogicalRemove(tok token.Token) token.Token {
 	return e
 }
 
+// InternalReplace replaces an old with a new internal token if it is referenced by this token
 func (e *SubArithmetic) InternalReplace(oldToken, newToken token.Token) {
 	if oldToken == e.a {
 		e.a = newToken
@@ -330,6 +334,7 @@ func (e *MulArithmetic) InternalLen() int {
 	return e.Len()
 }
 
+// InternalLogicalRemove removes the referenced internal token and returns the replacement for the current token or nil if the current token should be removed.
 func (e *MulArithmetic) InternalLogicalRemove(tok token.Token) token.Token {
 	if tok == e.a || tok == e.b {
 		return nil
@@ -338,6 +343,7 @@ func (e *MulArithmetic) InternalLogicalRemove(tok token.Token) token.Token {
 	return e
 }
 
+// InternalReplace replaces an old with a new internal token if it is referenced by this token
 func (e *MulArithmetic) InternalReplace(oldToken, newToken token.Token) {
 	if oldToken == e.a {
 		e.a = newToken
@@ -443,6 +449,7 @@ func (e *DivArithmetic) InternalLen() int {
 	return e.Len()
 }
 
+// InternalLogicalRemove removes the referenced internal token and returns the replacement for the current token or nil if the current token should be removed.
 func (e *DivArithmetic) InternalLogicalRemove(tok token.Token) token.Token {
 	if tok == e.a || tok == e.b {
 		return nil
@@ -451,6 +458,7 @@ func (e *DivArithmetic) InternalLogicalRemove(tok token.Token) token.Token {
 	return e
 }
 
+// InternalReplace replaces an old with a new internal token if it is referenced by this token
 func (e *DivArithmetic) InternalReplace(oldToken, newToken token.Token) {
 	if oldToken == e.a {
 		e.a = newToken

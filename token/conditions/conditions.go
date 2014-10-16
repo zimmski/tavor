@@ -82,10 +82,12 @@ func (c *IfPair) InternalLen() int {
 	return 2
 }
 
+// InternalLogicalRemove removes the referenced internal token and returns the replacement for the current token or nil if the current token should be removed.
 func (c *IfPair) InternalLogicalRemove(tok token.Token) token.Token {
 	panic("This should never happen")
 }
 
+// InternalReplace replaces an old with a new internal token if it is referenced by this token
 func (c *IfPair) InternalReplace(oldToken, newToken token.Token) {
 	panic("This should never happen")
 }
@@ -189,10 +191,12 @@ func (c *If) InternalLen() int {
 	return len(c.Pairs)
 }
 
+// InternalLogicalRemove removes the referenced internal token and returns the replacement for the current token or nil if the current token should be removed.
 func (c *If) InternalLogicalRemove(tok token.Token) token.Token {
 	panic("TODO")
 }
 
+// InternalReplace replaces an old with a new internal token if it is referenced by this token
 func (c *If) InternalReplace(oldToken, newToken token.Token) {
 	panic("TODO")
 }
@@ -200,6 +204,7 @@ func (c *If) InternalReplace(oldToken, newToken token.Token) {
 
 // ScopeToken interface methods
 
+// SetScope sets the scope of the token
 func (c *If) SetScope(variableScope map[string]token.Token) {
 	for _, pair := range c.Pairs {
 		tavor.SetInternalScope(pair.Head, variableScope)

@@ -141,7 +141,7 @@ func TestTavorParseErrors(t *testing.T) {
 
 	// undefined type argument special token
 	tok, err = ParseTavor(strings.NewReader("$START = hey: ok\n"))
-	Equal(t, token.ParseErrorUnknownTypeForSpecialToken, err.(*token.ParserError).Type)
+	Equal(t, token.ParseErrorTypeNotDefinedForSpecialToken, err.(*token.ParserError).Type)
 	Nil(t, tok)
 
 	// unknown type argument special token

@@ -234,14 +234,17 @@ func (s *SequenceExistingItem) String() string {
 
 // ForwardToken interface methods
 
+// Get returns the current referenced token
 func (s *SequenceExistingItem) Get() token.Token {
 	return nil
 }
 
+// InternalGet returns the current referenced internal token
 func (s *SequenceExistingItem) InternalGet() token.Token {
 	return s.except
 }
 
+// InternalLogicalRemove removes the referenced internal token and returns the replacement for the current token or nil if the current token should be removed.
 func (s *SequenceExistingItem) InternalLogicalRemove(tok token.Token) token.Token {
 	if s.except == tok {
 		return nil
@@ -250,6 +253,7 @@ func (s *SequenceExistingItem) InternalLogicalRemove(tok token.Token) token.Toke
 	return s
 }
 
+// InternalReplace replaces an old with a new internal token if it is referenced by this token
 func (s *SequenceExistingItem) InternalReplace(oldToken, newToken token.Token) {
 	if s.except == oldToken {
 		s.except = newToken
@@ -265,6 +269,7 @@ func (s *SequenceExistingItem) Reset() {
 
 // ScopeToken interface methods
 
+// SetScope sets the scope of the token
 func (s *SequenceExistingItem) SetScope(variableScope map[string]token.Token) {
 	if s.except != nil {
 		if tok, ok := s.except.(token.ScopeToken); ok {

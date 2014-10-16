@@ -213,6 +213,7 @@ func (l *Repeat) InternalLen() int {
 	return 1
 }
 
+// InternalLogicalRemove removes the referenced internal token and returns the replacement for the current token or nil if the current token should be removed.
 func (l *Repeat) InternalLogicalRemove(tok token.Token) token.Token {
 	if l.token == tok {
 		return nil
@@ -221,6 +222,7 @@ func (l *Repeat) InternalLogicalRemove(tok token.Token) token.Token {
 	return l
 }
 
+// InternalReplace replaces an old with a new internal token if it is referenced by this token
 func (l *Repeat) InternalReplace(oldToken, newToken token.Token) {
 	if l.token == oldToken {
 		l.token = newToken
@@ -233,7 +235,10 @@ func (l *Repeat) InternalReplace(oldToken, newToken token.Token) {
 
 // OptionalToken interface methods
 
+// IsOptional checks dynamically if this token is in the current state optional
 func (l *Repeat) IsOptional() bool { return l.From() == 0 }
+
+// Activate activates this token
 func (l *Repeat) Activate() {
 	if l.From() != 0 {
 		return
@@ -243,6 +248,8 @@ func (l *Repeat) Activate() {
 		l.token.Clone(),
 	}
 }
+
+// Deactivate deactivates this token
 func (l *Repeat) Deactivate() {
 	if l.From() != 0 {
 		return
@@ -332,6 +339,7 @@ func combinations(n int, k int) <-chan []int {
 	return ret
 }
 
+// Reduce sets a specific reduction for this token
 func (l *Repeat) Reduce(i uint) error {
 	var count uint
 	reduces := l.reduces()
@@ -434,6 +442,7 @@ func (l *Repeat) reduces() []uint {
 	return reduces
 }
 
+// Reduces returns the number of reductions for this token
 func (l *Repeat) Reduces() uint {
 	if l.reducing || int(l.From()) < len(l.value) {
 		var count uint

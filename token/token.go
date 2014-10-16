@@ -37,12 +37,16 @@ type List interface {
 	InternalReplace(oldToken, newToken Token)
 }
 
-// Forward defines a forward token which can point to another token
+// Forward defines a forward token which can reference another token
 type Forward interface {
+	// Get returns the current referenced token
 	Get() Token
 
+	// InternalGet returns the current referenced internal token
 	InternalGet() Token
+	// InternalLogicalRemove removes the referenced internal token and returns the replacement for the current token or nil if the current token should be removed.
 	InternalLogicalRemove(tok Token) Token
+	// InternalReplace replaces an old with a new internal token if it is referenced by this token
 	InternalReplace(oldToken, newToken Token)
 }
 
@@ -54,6 +58,7 @@ type ForwardToken interface {
 
 // Index defines an index token which provides the index in its parent token
 type Index interface {
+	// Index returns the index of this token in its parent token
 	Index() int
 }
 
@@ -65,8 +70,11 @@ type IndexToken interface {
 
 // Optional defines an optional token which can be (de)activated
 type Optional interface {
+	// IsOptional checks dynamically if this token is in the current state optional
 	IsOptional() bool
+	// Activate activates this token
 	Activate()
+	// Deactivate deactivates this token
 	Deactivate()
 }
 
@@ -90,7 +98,9 @@ type ResetToken interface {
 
 // Reduce defines a reduce token which provides methods to reduce itself and its children
 type Reduce interface {
+	// Reduce sets a specific reduction for this token
 	Reduce(i uint) error
+	// Reduces returns the number of reductions for this token
 	Reduces() uint
 }
 
@@ -102,6 +112,7 @@ type ReduceToken interface {
 
 // Scope defines a scope token which holds a scope
 type Scope interface {
+	// SetScope sets the scope of the token
 	SetScope(variableScope map[string]Token)
 }
 
@@ -117,6 +128,7 @@ type Variable interface {
 	Index
 	Scope
 
+	// Name returns the name of the variable
 	Name() string
 }
 
@@ -127,6 +139,8 @@ type VariableToken interface {
 }
 
 ////////////////////////
+
+// TODO put this somewhere else?
 
 // PermutationErrorType the permutation error type
 type PermutationErrorType int
@@ -181,7 +195,7 @@ type InternalParser struct { // TODO move this some place else
 }
 
 ////////////////////////
-// was in parser.go but "import cycle not allowed" forced me to do this
+// TODO was in parser.go but "import cycle not allowed" forced me to do this
 
 // ParserErrorType the parser error type
 type ParserErrorType int

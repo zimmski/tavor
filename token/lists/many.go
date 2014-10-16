@@ -128,6 +128,7 @@ func (l *Many) InternalLen() int {
 	return len(l.tokens)
 }
 
+// InternalLogicalRemove removes the referenced internal token and returns the replacement for the current token or nil if the current token should be removed.
 func (l *Many) InternalLogicalRemove(tok token.Token) token.Token {
 	for i := 0; i < len(l.tokens); i++ {
 		if l.tokens[i] == tok {
@@ -160,6 +161,7 @@ func (l *Many) InternalLogicalRemove(tok token.Token) token.Token {
 	return l
 }
 
+// InternalReplace replaces an old with a new internal token if it is referenced by this token
 func (l *Many) InternalReplace(oldToken, newToken token.Token) {
 	for i := 0; i < len(l.tokens); i++ {
 		if l.tokens[i] == oldToken {

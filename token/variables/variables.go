@@ -19,6 +19,7 @@ func NewVariable(name string, token token.Token) *Variable {
 	}
 }
 
+// Name returns the name of the variable
 func (v *Variable) Name() string {
 	return v.name
 }
@@ -74,14 +75,17 @@ func (v *Variable) String() string {
 
 // ForwardToken interface methods
 
+// Get returns the current referenced token
 func (v *Variable) Get() token.Token {
 	return v.token
 }
 
+// InternalGet returns the current referenced internal token
 func (v *Variable) InternalGet() token.Token {
 	return v.token
 }
 
+// InternalLogicalRemove removes the referenced internal token and returns the replacement for the current token or nil if the current token should be removed.
 func (v *Variable) InternalLogicalRemove(tok token.Token) token.Token {
 	if v.token == tok {
 		return nil
@@ -90,6 +94,7 @@ func (v *Variable) InternalLogicalRemove(tok token.Token) token.Token {
 	return v
 }
 
+// InternalReplace replaces an old with a new internal token if it is referenced by this token
 func (v *Variable) InternalReplace(oldToken, newToken token.Token) {
 	if v.token == oldToken {
 		v.token = newToken
@@ -98,6 +103,7 @@ func (v *Variable) InternalReplace(oldToken, newToken token.Token) {
 
 // IndexToken interface methods
 
+// Index returns the index of this token in its parent token
 func (v *Variable) Index() int {
 	if p, ok := v.token.(token.IndexToken); ok {
 		return p.Index()
@@ -108,6 +114,7 @@ func (v *Variable) Index() int {
 
 // ScopeToken interface methods
 
+// SetScope sets the scope of the token
 func (v *Variable) SetScope(variableScope map[string]token.Token) {
 	variableScope[v.name] = v
 }
@@ -192,14 +199,17 @@ func (v *VariableValue) String() string {
 
 // ForwardToken interface methods
 
+// Get returns the current referenced token
 func (v *VariableValue) Get() token.Token {
 	return nil
 }
 
+// InternalGet returns the current referenced internal token
 func (v *VariableValue) InternalGet() token.Token {
 	return v.variable
 }
 
+// InternalLogicalRemove removes the referenced internal token and returns the replacement for the current token or nil if the current token should be removed.
 func (v *VariableValue) InternalLogicalRemove(tok token.Token) token.Token {
 	if v.variable == tok {
 		return nil
@@ -208,6 +218,7 @@ func (v *VariableValue) InternalLogicalRemove(tok token.Token) token.Token {
 	return v
 }
 
+// InternalReplace replaces an old with a new internal token if it is referenced by this token
 func (v *VariableValue) InternalReplace(oldToken, newToken token.Token) {
 	if v.variable == oldToken {
 		v.variable = newToken.(token.VariableToken)
@@ -216,12 +227,14 @@ func (v *VariableValue) InternalReplace(oldToken, newToken token.Token) {
 
 // IndexToken interface methods
 
+// Index returns the index of this token in its parent token
 func (v *VariableValue) Index() int {
 	return v.variable.Index()
 }
 
 // ScopeToken interface methods
 
+// SetScope sets the scope of the token
 func (v *VariableValue) SetScope(variableScope map[string]token.Token) {
 	tok := variableScope[v.variable.Name()]
 

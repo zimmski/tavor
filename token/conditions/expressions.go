@@ -85,10 +85,12 @@ func (c *BooleanTrue) InternalLen() int {
 	return 0
 }
 
+// InternalLogicalRemove removes the referenced internal token and returns the replacement for the current token or nil if the current token should be removed.
 func (c *BooleanTrue) InternalLogicalRemove(tok token.Token) token.Token {
 	panic("This should never happen")
 }
 
+// InternalReplace replaces an old with a new internal token if it is referenced by this token
 func (c *BooleanTrue) InternalReplace(oldToken, newToken token.Token) {
 	panic("This should never happen")
 }
@@ -177,6 +179,7 @@ func (c *BooleanEqual) InternalLen() int {
 	return 2
 }
 
+// InternalLogicalRemove removes the referenced internal token and returns the replacement for the current token or nil if the current token should be removed.
 func (c *BooleanEqual) InternalLogicalRemove(tok token.Token) token.Token {
 	if tok == c.a || tok == c.b {
 		return nil
@@ -185,6 +188,7 @@ func (c *BooleanEqual) InternalLogicalRemove(tok token.Token) token.Token {
 	return c
 }
 
+// InternalReplace replaces an old with a new internal token if it is referenced by this token
 func (c *BooleanEqual) InternalReplace(oldToken, newToken token.Token) {
 	if oldToken == c.a {
 		c.a = newToken
@@ -254,6 +258,7 @@ func (c *VariableDefined) String() string {
 
 // ScopeToken interface methods
 
+// SetScope sets the scope of the token
 func (c *VariableDefined) SetScope(variableScope map[string]token.Token) {
 	nScope := make(map[string]token.Token, len(variableScope))
 	for k, v := range variableScope {
@@ -343,14 +348,17 @@ func (c *ExpressionPointer) String() string {
 
 // ForwardToken interface methods
 
+// Get returns the current referenced token
 func (c *ExpressionPointer) Get() token.Token {
 	return nil
 }
 
+// InternalGet returns the current referenced internal token
 func (c *ExpressionPointer) InternalGet() token.Token {
 	return c.token
 }
 
+// InternalLogicalRemove removes the referenced internal token and returns the replacement for the current token or nil if the current token should be removed.
 func (c *ExpressionPointer) InternalLogicalRemove(tok token.Token) token.Token {
 	if c.token == tok {
 		return nil
@@ -359,6 +367,7 @@ func (c *ExpressionPointer) InternalLogicalRemove(tok token.Token) token.Token {
 	return c
 }
 
+// InternalReplace replaces an old with a new internal token if it is referenced by this token
 func (c *ExpressionPointer) InternalReplace(oldToken, newToken token.Token) {
 	if c.token == oldToken {
 		c.token = newToken
@@ -367,6 +376,7 @@ func (c *ExpressionPointer) InternalReplace(oldToken, newToken token.Token) {
 
 // ScopeToken interface methods
 
+// SetScope sets the scope of the token
 func (c *ExpressionPointer) SetScope(variableScope map[string]token.Token) {
 	tok := c.token
 

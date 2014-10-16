@@ -74,6 +74,7 @@ func (l *ListItem) String() string {
 
 // IndexToken interface methods
 
+// Index returns the index of this token in its parent token
 func (l *ListItem) Index() int {
 	return l.index
 }
@@ -137,6 +138,7 @@ func (l *IndexItem) String() string {
 
 // ScopeToken interface methods
 
+// SetScope sets the scope of the token
 func (l *IndexItem) SetScope(variableScope map[string]token.Token) {
 	if tok, ok := l.token.(token.ScopeToken); ok {
 		tok.SetScope(variableScope)
@@ -249,6 +251,7 @@ func (l *UniqueItem) String() string {
 
 // IndexToken interface methods
 
+// Index returns the index of this token in its parent token
 func (l *UniqueItem) Index() int {
 	if l.index == -1 {
 		l.pick(rand.NewIncrementRand(0))

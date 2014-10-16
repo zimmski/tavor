@@ -92,6 +92,7 @@ func (c *Optional) String() string {
 
 // ForwardToken interface methods
 
+// Get returns the current referenced token
 func (c *Optional) Get() token.Token {
 	if c.value {
 		return nil
@@ -100,10 +101,12 @@ func (c *Optional) Get() token.Token {
 	return c.token
 }
 
+// InternalGet returns the current referenced internal token
 func (c *Optional) InternalGet() token.Token {
 	return c.token
 }
 
+// InternalLogicalRemove removes the referenced internal token and returns the replacement for the current token or nil if the current token should be removed.
 func (c *Optional) InternalLogicalRemove(tok token.Token) token.Token {
 	if c.token == tok {
 		return nil
@@ -112,6 +115,7 @@ func (c *Optional) InternalLogicalRemove(tok token.Token) token.Token {
 	return c
 }
 
+// InternalReplace replaces an old with a new internal token if it is referenced by this token
 func (c *Optional) InternalReplace(oldToken, newToken token.Token) {
 	if c.token == oldToken {
 		c.token = newToken
@@ -120,12 +124,18 @@ func (c *Optional) InternalReplace(oldToken, newToken token.Token) {
 
 // OptionalToken interface methods
 
+// IsOptional checks dynamically if this token is in the current state optional
 func (c *Optional) IsOptional() bool { return true }
-func (c *Optional) Activate()        { c.value = false }
-func (c *Optional) Deactivate()      { c.value = true }
+
+// Activate activates this token
+func (c *Optional) Activate() { c.value = false }
+
+// Deactivate deactivates this token
+func (c *Optional) Deactivate() { c.value = true }
 
 // ReduceToken interface methods
 
+// Reduce sets a specific reduction for this token
 func (c *Optional) Reduce(i uint) error {
 	reduces := c.Permutations()
 
@@ -145,6 +155,7 @@ func (c *Optional) Reduce(i uint) error {
 	return nil
 }
 
+// Reduces returns the number of reductions for this token
 func (c *Optional) Reduces() uint {
 	if c.reducing || !c.value {
 		return 2
