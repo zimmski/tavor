@@ -16,7 +16,7 @@ type almostAllPermutationsLevel struct {
 }
 
 // AlmostAllPermutationsStrategy implements a fuzzing strategy that generates "almost" all possible permutations of a token graph.
-// Every iteration of the strategy generates a new permutation. The generation is deterministically. This strategy does not cover all repititional permutations which can be helpful when less permutations are needed but a almost complete permutation coverage is still needed. For example the definition +2(?(1)?(2)) does not result in 16 permutations but instead it results in only 7.
+// Every iteration of the strategy generates a new permutation. The generation is deterministic. This strategy does not cover all repititional permutations which can be helpful when less permutations are needed but a almost complete permutation coverage is still needed. For example the definition +2(?(1)?(2)) does not result in 16 permutations but instead it results in only 7.
 type AlmostAllPermutationsStrategy struct {
 	root token.Token
 

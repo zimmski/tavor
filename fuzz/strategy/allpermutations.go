@@ -16,7 +16,7 @@ type allPermutationsLevel struct {
 }
 
 // AllPermutationsStrategy implements a fuzzing strategy that generates all possible permutations of a token graph.
-// Every iteration of the strategy generates a new permutation. The generation is deterministically. Since this strategy really produces every possible permutation of a token graph, it is advised to only use the strategy on graphs with few states since the state explosion problem manifests itself quite fast.
+// Every iteration of the strategy generates a new permutation. The generation is deterministic. Since this strategy really produces every possible permutation of a token graph, it is advised to only use the strategy on graphs with few states since the state explosion problem manifests itself quite fast.
 type AllPermutationsStrategy struct {
 	root token.Token
 }

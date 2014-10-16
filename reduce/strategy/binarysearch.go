@@ -16,10 +16,13 @@ type binarySearchLevel struct {
 	children []binarySearchLevel
 }
 
+// BinarySearchStrategy implements a reduce strategy that reduces the data through a binary search alike algorithm.
+// Every step of the strategy generates a new valid token graph state. The generation is deterministic. The algorithm starts by deactivating all optional tokens, this includes for example reducing lists to their minimum repetition. Each step uses the feedback to determine which tokens to reactivate next. All steps use a binary search alike algorithm to focus the reactivation only on a portion of the available tokens.
 type BinarySearchStrategy struct {
 	root token.Token
 }
 
+// NewBinarySearch returns a new instance of the binary search reduce strategy
 func NewBinarySearch(tok token.Token) *BinarySearchStrategy {
 	s := &BinarySearchStrategy{
 		root: tok,
@@ -98,6 +101,8 @@ func (s *BinarySearchStrategy) setReduction(tok token.ReduceToken, reduction uin
 	}
 }
 
+// Reduce starts the first step of the reduce strategy returning a channel which controls the step flow and a channel for the feedback on the step.
+// The channel returns a value if the step is complete and waits with calculating the next step until a value is put in and feedback is given. The channels are automatically closed when there are no more steps. The error return argument is not nil if an error occurs during the setup of the reduce strategy.
 func (s *BinarySearchStrategy) Reduce() (chan struct{}, chan<- ReduceFeedbackType, error) {
 	if tavor.LoopExists(s.root) {
 		return nil, nil, &Error{

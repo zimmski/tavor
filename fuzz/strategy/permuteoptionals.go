@@ -12,7 +12,7 @@ import (
 )
 
 // PermuteOptionalsStrategy implements a fuzzing strategy that generates permutations of only optional tokens of a token graph.
-// Every iteration of the strategy generates a new permutation. The generation is deterministically. This strategy searches the graph for tokens who implement the OptionalToken interface and permutates over them by deactivating or activating them. The permutations always start from the deactivated states so that minimum data is generated first.
+// Every iteration of the strategy generates a new permutation. The generation is deterministic. This strategy searches the graph for tokens who implement the OptionalToken interface and permutates over them by deactivating or activating them. The permutations always start from the deactivated states so that minimum data is generated first.
 type PermuteOptionalsStrategy struct {
 	root token.Token
 }
