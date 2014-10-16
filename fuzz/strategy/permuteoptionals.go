@@ -60,7 +60,7 @@ func (s *PermuteOptionalsStrategy) findOptionals(r rand.Rand, root token.Token, 
 			if !t.IsOptional() {
 				opts := s.findOptionals(r, t, true)
 
-				if len(opts) != 0 {
+				if len(opts) > 0 {
 					optionals = append(optionals, opts...)
 				}
 
@@ -113,7 +113,7 @@ func (s *PermuteOptionalsStrategy) Fuzz(r rand.Rand) (chan struct{}, error) {
 
 		optionals := s.findOptionals(r, s.root, false)
 
-		if len(optionals) != 0 {
+		if len(optionals) > 0 {
 			if !s.fuzz(r, continueFuzzing, optionals) {
 				return
 			}
@@ -161,7 +161,7 @@ func (s *PermuteOptionalsStrategy) fuzz(r rand.Rand, continueFuzzing chan struct
 
 				children := s.findOptionals(r, optionals[i], true)
 
-				if len(children) != 0 {
+				if len(children) > 0 {
 					if !s.fuzz(r, continueFuzzing, children) {
 						return false
 					}

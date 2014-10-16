@@ -139,7 +139,7 @@ func (l *Least) InternalReplace(oldToken, newToken token.Token) {
 
 func (l *Least) IsOptional() bool { return l.n == 0 }
 func (l *Least) Activate() {
-	if l.n != 0 {
+	if l.n > 0 {
 		return
 	}
 
@@ -148,7 +148,7 @@ func (l *Least) Activate() {
 	}
 }
 func (l *Least) Deactivate() {
-	if l.n != 0 {
+	if l.n > 0 {
 		return
 	}
 

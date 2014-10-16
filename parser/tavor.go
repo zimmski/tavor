@@ -1109,7 +1109,7 @@ SCOPE:
 		break SCOPE
 	}
 
-	if len(ifPairs) != 0 {
+	if len(ifPairs) > 0 {
 		panic("TODO if without endif")
 	}
 

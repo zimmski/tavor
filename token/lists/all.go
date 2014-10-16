@@ -51,7 +51,7 @@ func (l *All) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	for i := range l.tokens {
 		nex, errs := l.tokens[i].Parse(pars, cur)
 
-		if len(errs) != 0 {
+		if len(errs) > 0 {
 			return nex, errs
 		}
 

@@ -45,5 +45,5 @@ func TestGraphDot(t *testing.T) {
 		primitives.NewConstantInt(4),
 	), &got)
 
-	True(t, len(got.String()) != 0)
+	True(t, len(got.String()) > 0)
 }

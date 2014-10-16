@@ -114,7 +114,7 @@ func (s *BinarySearchStrategy) Reduce() (chan struct{}, chan<- ReduceFeedbackTyp
 
 		tree := s.getTree(s.root, false)
 
-		if len(tree) != 0 {
+		if len(tree) > 0 {
 			log.Debug("start reducing step")
 
 			if contin := s.reduce(continueReducing, feedbackReducing, tree); !contin {
@@ -173,7 +173,7 @@ func (s *BinarySearchStrategy) reduce(continueReducing chan struct{}, feedbackRe
 
 		c.children = s.getTree(c.token, true)
 
-		if len(c.children) != 0 {
+		if len(c.children) > 0 {
 			log.Debugf("reduce the children of (%p)%#v", c.token, c.token, c.reduction, c.maxReductions)
 
 			s.reduce(continueReducing, feedbackReducing, c.children)

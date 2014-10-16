@@ -56,7 +56,7 @@ func (f *PositiveBoundaryValueAnalysisFilter) Apply(tok token.Token) ([]token.To
 	}
 
 	// upper boundary
-	if l != 1 {
+	if l > 1 {
 		if err := t.Permutation(l); err != nil {
 			panic(err)
 		}

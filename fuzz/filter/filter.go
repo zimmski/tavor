@@ -90,13 +90,13 @@ func ApplyFilters(filters []Filter, root token.Token) (token.Token, error) {
 					return nil, fmt.Errorf("error in fuzzing filter %v: %s", filters[i], err)
 				}
 
-				if len(replacement) != 0 {
+				if len(replacement) > 0 {
 					newTokens = append(newTokens, replacement...)
 				}
 			}
 
 			// replace if there is something to replace with
-			if l := len(newTokens); l != 0 {
+			if l := len(newTokens); l > 0 {
 				for i := range newTokens {
 					known[newTokens[i]] = struct{}{}
 				}

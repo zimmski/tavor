@@ -77,7 +77,7 @@ func (l *Once) permutation(i uint) {
 	v := make([]int, 0, le)
 
 	n := uint(le)
-	for n != 0 {
+	for n > 0 {
 		var pers uint = 1
 		for j := uint(2); j <= n; j++ {
 			pers *= j

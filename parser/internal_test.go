@@ -69,7 +69,7 @@ func TestInternalParseErrors(t *testing.T) {
 func checkParse(t *testing.T, root token.Token, data string) {
 	errs := ParseInternal(root, strings.NewReader(data))
 
-	if len(errs) != 0 {
+	if len(errs) > 0 {
 		fmt.Printf("ERRS: %+v\n", errs)
 
 		panic(fmt.Sprintf("Expected nil, but got: %#v", errs))

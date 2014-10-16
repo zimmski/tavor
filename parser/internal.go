@@ -30,7 +30,7 @@ func ParseInternal(root token.Token, src io.Reader) []error {
 
 	nex, errs := root.Parse(p, 0)
 
-	if len(errs) != 0 {
+	if len(errs) > 0 {
 		log.Debugf("internal parsing failed %v", errs)
 
 		return errs

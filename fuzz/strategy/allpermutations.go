@@ -115,7 +115,7 @@ func (s *AllPermutationsStrategy) fuzz(continueFuzzing chan struct{}, tree []all
 
 STEP:
 	for {
-		if justastep && len(tree[0].children) != 0 {
+		if justastep && len(tree[0].children) > 0 {
 			log.Debugf("STEP FURTHER INTO")
 
 			if contin, step := s.fuzz(continueFuzzing, tree[0].children, justastep); !contin {
@@ -130,7 +130,7 @@ STEP:
 		} else {
 			log.Debugf("permute %d->%#v", 0, tree[0])
 
-			if tree[0].permutation != 1 {
+			if tree[0].permutation > 1 {
 				s.setPermutation(tree[0].token, tree[0].permutation)
 				tree[0].children = s.getTree(tree[0].token, true)
 
@@ -141,7 +141,7 @@ STEP:
 				}
 			}
 
-			if len(tree[0].children) != 0 {
+			if len(tree[0].children) > 0 {
 				if contin, step := s.fuzz(continueFuzzing, tree[0].children, justastep); !contin {
 					return false, false
 				} else if step {
@@ -174,7 +174,7 @@ STEP:
 
 				i++
 
-				if len(tree[i].children) != 0 {
+				if len(tree[i].children) > 0 {
 					log.Debugf("CHECK children %#v", tree[i])
 
 					if contin, step := s.fuzz(continueFuzzing, tree[i].children, true); !contin {

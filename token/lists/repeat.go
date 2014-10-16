@@ -102,7 +102,7 @@ func (l *Repeat) Parse(pars *token.InternalParser, cur int) (int, []error) {
 
 		nex, errs := tok.Parse(pars, cur)
 
-		if len(errs) != 0 {
+		if len(errs) > 0 {
 			return cur, errs
 		}
 
@@ -115,7 +115,7 @@ func (l *Repeat) Parse(pars *token.InternalParser, cur int) (int, []error) {
 
 		nex, errs := tok.Parse(pars, cur)
 
-		if len(errs) != 0 {
+		if len(errs) > 0 {
 			break
 		}
 
@@ -396,7 +396,7 @@ func factorial(n uint) uint {
 	c := n
 	n--
 
-	for n != 0 {
+	for n > 0 {
 		c *= n
 		n--
 	}

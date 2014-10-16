@@ -97,7 +97,7 @@ func (s *AlmostAllPermutationsStrategy) Fuzz(r rand.Rand) (chan struct{}, error)
 
 		level := s.getLevel(s.root, false)
 
-		if len(level) != 0 {
+		if len(level) > 0 {
 			log.Debug("start fuzzing step")
 
 			if !s.fuzz(continueFuzzing, level) {
@@ -169,10 +169,10 @@ STEP:
 
 			s.setTokenPermutation(level[i].token, level[i].permutation)
 
-			if t, ok := level[i].token.(token.OptionalToken); !ok || !t.IsOptional() || level[i].permutation != 1 {
+			if t, ok := level[i].token.(token.OptionalToken); !ok || !t.IsOptional() || level[i].permutation > 1 {
 				children := s.getLevel(level[i].token, true) // set all children to permutation 1
 
-				if len(children) != 0 {
+				if len(children) > 0 {
 					if !s.fuzz(continueFuzzing, children) {
 						return false
 					}

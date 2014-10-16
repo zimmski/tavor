@@ -201,7 +201,7 @@ func checkArguments() string {
 		exitError(err.Error())
 	}
 
-	completion := len(os.Getenv("GO_FLAGS_COMPLETION")) != 0
+	completion := len(os.Getenv("GO_FLAGS_COMPLETION")) > 0
 
 	_, err := p.Parse()
 	if (opts.General.Help || len(os.Args) == 1) && !completion {
@@ -335,7 +335,7 @@ func folderExists(folder string) error {
 }
 
 func applyFilters(filterNames []fuzzFilter, doc token.Token) token.Token {
-	if len(filterNames) != 0 {
+	if len(filterNames) > 0 {
 		var err error
 		var filters []tavorFuzzFilter.Filter
 
@@ -415,7 +415,7 @@ func main() {
 		log.Infof("using %s fuzzing strategy", opts.Fuzz.Strategy)
 
 		folder := opts.Fuzz.ResultFolder
-		if len(folder) != 0 && folder[len(folder)-1] != '/' {
+		if len(folder) > 0 && folder[len(folder)-1] != '/' {
 			folder += "/"
 		}
 
