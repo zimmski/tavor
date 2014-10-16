@@ -7,11 +7,13 @@ import (
 	"github.com/zimmski/tavor/token/primitives"
 )
 
+// Variable implements general variable token which references a token as its value and forwards all token functions to its token.
 type Variable struct {
 	name  string
 	token token.Token
 }
 
+// NewVariable returns a new instance of a Variable token
 func NewVariable(name string, token token.Token) *Variable {
 	return &Variable{
 		name:  name,
@@ -34,20 +36,25 @@ func (v *Variable) Clone() token.Token {
 	}
 }
 
+// Fuzz fuzzes this token using the random generator by choosing one of the possible permutations for this token
 func (v *Variable) Fuzz(r rand.Rand) {
 	// do nothing
 }
 
+// FuzzAll calls Fuzz for this token and then FuzzAll for all children of this token
 func (v *Variable) FuzzAll(r rand.Rand) {
 	v.Fuzz(r)
 
 	v.token.Fuzz(r)
 }
 
+// Parse tries to parse the token beginning from the current position in the parser data.
+// If the parsing is successful the error argument is nil and the next current position after the token is returned.
 func (v *Variable) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	panic("TODO implement")
 }
 
+// Permutation sets a specific permutation for this token
 func (v *Variable) Permutation(i uint) error {
 	permutations := v.Permutations()
 
@@ -61,10 +68,12 @@ func (v *Variable) Permutation(i uint) error {
 	return nil
 }
 
+// Permutations returns the number of permutations for this token
 func (v *Variable) Permutations() uint {
 	return 1
 }
 
+// PermutationsAll returns the number of all possible permutations for this token including its children
 func (v *Variable) PermutationsAll() uint {
 	return v.token.PermutationsAll()
 }
@@ -119,6 +128,7 @@ func (v *Variable) SetScope(variableScope map[string]token.Token) {
 	variableScope[v.name] = v
 }
 
+// VariableSave is based on the general Variable token but does prevent the output of the referenced token
 type VariableSave struct {
 	Variable
 }
@@ -139,6 +149,7 @@ func (v *VariableSave) String() string {
 	return ""
 }
 
+// NewVariableSave returns a new instance of a VariableSave token
 func NewVariableSave(name string, token token.Token) *VariableSave {
 	return &VariableSave{
 		Variable: Variable{
@@ -148,10 +159,12 @@ func NewVariableSave(name string, token token.Token) *VariableSave {
 	}
 }
 
+// VariableValue implements a token which references a Variable token to output its referenced token
 type VariableValue struct {
 	variable token.VariableToken
 }
 
+// NewVariableValue returns a new instance of a VariableValue token
 func NewVariableValue(variable token.VariableToken) *VariableValue {
 	return &VariableValue{
 		variable: variable,
@@ -167,28 +180,35 @@ func (v *VariableValue) Clone() token.Token {
 	}
 }
 
+// Fuzz fuzzes this token using the random generator by choosing one of the possible permutations for this token
 func (v *VariableValue) Fuzz(r rand.Rand) {
 	// do nothing
 }
 
+// FuzzAll calls Fuzz for this token and then FuzzAll for all children of this token
 func (v *VariableValue) FuzzAll(r rand.Rand) {
 	v.Fuzz(r)
 }
 
+// Parse tries to parse the token beginning from the current position in the parser data.
+// If the parsing is successful the error argument is nil and the next current position after the token is returned.
 func (v *VariableValue) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	panic("TODO implement")
 }
 
+// Permutation sets a specific permutation for this token
 func (v *VariableValue) Permutation(i uint) error {
 	// do nothing
 
 	return nil
 }
 
+// Permutations returns the number of permutations for this token
 func (v *VariableValue) Permutations() uint {
 	return 1
 }
 
+// PermutationsAll returns the number of all possible permutations for this token including its children
 func (v *VariableValue) PermutationsAll() uint {
 	return 1
 }

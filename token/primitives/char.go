@@ -16,6 +16,8 @@ var characterClassEscapes = map[rune][]rune{
 	'w': []rune{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'N', 'M', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'n', 'm', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '_'},
 }
 
+// CharacterClass implements a char token which holds a pattern of characters and character classes
+// Each character class characters is added to the set of characters of the token. Every permutations chooses one character out of the available set of characters as the current value of the token.
 type CharacterClass struct {
 	chars       []rune
 	charsLookup map[rune]struct{}
@@ -25,6 +27,7 @@ type CharacterClass struct {
 	value rune
 }
 
+// NewCharacterClass returns a new instance of a CharacterClass token
 func NewCharacterClass(pattern string) *CharacterClass {
 	if pattern == "" {
 		panic("pattern is empty")
@@ -108,16 +111,20 @@ func (c *CharacterClass) Clone() token.Token {
 	}
 }
 
+// Fuzz fuzzes this token using the random generator by choosing one of the possible permutations for this token
 func (c *CharacterClass) Fuzz(r rand.Rand) {
 	i := uint(r.Intn(len(c.chars)))
 
 	c.permutation(i)
 }
 
+// FuzzAll calls Fuzz for this token and then FuzzAll for all children of this token
 func (c *CharacterClass) FuzzAll(r rand.Rand) {
 	c.Fuzz(r)
 }
 
+// Parse tries to parse the token beginning from the current position in the parser data.
+// If the parsing is successful the error argument is nil and the next current position after the token is returned.
 func (c *CharacterClass) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	// TODO FIXME NOW we can see the need to put pars.Data into a reader... since we cannot do a readRune here!
 	v := rune(pars.Data[cur])
@@ -138,6 +145,7 @@ func (c *CharacterClass) permutation(i uint) {
 	c.value = c.chars[i]
 }
 
+// Permutation sets a specific permutation for this token
 func (c *CharacterClass) Permutation(i uint) error {
 	permutations := c.Permutations()
 
@@ -152,10 +160,12 @@ func (c *CharacterClass) Permutation(i uint) error {
 	return nil
 }
 
+// Permutations returns the number of permutations for this token
 func (c *CharacterClass) Permutations() uint {
 	return uint(len(c.chars))
 }
 
+// PermutationsAll returns the number of all possible permutations for this token including its children
 func (c *CharacterClass) PermutationsAll() uint {
 	return c.Permutations()
 }

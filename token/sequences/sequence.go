@@ -8,12 +8,15 @@ import (
 	"github.com/zimmski/tavor/token"
 )
 
+// Sequence implements a general sequence token which can generate Item tokens to use the internal sequence
+// The sequence starts its numeration at the given start value and increases with every new sequence numeration its current value by the given step value.
 type Sequence struct {
 	start int
 	step  int
 	value int
 }
 
+// NewSequence returns a new instance of a Sequence token with a start value and a step value
 func NewSequence(start, step int) *Sequence {
 	return &Sequence{
 		start: start,
@@ -53,6 +56,7 @@ func (s *Sequence) existing(r rand.Rand, except token.Token) int {
 	}
 }
 
+// ExistingItem returns a new instance of a SequenceExistingItem token referencing the sequence and holding the starting value of the sequence as its current value
 func (s *Sequence) ExistingItem(except token.Token) *SequenceExistingItem {
 	v := -1 // TODO there should be some kind of real nil value
 
@@ -67,6 +71,7 @@ func (s *Sequence) ExistingItem(except token.Token) *SequenceExistingItem {
 	}
 }
 
+// Item returns a new instance of a SequenceItem token referencing the sequence and generating and holding a new sequence numeration
 func (s *Sequence) Item() *SequenceItem {
 	return &SequenceItem{
 		sequence: s,
@@ -74,6 +79,7 @@ func (s *Sequence) Item() *SequenceItem {
 	}
 }
 
+// Next generates a new sequence numeration
 func (s *Sequence) Next() int {
 	c := s.value
 
@@ -89,6 +95,7 @@ func (s *Sequence) Reset() {
 	s.value = s.start
 }
 
+// ResetItem returns a new intsance of a SequenceResetItem token referencing the sequence
 func (s *Sequence) ResetItem() *SequenceResetItem {
 	return &SequenceResetItem{
 		sequence: s,
@@ -97,17 +104,34 @@ func (s *Sequence) ResetItem() *SequenceResetItem {
 
 // Sequence is an unusable token
 
-func (s *Sequence) Clone() token.Token  { panic("unusable token") }
-func (s *Sequence) Fuzz(r rand.Rand)    { panic("unusable token") }
+// Clone returns a copy of the token and all its children
+func (s *Sequence) Clone() token.Token { panic("unusable token") }
+
+// Fuzz fuzzes this token using the random generator by choosing one of the possible permutations for this token
+func (s *Sequence) Fuzz(r rand.Rand) { panic("unusable token") }
+
+// FuzzAll calls Fuzz for this token and then FuzzAll for all children of this token
 func (s *Sequence) FuzzAll(r rand.Rand) { panic("unusable token") }
+
+// Parse tries to parse the token beginning from the current position in the parser data.
+// If the parsing is successful the error argument is nil and the next current position after the token is returned.
 func (s *Sequence) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	panic("unusable token")
 }
-func (s *Sequence) Permutation(i uint) error { panic("unusable token") }
-func (s *Sequence) Permutations() uint       { panic("unusable token") }
-func (s *Sequence) PermutationsAll() uint    { panic("unusable token") }
-func (s *Sequence) String() string           { panic("unusable token") }
 
+// Permutation sets a specific permutation for this token
+func (s *Sequence) Permutation(i uint) error { panic("unusable token") }
+
+// Permutations returns the number of permutations for this token
+func (s *Sequence) Permutations() uint { panic("unusable token") }
+
+// PermutationsAll returns the number of all possible permutations for this token including its children
+func (s *Sequence) PermutationsAll() uint { panic("unusable token") }
+
+func (s *Sequence) String() string { panic("unusable token") }
+
+// SequenceItem implements a sequence item token which holds one distinct value of the sequence
+// A new sequence value is generated on every token permutation.
 type SequenceItem struct {
 	sequence *Sequence
 	value    int
@@ -121,14 +145,18 @@ func (s *SequenceItem) Clone() token.Token {
 	}
 }
 
+// Fuzz fuzzes this token using the random generator by choosing one of the possible permutations for this token
 func (s *SequenceItem) Fuzz(r rand.Rand) {
 	s.permutation(0)
 }
 
+// FuzzAll calls Fuzz for this token and then FuzzAll for all children of this token
 func (s *SequenceItem) FuzzAll(r rand.Rand) {
 	s.Fuzz(r)
 }
 
+// Parse tries to parse the token beginning from the current position in the parser data.
+// If the parsing is successful the error argument is nil and the next current position after the token is returned.
 func (s *SequenceItem) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	panic("TODO implement")
 }
@@ -137,6 +165,7 @@ func (s *SequenceItem) permutation(i uint) {
 	s.value = s.sequence.Next()
 }
 
+// Permutation sets a specific permutation for this token
 func (s *SequenceItem) Permutation(i uint) error {
 	permutations := s.Permutations()
 
@@ -151,10 +180,12 @@ func (s *SequenceItem) Permutation(i uint) error {
 	return nil
 }
 
+// Permutations returns the number of permutations for this token
 func (s *SequenceItem) Permutations() uint {
 	return 1
 }
 
+// PermutationsAll returns the number of all possible permutations for this token including its children
 func (s *SequenceItem) PermutationsAll() uint {
 	return s.Permutations()
 }
@@ -170,6 +201,8 @@ func (s *SequenceItem) Reset() {
 	s.permutation(0)
 }
 
+// SequenceExistingItem implements a sequence item token which holds one existing vluae of the sequence
+// A new existing sequence value is choosen on every token permutation.
 type SequenceExistingItem struct {
 	sequence *Sequence
 	value    int
@@ -190,14 +223,18 @@ func (s *SequenceExistingItem) Clone() token.Token {
 	}
 }
 
+// Fuzz fuzzes this token using the random generator by choosing one of the possible permutations for this token
 func (s *SequenceExistingItem) Fuzz(r rand.Rand) {
 	s.permutation(r)
 }
 
+// FuzzAll calls Fuzz for this token and then FuzzAll for all children of this token
 func (s *SequenceExistingItem) FuzzAll(r rand.Rand) {
 	s.Fuzz(r)
 }
 
+// Parse tries to parse the token beginning from the current position in the parser data.
+// If the parsing is successful the error argument is nil and the next current position after the token is returned.
 func (s *SequenceExistingItem) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	panic("TODO implement")
 }
@@ -206,6 +243,7 @@ func (s *SequenceExistingItem) permutation(r rand.Rand) {
 	s.value = s.sequence.existing(r, s.except)
 }
 
+// Permutation sets a specific permutation for this token
 func (s *SequenceExistingItem) Permutation(i uint) error {
 	permutations := s.Permutations()
 
@@ -220,10 +258,12 @@ func (s *SequenceExistingItem) Permutation(i uint) error {
 	return nil
 }
 
+// Permutations returns the number of permutations for this token
 func (s *SequenceExistingItem) Permutations() uint {
 	return 1
 }
 
+// PermutationsAll returns the number of all possible permutations for this token including its children
 func (s *SequenceExistingItem) PermutationsAll() uint {
 	return s.Permutations()
 }
@@ -278,6 +318,7 @@ func (s *SequenceExistingItem) SetScope(variableScope map[string]token.Token) {
 	}
 }
 
+// SequenceResetItem implements a sequence token item which resets its referencing sequence on every permutation
 type SequenceResetItem struct {
 	sequence *Sequence
 }
@@ -289,14 +330,18 @@ func (s *SequenceResetItem) Clone() token.Token {
 	}
 }
 
+// Fuzz fuzzes this token using the random generator by choosing one of the possible permutations for this token
 func (s *SequenceResetItem) Fuzz(r rand.Rand) {
 	s.permutation(0)
 }
 
+// FuzzAll calls Fuzz for this token and then FuzzAll for all children of this token
 func (s *SequenceResetItem) FuzzAll(r rand.Rand) {
 	s.Fuzz(r)
 }
 
+// Parse tries to parse the token beginning from the current position in the parser data.
+// If the parsing is successful the error argument is nil and the next current position after the token is returned.
 func (s *SequenceResetItem) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	panic("TODO implement")
 }
@@ -305,6 +350,7 @@ func (s *SequenceResetItem) permutation(i uint) {
 	s.sequence.Reset()
 }
 
+// Permutation sets a specific permutation for this token
 func (s *SequenceResetItem) Permutation(i uint) error {
 	permutations := s.Permutations()
 
@@ -319,10 +365,12 @@ func (s *SequenceResetItem) Permutation(i uint) error {
 	return nil
 }
 
+// Permutations returns the number of permutations for this token
 func (s *SequenceResetItem) Permutations() uint {
 	return 1
 }
 
+// PermutationsAll returns the number of all possible permutations for this token including its children
 func (s *SequenceResetItem) PermutationsAll() uint {
 	return s.Permutations()
 }

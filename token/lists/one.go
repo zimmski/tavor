@@ -5,11 +5,14 @@ import (
 	"github.com/zimmski/tavor/token"
 )
 
+// One implements a list token which chooses of a set of referenced token exactly one token
+// Every permutation chooses one token out of the token set.
 type One struct {
 	tokens []token.Token
 	value  int
 }
 
+// NewOne returns a new instance of a One token given the set of tokens
 func NewOne(toks ...token.Token) *One {
 	if len(toks) == 0 {
 		panic("at least one token needed")
@@ -37,18 +40,22 @@ func (l *One) Clone() token.Token {
 	return &c
 }
 
+// Fuzz fuzzes this token using the random generator by choosing one of the possible permutations for this token
 func (l *One) Fuzz(r rand.Rand) {
 	i := r.Intn(len(l.tokens))
 
 	l.permutation(uint(i))
 }
 
+// FuzzAll calls Fuzz for this token and then FuzzAll for all children of this token
 func (l *One) FuzzAll(r rand.Rand) {
 	l.Fuzz(r)
 
 	l.tokens[l.value].FuzzAll(r)
 }
 
+// Parse tries to parse the token beginning from the current position in the parser data.
+// If the parsing is successful the error argument is nil and the next current position after the token is returned.
 func (l *One) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	var nex int
 	var es, errs []error
@@ -72,6 +79,7 @@ func (l *One) permutation(i uint) {
 	l.value = int(i)
 }
 
+// Permutation sets a specific permutation for this token
 func (l *One) Permutation(i uint) error {
 	permutations := l.Permutations()
 
@@ -86,10 +94,12 @@ func (l *One) Permutation(i uint) error {
 	return nil
 }
 
+// Permutations returns the number of permutations for this token
 func (l *One) Permutations() uint {
 	return uint(len(l.tokens))
 }
 
+// PermutationsAll returns the number of all possible permutations for this token including its children
 func (l *One) PermutationsAll() uint {
 	var sum uint
 
@@ -106,6 +116,7 @@ func (l *One) String() string {
 
 // List interface methods
 
+// Get returns the current referenced token at the given index. The error return argument is not nil, if the index is out of bound.
 func (l *One) Get(i int) (token.Token, error) {
 	if i != 0 {
 		return nil, &ListError{ListErrorOutOfBound}
@@ -114,10 +125,12 @@ func (l *One) Get(i int) (token.Token, error) {
 	return l.tokens[l.value], nil
 }
 
+// Len returns the number of the current referenced tokens
 func (l *One) Len() int {
 	return 1
 }
 
+// InternalGet returns the current referenced internal token at the given index. The error return argument is not nil, if the index is out of bound.
 func (l *One) InternalGet(i int) (token.Token, error) {
 	if i < 0 || i >= len(l.tokens) {
 		return nil, &ListError{ListErrorOutOfBound}
@@ -126,6 +139,7 @@ func (l *One) InternalGet(i int) (token.Token, error) {
 	return l.tokens[i], nil
 }
 
+// InternalLen returns the number of referenced internal tokens
 func (l *One) InternalLen() int {
 	return len(l.tokens)
 }

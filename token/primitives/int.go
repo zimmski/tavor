@@ -9,10 +9,12 @@ import (
 	"github.com/zimmski/tavor/token"
 )
 
+// ConstantInt implements an integer token which holds a constant integer
 type ConstantInt struct {
 	value int
 }
 
+// NewConstantInt returns a new instance of a ConstantInt token
 func NewConstantInt(value int) *ConstantInt {
 	return &ConstantInt{
 		value: value,
@@ -26,14 +28,18 @@ func (p *ConstantInt) Clone() token.Token {
 	}
 }
 
+// Fuzz fuzzes this token using the random generator by choosing one of the possible permutations for this token
 func (p *ConstantInt) Fuzz(r rand.Rand) {
 	// do nothing
 }
 
+// FuzzAll calls Fuzz for this token and then FuzzAll for all children of this token
 func (p *ConstantInt) FuzzAll(r rand.Rand) {
 	p.Fuzz(r)
 }
 
+// Parse tries to parse the token beginning from the current position in the parser data.
+// If the parsing is successful the error argument is nil and the next current position after the token is returned.
 func (p *ConstantInt) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	v := strconv.Itoa(p.value)
 	vLen := len(v)
@@ -57,6 +63,7 @@ func (p *ConstantInt) Parse(pars *token.InternalParser, cur int) (int, []error) 
 	return nextIndex, nil
 }
 
+// Permutation sets a specific permutation for this token
 func (p *ConstantInt) Permutation(i uint) error {
 	permutations := p.Permutations()
 
@@ -71,10 +78,12 @@ func (p *ConstantInt) Permutation(i uint) error {
 	return nil
 }
 
+// Permutations returns the number of permutations for this token
 func (p *ConstantInt) Permutations() uint {
 	return 1
 }
 
+// PermutationsAll returns the number of all possible permutations for this token including its children
 func (p *ConstantInt) PermutationsAll() uint {
 	return p.Permutations()
 }
@@ -83,10 +92,12 @@ func (p *ConstantInt) String() string {
 	return strconv.Itoa(p.value)
 }
 
+// RandomInt implements an integer token which holds a random integer which gets newly generated on every permutation
 type RandomInt struct {
 	value int
 }
 
+// NewRandomInt returns a new instance of a RandomInt token
 func NewRandomInt() *RandomInt {
 	return &RandomInt{
 		value: 0,
@@ -100,18 +111,23 @@ func (p *RandomInt) Clone() token.Token {
 	}
 }
 
+// Fuzz fuzzes this token using the random generator by choosing one of the possible permutations for this token
 func (p *RandomInt) Fuzz(r rand.Rand) {
 	p.value = r.Int()
 }
 
+// FuzzAll calls Fuzz for this token and then FuzzAll for all children of this token
 func (p *RandomInt) FuzzAll(r rand.Rand) {
 	p.Fuzz(r)
 }
 
+// Parse tries to parse the token beginning from the current position in the parser data.
+// If the parsing is successful the error argument is nil and the next current position after the token is returned.
 func (p *RandomInt) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	panic("TODO implement")
 }
 
+// Permutation sets a specific permutation for this token
 func (p *RandomInt) Permutation(i uint) error {
 	permutations := p.Permutations()
 
@@ -127,10 +143,12 @@ func (p *RandomInt) Permutation(i uint) error {
 	return nil
 }
 
+// Permutations returns the number of permutations for this token
 func (p *RandomInt) Permutations() uint {
 	return 1 // TODO maybe this should be like RangeInt
 }
 
+// PermutationsAll returns the number of all possible permutations for this token including its children
 func (p *RandomInt) PermutationsAll() uint {
 	return p.Permutations()
 }
@@ -139,6 +157,8 @@ func (p *RandomInt) String() string {
 	return strconv.Itoa(p.value)
 }
 
+// RangeInt implements an integer token holding a range of integers
+// Every permutation generates a new value within the defined range and step. For example the range 1 to 10 with step 2 can hold the integers 1, 3, 5, 7 and 9.
 type RangeInt struct {
 	from int
 	to   int
@@ -147,6 +167,7 @@ type RangeInt struct {
 	value int
 }
 
+// NewRangeInt returns a new instance of a RangeInt token with the given range and step value of 1
 func NewRangeInt(from, to int) *RangeInt {
 	if from > to {
 		panic("TODO implement that From can be bigger than To")
@@ -161,6 +182,7 @@ func NewRangeInt(from, to int) *RangeInt {
 	}
 }
 
+// NewRangeIntWithStep returns a new instance of a RangeInt token with the given range and step value
 func NewRangeIntWithStep(from, to, step int) *RangeInt {
 	if from > to {
 		panic("TODO implement that From can be bigger than To")
@@ -178,14 +200,17 @@ func NewRangeIntWithStep(from, to, step int) *RangeInt {
 	}
 }
 
+// From returns the from value of the range
 func (p *RangeInt) From() int {
 	return p.from
 }
 
+// To returns the to value of the range
 func (p *RangeInt) To() int {
 	return p.to
 }
 
+// Step returns the step value
 func (p *RangeInt) Step() int {
 	return p.step
 }
@@ -203,16 +228,20 @@ func (p *RangeInt) Clone() token.Token {
 	}
 }
 
+// Fuzz fuzzes this token using the random generator by choosing one of the possible permutations for this token
 func (p *RangeInt) Fuzz(r rand.Rand) {
 	i := r.Int63n(int64(p.Permutations()))
 
 	p.permutation(uint(i))
 }
 
+// FuzzAll calls Fuzz for this token and then FuzzAll for all children of this token
 func (p *RangeInt) FuzzAll(r rand.Rand) {
 	p.Fuzz(r)
 }
 
+// Parse tries to parse the token beginning from the current position in the parser data.
+// If the parsing is successful the error argument is nil and the next current position after the token is returned.
 func (p *RangeInt) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	if cur == pars.DataLen {
 		return cur, []error{&token.ParserError{
@@ -271,6 +300,7 @@ func (p *RangeInt) permutation(i uint) {
 	p.value = p.from + (int(i) * p.step)
 }
 
+// Permutation sets a specific permutation for this token
 func (p *RangeInt) Permutation(i uint) error {
 	permutations := p.Permutations()
 
@@ -285,6 +315,7 @@ func (p *RangeInt) Permutation(i uint) error {
 	return nil
 }
 
+// Permutations returns the number of permutations for this token
 func (p *RangeInt) Permutations() uint {
 	// TODO FIXME this
 	perms := (p.to-p.from)/p.step + 1
@@ -296,6 +327,7 @@ func (p *RangeInt) Permutations() uint {
 	return uint(perms)
 }
 
+// PermutationsAll returns the number of all possible permutations for this token including its children
 func (p *RangeInt) PermutationsAll() uint {
 	return p.Permutations()
 }

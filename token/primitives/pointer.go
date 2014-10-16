@@ -8,6 +8,7 @@ import (
 	"github.com/zimmski/tavor/token"
 )
 
+// Pointer implements a general pointer token which references a token
 type Pointer struct {
 	token token.Token
 	typ   reflect.Type
@@ -15,6 +16,7 @@ type Pointer struct {
 	cloned bool
 }
 
+// NewPointer returns a new instance of a Pointer token and sets the token reference type to the token's type
 func NewPointer(tok token.Token) *Pointer {
 	return &Pointer{
 		token: tok,
@@ -22,6 +24,7 @@ func NewPointer(tok token.Token) *Pointer {
 	}
 }
 
+// NewEmptyPointer returns a new instance of a Pointer token with a token reference type but without a referenced token
 func NewEmptyPointer(typ interface{}) *Pointer {
 	return &Pointer{
 		token: nil,
@@ -29,6 +32,7 @@ func NewEmptyPointer(typ interface{}) *Pointer {
 	}
 }
 
+// NewTokenPointer returns a new instance of a Pointer token with the token reference type Token but without a referenced token
 func NewTokenPointer(tok token.Token) *Pointer {
 	var tokenType *token.Token
 
@@ -38,6 +42,7 @@ func NewTokenPointer(tok token.Token) *Pointer {
 	}
 }
 
+// Set sets the referenced token which must conform to the pointers token reference type
 func (p *Pointer) Set(o token.Token) error {
 	if o == nil {
 		p.token = nil
@@ -76,10 +81,12 @@ func (p *Pointer) cloneOnFirstUse() {
 	}
 }
 
+// Fuzz fuzzes this token using the random generator by choosing one of the possible permutations for this token
 func (p *Pointer) Fuzz(r rand.Rand) {
 	p.cloneOnFirstUse()
 }
 
+// FuzzAll calls Fuzz for this token and then FuzzAll for all children of this token
 func (p *Pointer) FuzzAll(r rand.Rand) {
 	p.Fuzz(r)
 
@@ -91,10 +98,13 @@ func (p *Pointer) FuzzAll(r rand.Rand) {
 	p.token.FuzzAll(r)
 }
 
+// Parse tries to parse the token beginning from the current position in the parser data.
+// If the parsing is successful the error argument is nil and the next current position after the token is returned.
 func (p *Pointer) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	panic("Pointer token is not allowed during internal parsing")
 }
 
+// Permutation sets a specific permutation for this token
 func (p *Pointer) Permutation(i uint) error {
 	p.cloneOnFirstUse()
 
@@ -111,12 +121,14 @@ func (p *Pointer) Permutation(i uint) error {
 	return nil
 }
 
+// Permutations returns the number of permutations for this token
 func (p *Pointer) Permutations() uint {
 	p.cloneOnFirstUse()
 
 	return 1
 }
 
+// PermutationsAll returns the number of all possible permutations for this token including its children
 func (p *Pointer) PermutationsAll() uint {
 	p.cloneOnFirstUse()
 

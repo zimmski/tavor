@@ -8,12 +8,15 @@ import (
 	"github.com/zimmski/tavor/token"
 )
 
+// Most implements a list token which holds a token that gets repeated 0 to maximum repetition value times
+// Every permutation chooses a repetition value out of the range 0 to maximum repetition value and then generates the repetition of the token.
 type Most struct {
 	n     uint
 	token token.Token
 	value []token.Token
 }
 
+// NewMost returns a new instance of a Most token given the set of tokens and the maximum repetition value
 func NewMost(tok token.Token, n uint) *Most {
 	l := &Most{
 		n:     n,
@@ -45,12 +48,14 @@ func (l *Most) Clone() token.Token {
 	return &c
 }
 
+// Fuzz fuzzes this token using the random generator by choosing one of the possible permutations for this token
 func (l *Most) Fuzz(r rand.Rand) {
 	i := r.Int63n(int64(l.n + 1))
 
 	l.permutation(uint(i))
 }
 
+// FuzzAll calls Fuzz for this token and then FuzzAll for all children of this token
 func (l *Most) FuzzAll(r rand.Rand) {
 	l.Fuzz(r)
 
@@ -59,6 +64,8 @@ func (l *Most) FuzzAll(r rand.Rand) {
 	}
 }
 
+// Parse tries to parse the token beginning from the current position in the parser data.
+// If the parsing is successful the error argument is nil and the next current position after the token is returned.
 func (l *Most) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	panic("TODO implement")
 }
@@ -73,6 +80,7 @@ func (l *Most) permutation(i uint) {
 	l.value = toks
 }
 
+// Permutation sets a specific permutation for this token
 func (l *Most) Permutation(i uint) error {
 	permutations := l.Permutations()
 
@@ -87,10 +95,12 @@ func (l *Most) Permutation(i uint) error {
 	return nil
 }
 
+// Permutations returns the number of permutations for this token
 func (l *Most) Permutations() uint {
 	return l.n + 1
 }
 
+// PermutationsAll returns the number of all possible permutations for this token including its children
 func (l *Most) PermutationsAll() uint {
 	var sum uint = 1
 
@@ -117,6 +127,7 @@ func (l *Most) String() string {
 
 // List interface methods
 
+// Get returns the current referenced token at the given index. The error return argument is not nil, if the index is out of bound.
 func (l *Most) Get(i int) (token.Token, error) {
 	if i < 0 || i >= len(l.value) {
 		return nil, &ListError{ListErrorOutOfBound}
@@ -125,10 +136,12 @@ func (l *Most) Get(i int) (token.Token, error) {
 	return l.value[i], nil
 }
 
+// Len returns the number of the current referenced tokens
 func (l *Most) Len() int {
 	return len(l.value)
 }
 
+// InternalGet returns the current referenced internal token at the given index. The error return argument is not nil, if the index is out of bound.
 func (l *Most) InternalGet(i int) (token.Token, error) {
 	if i != 0 {
 		return nil, &ListError{ListErrorOutOfBound}
@@ -137,6 +150,7 @@ func (l *Most) InternalGet(i int) (token.Token, error) {
 	return l.token, nil
 }
 
+// InternalLen returns the number of referenced internal tokens
 func (l *Most) InternalLen() int {
 	return 1
 }

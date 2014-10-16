@@ -10,18 +10,23 @@ import (
 	"github.com/zimmski/tavor/token/primitives"
 )
 
+// BooleanExpression defines a boolean expression
 type BooleanExpression interface {
-	token.Token
+	token.List
 
+	// Evaluate evaluates the boolean expression and returns its result
 	Evaluate() bool
 }
 
+// BooleanTrue implements a boolean expression which evaluates to always true
 type BooleanTrue struct{}
 
+// NewBooleanTrue returns a new instance of a BooleanTrue token
 func NewBooleanTrue() *BooleanTrue {
 	return &BooleanTrue{}
 }
 
+// Evaluate evaluates the boolean expression and returns its result
 func (c *BooleanTrue) Evaluate() bool {
 	return true
 }
@@ -33,28 +38,35 @@ func (c *BooleanTrue) Clone() token.Token {
 	return &BooleanTrue{}
 }
 
+// Fuzz fuzzes this token using the random generator by choosing one of the possible permutations for this token
 func (c *BooleanTrue) Fuzz(r rand.Rand) {
 	// do nothing
 }
 
+// FuzzAll calls Fuzz for this token and then FuzzAll for all children of this token
 func (c *BooleanTrue) FuzzAll(r rand.Rand) {
 	// do nothing
 }
 
+// Parse tries to parse the token beginning from the current position in the parser data.
+// If the parsing is successful the error argument is nil and the next current position after the token is returned.
 func (c *BooleanTrue) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	panic("This should never happen")
 }
 
+// Permutation sets a specific permutation for this token
 func (c *BooleanTrue) Permutation(i uint) error {
 	// do nothing
 
 	return nil
 }
 
+// Permutations returns the number of permutations for this token
 func (c *BooleanTrue) Permutations() uint {
 	return 1
 }
 
+// PermutationsAll returns the number of all possible permutations for this token including its children
 func (c *BooleanTrue) PermutationsAll() uint {
 	return 1
 }
@@ -65,22 +77,26 @@ func (c *BooleanTrue) String() string {
 
 // List interface methods
 
+// Get returns the current referenced token at the given index. The error return argument is not nil, if the index is out of bound.
 func (c *BooleanTrue) Get(i int) (token.Token, error) {
 	return nil, &lists.ListError{
 		Type: lists.ListErrorOutOfBound,
 	}
 }
 
+// Len returns the number of the current referenced tokens
 func (c *BooleanTrue) Len() int {
 	return 0
 }
 
+// InternalGet returns the current referenced internal token at the given index. The error return argument is not nil, if the index is out of bound.
 func (c *BooleanTrue) InternalGet(i int) (token.Token, error) {
 	return nil, &lists.ListError{
 		Type: lists.ListErrorOutOfBound,
 	}
 }
 
+// InternalLen returns the number of referenced internal tokens
 func (c *BooleanTrue) InternalLen() int {
 	return 0
 }
@@ -95,10 +111,12 @@ func (c *BooleanTrue) InternalReplace(oldToken, newToken token.Token) {
 	panic("This should never happen")
 }
 
+// BooleanEqual implements a boolean expression which compares the value of two tokens
 type BooleanEqual struct {
 	a, b token.Token
 }
 
+// NewBooleanEqual returns a new instance of a BooleanEqual token referencing two tokens
 func NewBooleanEqual(a, b token.Token) *BooleanEqual {
 	return &BooleanEqual{
 		a: a,
@@ -106,6 +124,7 @@ func NewBooleanEqual(a, b token.Token) *BooleanEqual {
 	}
 }
 
+// Evaluate evaluates the boolean expression and returns its result
 func (c *BooleanEqual) Evaluate() bool {
 	return c.a.String() == c.b.String()
 }
@@ -120,28 +139,35 @@ func (c *BooleanEqual) Clone() token.Token {
 	}
 }
 
+// Fuzz fuzzes this token using the random generator by choosing one of the possible permutations for this token
 func (c *BooleanEqual) Fuzz(r rand.Rand) {
 	// do nothing
 }
 
+// FuzzAll calls Fuzz for this token and then FuzzAll for all children of this token
 func (c *BooleanEqual) FuzzAll(r rand.Rand) {
 	// do nothing
 }
 
+// Parse tries to parse the token beginning from the current position in the parser data.
+// If the parsing is successful the error argument is nil and the next current position after the token is returned.
 func (c *BooleanEqual) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	panic("This should never happen")
 }
 
+// Permutation sets a specific permutation for this token
 func (c *BooleanEqual) Permutation(i uint) error {
 	// do nothing
 
 	return nil
 }
 
+// Permutations returns the number of permutations for this token
 func (c *BooleanEqual) Permutations() uint {
 	return 1
 }
 
+// PermutationsAll returns the number of all possible permutations for this token including its children
 func (c *BooleanEqual) PermutationsAll() uint {
 	return 1
 }
@@ -152,16 +178,19 @@ func (c *BooleanEqual) String() string {
 
 // List interface methods
 
+// Get returns the current referenced token at the given index. The error return argument is not nil, if the index is out of bound.
 func (c *BooleanEqual) Get(i int) (token.Token, error) {
 	return nil, &lists.ListError{
 		Type: lists.ListErrorOutOfBound,
 	}
 }
 
+// Len returns the number of the current referenced tokens
 func (c *BooleanEqual) Len() int {
 	return 0
 }
 
+// InternalGet returns the current referenced internal token at the given index. The error return argument is not nil, if the index is out of bound.
 func (c *BooleanEqual) InternalGet(i int) (token.Token, error) {
 	switch i {
 	case 0:
@@ -175,6 +204,7 @@ func (c *BooleanEqual) InternalGet(i int) (token.Token, error) {
 	}
 }
 
+// InternalLen returns the number of referenced internal tokens
 func (c *BooleanEqual) InternalLen() int {
 	return 2
 }
@@ -198,11 +228,13 @@ func (c *BooleanEqual) InternalReplace(oldToken, newToken token.Token) {
 	}
 }
 
+// VariableDefined implements a boolean expression which evaluates if a variable is defined in a given scope
 type VariableDefined struct {
 	name          string
 	variableScope map[string]token.Token
 }
 
+// NewVariableDefined returns a new instance of a VariableDefined token initialzed with the given name and scope
 func NewVariableDefined(name string, variableScope map[string]token.Token) *VariableDefined {
 	return &VariableDefined{
 		name:          name,
@@ -210,6 +242,7 @@ func NewVariableDefined(name string, variableScope map[string]token.Token) *Vari
 	}
 }
 
+// Evaluate evaluates the boolean expression and returns its result
 func (c *VariableDefined) Evaluate() bool {
 	_, ok := c.variableScope[c.name]
 
@@ -226,28 +259,35 @@ func (c *VariableDefined) Clone() token.Token {
 	}
 }
 
+// Fuzz fuzzes this token using the random generator by choosing one of the possible permutations for this token
 func (c *VariableDefined) Fuzz(r rand.Rand) {
 	// do nothing
 }
 
+// FuzzAll calls Fuzz for this token and then FuzzAll for all children of this token
 func (c *VariableDefined) FuzzAll(r rand.Rand) {
 	// do nothing
 }
 
+// Parse tries to parse the token beginning from the current position in the parser data.
+// If the parsing is successful the error argument is nil and the next current position after the token is returned.
 func (c *VariableDefined) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	panic("This should never happen")
 }
 
+// Permutation sets a specific permutation for this token
 func (c *VariableDefined) Permutation(i uint) error {
 	// do nothing
 
 	return nil
 }
 
+// Permutations returns the number of permutations for this token
 func (c *VariableDefined) Permutations() uint {
 	return 1
 }
 
+// PermutationsAll returns the number of all possible permutations for this token including its children
 func (c *VariableDefined) PermutationsAll() uint {
 	return 1
 }
@@ -268,16 +308,19 @@ func (c *VariableDefined) SetScope(variableScope map[string]token.Token) {
 	c.variableScope = nScope
 }
 
+// ExpressionPointer implements a token pointer to an expression token
 type ExpressionPointer struct {
 	token token.Token
 }
 
+// NewExpressionPointer returns a new instance of a ExpressionPointer token referencing the given token
 func NewExpressionPointer(token token.Token) *ExpressionPointer {
 	return &ExpressionPointer{
 		token: token,
 	}
 }
 
+// Evaluate evaluates the boolean expression and returns its result
 func (c *ExpressionPointer) Evaluate() bool {
 	tok := c.token
 
@@ -316,28 +359,35 @@ func (c *ExpressionPointer) Clone() token.Token {
 	}
 }
 
+// Fuzz fuzzes this token using the random generator by choosing one of the possible permutations for this token
 func (c *ExpressionPointer) Fuzz(r rand.Rand) {
 	// do nothing
 }
 
+// FuzzAll calls Fuzz for this token and then FuzzAll for all children of this token
 func (c *ExpressionPointer) FuzzAll(r rand.Rand) {
 	// do nothing
 }
 
+// Parse tries to parse the token beginning from the current position in the parser data.
+// If the parsing is successful the error argument is nil and the next current position after the token is returned.
 func (c *ExpressionPointer) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	panic("This should never happen")
 }
 
+// Permutation sets a specific permutation for this token
 func (c *ExpressionPointer) Permutation(i uint) error {
 	// do nothing
 
 	return nil
 }
 
+// Permutations returns the number of permutations for this token
 func (c *ExpressionPointer) Permutations() uint {
 	return 1
 }
 
+// PermutationsAll returns the number of all possible permutations for this token including its children
 func (c *ExpressionPointer) PermutationsAll() uint {
 	return 1
 }

@@ -5,6 +5,7 @@ import (
 	"github.com/zimmski/tavor/token"
 )
 
+// Optional implements a constraint and optional token which references another token which can be de(activated)
 type Optional struct {
 	token token.Token
 	value bool
@@ -13,6 +14,7 @@ type Optional struct {
 	reducingOriginalValue bool
 }
 
+// NewOptional returns a new instance of a Optional token referencing the given token and setting the initial state to deactivated
 func NewOptional(tok token.Token) *Optional {
 	return &Optional{
 		token: tok,
@@ -30,10 +32,12 @@ func (c *Optional) Clone() token.Token {
 	}
 }
 
+// Fuzz fuzzes this token using the random generator by choosing one of the possible permutations for this token
 func (c *Optional) Fuzz(r rand.Rand) {
 	c.permutation(uint(r.Int() % 2))
 }
 
+// FuzzAll calls Fuzz for this token and then FuzzAll for all children of this token
 func (c *Optional) FuzzAll(r rand.Rand) {
 	c.Fuzz(r)
 
@@ -42,6 +46,8 @@ func (c *Optional) FuzzAll(r rand.Rand) {
 	}
 }
 
+// Parse tries to parse the token beginning from the current position in the parser data.
+// If the parsing is successful the error argument is nil and the next current position after the token is returned.
 func (c *Optional) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	nex, errs := c.token.Parse(pars, cur)
 
@@ -60,6 +66,7 @@ func (c *Optional) permutation(i uint) {
 	c.value = i == 0
 }
 
+// Permutation sets a specific permutation for this token
 func (c *Optional) Permutation(i uint) error {
 	permutations := c.Permutations()
 
@@ -74,10 +81,12 @@ func (c *Optional) Permutation(i uint) error {
 	return nil
 }
 
+// Permutations returns the number of permutations for this token
 func (c *Optional) Permutations() uint {
 	return 2
 }
 
+// PermutationsAll returns the number of all possible permutations for this token including its children
 func (c *Optional) PermutationsAll() uint {
 	return 1 + c.token.PermutationsAll()
 }

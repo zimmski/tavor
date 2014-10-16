@@ -8,11 +8,13 @@ import (
 	"github.com/zimmski/tavor/token/lists"
 )
 
+// AddArithmetic implements an arithmetic token adding the values of two tokens
 type AddArithmetic struct {
 	a token.Token
 	b token.Token
 }
 
+// NewAddArithmetic returns a new instance of a AddArithmetic token
 func NewAddArithmetic(a, b token.Token) *AddArithmetic {
 	return &AddArithmetic{
 		a: a,
@@ -28,10 +30,12 @@ func (e *AddArithmetic) Clone() token.Token {
 	}
 }
 
+// Fuzz fuzzes this token using the random generator by choosing one of the possible permutations for this token
 func (e *AddArithmetic) Fuzz(r rand.Rand) {
 	// do nothing
 }
 
+// FuzzAll calls Fuzz for this token and then FuzzAll for all children of this token
 func (e *AddArithmetic) FuzzAll(r rand.Rand) {
 	e.Fuzz(r)
 
@@ -39,10 +43,13 @@ func (e *AddArithmetic) FuzzAll(r rand.Rand) {
 	e.b.FuzzAll(r)
 }
 
+// Parse tries to parse the token beginning from the current position in the parser data.
+// If the parsing is successful the error argument is nil and the next current position after the token is returned.
 func (e *AddArithmetic) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	panic("TODO implement")
 }
 
+// Permutation sets a specific permutation for this token
 func (e *AddArithmetic) Permutation(i uint) error {
 	permutations := e.Permutations()
 
@@ -56,10 +63,12 @@ func (e *AddArithmetic) Permutation(i uint) error {
 	return nil
 }
 
+// Permutations returns the number of permutations for this token
 func (e *AddArithmetic) Permutations() uint {
 	return 1
 }
 
+// PermutationsAll returns the number of all possible permutations for this token including its children
 func (e *AddArithmetic) PermutationsAll() uint {
 	return e.a.PermutationsAll() * e.b.PermutationsAll()
 }
@@ -79,6 +88,7 @@ func (e *AddArithmetic) String() string {
 
 // List interface methods
 
+// Get returns the current referenced token at the given index. The error return argument is not nil, if the index is out of bound.
 func (e *AddArithmetic) Get(i int) (token.Token, error) {
 	switch i {
 	case 0:
@@ -92,14 +102,17 @@ func (e *AddArithmetic) Get(i int) (token.Token, error) {
 	}
 }
 
+// Len returns the number of the current referenced tokens
 func (e *AddArithmetic) Len() int {
 	return 2
 }
 
+// InternalGet returns the current referenced internal token at the given index. The error return argument is not nil, if the index is out of bound.
 func (e *AddArithmetic) InternalGet(i int) (token.Token, error) {
 	return e.Get(i)
 }
 
+// InternalLen returns the number of referenced internal tokens
 func (e *AddArithmetic) InternalLen() int {
 	return e.Len()
 }
@@ -123,11 +136,13 @@ func (e *AddArithmetic) InternalReplace(oldToken, newToken token.Token) {
 	}
 }
 
+// SubArithmetic implements an arithmetic token subtracting the values of two tokens
 type SubArithmetic struct {
 	a token.Token
 	b token.Token
 }
 
+// NewSubArithmetic returns a new instance of a SubArithmetic token
 func NewSubArithmetic(a, b token.Token) *SubArithmetic {
 	return &SubArithmetic{
 		a: a,
@@ -143,10 +158,12 @@ func (e *SubArithmetic) Clone() token.Token {
 	}
 }
 
+// Fuzz fuzzes this token using the random generator by choosing one of the possible permutations for this token
 func (e *SubArithmetic) Fuzz(r rand.Rand) {
 	// do nothing
 }
 
+// FuzzAll calls Fuzz for this token and then FuzzAll for all children of this token
 func (e *SubArithmetic) FuzzAll(r rand.Rand) {
 	e.Fuzz(r)
 
@@ -154,10 +171,13 @@ func (e *SubArithmetic) FuzzAll(r rand.Rand) {
 	e.b.FuzzAll(r)
 }
 
+// Parse tries to parse the token beginning from the current position in the parser data.
+// If the parsing is successful the error argument is nil and the next current position after the token is returned.
 func (e *SubArithmetic) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	panic("TODO implement")
 }
 
+// Permutation sets a specific permutation for this token
 func (e *SubArithmetic) Permutation(i uint) error {
 	permutations := e.Permutations()
 
@@ -171,10 +191,12 @@ func (e *SubArithmetic) Permutation(i uint) error {
 	return nil
 }
 
+// Permutations returns the number of permutations for this token
 func (e *SubArithmetic) Permutations() uint {
 	return 1
 }
 
+// PermutationsAll returns the number of all possible permutations for this token including its children
 func (e *SubArithmetic) PermutationsAll() uint {
 	return e.a.PermutationsAll() * e.b.PermutationsAll()
 }
@@ -194,6 +216,7 @@ func (e *SubArithmetic) String() string {
 
 // List interface methods
 
+// Get returns the current referenced token at the given index. The error return argument is not nil, if the index is out of bound.
 func (e *SubArithmetic) Get(i int) (token.Token, error) {
 	switch i {
 	case 0:
@@ -207,14 +230,17 @@ func (e *SubArithmetic) Get(i int) (token.Token, error) {
 	}
 }
 
+// Len returns the number of the current referenced tokens
 func (e *SubArithmetic) Len() int {
 	return 2
 }
 
+// InternalGet returns the current referenced internal token at the given index. The error return argument is not nil, if the index is out of bound.
 func (e *SubArithmetic) InternalGet(i int) (token.Token, error) {
 	return e.Get(i)
 }
 
+// InternalLen returns the number of referenced internal tokens
 func (e *SubArithmetic) InternalLen() int {
 	return e.Len()
 }
@@ -238,11 +264,13 @@ func (e *SubArithmetic) InternalReplace(oldToken, newToken token.Token) {
 	}
 }
 
+// MulArithmetic implements an arithmetic token multiplying the values of two tokens
 type MulArithmetic struct {
 	a token.Token
 	b token.Token
 }
 
+// NewMulArithmetic returns a new instance of a MulArithmetic token
 func NewMulArithmetic(a, b token.Token) *MulArithmetic {
 	return &MulArithmetic{
 		a: a,
@@ -258,10 +286,12 @@ func (e *MulArithmetic) Clone() token.Token {
 	}
 }
 
+// Fuzz fuzzes this token using the random generator by choosing one of the possible permutations for this token
 func (e *MulArithmetic) Fuzz(r rand.Rand) {
 	// do nothing
 }
 
+// FuzzAll calls Fuzz for this token and then FuzzAll for all children of this token
 func (e *MulArithmetic) FuzzAll(r rand.Rand) {
 	e.Fuzz(r)
 
@@ -269,10 +299,13 @@ func (e *MulArithmetic) FuzzAll(r rand.Rand) {
 	e.b.FuzzAll(r)
 }
 
+// Parse tries to parse the token beginning from the current position in the parser data.
+// If the parsing is successful the error argument is nil and the next current position after the token is returned.
 func (e *MulArithmetic) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	panic("TODO implement")
 }
 
+// Permutation sets a specific permutation for this token
 func (e *MulArithmetic) Permutation(i uint) error {
 	permutations := e.Permutations()
 
@@ -286,10 +319,12 @@ func (e *MulArithmetic) Permutation(i uint) error {
 	return nil
 }
 
+// Permutations returns the number of permutations for this token
 func (e *MulArithmetic) Permutations() uint {
 	return 1
 }
 
+// PermutationsAll returns the number of all possible permutations for this token including its children
 func (e *MulArithmetic) PermutationsAll() uint {
 	return e.a.PermutationsAll() * e.b.PermutationsAll()
 }
@@ -309,6 +344,7 @@ func (e *MulArithmetic) String() string {
 
 // List interface methods
 
+// Get returns the current referenced token at the given index. The error return argument is not nil, if the index is out of bound.
 func (e *MulArithmetic) Get(i int) (token.Token, error) {
 	switch i {
 	case 0:
@@ -322,14 +358,17 @@ func (e *MulArithmetic) Get(i int) (token.Token, error) {
 	}
 }
 
+// Len returns the number of the current referenced tokens
 func (e *MulArithmetic) Len() int {
 	return 2
 }
 
+// InternalGet returns the current referenced internal token at the given index. The error return argument is not nil, if the index is out of bound.
 func (e *MulArithmetic) InternalGet(i int) (token.Token, error) {
 	return e.Get(i)
 }
 
+// InternalLen returns the number of referenced internal tokens
 func (e *MulArithmetic) InternalLen() int {
 	return e.Len()
 }
@@ -353,11 +392,13 @@ func (e *MulArithmetic) InternalReplace(oldToken, newToken token.Token) {
 	}
 }
 
+// DivArithmetic implements an arithmetic token dividing the values of two tokens
 type DivArithmetic struct {
 	a token.Token
 	b token.Token
 }
 
+// NewDivArithmetic returns a new instance of a DivArithmetic token
 func NewDivArithmetic(a, b token.Token) *DivArithmetic {
 	return &DivArithmetic{
 		a: a,
@@ -373,10 +414,12 @@ func (e *DivArithmetic) Clone() token.Token {
 	}
 }
 
+// Fuzz fuzzes this token using the random generator by choosing one of the possible permutations for this token
 func (e *DivArithmetic) Fuzz(r rand.Rand) {
 	// do nothing
 }
 
+// FuzzAll calls Fuzz for this token and then FuzzAll for all children of this token
 func (e *DivArithmetic) FuzzAll(r rand.Rand) {
 	e.Fuzz(r)
 
@@ -384,10 +427,13 @@ func (e *DivArithmetic) FuzzAll(r rand.Rand) {
 	e.b.FuzzAll(r)
 }
 
+// Parse tries to parse the token beginning from the current position in the parser data.
+// If the parsing is successful the error argument is nil and the next current position after the token is returned.
 func (e *DivArithmetic) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	panic("TODO implement")
 }
 
+// Permutation sets a specific permutation for this token
 func (e *DivArithmetic) Permutation(i uint) error {
 	permutations := e.Permutations()
 
@@ -401,10 +447,12 @@ func (e *DivArithmetic) Permutation(i uint) error {
 	return nil
 }
 
+// Permutations returns the number of permutations for this token
 func (e *DivArithmetic) Permutations() uint {
 	return 1
 }
 
+// PermutationsAll returns the number of all possible permutations for this token including its children
 func (e *DivArithmetic) PermutationsAll() uint {
 	return e.a.PermutationsAll() * e.b.PermutationsAll()
 }
@@ -424,6 +472,7 @@ func (e *DivArithmetic) String() string {
 
 // List interface methods
 
+// Get returns the current referenced token at the given index. The error return argument is not nil, if the index is out of bound.
 func (e *DivArithmetic) Get(i int) (token.Token, error) {
 	switch i {
 	case 0:
@@ -437,14 +486,17 @@ func (e *DivArithmetic) Get(i int) (token.Token, error) {
 	}
 }
 
+// Len returns the number of the current referenced tokens
 func (e *DivArithmetic) Len() int {
 	return 2
 }
 
+// InternalGet returns the current referenced internal token at the given index. The error return argument is not nil, if the index is out of bound.
 func (e *DivArithmetic) InternalGet(i int) (token.Token, error) {
 	return e.Get(i)
 }
 
+// InternalLen returns the number of referenced internal tokens
 func (e *DivArithmetic) InternalLen() int {
 	return e.Len()
 }

@@ -7,11 +7,14 @@ import (
 	"github.com/zimmski/tavor/token"
 )
 
+// Many implements a list token which chooses some tokens out of set of tokens
+// Every permutation chooses a count of 1 to length(set of tokens) and chooses this count of tokens out of the set of tokens.
 type Many struct {
 	tokens []token.Token
 	value  []int
 }
 
+// NewMany returns a new instance of a Many token given the set of tokens
 func NewMany(toks ...token.Token) *Many {
 	if len(toks) == 0 {
 		panic("at least one token needed")
@@ -43,6 +46,7 @@ func (l *Many) Clone() token.Token {
 	return &c
 }
 
+// Fuzz fuzzes this token using the random generator by choosing one of the possible permutations for this token
 func (l *Many) Fuzz(r rand.Rand) {
 	tl := len(l.tokens)
 
@@ -66,6 +70,7 @@ func (l *Many) Fuzz(r rand.Rand) {
 	l.value = toks
 }
 
+// FuzzAll calls Fuzz for this token and then FuzzAll for all children of this token
 func (l *Many) FuzzAll(r rand.Rand) {
 	l.Fuzz(r)
 
@@ -74,18 +79,23 @@ func (l *Many) FuzzAll(r rand.Rand) {
 	}
 }
 
+// Parse tries to parse the token beginning from the current position in the parser data.
+// If the parsing is successful the error argument is nil and the next current position after the token is returned.
 func (l *Many) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	panic("TODO implement")
 }
 
+// Permutation sets a specific permutation for this token
 func (l *Many) Permutation(i uint) error {
 	panic("TODO not implemented")
 }
 
+// Permutations returns the number of permutations for this token
 func (l *Many) Permutations() uint {
 	panic("TODO make this precise")
 }
 
+// PermutationsAll returns the number of all possible permutations for this token including its children
 func (l *Many) PermutationsAll() uint {
 	panic("TODO make this precise")
 }
@@ -104,6 +114,7 @@ func (l *Many) String() string {
 
 // List interface methods
 
+// Get returns the current referenced token at the given index. The error return argument is not nil, if the index is out of bound.
 func (l *Many) Get(i int) (token.Token, error) {
 	if i < 0 || i >= len(l.value) {
 		return nil, &ListError{ListErrorOutOfBound}
@@ -112,10 +123,12 @@ func (l *Many) Get(i int) (token.Token, error) {
 	return l.tokens[l.value[i]], nil
 }
 
+// Len returns the number of the current referenced tokens
 func (l *Many) Len() int {
 	return len(l.value)
 }
 
+// InternalGet returns the current referenced internal token at the given index. The error return argument is not nil, if the index is out of bound.
 func (l *Many) InternalGet(i int) (token.Token, error) {
 	if i < 0 || i >= len(l.tokens) {
 		return nil, &ListError{ListErrorOutOfBound}
@@ -124,6 +137,7 @@ func (l *Many) InternalGet(i int) (token.Token, error) {
 	return l.tokens[i], nil
 }
 
+// InternalLen returns the number of referenced internal tokens
 func (l *Many) InternalLen() int {
 	return len(l.tokens)
 }

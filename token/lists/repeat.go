@@ -11,6 +11,7 @@ import (
 	"github.com/zimmski/tavor/token/primitives"
 )
 
+// Repeat implements a list token which repeats a referenced token by a given range
 type Repeat struct {
 	from  token.Token
 	to    token.Token
@@ -21,10 +22,13 @@ type Repeat struct {
 	reducingOriginalValue []token.Token
 }
 
+// NewRepeat returns a new instance of a Repeat token referencing the given token and the given integer range
 func NewRepeat(tok token.Token, from int64, to int64) *Repeat {
 	return NewRepeatWithTokens(tok, primitives.NewConstantInt(int(from)), primitives.NewConstantInt(int(to)))
 }
 
+// NewRepeatWithTokens returns a new instance of a Repeat token referencing the given token and the given token range
+// The tokens of the given range must return a valid integer values.
 func NewRepeatWithTokens(tok token.Token, from token.Token, to token.Token) *Repeat {
 	iFrom, err := strconv.Atoi(from.String())
 	if err != nil {
@@ -45,6 +49,7 @@ func NewRepeatWithTokens(tok token.Token, from token.Token, to token.Token) *Rep
 	return l
 }
 
+// From returns the from value of the repeat range
 func (l *Repeat) From() int64 {
 	iFrom, err := strconv.Atoi(l.from.String())
 	if err != nil {
@@ -54,6 +59,7 @@ func (l *Repeat) From() int64 {
 	return int64(iFrom)
 }
 
+// To returns the to value of the repeat range
 func (l *Repeat) To() int64 {
 	iTo, err := strconv.Atoi(l.to.String())
 	if err != nil {
@@ -81,12 +87,14 @@ func (l *Repeat) Clone() token.Token {
 	return &c
 }
 
+// Fuzz fuzzes this token using the random generator by choosing one of the possible permutations for this token
 func (l *Repeat) Fuzz(r rand.Rand) {
 	i := r.Intn(int(l.To() - l.From() + 1))
 
 	l.permutation(uint(i))
 }
 
+// FuzzAll calls Fuzz for this token and then FuzzAll for all children of this token
 func (l *Repeat) FuzzAll(r rand.Rand) {
 	l.Fuzz(r)
 
@@ -95,6 +103,8 @@ func (l *Repeat) FuzzAll(r rand.Rand) {
 	}
 }
 
+// Parse tries to parse the token beginning from the current position in the parser data.
+// If the parsing is successful the error argument is nil and the next current position after the token is returned.
 func (l *Repeat) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	var toks []token.Token
 
@@ -139,6 +149,7 @@ func (l *Repeat) permutation(i uint) {
 	l.value = toks
 }
 
+// Permutation sets a specific permutation for this token
 func (l *Repeat) Permutation(i uint) error {
 	permutations := l.Permutations()
 
@@ -153,10 +164,12 @@ func (l *Repeat) Permutation(i uint) error {
 	return nil
 }
 
+// Permutations returns the number of permutations for this token
 func (l *Repeat) Permutations() uint {
 	return uint(l.To() - l.From() + 1)
 }
 
+// PermutationsAll returns the number of all possible permutations for this token including its children
 func (l *Repeat) PermutationsAll() uint {
 	var sum uint
 	from := l.From()
@@ -189,6 +202,7 @@ func (l *Repeat) String() string {
 
 // List interface methods
 
+// Get returns the current referenced token at the given index. The error return argument is not nil, if the index is out of bound.
 func (l *Repeat) Get(i int) (token.Token, error) {
 	if i < 0 || i >= len(l.value) {
 		return nil, &ListError{ListErrorOutOfBound}
@@ -197,10 +211,12 @@ func (l *Repeat) Get(i int) (token.Token, error) {
 	return l.value[i], nil
 }
 
+// Len returns the number of the current referenced tokens
 func (l *Repeat) Len() int {
 	return len(l.value)
 }
 
+// InternalGet returns the current referenced internal token at the given index. The error return argument is not nil, if the index is out of bound.
 func (l *Repeat) InternalGet(i int) (token.Token, error) {
 	if i != 0 {
 		return nil, &ListError{ListErrorOutOfBound}
@@ -209,6 +225,7 @@ func (l *Repeat) InternalGet(i int) (token.Token, error) {
 	return l.token, nil
 }
 
+// InternalLen returns the number of referenced internal tokens
 func (l *Repeat) InternalLen() int {
 	return 1
 }

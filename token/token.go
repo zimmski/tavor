@@ -14,13 +14,20 @@ type Token interface {
 	// Clone returns a copy of the token and all its children
 	Clone() Token
 
+	// Fuzz fuzzes this token using the random generator by choosing one of the possible permutations for this token
 	Fuzz(r rand.Rand)
+	// FuzzAll calls Fuzz for this token and then FuzzAll for all children of this token
 	FuzzAll(r rand.Rand)
 
+	// Permutation sets a specific permutation for this token
 	Permutation(i uint) error
+	// Permutations returns the number of permutations for this token
 	Permutations() uint
+	// PermutationsAll returns the number of all possible permutations for this token including its children
 	PermutationsAll() uint
 
+	// Parse tries to parse the token beginning from the current position in the parser data.
+	// If the parsing is successful the error argument is nil and the next current position after the token is returned.
 	Parse(pars *InternalParser, cur int) (int, []error)
 }
 
@@ -28,12 +35,18 @@ type Token interface {
 type List interface {
 	Token
 
+	// Get returns the current referenced token at the given index. The error return argument is not nil, if the index is out of bound.
 	Get(i int) (Token, error)
+	// Len returns the number of the current referenced tokens
 	Len() int
 
+	// InternalGet returns the current referenced internal token at the given index. The error return argument is not nil, if the index is out of bound.
 	InternalGet(i int) (Token, error)
+	// InternalLen returns the number of referenced internal tokens
 	InternalLen() int
+	// InternalLogicalRemove removes the referenced internal token and returns the replacement for the current token or nil if the current token should be removed.
 	InternalLogicalRemove(tok Token) Token
+	// InternalReplace replaces an old with a new internal token if it is referenced by this token
 	InternalReplace(oldToken, newToken Token)
 }
 

@@ -9,6 +9,7 @@ import (
 	"github.com/zimmski/tavor/token/lists"
 )
 
+// IfPair implements a condition token which holds an If condition with its head and body
 type IfPair struct {
 	Head BooleanExpression
 	Body token.Token
@@ -16,35 +17,43 @@ type IfPair struct {
 
 // Token interface methods
 
-func (c *IfPair) Clone() IfPair {
-	return IfPair{
+// Clone returns a copy of the token and all its children
+func (c *IfPair) Clone() token.Token {
+	return &IfPair{
 		Head: c.Head.Clone().(BooleanExpression),
 		Body: c.Body.Clone(),
 	}
 }
 
+// Fuzz fuzzes this token using the random generator by choosing one of the possible permutations for this token
 func (c *IfPair) Fuzz(r rand.Rand) {
 	// do nothing
 }
 
+// FuzzAll calls Fuzz for this token and then FuzzAll for all children of this token
 func (c *IfPair) FuzzAll(r rand.Rand) {
 	// do nothing
 }
 
+// Parse tries to parse the token beginning from the current position in the parser data.
+// If the parsing is successful the error argument is nil and the next current position after the token is returned.
 func (c *IfPair) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	panic("This should never happen")
 }
 
+// Permutation sets a specific permutation for this token
 func (c *IfPair) Permutation(i uint) error {
 	// do nothing
 
 	return nil
 }
 
+// Permutations returns the number of permutations for this token
 func (c *IfPair) Permutations() uint {
 	return 1
 }
 
+// PermutationsAll returns the number of all possible permutations for this token including its children
 func (c *IfPair) PermutationsAll() uint {
 	return 1
 }
@@ -55,16 +64,19 @@ func (c *IfPair) String() string {
 
 // List interface methods
 
+// Get returns the current referenced token at the given index. The error return argument is not nil, if the index is out of bound.
 func (c *IfPair) Get(i int) (token.Token, error) {
 	return nil, &lists.ListError{
 		Type: lists.ListErrorOutOfBound,
 	}
 }
 
+// Len returns the number of the current referenced tokens
 func (c *IfPair) Len() int {
 	return 0
 }
 
+// InternalGet returns the current referenced internal token at the given index. The error return argument is not nil, if the index is out of bound.
 func (c *IfPair) InternalGet(i int) (token.Token, error) {
 	switch i {
 	case 0:
@@ -78,6 +90,7 @@ func (c *IfPair) InternalGet(i int) (token.Token, error) {
 	}
 }
 
+// InternalLen returns the number of referenced internal tokens
 func (c *IfPair) InternalLen() int {
 	return 2
 }
@@ -92,10 +105,12 @@ func (c *IfPair) InternalReplace(oldToken, newToken token.Token) {
 	panic("This should never happen")
 }
 
+// If implements a condition token which holds a list of IfPairs which belong together (e.g. If Elsif ... Else)
 type If struct {
 	Pairs []IfPair
 }
 
+// NewIf returns a new instance of a If token referencing a list of IfPairs
 func NewIf(Pairs ...IfPair) *If {
 	if len(Pairs) == 0 {
 		panic("Must at least given one if pair")
@@ -112,7 +127,7 @@ func NewIf(Pairs ...IfPair) *If {
 func (c *If) Clone() token.Token {
 	nPairs := make([]IfPair, len(c.Pairs))
 	for i := 0; i < len(c.Pairs); i++ {
-		nPairs[i] = c.Pairs[i].Clone()
+		nPairs[i] = *c.Pairs[i].Clone().(*IfPair)
 	}
 
 	return &If{
@@ -120,18 +135,23 @@ func (c *If) Clone() token.Token {
 	}
 }
 
+// Fuzz fuzzes this token using the random generator by choosing one of the possible permutations for this token
 func (c *If) Fuzz(r rand.Rand) {
 	// do nothing
 }
 
+// FuzzAll calls Fuzz for this token and then FuzzAll for all children of this token
 func (c *If) FuzzAll(r rand.Rand) {
 	c.Fuzz(r)
 }
 
+// Parse tries to parse the token beginning from the current position in the parser data.
+// If the parsing is successful the error argument is nil and the next current position after the token is returned.
 func (c *If) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	panic("TODO implement")
 }
 
+// Permutation sets a specific permutation for this token
 func (c *If) Permutation(i uint) error {
 	permutations := c.Permutations()
 
@@ -146,10 +166,12 @@ func (c *If) Permutation(i uint) error {
 	return nil
 }
 
+// Permutations returns the number of permutations for this token
 func (c *If) Permutations() uint {
 	return 1
 }
 
+// PermutationsAll returns the number of all possible permutations for this token including its children
 func (c *If) PermutationsAll() uint {
 	return c.Permutations()
 }
@@ -167,16 +189,19 @@ func (c *If) String() string {
 /*
 // List interface methods
 
+// Get returns the current referenced token at the given index. The error return argument is not nil, if the index is out of bound.
 func (c *If) Get(i int) (token.Token, error) {
 	return nil, &lists.ListError{
 		Type: lists.ListErrorOutOfBound,
 	}
 }
 
+// Len returns the number of the current referenced tokens
 func (c *If) Len() int {
 	return 0
 }
 
+// InternalGet returns the current referenced internal token at the given index. The error return argument is not nil, if the index is out of bound.
 func (c *If) InternalGet(i int) (token.Token, error) {
 	if i < 0 || i >= len(c.Pairs) {
 		return nil, &lists.ListError{
@@ -187,6 +212,7 @@ func (c *If) InternalGet(i int) (token.Token, error) {
 	return &c.Pairs[i], nil
 }
 
+// InternalLen returns the number of referenced internal tokens
 func (c *If) InternalLen() int {
 	return len(c.Pairs)
 }
