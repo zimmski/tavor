@@ -12,7 +12,7 @@ import (
 
 // BooleanExpression defines a boolean expression
 type BooleanExpression interface {
-	token.List
+	token.Token
 
 	// Evaluate evaluates the boolean expression and returns its result
 	Evaluate() bool
