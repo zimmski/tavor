@@ -386,13 +386,13 @@ func main() {
 	if opts.Format.PrintInternal {
 		log.Info("Internal AST:")
 
-		tavor.PrettyPrintInternalTree(os.Stdout, doc)
+		token.PrettyPrintInternalTree(os.Stdout, doc)
 	}
 
 	if opts.Format.Print {
 		log.Info("AST:")
 
-		tavor.PrettyPrintTree(os.Stdout, doc)
+		token.PrettyPrintTree(os.Stdout, doc)
 	}
 
 	if opts.Format.Validate {

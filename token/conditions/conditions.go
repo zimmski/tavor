@@ -3,7 +3,6 @@ package conditions
 import (
 	"fmt"
 
-	"github.com/zimmski/tavor"
 	"github.com/zimmski/tavor/rand"
 	"github.com/zimmski/tavor/token"
 	"github.com/zimmski/tavor/token/lists"
@@ -233,7 +232,7 @@ func (c *If) InternalReplace(oldToken, newToken token.Token) {
 // SetScope sets the scope of the token
 func (c *If) SetScope(variableScope map[string]token.Token) {
 	for _, pair := range c.Pairs {
-		tavor.SetInternalScope(pair.Head, variableScope)
-		tavor.SetInternalScope(pair.Body, variableScope)
+		token.SetInternalScope(pair.Head, variableScope)
+		token.SetInternalScope(pair.Body, variableScope)
 	}
 }

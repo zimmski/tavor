@@ -5,7 +5,6 @@ import (
 	"math"
 	"strconv"
 
-	"github.com/zimmski/tavor"
 	"github.com/zimmski/tavor/rand"
 	"github.com/zimmski/tavor/token"
 	"github.com/zimmski/tavor/token/primitives"
@@ -484,7 +483,7 @@ func (l *Repeat) Reset() {
 
 	if !okFrom || !okTo {
 		for _, tok := range l.value {
-			tavor.ResetResetTokens(tok)
+			token.ResetResetTokens(tok)
 		}
 
 		l.permutation(l.Permutations() - 1)

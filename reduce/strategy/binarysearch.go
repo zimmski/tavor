@@ -3,7 +3,6 @@ package strategy
 import (
 	"github.com/zimmski/container/list/linkedlist"
 
-	"github.com/zimmski/tavor"
 	"github.com/zimmski/tavor/log"
 	"github.com/zimmski/tavor/token"
 )
@@ -104,7 +103,7 @@ func (s *BinarySearchStrategy) setReduction(tok token.ReduceToken, reduction uin
 // Reduce starts the first step of the reduce strategy returning a channel which controls the step flow and a channel for the feedback on the step.
 // The channel returns a value if the step is complete and waits with calculating the next step until a value is put in and feedback is given. The channels are automatically closed when there are no more steps. The error return argument is not nil if an error occurs during the setup of the reduce strategy.
 func (s *BinarySearchStrategy) Reduce() (chan struct{}, chan<- ReduceFeedbackType, error) {
-	if tavor.LoopExists(s.root) {
+	if token.LoopExists(s.root) {
 		return nil, nil, &Error{
 			Message: "found endless loop in graph. Cannot proceed.",
 			Type:    ErrorEndlessLoopDetected,
@@ -189,8 +188,8 @@ func (s *BinarySearchStrategy) reduce(continueReducing chan struct{}, feedbackRe
 }
 
 func (s *BinarySearchStrategy) nextStep(continueReducing chan struct{}, feedbackReducing <-chan ReduceFeedbackType) (bool, ReduceFeedbackType) {
-	tavor.ResetScope(s.root)
-	tavor.ResetResetTokens(s.root)
+	token.ResetScope(s.root)
+	token.ResetResetTokens(s.root)
 
 	log.Debug("done with reducing step")
 

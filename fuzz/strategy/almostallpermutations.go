@@ -3,7 +3,6 @@ package strategy
 import (
 	"github.com/zimmski/container/list/linkedlist"
 
-	"github.com/zimmski/tavor"
 	"github.com/zimmski/tavor/log"
 	"github.com/zimmski/tavor/rand"
 	"github.com/zimmski/tavor/token"
@@ -81,7 +80,7 @@ func (s *AlmostAllPermutationsStrategy) getLevel(root token.Token, fromChildren 
 // Fuzz starts the first iteration of the fuzzing strategy returning a channel which controls the iteration flow.
 // The channel returns a value if the iteration is complete and waits with calculating the next iteration until a value is put in. The channel is automatically closed when there are no more iterations. The error return argument is not nil if an error occurs during the setup of the fuzzing strategy.
 func (s *AlmostAllPermutationsStrategy) Fuzz(r rand.Rand) (chan struct{}, error) {
-	if tavor.LoopExists(s.root) {
+	if token.LoopExists(s.root) {
 		return nil, &Error{
 			Message: "found endless loop in graph. Cannot proceed.",
 			Type:    ErrorEndlessLoopDetected,
@@ -105,8 +104,8 @@ func (s *AlmostAllPermutationsStrategy) Fuzz(r rand.Rand) (chan struct{}, error)
 			}
 		}
 
-		tavor.ResetScope(s.root)
-		tavor.ResetResetTokens(s.root)
+		token.ResetScope(s.root)
+		token.ResetResetTokens(s.root)
 
 		log.Debug("done with fuzzing step")
 
@@ -200,8 +199,8 @@ STEP:
 			}
 		}
 
-		tavor.ResetScope(s.root)
-		tavor.ResetResetTokens(s.root)
+		token.ResetScope(s.root)
+		token.ResetResetTokens(s.root)
 
 		log.Debug("done with fuzzing step")
 
