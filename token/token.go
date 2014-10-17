@@ -97,6 +97,20 @@ type OptionalToken interface {
 	Optional
 }
 
+// Pointer defines a pointer token which can reference another token and can be reset to reference another token
+type Pointer interface {
+	Forward
+
+	// Set sets the referenced token which must conform to the pointers token reference type
+	Set(o Token) error
+}
+
+// PointerToken combines the Token and Pointer interface
+type PointerToken interface {
+	Token
+	Pointer
+}
+
 // Reset defines a reset token which can reset its (internal) state
 type Reset interface {
 	// Reset resets the (internal) state of this token and its dependences
