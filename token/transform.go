@@ -7,8 +7,58 @@ import (
 	"github.com/zimmski/tavor/log"
 )
 
+// MinimizeTokens traverses the token graph and replaces unnecessary complicated constructs with their simpler form
+// One good example is an All list token with one token which can be replaced by this one token. The minimize checks and operation is done by the token itself which has to implement the MinimizeToken interface, since it is not always predictable if a token with one child is doing something special,
+func MinimizeTokens(root Token) Token {
+	parents := make(map[Token]Token)
+	queue := linkedlist.New()
+
+	queue.Push(root)
+	parents[root] = nil
+
+	for !queue.Empty() {
+		v, _ := queue.Shift()
+
+		if tok, ok := v.(MinimizeToken); ok {
+			r := tok.Minimize()
+			if r != nil {
+				p := parents[tok]
+
+				switch pTok := p.(type) {
+				case ForwardToken:
+					pTok.InternalReplace(tok, r)
+				case List:
+					pTok.InternalReplace(tok, r)
+				}
+
+				queue.Push(r)
+				parents[r] = p
+
+				continue
+			}
+		}
+
+		switch tok := v.(type) {
+		case ForwardToken:
+			if v := tok.InternalGet(); v != nil {
+				queue.Push(v)
+				parents[v] = tok
+			}
+		case List:
+			for i := 0; i < tok.InternalLen(); i++ {
+				c, _ := tok.InternalGet(i)
+
+				queue.Push(c)
+				parents[c] = tok
+			}
+		}
+	}
+
+	return root
+}
+
 // UnrollPointers unrolls pointer tokens by copying their referenced graphs.
-// Pointers that lead to themselfs are unrolled at maximum tavor.MaxRepeat times.
+// Pointers that lead to themselves are unrolled at maximum tavor.MaxRepeat times.
 func UnrollPointers(root Token) Token {
 	type unrollToken struct {
 		tok    Token
@@ -42,7 +92,7 @@ func UnrollPointers(root Token) Token {
 			child := t.InternalGet()
 
 			if child == nil {
-				log.Debugf("Child is nil")
+				log.Panicf("Child is nil")
 
 				continue
 			}
@@ -148,6 +198,8 @@ func UnrollPointers(root Token) Token {
 				ta := iTok.tok
 				tt := iTok.parent
 
+				/* TODO bring back replacing the returns of InternalLogicalRemove. This was removed because of https://github.com/zimmski/tavor/issues/13 which hit a bug because replaced tokens where still referenced somewhere (maybe in the queue?) and I had to move quick.
+
 				repl := func(parent Token, this Token, that Token) {
 					log.Debugf("replace (%p)%#v by (%p)%#v", this, this, that, that)
 
@@ -166,7 +218,7 @@ func UnrollPointers(root Token) Token {
 						root = that
 					}
 				}
-
+				*/
 			REMOVE:
 				for tt != nil {
 					delete(parents, tt.tok)
@@ -179,9 +231,9 @@ func UnrollPointers(root Token) Token {
 						c := l.InternalLogicalRemove(ta)
 
 						if c != nil {
-							if c != l {
+							/*if c != l {
 								repl(tt.parent.tok, l, c)
-							}
+							}*/
 
 							break REMOVE
 						}
@@ -194,9 +246,9 @@ func UnrollPointers(root Token) Token {
 						c := l.InternalLogicalRemove(ta)
 
 						if c != nil {
-							if c != l {
+							/*if c != l {
 								repl(tt.parent.tok, l, c)
-							}
+							}*/
 
 							break REMOVE
 						}

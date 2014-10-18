@@ -81,6 +81,18 @@ type IndexToken interface {
 	Index
 }
 
+// Minimize defines a minimize token which has methods to reduce itself to easier constructs
+type Minimize interface {
+	// Minimize tries to minimize itself and returns a token if it was successful, or nil if there was nothing to minimize
+	Minimize() Token
+}
+
+// MinimizeToken combines the Token and Minimize interface
+type MinimizeToken interface {
+	Token
+	Minimize
+}
+
 // Optional defines an optional token which can be (de)activated
 type Optional interface {
 	// IsOptional checks dynamically if this token is in the current state optional

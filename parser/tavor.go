@@ -1628,6 +1628,7 @@ func ParseTavor(src io.Reader) (token.Token, error) {
 	start := p.lookup["START"].token
 
 	start = token.UnrollPointers(start)
+	start = token.MinimizeTokens(start)
 
 	variableScope = make(map[string]token.Token)
 	token.SetInternalScope(start, variableScope)

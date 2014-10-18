@@ -162,15 +162,15 @@ func (l *One) InternalLogicalRemove(tok token.Token) token.Token {
 		}
 	}
 
+	if l.value == -1 {
+		l.value = 0
+	}
+
 	switch len(l.tokens) {
 	case 0:
 		return nil
 	case 1:
 		return l.tokens[0]
-	}
-
-	if l.value == -1 {
-		l.value = 0
 	}
 
 	return l
@@ -183,4 +183,15 @@ func (l *One) InternalReplace(oldToken, newToken token.Token) {
 			l.tokens[i] = newToken
 		}
 	}
+}
+
+// Minimize interface methods
+
+// Minimize tries to minimize itself and returns a token if it was successful, or nil if there was nothing to minimize
+func (l *One) Minimize() token.Token {
+	if len(l.tokens) == 1 {
+		return l.tokens[0]
+	}
+
+	return nil
 }

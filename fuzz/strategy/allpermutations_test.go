@@ -581,6 +581,39 @@ func TestAllPermutationsStrategy(t *testing.T) {
 			"aaabbb",
 		})
 	}
+	{
+		// unrolling always ending at end state
+		o, err := parser.ParseTavor(strings.NewReader(`
+			A = "a" (B | C | )
+			B = "b" C
+			C = "c" A
+
+			START = A
+		`))
+		Nil(t, err)
+
+		s := NewAllPermutationsStrategy(o)
+
+		var got []string
+
+		ch, err := s.Fuzz(r)
+		Nil(t, err)
+		for i := range ch {
+			got = append(got, o.String())
+
+			ch <- i
+		}
+
+		Equal(t, got, []string{
+			"a",
+			"abca",
+			"abcabca",
+			"abcaca",
+			"aca",
+			"acabca",
+			"acaca",
+		})
+	}
 }
 
 func TestAllPermutationsStrategyLoopDetection(t *testing.T) {

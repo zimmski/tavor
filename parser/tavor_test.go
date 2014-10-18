@@ -868,9 +868,7 @@ func TestTavorParserLoops(t *testing.T) {
 			constraints.NewOptional(
 				lists.NewAll(
 					constraints.NewOptional(
-						lists.NewAll(
-							primitives.NewConstantInt(1),
-						),
+						primitives.NewConstantInt(1),
 					),
 					primitives.NewConstantInt(1),
 				),
@@ -983,9 +981,7 @@ func TestTavorParserLoops(t *testing.T) {
 			constraints.NewOptional(
 				lists.NewAll(
 					constraints.NewOptional(
-						lists.NewAll(
-							primitives.NewConstantInt(1),
-						),
+						primitives.NewConstantInt(1),
 					),
 					primitives.NewConstantInt(1),
 				),

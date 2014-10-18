@@ -149,10 +149,14 @@ func (l *All) InternalLogicalRemove(tok token.Token) token.Token {
 					l.tokens = append(l.tokens[:i], l.tokens[i+1:]...)
 				}
 			default:
-				// if we remove one token from an All list we have to remove everything
+				// if we remove one non-optional token from an All list we have to remove everything
 				return nil
 			}
 		}
+	}
+
+	if len(l.tokens) == 1 {
+		return l.tokens[0]
 	}
 
 	return l
@@ -165,4 +169,15 @@ func (l *All) InternalReplace(oldToken, newToken token.Token) {
 			l.tokens[i] = newToken
 		}
 	}
+}
+
+// Minimize interface methods
+
+// Minimize tries to minimize itself and returns a token if it was successful, or nil if there was nothing to minimize
+func (l *All) Minimize() token.Token {
+	if len(l.tokens) == 1 {
+		return l.tokens[0]
+	}
+
+	return nil
 }

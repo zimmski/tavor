@@ -133,7 +133,7 @@ func (p *Pointer) PermutationsAll() uint {
 	p.cloneOnFirstUse()
 
 	if p.token == nil {
-		return 1
+		panic("Pointer token does not have a referecning token")
 	}
 
 	return p.token.PermutationsAll()
@@ -141,7 +141,7 @@ func (p *Pointer) PermutationsAll() uint {
 
 func (p *Pointer) String() string {
 	if p.token == nil {
-		return ""
+		panic("Pointer token does not have a referecning token")
 	}
 
 	return p.token.String()
@@ -184,3 +184,12 @@ func (p *Pointer) InternalReplace(oldToken, newToken token.Token) {
 		panic(fmt.Errorf("TODO token %p(%#v) is not a BooleanExpression", p.token, p.token))
 	}
 }*/
+
+// Minimize interface methods
+
+// Minimize tries to minimize itself and returns a token if it was successful, or nil if there was nothing to minimize
+func (p *Pointer) Minimize() token.Token {
+	// Never ever _EVER_ minimize a pointer since it is normally there for a reason
+
+	return nil
+}
