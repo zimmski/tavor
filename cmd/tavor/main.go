@@ -495,11 +495,9 @@ func main() {
 						exitError("Could not write stdin to exec: %s", err)
 					}
 
-					defer func() {
-						if err := stdin.Close(); err != nil {
-							panic(err)
-						}
-					}()
+					if err := stdin.Close(); err != nil {
+						panic(err)
+					}
 				}
 
 				err = execCommand.Wait()
