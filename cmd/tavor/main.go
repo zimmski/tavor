@@ -445,10 +445,7 @@ func main() {
 
 			stepID := 0
 
-		GENERATION:
-			for i := range ch {
-				docOut := doc.String()
-
+			writeTmpFile := func(docOut string) *os.File {
 				tmp, err := ioutil.TempFile(string(folder), fmt.Sprintf("fuzz-%d-", stepID))
 				if err != nil {
 					exitError("Cannot create tmp file: %s", err)
@@ -458,7 +455,16 @@ func main() {
 					exitError("Cannot write to tmp file: %s", err)
 				}
 
-				log.Infof("Test %q", tmp.Name())
+				return tmp
+			}
+
+		GENERATION:
+			for i := range ch {
+				docOut := doc.String()
+
+				log.Infof("Test %d", stepID)
+
+				var tmp *os.File
 
 				var cmdExitCode int
 				var cmdStderr bytes.Buffer
@@ -473,6 +479,8 @@ func main() {
 				execCommand := exec.Command(execs[0], execs[1:]...)
 
 				if string(opts.Fuzz.Exec.ExecArgumentType) == "environment" {
+					tmp = writeTmpFile(docOut)
+
 					execCommand.Env = []string{fmt.Sprintf("TAVOR_FUZZ_FILE=%s", tmp.Name())}
 				}
 
@@ -584,15 +592,25 @@ func main() {
 						if opts.Fuzz.Exec.ExitOnError {
 							gotError = true
 
+							if opts.Fuzz.Exec.ExecDoNotRemoveTmpFilesOnError {
+								if tmp == nil {
+									tmp = writeTmpFile(docOut)
+								}
+
+								log.Infof("Written to %q", tmp.Name())
+							}
+
 							break GENERATION
 						}
 					}
 				}
 
 				if !opts.Fuzz.Exec.ExecDoNotRemoveTmpFiles && (!opts.Fuzz.Exec.ExecDoNotRemoveTmpFilesOnError || !gotError) {
-					err = os.Remove(tmp.Name())
-					if err != nil {
-						log.Errorf("Could not remove tmp file %q: %s", tmp.Name(), err)
+					if tmp != nil {
+						err = os.Remove(tmp.Name())
+						if err != nil {
+							log.Errorf("Could not remove tmp file %q: %s", tmp.Name(), err)
+						}
 					}
 				}
 
