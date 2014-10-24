@@ -75,4 +75,28 @@ func TestCharacterClass(t *testing.T) {
 	Equal(t, "9", o.String())
 
 	Equal(t, o.Permutation(11).(*token.PermutationError).Type, token.PermutationErrorIndexOutOfBound)
+
+	o = NewCharacterClass(`a-fA-F0-9`)
+	Equal(t, "a", o.String())
+	Equal(t, 22, o.Permutations())
+
+	Nil(t, o.Permutation(1))
+	Equal(t, "a", o.String())
+
+	Nil(t, o.Permutation(2))
+	Equal(t, "b", o.String())
+
+	Nil(t, o.Permutation(7))
+	Equal(t, "A", o.String())
+
+	Nil(t, o.Permutation(8))
+	Equal(t, "B", o.String())
+
+	Nil(t, o.Permutation(13))
+	Equal(t, "0", o.String())
+
+	Nil(t, o.Permutation(14))
+	Equal(t, "1", o.String())
+
+	Equal(t, o.Permutation(23).(*token.PermutationError).Type, token.PermutationErrorIndexOutOfBound)
 }

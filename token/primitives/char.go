@@ -328,9 +328,9 @@ func (c *CharacterClass) permutation(i uint) {
 	i -= cl
 
 	for _, v := range c.charRanges {
-		cl := uint(v.to - v.from)
+		cl := uint(v.to-v.from) + 1
 
-		if i <= cl {
+		if i < cl {
 			c.value = rune(uint(v.from) + i)
 
 			return
@@ -339,7 +339,7 @@ func (c *CharacterClass) permutation(i uint) {
 		i -= cl
 	}
 
-	panic("TODO out of range")
+	panic(fmt.Sprintf("TODO out of range with pattern %q and permutation %d", c.pattern, i))
 
 }
 
