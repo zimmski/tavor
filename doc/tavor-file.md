@@ -70,6 +70,9 @@ RepeatTwoToTenTimes = "text" +2,10("me") // "me" is repeated two to ten times.
 
 ```
 Letters  = [abc]
+Digits  = [\d]
+Hex  = [\x20]
+Unicode = [\x{10FFFF}] // Up to 8 Hex digits
 ```
 
 ### Token attributes

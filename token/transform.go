@@ -198,7 +198,7 @@ func UnrollPointers(root Token) Token {
 				ta := iTok.tok
 				tt := iTok.parent
 
-				/* TODO bring back replacing the returns of InternalLogicalRemove. This was removed because of https://github.com/zimmski/tavor/issues/13 which hit a bug because replaced tokens where still referenced somewhere (maybe in the queue?) and I had to move quick.
+				/* TODO bring back replacing the returns of InternalLogicalRemove. This was removed because of https://github.com/zimmski/tavor/issues/13 which hit a bug because replaced tokens where still referenced during unrolling somewhere (maybe in the queue?) and I had to move quick.
 
 				repl := func(parent Token, this Token, that Token) {
 					log.Debugf("replace (%p)%#v by (%p)%#v", this, this, that, that)

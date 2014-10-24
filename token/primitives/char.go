@@ -3,12 +3,22 @@ package primitives
 import (
 	"fmt"
 	"io"
+	"strconv"
 	"strings"
 	"unicode"
+	"unicode/utf8"
 
 	"github.com/zimmski/tavor/rand"
 	"github.com/zimmski/tavor/token"
 )
+
+var simpleEscapes = map[rune]rune{
+	'-': '-',
+	'f': '\f',
+	'n': '\n',
+	'r': '\r',
+	't': '\t',
+}
 
 var characterClassEscapes = map[rune][]rune{
 	'd': []rune{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'},
@@ -21,10 +31,17 @@ var characterClassEscapes = map[rune][]rune{
 type CharacterClass struct {
 	chars       []rune
 	charsLookup map[rune]struct{}
+	charRanges  []characterRange
+
+	permutations uint
 
 	pattern string
 
 	value rune
+}
+
+type characterRange struct {
+	from, to rune
 }
 
 // NewCharacterClass returns a new instance of a CharacterClass token
@@ -33,43 +50,151 @@ func NewCharacterClass(pattern string) *CharacterClass {
 		panic("pattern is empty")
 	}
 
+	/*
+
+		TODO FIXME FIXME FIXME
+
+		This part of the code is full of bad code, especially the error handling is not addressed at all, we simple panic!
+		There is a time and place where this can be redone, but it is not now and here.
+
+	*/
+
 	var chars []rune
-	charsLookup := make(map[rune]struct{})
-	var first rune
+	var charRanges []characterRange
+	var lastCharIsRangeChar = false
+	var lastChar rune
+	var isRange = false
 
 	runes := strings.NewReader(pattern)
 
+	c, _, err := runes.ReadRune()
+
 	add := func(c rune) {
-		if _, ok := charsLookup[c]; !ok {
-			if len(chars) == 0 {
-				first = c
+		if isRange {
+			if lastChar > c {
+				panic("Range to character is lower than range from character")
 			}
 
+			charRanges = append(charRanges, characterRange{
+				from: lastChar,
+				to:   c,
+			})
+
+			chars = chars[:len(chars)-1] // remove last character since it is now in a range
+
+			isRange = false
+			lastCharIsRangeChar = false
+		} else {
 			chars = append(chars, c)
-			charsLookup[c] = struct{}{}
 		}
 	}
 
-	c, _, err := runes.ReadRune()
+	checkHex := func(c rune) bool {
+		return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F')
+	}
 
+PARSING:
 	for err != io.EOF {
 		if unicode.IsDigit(c) || unicode.IsLetter(c) || unicode.IsSpace(c) {
 			add(c)
+			lastChar = c
+			lastCharIsRangeChar = true
 		} else {
 			switch c {
+			case '-':
+				if !lastCharIsRangeChar {
+					panic("Range operator without range from character")
+				}
+
+				isRange = true
 			case '\\':
 				c, _, err = runes.ReadRune()
 				if err == io.EOF {
-					panic(fmt.Sprintf("early EOF for escaped character"))
+					panic("early EOF for escaped character")
+				} else if err != nil {
+					break PARSING
 				}
 
-				esc, ok := characterClassEscapes[c]
-				if !ok {
-					panic(fmt.Sprintf("Unknown escape character %q", c))
-				}
+				switch c {
+				case 'x':
+					x, _, err := runes.ReadRune()
+					if err == io.EOF {
+						panic("early EOF for escaped character")
+					} else if err != nil {
+						break PARSING
+					}
 
-				for _, v := range esc {
-					add(v)
+					var xses string
+
+					if x == '{' {
+						for {
+							x, _, err = runes.ReadRune()
+							if err == io.EOF {
+								panic("early EOF for escaped character")
+							} else if err != nil {
+								break PARSING
+							} else if x == '}' {
+								break
+							} else if !checkHex(x) {
+								panic("x escaping needs HEX characters")
+							}
+
+							xses += string(x)
+						}
+
+						if len(xses) < 2 {
+							panic("x escaping needs two HEX characters")
+						}
+					} else {
+						if !checkHex(x) {
+							panic("x escaping needs two HEX characters")
+						}
+
+						xses += string(x)
+
+						x, _, err = runes.ReadRune()
+						if err == io.EOF {
+							panic("early EOF for escaped character")
+						} else if err != nil {
+							break PARSING
+						} else if !checkHex(x) {
+							panic("x escaping needs two HEX characters")
+						}
+
+						xses += string(x)
+					}
+
+					s, e := strconv.Unquote(`"\U` + strings.Repeat("0", 8-len(xses)) + xses + `"`)
+					if e != nil {
+						panic(e)
+					}
+
+					c, _ = utf8.DecodeRuneInString(s)
+
+					add(c)
+					lastChar = c
+					lastCharIsRangeChar = true
+				default:
+					if simp, ok := simpleEscapes[c]; ok {
+						add(simp)
+						lastChar = simp
+						lastCharIsRangeChar = true
+					} else {
+						if isRange {
+							panic("Range operator without range to character")
+						}
+
+						esc, ok := characterClassEscapes[c]
+						if !ok {
+							panic(fmt.Sprintf("Unknown escape character %q", c))
+						}
+
+						for _, v := range esc {
+							add(v)
+						}
+
+						lastCharIsRangeChar = false
+					}
 				}
 			default:
 				panic(fmt.Sprintf("Unknown character %q", c))
@@ -79,9 +204,39 @@ func NewCharacterClass(pattern string) *CharacterClass {
 		c, _, err = runes.ReadRune()
 	}
 
+	if err != nil && err != io.EOF {
+		panic(err)
+	}
+
+	if len(chars) == 0 && len(charRanges) == 0 {
+		panic("empty character class is not allowed")
+	}
+
+	var first rune
+	charsLookup := make(map[rune]struct{})
+
+	if len(chars) != 0 {
+		first = chars[0]
+
+		for _, v := range chars {
+			charsLookup[v] = struct{}{}
+		}
+	} else {
+		first = charRanges[0].from
+	}
+
+	var permutations uint = uint(len(chars))
+
+	for _, v := range charRanges {
+		permutations += uint(v.to-v.from) + 1
+	}
+
 	return &CharacterClass{
 		chars:       chars,
 		charsLookup: charsLookup,
+		charRanges:  charRanges,
+
+		permutations: permutations,
 
 		pattern: pattern,
 
@@ -101,9 +256,17 @@ func (c *CharacterClass) Clone() token.Token {
 		charsLookup[k] = struct{}{}
 	}
 
+	charRanges := make([]characterRange, len(c.charRanges))
+	for i := range c.charRanges {
+		charRanges[i] = c.charRanges[i]
+	}
+
 	return &CharacterClass{
 		chars:       chars,
 		charsLookup: charsLookup,
+		charRanges:  charRanges,
+
+		permutations: c.permutations,
 
 		pattern: c.pattern,
 
@@ -113,7 +276,7 @@ func (c *CharacterClass) Clone() token.Token {
 
 // Fuzz fuzzes this token using the random generator by choosing one of the possible permutations for this token
 func (c *CharacterClass) Fuzz(r rand.Rand) {
-	i := uint(r.Intn(len(c.chars)))
+	i := uint(r.Intn(int(c.permutations)))
 
 	c.permutation(i)
 }
@@ -130,10 +293,22 @@ func (c *CharacterClass) Parse(pars *token.InternalParser, cur int) (int, []erro
 	v := rune(pars.Data[cur])
 
 	if _, ok := c.charsLookup[v]; !ok {
-		return cur, []error{&token.ParserError{
-			Message: fmt.Sprintf("expected %q but got %q", c.charsLookup, v),
-			Type:    token.ParseErrorUnexpectedData,
-		}}
+		found := false
+
+		for _, r := range c.charRanges {
+			if v >= r.from && v <= r.to {
+				found = true
+
+				break
+			}
+		}
+
+		if !found {
+			return cur, []error{&token.ParserError{
+				Message: fmt.Sprintf("expected %q or %+v but got %q", c.charsLookup, c.charRanges, v),
+				Type:    token.ParseErrorUnexpectedData,
+			}}
+		}
 	}
 
 	c.value = v
@@ -142,7 +317,30 @@ func (c *CharacterClass) Parse(pars *token.InternalParser, cur int) (int, []erro
 }
 
 func (c *CharacterClass) permutation(i uint) {
-	c.value = c.chars[i]
+	cl := uint(len(c.chars))
+
+	if i < cl {
+		c.value = c.chars[i]
+
+		return
+	}
+
+	i -= cl
+
+	for _, v := range c.charRanges {
+		cl := uint(v.to - v.from)
+
+		if i <= cl {
+			c.value = rune(uint(v.from) + i)
+
+			return
+		}
+
+		i -= cl
+	}
+
+	panic("TODO out of range")
+
 }
 
 // Permutation sets a specific permutation for this token
@@ -162,7 +360,7 @@ func (c *CharacterClass) Permutation(i uint) error {
 
 // Permutations returns the number of permutations for this token
 func (c *CharacterClass) Permutations() uint {
-	return uint(len(c.chars))
+	return c.permutations
 }
 
 // PermutationsAll returns the number of all possible permutations for this token including its children

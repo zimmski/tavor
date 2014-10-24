@@ -410,6 +410,7 @@ echo ". ~/.bash_completion/tavor-bash_completion.sh" >> ~/.bashrc
 
 - Format: Format files for binary data and different character sets (currently only UTF-8 is supported)
 - General: Direct support for protocols (can be currently only done with fuzzing an output and putting this input into an executor)
+- General: Direct support for source code generation and execution (needs an execution layer as-well)
 - Format: Functions with parameters to reduce clutter
 - General: Remove the need for unrolling and allow real loops
 - Format: Includes of external format files
