@@ -225,7 +225,7 @@ PARSING:
 		first = charRanges[0].from
 	}
 
-	var permutations uint = uint(len(chars))
+	var permutations = uint(len(chars))
 
 	for _, v := range charRanges {
 		permutations += uint(v.to-v.from) + 1
