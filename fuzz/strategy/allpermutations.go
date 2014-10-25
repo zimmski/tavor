@@ -132,12 +132,6 @@ STEP:
 			if tree[0].permutation > 1 {
 				s.setPermutation(tree[0].token, tree[0].permutation)
 				tree[0].children = s.getTree(tree[0].token, true)
-
-				if justastep {
-					log.Debugf("CONTINUE after permutate")
-
-					return true, true
-				}
 			}
 
 			if len(tree[0].children) > 0 {

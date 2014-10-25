@@ -614,6 +614,30 @@ func TestAllPermutationsStrategy(t *testing.T) {
 			"acaca",
 		})
 	}
+	{
+		// corner case of character classes
+		o, err := parser.ParseTavor(strings.NewReader(`
+			START = 1+1([0-1])
+		`))
+		Nil(t, err)
+
+		s := NewAllPermutationsStrategy(o)
+
+		var got []string
+
+		ch, err := s.Fuzz(r)
+		Nil(t, err)
+		for i := range ch {
+			got = append(got, o.String())
+
+			ch <- i
+		}
+
+		Equal(t, got, []string{
+			"10",
+			"11",
+		})
+	}
 }
 
 func TestAllPermutationsStrategyLoopDetection(t *testing.T) {
