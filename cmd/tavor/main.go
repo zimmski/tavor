@@ -354,6 +354,18 @@ func applyFilters(filterNames []fuzzFilter, doc token.Token) token.Token {
 		if err != nil {
 			exitError(err.Error())
 		}
+
+		if opts.Format.PrintInternal {
+			log.Info("Internal AST:")
+
+			token.PrettyPrintInternalTree(os.Stdout, doc)
+		}
+
+		if opts.Format.Print {
+			log.Info("AST:")
+
+			token.PrettyPrintTree(os.Stdout, doc)
+		}
 	}
 
 	return doc
