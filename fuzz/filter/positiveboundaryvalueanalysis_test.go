@@ -70,4 +70,15 @@ func TestNewPositiveBoundaryValueAnalysisFilter(t *testing.T) {
 			primitives.NewConstantInt(14),
 		})
 	}
+	// three value CharacterClass
+	{
+		root := primitives.NewCharacterClass("a-z")
+		replacements, err := f.Apply(root)
+		Nil(t, err)
+		Equal(t, replacements, []token.Token{
+			primitives.NewConstantString("a"),
+			primitives.NewConstantString("m"),
+			primitives.NewConstantString("z"),
+		})
+	}
 }
