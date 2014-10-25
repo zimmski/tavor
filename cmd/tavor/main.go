@@ -443,7 +443,7 @@ func main() {
 				matchStdout = regexp.MustCompile(opts.Fuzz.Exec.ExecMatchStdout)
 			}
 
-			stepID := 0
+			stepID := 1
 
 			writeTmpFile := func(docOut string) *os.File {
 				tmp, err := ioutil.TempFile(string(folder), fmt.Sprintf("fuzz-%d-", stepID))
@@ -799,7 +799,7 @@ func main() {
 					}
 				}
 
-				stepID := 0
+				stepID := 1
 
 				docOut := doc.String()
 
