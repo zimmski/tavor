@@ -7,22 +7,22 @@ import (
 	"github.com/zimmski/tavor/token"
 )
 
-// Len implements a aggregation token that returns the length of a List token
+// Len implements a aggregation token that returns the length of a LenToken token
 type Len struct {
-	list token.List
+	token token.LenToken
 }
 
-// NewLen returns a new instance of a Len token referencing the given List token
-func NewLen(list token.List) *Len {
+// NewLen returns a new instance of a Len token referencing the given LenToken token
+func NewLen(token token.LenToken) *Len {
 	return &Len{
-		list: list,
+		token: token,
 	}
 }
 
 // Clone returns a copy of the token and all its children
 func (a *Len) Clone() token.Token {
 	return &Len{
-		list: a.list,
+		token: a.token,
 	}
 }
 
@@ -68,5 +68,5 @@ func (a *Len) PermutationsAll() uint {
 }
 
 func (a *Len) String() string {
-	return strconv.Itoa(a.list.Len())
+	return strconv.Itoa(a.token.Len())
 }

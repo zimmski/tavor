@@ -924,6 +924,8 @@ func (p *tavorParser) selectTokenAttribute(tok token.Token, tokenName string, at
 		}
 	case token.VariableToken:
 		switch attribute {
+		case "Count":
+			return aggregates.NewLen(i), nil
 		case "defined":
 			return conditions.NewVariableDefined(tokenName, variableScope), nil
 		case "Index":

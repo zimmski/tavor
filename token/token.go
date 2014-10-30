@@ -81,6 +81,18 @@ type IndexToken interface {
 	Index
 }
 
+// Len defines a general len token
+type Len interface {
+	// Len returns the number of the current referenced tokens
+	Len() int
+}
+
+// LenToken combines the Token and Len interface
+type LenToken interface {
+	Token
+	Len
+}
+
 // Minimize defines a minimize token which has methods to reduce itself to easier constructs
 type Minimize interface {
 	// Minimize tries to minimize itself and returns a token if it was successful, or nil if there was nothing to minimize
@@ -169,6 +181,9 @@ type Variable interface {
 
 	// Name returns the name of the variable
 	Name() string
+
+	// Len returns the number of the current referenced tokens
+	Len() int
 }
 
 // VariableToken combines the Token and Variable interface
