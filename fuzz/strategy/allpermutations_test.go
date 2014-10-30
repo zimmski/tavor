@@ -134,23 +134,14 @@ func TestAllPermutationsStrategy(t *testing.T) {
 	{
 		a := constraints.NewOptional(primitives.NewConstantInt(1))
 
-		o := NewAllPermutationsStrategy(a)
-
-		ch, err := o.Fuzz(r)
-		Nil(t, err)
-
-		var got []string
-
-		for i := range ch {
-			got = append(got, a.String())
-
-			ch <- i
-		}
-
-		Equal(t, got, []string{
-			"",
-			"1",
-		})
+		validateTokenAllPermutations(
+			t,
+			a,
+			[]string{
+				"",
+				"1",
+			},
+		)
 	}
 	{
 		a := lists.NewOne(
@@ -159,24 +150,15 @@ func TestAllPermutationsStrategy(t *testing.T) {
 			primitives.NewConstantInt(3),
 		)
 
-		o := NewAllPermutationsStrategy(a)
-
-		ch, err := o.Fuzz(r)
-		Nil(t, err)
-
-		var got []string
-
-		for i := range ch {
-			got = append(got, a.String())
-
-			ch <- i
-		}
-
-		Equal(t, got, []string{
-			"1",
-			"2",
-			"3",
-		})
+		validateTokenAllPermutations(
+			t,
+			a,
+			[]string{
+				"1",
+				"2",
+				"3",
+			},
+		)
 	}
 	{
 		a := constraints.NewOptional(primitives.NewConstantInt(1))
@@ -184,29 +166,20 @@ func TestAllPermutationsStrategy(t *testing.T) {
 		c := constraints.NewOptional(primitives.NewConstantInt(3))
 		abc := lists.NewAll(a, b, c)
 
-		o := NewAllPermutationsStrategy(abc)
-
-		ch, err := o.Fuzz(r)
-		Nil(t, err)
-
-		var got []string
-
-		for i := range ch {
-			got = append(got, abc.String())
-
-			ch <- i
-		}
-
-		Equal(t, got, []string{
-			"",
-			"1",
-			"2",
-			"12",
-			"3",
-			"13",
-			"23",
-			"123",
-		})
+		validateTokenAllPermutations(
+			t,
+			abc,
+			[]string{
+				"",
+				"1",
+				"2",
+				"12",
+				"3",
+				"13",
+				"23",
+				"123",
+			},
+		)
 	}
 	{
 		abc := lists.NewAll(
@@ -220,24 +193,15 @@ func TestAllPermutationsStrategy(t *testing.T) {
 			primitives.NewConstantInt(4),
 		)
 
-		o := NewAllPermutationsStrategy(abc)
-
-		ch, err := o.Fuzz(r)
-		Nil(t, err)
-
-		var got []string
-
-		for i := range ch {
-			got = append(got, abc.String())
-
-			ch <- i
-		}
-
-		Equal(t, got, []string{
-			"4",
-			"134",
-			"234",
-		})
+		validateTokenAllPermutations(
+			t,
+			abc,
+			[]string{
+				"4",
+				"134",
+				"234",
+			},
+		)
 	}
 	{
 		a := constraints.NewOptional(primitives.NewConstantInt(1))
@@ -309,31 +273,23 @@ func TestAllPermutationsStrategy(t *testing.T) {
 		c := lists.NewAll(a, b, primitives.NewConstantString("c"))
 		d := constraints.NewOptional(c)
 
-		o := NewAllPermutationsStrategy(d)
-
-		var got []string
-
-		ch, err := o.Fuzz(r)
-		Nil(t, err)
-		for i := range ch {
-			got = append(got, d.String())
-
-			ch <- i
-		}
-
-		Equal(t, got, []string{
-			"",
-			"c",
-			"ac",
-			"1ac",
-			"11ac",
-			"111ac",
-			"bc",
-			"abc",
-			"1abc",
-			"11abc",
-			"111abc",
-		})
+		validateTokenAllPermutations(
+			t,
+			d,
+			[]string{
+				"",
+				"c",
+				"ac",
+				"1ac",
+				"11ac",
+				"111ac",
+				"bc",
+				"abc",
+				"1abc",
+				"11abc",
+				"111abc",
+			},
+		)
 	}
 	{
 		a := lists.NewAll(
@@ -342,41 +298,33 @@ func TestAllPermutationsStrategy(t *testing.T) {
 		)
 		b := lists.NewRepeat(a, 0, 2)
 
-		o := NewAllPermutationsStrategy(b)
-
-		var got []string
-
-		ch, err := o.Fuzz(r)
-		Nil(t, err)
-		for i := range ch {
-			got = append(got, b.String())
-
-			ch <- i
-		}
-
-		Equal(t, got, []string{
-			"", // 0x
-			"", // 1x
-			"1",
-			"2",
-			"12",
-			"", // 2x
-			"1",
-			"2",
-			"12",
-			"1",
-			"11",
-			"21",
-			"121",
-			"2",
-			"12",
-			"22",
-			"122",
-			"12",
-			"112",
-			"212",
-			"1212",
-		})
+		validateTokenAllPermutations(
+			t,
+			b,
+			[]string{
+				"", // 0x
+				"", // 1x
+				"1",
+				"2",
+				"12",
+				"", // 2x
+				"1",
+				"2",
+				"12",
+				"1",
+				"11",
+				"21",
+				"121",
+				"2",
+				"12",
+				"22",
+				"122",
+				"12",
+				"112",
+				"212",
+				"1212",
+			},
+		)
 	}
 	{
 		s := sequences.NewSequence(10, 2)
@@ -393,132 +341,89 @@ func TestAllPermutationsStrategy(t *testing.T) {
 		)
 		b := lists.NewRepeat(a, 0, 1)
 
-		o := NewAllPermutationsStrategy(b)
-
-		var got []string
-
-		ch, err := o.Fuzz(r)
-		Nil(t, err)
-		for i := range ch {
-			got = append(got, b.String())
-
-			ch <- i
-		}
-
-		Equal(t, got, []string{
-			"",
-			"1010",
-			"a1010",
-			"b1010",
-			"ab1010",
-		})
+		validateTokenAllPermutations(
+			t,
+			b,
+			[]string{
+				"",
+				"1010",
+				"a1010",
+				"b1010",
+				"ab1010",
+			},
+		)
 	}
 	{
 		// correct sequence and multi-OR token behaviour
+		validateTavorAllPermutations(
+			t,
+			`
+				$Id = type: Sequence,
+					start: 2,
+					step: 2
 
-		o, err := parser.ParseTavor(strings.NewReader(`
-			$Id = type: Sequence,
-				start: 2,
-				step: 2
+				ExistingLiteral = 1,
+					| $Id.Existing,
+					| ${Id.Existing + 1}
 
-			ExistingLiteral = 1,
-				| $Id.Existing,
-				| ${Id.Existing + 1}
+				And = $Id.Next " " ExistingLiteral " " ExistingLiteral
 
-			And = $Id.Next " " ExistingLiteral " " ExistingLiteral
-
-			START = $Id.Reset And
-		`))
-		Nil(t, err)
-
-		s := NewAllPermutationsStrategy(o)
-
-		var got []string
-
-		ch, err := s.Fuzz(r)
-		Nil(t, err)
-		for i := range ch {
-			got = append(got, o.String())
-
-			ch <- i
-		}
-
-		Equal(t, got, []string{
-			"2 1 1",
-			"2 2 1",
-			"2 3 1",
-			"2 1 2",
-			"2 2 2",
-			"2 3 2",
-			"2 1 3",
-			"2 2 3",
-			"2 3 3",
-		})
+				START = $Id.Reset And
+			`,
+			[]string{
+				"2 1 1",
+				"2 2 1",
+				"2 3 1",
+				"2 1 2",
+				"2 2 2",
+				"2 3 2",
+				"2 1 3",
+				"2 2 3",
+				"2 3 3",
+			},
+		)
 	}
 	{
 		// Correct list pointer behaviour
+		validateTavorAllPermutations(
+			t,
+			`
+				$Id = type: Sequence,
+					start: 2,
+					step: 2
 
-		o, err := parser.ParseTavor(strings.NewReader(`
-			$Id = type: Sequence,
-				start: 2,
-				step: 2
+				Inputs = *(Input)
+				Input = $Id.Next
 
-			Inputs = *(Input)
-			Input = $Id.Next
-
-			START = $Id.Reset Inputs
-		`))
-		Nil(t, err)
-
-		s := NewAllPermutationsStrategy(o)
-
-		var got []string
-
-		ch, err := s.Fuzz(r)
-		Nil(t, err)
-		for i := range ch {
-			got = append(got, o.String())
-
-			ch <- i
-		}
-
-		Equal(t, got, []string{
-			"",
-			"2",
-			"24",
-		})
+				START = $Id.Reset Inputs
+			`,
+			[]string{
+				"",
+				"2",
+				"24",
+			},
+		)
 	}
 	{
 		// Correct sequence deep or behaviour
-		o, err := parser.ParseTavor(strings.NewReader(`
-			$Id = type: Sequence,
-				start: 2,
-				step: 2
+		validateTavorAllPermutations(
+			t,
+			`
+				$Id = type: Sequence,
+					start: 2,
+					step: 2
 
-			A = $Id.Next
-			B = $Id.Next (1 | 2 | 3)
+				A = $Id.Next
+				B = $Id.Next (1 | 2 | 3)
 
-			START = $Id.Reset A B
-		`))
-		Nil(t, err)
-
-		s := NewAllPermutationsStrategy(o)
-
-		var got []string
-
-		ch, err := s.Fuzz(r)
-		Nil(t, err)
-		for i := range ch {
-			got = append(got, o.String())
-
-			ch <- i
-		}
-
-		Equal(t, got, []string{
-			"241",
-			"242",
-			"243",
-		})
+				START = $Id.Reset A B
+			`,
+			[]string{
+				"241",
+				"242",
+				"243",
+			},
+		)
 	}
 	{
 		// bug
@@ -532,112 +437,111 @@ func TestAllPermutationsStrategy(t *testing.T) {
 			), 1, 1),
 		)
 
-		o := NewAllPermutationsStrategy(a)
-
-		var got []string
-
-		ch, err := o.Fuzz(r)
-		Nil(t, err)
-		for i := range ch {
-			got = append(got, a.String())
-
-			ch <- i
-		}
-
-		Equal(t, got, []string{
-			"1",
-			"2",
-		})
+		validateTokenAllPermutations(
+			t,
+			a,
+			[]string{
+				"1",
+				"2",
+			},
+		)
 	}
 	{
 		// dynamic repeat
-		o, err := parser.ParseTavor(strings.NewReader(`
-			As = +0,3(A)
-			A = "a"
+		validateTavorAllPermutations(
+			t,
+			`
+				As = +0,3(A)
+				A = "a"
 
-			Bs = +$As.Count(B)
-			B = "b"
+				Bs = +$As.Count(B)
+				B = "b"
 
-			START = As Bs
-		`))
-		Nil(t, err)
-
-		s := NewAllPermutationsStrategy(o)
-
-		var got []string
-
-		ch, err := s.Fuzz(r)
-		Nil(t, err)
-		for i := range ch {
-			got = append(got, o.String())
-
-			ch <- i
-		}
-
-		Equal(t, got, []string{
-			"",
-			"ab",
-			"aabb",
-			"aaabbb",
-		})
+				START = As Bs
+			`,
+			[]string{
+				"",
+				"ab",
+				"aabb",
+				"aaabbb",
+			},
+		)
 	}
 	{
 		// unrolling always ending at end state
-		o, err := parser.ParseTavor(strings.NewReader(`
-			A = "a" (B | C | )
-			B = "b" C
-			C = "c" A
+		validateTavorAllPermutations(
+			t,
+			`
+				A = "a" (B | C | )
+				B = "b" C
+				C = "c" A
 
-			START = A
-		`))
-		Nil(t, err)
-
-		s := NewAllPermutationsStrategy(o)
-
-		var got []string
-
-		ch, err := s.Fuzz(r)
-		Nil(t, err)
-		for i := range ch {
-			got = append(got, o.String())
-
-			ch <- i
-		}
-
-		Equal(t, got, []string{
-			"a",
-			"abca",
-			"abcabca",
-			"abcaca",
-			"aca",
-			"acabca",
-			"acaca",
-		})
+				START = A
+			`,
+			[]string{
+				"a",
+				"abca",
+				"abcabca",
+				"abcaca",
+				"aca",
+				"acabca",
+				"acaca",
+			},
+		)
 	}
 	{
 		// corner case of character classes
-		o, err := parser.ParseTavor(strings.NewReader(`
+		validateTavorAllPermutations(
+			t,
+			`
 			START = 1+1([0-1])
-		`))
-		Nil(t, err)
-
-		s := NewAllPermutationsStrategy(o)
-
-		var got []string
-
-		ch, err := s.Fuzz(r)
-		Nil(t, err)
-		for i := range ch {
-			got = append(got, o.String())
-
-			ch <- i
-		}
-
-		Equal(t, got, []string{
-			"10",
-			"11",
-		})
+			`,
+			[]string{
+				"10",
+				"11",
+			},
+		)
 	}
+}
+
+func validateTavorAllPermutations(t *testing.T, format string, expect []string) {
+	r := test.NewRandTest(1)
+
+	o, err := parser.ParseTavor(strings.NewReader(format))
+	Nil(t, err)
+
+	s := NewAllPermutationsStrategy(o)
+
+	var got []string
+
+	ch, err := s.Fuzz(r)
+	Nil(t, err)
+	for i := range ch {
+		got = append(got, o.String())
+
+		ch <- i
+	}
+
+	Equal(t, got, expect)
+}
+
+func validateTokenAllPermutations(t *testing.T, tok token.Token, expect []string) {
+	r := test.NewRandTest(1)
+
+	o := NewAllPermutationsStrategy(tok)
+
+	ch, err := o.Fuzz(r)
+	Nil(t, err)
+
+	var got []string
+
+	for i := range ch {
+		got = append(got, tok.String())
+
+		ch <- i
+	}
+
+	Equal(t, got, expect)
 }
 
 func TestAllPermutationsStrategyLoopDetection(t *testing.T) {
