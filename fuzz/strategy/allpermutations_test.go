@@ -502,6 +502,19 @@ func TestAllPermutationsStrategy(t *testing.T) {
 			},
 		)
 	}
+	{
+		// language is not regular let's test that this works
+		validateTavorAllPermutations(
+			t,
+			`
+			START = +("a")<A> +$A.Count("b") +$A.Count("c")
+			`,
+			[]string{
+				"abc",
+				"aabbcc",
+			},
+		)
+	}
 }
 
 func validateTavorAllPermutations(t *testing.T, format string, expect []string) {
