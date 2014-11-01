@@ -908,7 +908,7 @@ func (p *tavorParser) selectTokenAttribute(tok token.Token, tokenName string, at
 		switch attribute {
 		case "Existing":
 			if operator == "not in" {
-				return i.ExistingItem(operatorToken), nil
+				return i.ExistingItem([]token.Token{operatorToken}), nil
 			}
 
 			return i.ExistingItem(nil), nil

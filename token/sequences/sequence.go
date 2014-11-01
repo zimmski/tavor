@@ -6,6 +6,7 @@ import (
 
 	"github.com/zimmski/tavor/rand"
 	"github.com/zimmski/tavor/token"
+	"github.com/zimmski/tavor/token/lists"
 )
 
 // Sequence implements a general sequence token which can generate Item tokens to use the internal sequence
@@ -25,39 +26,50 @@ func NewSequence(start, step int) *Sequence {
 	}
 }
 
-func (s *Sequence) existing(r rand.Rand, except token.Token) int {
+func (s *Sequence) existing(r rand.Rand, except []token.Token) int {
 	n := s.value - s.start
 
 	if n == 0 {
-		return 0
+		panic(fmt.Sprintf("There is no sequence value to choose from")) // TODO
 	}
 
 	n /= s.step
 
-	if except == nil {
+	if len(except) == 0 {
 		return r.Intn(n)*s.step + s.start
 	}
 
-	ex, err := strconv.Atoi(except.String())
-	if err != nil {
-		panic(err) // TODO
+	checked := make(map[int]struct{})
+	exceptLookup := make(map[int]struct{})
+
+	for i := 0; i < len(except); i++ {
+		ex, err := strconv.Atoi(except[i].String())
+		if err != nil {
+			panic(err) // TODO
+		}
+
+		exceptLookup[ex] = struct{}{}
 	}
 
-	if n == 1 && s.start == ex {
-		panic(fmt.Sprintf("There is no sequence value to choose from")) // TODO
-	}
-
-	for {
+	for n != len(checked) {
 		i := r.Intn(n)*s.step + s.start
 
-		if i != ex {
+		if _, ok := checked[i]; ok {
+			continue
+		}
+
+		checked[i] = struct{}{}
+
+		if _, ok := exceptLookup[i]; !ok {
 			return i
 		}
 	}
+
+	panic(fmt.Sprintf("There is no sequence value to choose from")) // TODO
 }
 
 // ExistingItem returns a new instance of a SequenceExistingItem token referencing the sequence and holding the starting value of the sequence as its current value
-func (s *Sequence) ExistingItem(except token.Token) *SequenceExistingItem {
+func (s *Sequence) ExistingItem(except []token.Token) *SequenceExistingItem {
 	v := -1 // TODO there should be some kind of real nil value
 
 	if s.value != s.start {
@@ -201,26 +213,27 @@ func (s *SequenceItem) Reset() {
 	s.permutation(0)
 }
 
-// SequenceExistingItem implements a sequence item token which holds one existing vluae of the sequence
+// SequenceExistingItem implements a sequence item token which holds one existing value of the sequence
 // A new existing sequence value is choosen on every token permutation.
 type SequenceExistingItem struct {
 	sequence *Sequence
 	value    int
-	except   token.Token
+	except   []token.Token
 }
 
 // Clone returns a copy of the token and all its children
 func (s *SequenceExistingItem) Clone() token.Token {
-	ex := s.except
-	if ex != nil {
-		ex = ex.Clone()
-	}
-
-	return &SequenceExistingItem{
+	c := SequenceExistingItem{
 		sequence: s.sequence,
 		value:    s.value,
-		except:   ex,
+		except:   make([]token.Token, len(s.except)),
 	}
+
+	for i, tok := range s.except {
+		c.except[i] = tok.Clone()
+	}
+
+	return &c
 }
 
 // Fuzz fuzzes this token using the random generator by choosing one of the possible permutations for this token
@@ -274,20 +287,46 @@ func (s *SequenceExistingItem) String() string {
 
 // ForwardToken interface methods
 
-// Get returns the current referenced token
-func (s *SequenceExistingItem) Get() token.Token {
-	return nil
+// Get returns the current referenced token at the given index. The error return argument is not nil, if the index is out of bound.
+func (s *SequenceExistingItem) Get(i int) (token.Token, error) {
+	return nil, &lists.ListError{
+		Type: lists.ListErrorOutOfBound,
+	}
 }
 
-// InternalGet returns the current referenced internal token
-func (s *SequenceExistingItem) InternalGet() token.Token {
-	return s.except
+// Len returns the number of the current referenced tokens
+func (s *SequenceExistingItem) Len() int {
+	return 0
+}
+
+// InternalGet returns the current referenced internal token at the given index. The error return argument is not nil, if the index is out of bound.
+func (s *SequenceExistingItem) InternalGet(i int) (token.Token, error) {
+	if i < 0 || i >= len(s.except) {
+		return nil, &lists.ListError{
+			Type: lists.ListErrorOutOfBound,
+		}
+	}
+
+	return s.except[i], nil
+}
+
+// InternalLen returns the number of referenced internal tokens
+func (s *SequenceExistingItem) InternalLen() int {
+	return len(s.except)
 }
 
 // InternalLogicalRemove removes the referenced internal token and returns the replacement for the current token or nil if the current token should be removed.
 func (s *SequenceExistingItem) InternalLogicalRemove(tok token.Token) token.Token {
-	if s.except == tok {
-		return nil
+	for i := 0; i < len(s.except); i++ {
+		if s.except[i] == tok {
+			if i == len(s.except)-1 {
+				s.except = s.except[:i]
+			} else {
+				s.except = append(s.except[:i], s.except[i+1:]...)
+			}
+
+			i--
+		}
 	}
 
 	return s
@@ -295,8 +334,10 @@ func (s *SequenceExistingItem) InternalLogicalRemove(tok token.Token) token.Toke
 
 // InternalReplace replaces an old with a new internal token if it is referenced by this token
 func (s *SequenceExistingItem) InternalReplace(oldToken, newToken token.Token) {
-	if s.except == oldToken {
-		s.except = newToken
+	for i := 0; i < len(s.except); i++ {
+		if s.except[i] == oldToken {
+			s.except[i] = newToken
+		}
 	}
 }
 
@@ -311,9 +352,11 @@ func (s *SequenceExistingItem) Reset() {
 
 // SetScope sets the scope of the token
 func (s *SequenceExistingItem) SetScope(variableScope map[string]token.Token) {
-	if s.except != nil {
-		if tok, ok := s.except.(token.ScopeToken); ok {
-			tok.SetScope(variableScope)
+	if len(s.except) != 0 {
+		for i := 0; i < len(s.except); i++ {
+			if tok, ok := s.except[i].(token.ScopeToken); ok {
+				tok.SetScope(variableScope)
+			}
 		}
 	}
 }
