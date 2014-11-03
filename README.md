@@ -261,7 +261,7 @@ Available commands:
 
 ### Command: <code>fuzz</code>
 
-The fuzz command generates data using the given format file and prints it directly to STDOUT.
+The <code>fuzz</code> command generates data using the given format file and prints it directly to STDOUT.
 
 ```bash
 tavor --format-file file.tavor fuzz
@@ -285,7 +285,7 @@ Alternatively to printing to STDOUT an executable (or script) can be fed with th
 
 - #### exec
 
-  Executes a given command for every data generation. The validation of the data can be done via the executable or by using additional <code>--exec-*</code> fuzz command options.
+  Executes a given command for every data generation. The validation of the data can be done via the executable and by using additional <code>--exec-*</code> fuzz command options.
 
   For example the following command will execute a binary called <code>validate</code> with the default exec settings which feed the generation via STDIN to the started process and apply no validation at all.
 
@@ -334,21 +334,21 @@ tavor --help fuzz
 
 ### Command: <code>graph</code>
 
-The Tavor binary allows to print out a graph of the internal structure, since textual formats like the [Tavor format](#format) can be often difficult to visualize. Currently only the DOT format is supported therefore third-party tools like [Graphviz](http://graphviz.org/) have to be used to convert the DOT data to other formats like JPEG, PNG or SVG.
+The <code>graph</code> command allows to print out a graph of the internal structure. This is needed since textual formats like the [Tavor format](#format) can be often difficult to mentally visualize. Currently only the DOT format is supported therefore third-party tools like [Graphviz](http://graphviz.org/) have to be used to convert the DOT data to other formats like JPEG, PNG or SVG.
 
-Use the following command to print out the DOT graph of a format file to STDOUT:
+The following command prints the DOT graph of a format file to STDOUT:
 
 ```bash
 tavor --format-file file.tavor graph
 ```
 
-To save the graph to a file you can simply redirect the output:
+To save the graph to a file the output of the command can be simply redirected:
 
 ```bash
 tavor --format-file file.tavor graph > file.dot
 ```
 
-You can even pipe the command directly into the <code>dot</code> command of [Graphviz](http://graphviz.org/):
+The output can also be piped directly into the <code>dot</code> command of [Graphviz](http://graphviz.org/):
 
 ```
 tavor --format-file file.tavor graph | dot -Tsvg -o outfile.svg
@@ -372,7 +372,62 @@ To define the graph notation, the following image will be explained:
 
 ### Command: <code>reduce</code>
 
-TODO bigger example with example commands and files<br/>
+The <code>reduce</code> command applies delta-debugging to a given input according to the given format file. The reduction generates reduced generations of the original input which have to be tested either by the user or a program. By default the reduction generation is printed to STDOUT and feedback is given through STDIN.
+
+```bash
+tavor --format-file file.tavor reduce --input-file file.input
+```
+
+By default the <code>BinarySearch</code> reduce strategy is used which can be altered using the <code>--strategy</code> reduce command option.
+
+```bash
+tavor --format-file file.tavor reduce --input-file file.input --strategy random
+```
+
+Alternatively to printing to STDOUT an executable (or script) can be fed with the generated data. You can find examples for executables and scripts [here](/examples/deltadebugging). There are two types of arguments to execute commands:
+
+- #### exec
+
+  Executes a given command for every generation. The validation of the data can be done via the executable and by using additional <code>--exec-\*</code> reduce command options. At least one <code>--exec-\*</code> matcher must be used to validate the reduced generations.
+
+  For example the following command will execute a binary called <code>validate</code> with the default exec settings which feed the generation via STDIN to the started process. The <code>--exec-exact-exit-code</code> reduce command option is used to validate that the exit code of the original data matches the exit codes of reduce generations.
+
+  ```bash
+  tavor --format-file file.tavor reduce --input-file file.input --exec validate --exec-exact-exit-code
+  ```
+
+  The method of feeding the generation to the process can be changed using the <code>--exec-argument-type</code> reduce command option. The following command puts the generation into a temporary file which is defined using the environment variable <code>TAVOR_DD_FILE</code>:
+
+  ```bash
+  tavor --format-file file.tavor reduce --input-file file.input --exec validate --exec-exact-exit-code --exec-argument-type environment
+  ```
+
+  The reduce command allows to validate the execution using additional <code>--exec-*</code> reduce command options. For example the exit code and STDERR can be validated to match the original input using the <code>--exec-exact-exit-code</code> and <code>--exec-exact-stderr</code> reduce command options:
+
+  ```bash
+  tavor --format-file file.tavor reduce --input-file file.input --exec validate --exec-exact-exit-code --exec-exact-stderr
+  ```
+
+- #### script
+
+  Executes a given command and feeds every data generation to the running process using STDIN. Feedback is read using STDOUT. The running process can therefore control the reduce generation while it has to do all validation on its own.
+
+  The following command will execute a binary called <code>validate</code>:
+
+  ```bash
+  tavor --format-file file.tavor reduce --input-file file.input --script validate
+  ```
+
+  Feedback commands control the reducing generation and are read by Tavor using STDOUT of the running process. Each command has to end with a new line delimiter and exactly one command has to be given for every generation.
+
+  - **YES** reports a positive outcome for the generation. The reduce strategy will therefore continue reducing this generation.
+  - **NO** reports a negative outcome for the generation. This is an error and the reduce strategy will therefore produce a different generation.
+
+<code>--result-*</code> is an additional reduce command option kind which can be used to influence the reduce generation itself. For example the <code>--result-separator</code> reduce command option changes the separator of the generations if they are printed to STDOUT. The following command will use <code>@@@@</code> instead of the default <code>\n</code> separator to feed the reduce generations to the running process:
+
+```bash
+tavor --format-file file.tavor reduce --input-file file.input --script validate --result-separator "@@@@"
+```
 
 Please have a look at the reduce command help for more options and descriptions:
 
