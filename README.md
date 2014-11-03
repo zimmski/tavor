@@ -261,7 +261,76 @@ Available commands:
 
 ### Command: <code>fuzz</code>
 
-TODO bigger example with example commands and files<br/>
+The fuzz command generates data using the given format file and prints it directly to STDOUT.
+
+```bash
+tavor --format-file file.tavor fuzz
+```
+
+By default the <code>random</code> fuzzing strategy is used which can be altered using the <code>--strategy</code> fuzz command option.
+
+```bash
+tavor --format-file file.tavor fuzz --strategy AllPermutations
+```
+
+Fuzzing filters can be applied before the fuzzing generation using the <code>--filter</code> fuzz command option. Filters are applied in the same order as they are defined, meaning from left to right.
+
+The following command will apply the <code>PositiveBoundaryValueAnalysis</code> fuzzing filter and then the <code>NegativeBoundaryValueAnalysis</code>:
+
+```bash
+tavor --format-file file.tavor fuzz --filter PositiveBoundaryValueAnalysis --filter NegativeBoundaryValueAnalysis
+```
+
+Alternatively to printing to STDOUT an executable (or script) can be fed with the generated data. You can find examples for executables and scripts [here](/examples/fuzzing). There are two types of arguments to execute commands:
+
+- #### exec
+
+  Executes a given command for every data generation. The validation of the data can be done via the executable or by using additional <code>--exec-*</code> fuzz command options.
+
+  For example the following command will execute a binary called <code>validate</code> with the default exec settings which feed the generation via STDIN to the started process and apply no validation at all.
+
+  ```bash
+  tavor --format-file file.tavor fuzz --exec validate
+  ```
+
+  The method of feeding the generation to the process can be changed using the <code>--exec-argument-type</code> fuzz command option. The following command puts the generation into a temporary file which is defined using the environment variable <code>TAVOR_FUZZ_FILE</code>:
+
+  ```bash
+  tavor --format-file file.tavor fuzz --exec validate --exec-argument-type environment
+  ```
+
+  The fuzz command allows to validate the execution using additional <code>--exec-*</code> fuzz command options. For example the exit code of the process can be validated to be <code>0</code> using the <code>--exec-exact-exit-code</code> fuzz command option:
+
+  ```bash
+  tavor --format-file file.tavor fuzz --exec validate --exec-exact-exit-code 0
+  ```
+
+- #### script
+
+  Executes a given command and feeds every data generation to the running process using STDIN. Feedback is read using STDOUT. The running process can therefore control the fuzzing generation while it has to do all validation on its own.
+
+  The following command will execute a binary called <code>validate</code>:
+
+  ```bash
+  tavor --format-file file.tavor fuzz --script validate
+  ```
+
+  Feedback commands control the fuzzing generation and are read by Tavor using STDOUT of the running process. Each command has to end with a new line delimiter and exactly one command has to be given for every generation.
+
+  - **YES** reports a positive outcome for the generation.
+  - **NO** reports a negative outcome for the generation. This is an error and will terminate the fuzzing generation if the <code>--exit-on-error</code> fuzz command option is used.
+
+<code>--result-*</code> is an additional fuzz command option kind which can be used to influence the fuzzing generation itself. For example the <code>--result-separator</code> fuzz command option changes the separator of the generations if they are printed to STDOUT. The following command will use <code>@@@@</code> instead of the default <code>\n</code> separator to feed the fuzzing generations to the running process:
+
+```bash
+tavor --format-file file.tavor fuzz --script validate --result-separator "@@@@"
+```
+
+Please have a look at the fuzz command help for more options and descriptions:
+
+```bash
+tavor --help fuzz
+```
 
 ### Command: <code>graph</code>
 
@@ -285,6 +354,12 @@ You can even pipe the command directly into the <code>dot</code> command of [Gra
 tavor --format-file file.tavor graph | dot -Tsvg -o outfile.svg
 ```
 
+Please have a look at the graph command help for more options and descriptions:
+
+```bash
+tavor --help graph
+```
+
 To define the graph notation, the following image will be explained:
 
 ![Graph notation](doc/images/README/graph-notaton.png "Graph notation")
@@ -298,6 +373,12 @@ To define the graph notation, the following image will be explained:
 ### Command: <code>reduce</code>
 
 TODO bigger example with example commands and files<br/>
+
+Please have a look at the reduce command help for more options and descriptions:
+
+```bash
+tavor --help reduce
+```
 
 ## <a name="bigexample"></a>A complete example for fuzzing, executing and delta-debugging
 
