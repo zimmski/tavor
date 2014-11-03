@@ -64,6 +64,22 @@ Credit0
 
 Generating data like this is just one example of the capabilities of Tavor. Please have a look at [the bigger example](#bigexample) with a complete overview over the basic features or keep reading to find out more about the background and capabilities of Tavor.
 
+## <a name="table-of-content"></a>Table of content
+
+- [What is fuzzing?](#fuzzing)
+- [What is delta-debugging?](#delta-debugging)
+- [What does Tavor provide and how does it work?](#tavor-provides)
+- [The Tavor format](#format)
+- [How do I use Tavor?](#use)
+- [The Tavor binary](#binary)
+- [A complete example for fuzzing, executing and delta-debugging](#bigexample)
+- [Where are the precompiled binaries?](#precompiled)
+- [How do I build Tavor?](#build)
+- [How do I use the Tavor platform programmatically?](#programmatically)
+- [How do I extend Tavor?](#extend)
+- [Missing features](#missing-features)
+- [Can I make feature requests, report bugs and problems?](#feature-request)
+
 ## <a name="fuzzing"></a>What is fuzzing?
 
 > Fuzz testing or fuzzing is a software testing technique, often automated or semi-automated, that involves providing invalid, unexpected, or random data to the inputs of a computer program. The program is then monitored for exceptions such as crashes, or failing built-in code assertions or for finding potential memory leaks. Fuzzing is commonly used to test for security problems in software or computer systems.
@@ -108,7 +124,7 @@ Delta-debugging consists of three areas:
 
 Although delta-debugging is described as method to isolate failure causes, it can be also used to isolate anything given isolating constraints. For example we could reduce an input for a program which leads to a positive outcome to its minimum.
 
-## What does Tavor provide and how does it work?
+## <a name="tavor-provides"></a>What does Tavor provide and how does it work?
 
 Tavor combines both fuzzing and delta-debugging into one platform by allowing all implemented methods to operate on one internal model-based structure represented by a graph. This structure can be defined and generated programmatically or by using a format file. Out of the box Tavor comes with its own [format](#format) which covers all functionality of the framework.
 
@@ -442,6 +458,66 @@ TODO do a key-word driven format-file<br/>
 TODO executor for the key-words<br/>
 TODO delta-debug keywords because of an intentional error<br/>
 
+## <a name="precompiled"></a>Where are the precompiled binaries?
+
+You can find all precompiled binaries on the [release page](https://github.com/zimmski/tavor/releases). The binaries are packed into archives that currently only hold the Tavor binary itself. Have a look at the [How do I build Tavor?](#build) section if you like to compile Tavor yourself.
+
+### <a name="bash-completion"></a>Bash Completion
+
+If you like Bash Completion for Tavor make sure that you have Bash Completion installed and then copy the [bash completion Tavor script](https://raw.githubusercontent.com/zimmski/tavor/master/cmd/tavor-bash_completion.sh) into your Bash Completion folder.
+
+```bash
+mkdir -p $HOME/.bash_completion
+wget -P $HOME/.bash_completion https://raw.githubusercontent.com/zimmski/tavor/master/cmd/tavor-bash_completion.sh
+. ~/.bashrc
+```
+
+Bash Completion for Tavor should now be working. If not, one reason could be that your distribution does not include user defined Bash Completion scripts in .bashrc so just add it to your .bashrc:
+
+```bash
+echo ". ~/.bash_completion/tavor-bash_completion.sh" >> ~/.bashrc
+. ~/.bashrc
+```
+
+## <a name="build"></a>How do I build Tavor?
+
+Tavor provides [precompiled 64 bit Linux binaries](#precompiled). Other platforms are currently not supported, but might work. Please have a look at the [feature request section](#feature-request) if you need them to work or you want more binaries.
+
+If you do not want to use the [precompiled binaries](#precompiled) but instead want to compile Tavor from scratch, just follow the these steps (NOTE: All steps must execute without any errors):
+
+1. Install and configure Go.
+
+  At least version 1.3 must be used. Your distribution will most definitely have some packages or you can be brave and just install it yourself. Have a look at [the official documentation](http://golang.org/doc/install). Good luck!
+
+2. Go-get Tavor
+
+  ```bash
+  go get -t -v github.com/zimmski/tavor
+  ```
+
+3. Install dependencies
+
+  ```bash
+  cd $GOPATH/src/github.com/zimmski/tavor
+  make dependencies
+  ```
+
+3. Compile
+
+  ```bash
+  cd $GOPATH/src/github.com/zimmski/tavor
+  make install
+  ```
+
+4. Run tests
+
+  ```bash
+  cd $GOPATH/src/github.com/zimmski/tavor
+  make test
+  ```
+
+You now have a binary "tavor" in your <code>$GOPATH/bin</code> (or if set <code>$GOBIN</code> folder) folder which can be used without any further actions.
+
 ## <a name="programmatically"></a>How do I use the Tavor platform programmatically?
 
 TODO<br/>
@@ -482,66 +558,6 @@ TODO<br/>
 ### Still looking for something else?
 
 TODO explain if the reader has not find what she/he looks for -> link to the feature request section<br/>
-
-## <a name="build"></a>How do I build Tavor?
-
-Tavor provides [precompiled 64 bit Linux binaries](#precompiled). Other platforms are currently not supported, but might work. Please have a look at the [feature request section](#feature-request) if you need them to work or you want more binaries.
-
-If you do not want to use the [precompiled binaries](#precompiled) but instead want to compile Tavor from scratch, just follow the these steps (NOTE: All steps must execute without any errors):
-
-1. Install and configure Go.
-
-	At least version 1.3 must be used. Your distribution will most definitely have some packages or you can be brave and just install it yourself. Have a look at [the official documentation](http://golang.org/doc/install). Good luck!
-
-2. Go-get Tavor
-
-	```bash
-	go get -t -v github.com/zimmski/tavor
-	```
-
-3. Install dependencies
-
-	```bash
-	cd $GOPATH/src/github.com/zimmski/tavor
-	make dependencies
-	```
-
-3. Compile
-
-	```bash
-	cd $GOPATH/src/github.com/zimmski/tavor
-	make install
-	```
-
-4. Run tests
-
-	```bash
-	cd $GOPATH/src/github.com/zimmski/tavor
-	make test
-	```
-
-You now have a binary "tavor" in your <code>$GOPATH/bin</code> (or if set <code>$GOBIN</code> folder) folder which can be used without any further actions.
-
-## <a name="precompiled"></a>Where are the precompiled binaries?
-
-You can find all precompiled binaries on the [release page](https://github.com/zimmski/tavor/releases). The binaries are packed into archives that currently only hold the Tavor binary itself.
-
-### <a name="bash-completion"></a>Bash Completion
-
-If you like Bash Completion for Tavor make sure that you have Bash Completion installed and then copy the [bash completion Tavor script](https://raw.githubusercontent.com/zimmski/tavor/master/cmd/tavor-bash_completion.sh) into your Bash Completion folder.
-
-```bash
-mkdir -p $HOME/.bash_completion
-wget -P $HOME/.bash_completion https://raw.githubusercontent.com/zimmski/tavor/master/cmd/tavor-bash_completion.sh
-. ~/.bashrc
-```
-
-Bash Completion for Tavor should now be working. If not, one reason could be that your distribution does not include user defined Bash Completion scripts in .bashrc so just add it to your .bashrc:
-
-```bash
-echo ". ~/.bash_completion/tavor-bash_completion.sh" >> ~/.bashrc
-. ~/.bashrc
-```
 
 ## <a name="missing-features"></a>Missing features
 
