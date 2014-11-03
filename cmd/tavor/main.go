@@ -50,10 +50,10 @@ var opts struct {
 	} `group:"Global options"`
 
 	Format struct {
+		Check         bool           `long:"check" description:"Just check the syntax of the format file and exit"`
 		FormatFile    flags.Filename `long:"format-file" description:"Input tavor format file" required:"true"`
 		Print         bool           `long:"print" description:"Prints the AST of the parsed format file"`
 		PrintInternal bool           `long:"print-internal" description:"Prints the internal AST of the parsed format file"`
-		Validate      bool           `long:"validate" description:"Just validate the format file and exit"`
 	} `group:"Format file options"`
 
 	Fuzz struct {
@@ -407,7 +407,7 @@ func main() {
 		token.PrettyPrintTree(os.Stdout, doc)
 	}
 
-	if opts.Format.Validate {
+	if opts.Format.Check {
 		os.Exit(returnOk)
 	}
 

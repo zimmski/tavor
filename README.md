@@ -219,10 +219,10 @@ Global options:
   --max-repeat=       How many times loops and repetitions should be repeated (2)
 
 Format file options:
+  --check             Just check the syntax of the format file and exit
   --format-file=      Input tavor format file
   --print             Prints the AST of the parsed format file
   --print-internal    Prints the internal AST of the parsed format file
-  --validate          Just validate the format file and exit
 
 Available commands:
   fuzz      Fuzz the given format file
