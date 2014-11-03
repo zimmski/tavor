@@ -160,9 +160,9 @@ Reduce strategies are strongly comparable to fuzzing strategies. Each reduce str
 
 Please have a look at [the documentation](https://godoc.org/github.com/zimmski/tavor/reduce/strategy) for an overview of all officially available reduce strategies of Tavor.
 
-### Unrolling loops
+### <a name="unrolling"></a>Unrolling loops
 
-Although the internal structure allows loops in its graph, Tavor currently unrolls loops for easier algorithm implementations and usage. A future version will supplement this by allowing loops on default.
+Although the internal structure allows loops in its graph, Tavor currently unrolls loops for easier algorithm implementations and usage. A future version will supplement this by allowing loops by default.
 
 This graph for example loops between the states <code>Idle</code> and <code>Action</code>:
 
@@ -273,6 +273,20 @@ Available commands:
 
 [validate command options]
       --input-file=   Input file which gets parsed and validated via the format file
+```
+
+### General options
+
+The Tavor binary provides different kinds of general options which are informative or apply to all commands. Besides the <code>--format-file</code> general format option the following options are noteworthy:
+
+- **--max-repeat** sets the maximum repetition of loops and repeating tokens. If not set, the default value (currently 2) is used. 0, meaning no maximum repetition, is currently now allowed because of the limitation mentioned [here](#unrolling).
+- **--seed** defines the seed for all random generators. If not set, a random value will be chosen. This argument makes the execution of every Tavor command deterministic. Meaning that a result or failure can be replayed with the same <code>--seed</code> argument, other arguments and Tavor version.
+- **--verbose** switches Tavor into verbose mode which prints additional information, like the used seed, to STDERR.
+
+Please have a look at the help for more options and descriptions:
+
+```bash
+tavor --help
 ```
 
 ### Command: <code>fuzz</code>
