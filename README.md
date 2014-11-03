@@ -223,7 +223,7 @@ Available commands:
       --exec-match-stdout=                       Searches through stdout via the given regex. A match has to be present
       --exec-do-not-remove-tmp-files             If set, tmp files are not removed
       --exec-do-not-remove-tmp-files-on-error    If set, tmp files are not removed on error
-      --exec-argument-type=                      How the generation is given to the binary (environment)
+      --exec-argument-type=                      How the generation is given to the binary (stdin)
       --list-exec-argument-types                 List all available exec argument types
       --script=                                  Execute this binary which gets fed with the generation and should return feedback
       --exit-on-error                            Exit if an execution fails
@@ -247,7 +247,7 @@ Available commands:
       --exec-match-stderr=              Searches through stderr via the given regex. A match has to be present
       --exec-match-stdout=              Searches through stdout via the given regex. A match has to be present
       --exec-do-not-remove-tmp-files    If set, tmp files are not removed
-      --exec-argument-type=             How the generation is given to the binary (environment)
+      --exec-argument-type=             How the generation is given to the binary (stdin)
       --list-exec-argument-types        List all available exec argument types
       --script=                         Execute this binary which gets fed with the generation and should return feedback
       --input-file=                     Input file which gets parsed, validated and delta-debugged via the format file

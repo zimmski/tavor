@@ -66,7 +66,7 @@ var opts struct {
 			ExecMatchStdout                string           `long:"exec-match-stdout" description:"Searches through stdout via the given regex. A match has to be present"`
 			ExecDoNotRemoveTmpFiles        bool             `long:"exec-do-not-remove-tmp-files" description:"If set, tmp files are not removed"`
 			ExecDoNotRemoveTmpFilesOnError bool             `long:"exec-do-not-remove-tmp-files-on-error" description:"If set, tmp files are not removed on error"`
-			ExecArgumentType               execArgumentType `long:"exec-argument-type" description:"How the generation is given to the binary" default:"environment"`
+			ExecArgumentType               execArgumentType `long:"exec-argument-type" description:"How the generation is given to the binary" default:"stdin"`
 			ListExecArgumentTypes          bool             `long:"list-exec-argument-types" description:"List all available exec argument types"`
 
 			Script string `long:"script" description:"Execute this binary which gets fed with the generation and should return feedback"`
@@ -97,7 +97,7 @@ var opts struct {
 			ExecMatchStderr         string           `long:"exec-match-stderr" description:"Searches through stderr via the given regex. A match has to be present"`
 			ExecMatchStdout         string           `long:"exec-match-stdout" description:"Searches through stdout via the given regex. A match has to be present"`
 			ExecDoNotRemoveTmpFiles bool             `long:"exec-do-not-remove-tmp-files" description:"If set, tmp files are not removed"`
-			ExecArgumentType        execArgumentType `long:"exec-argument-type" description:"How the generation is given to the binary" default:"environment"`
+			ExecArgumentType        execArgumentType `long:"exec-argument-type" description:"How the generation is given to the binary" default:"stdin"`
 			ListExecArgumentTypes   bool             `long:"list-exec-argument-types" description:"List all available exec argument types"`
 
 			Script string `long:"script" description:"Execute this binary which gets fed with the generation and should return feedback"`
