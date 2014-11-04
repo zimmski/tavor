@@ -4,6 +4,18 @@ The [Tavor](/) format is an [EBNF-like notation](https://en.wikipedia.org/wiki/E
 
 The format is Unicode text encoded in UTF-8 and consists of terminal and non-terminal symbols which are called <code>tokens</code> throughout the Tavor framework. An explanation of the general meaning can be found in the [What are tokens?](/#token) section.
 
+Every example throughout this page is a complete Tavor format file. The content of each example can be for example saved into a file called <code>file.tavor</code> and then fuzzed with the Tavor binary.
+
+```bash
+tavor --format-file file.tavor fuzz
+```
+
+Since some examples have more than one permutation, meaning there is more than one possible fuzzing generation, it is advisable to use the <code>AllPermutations</code> fuzzing strategy to print out every possible permutation of the fuzzed format.
+
+```bash
+tavor --format-file file.tavor fuzz --strategy AllPermutations
+```
+
 ## <a name="table-of-content"></a>Table of content
 
 - [Token definition](#token-definition)
@@ -121,11 +133,70 @@ Token names declared in the global scope of a format definition can be used thro
 Terminal and non-terminal tokens can be mixed.
 
 ```tavor
-First  = "1."
-Second = "2."
-Third  = "3."
+Dot = "."
+
+First  = 1 Dot
+Second = 2 Dot
+Third  = 3 Dot
 
 START = First ", " Second " and " Third
+```
+
+## Alternation
+
+Alternations are defined with the pipe character <code>|</code>. The following example defines that the token <code>START</code> can either hold 1, 2 or 3.
+
+```tavor
+START = 1 | 2 | 3
+```
+
+An alternation term has its own scope which means that a sequence of tokens can be used.
+
+```tavor
+START = 1 "green apple" | 2 "orange oranges" | 3 "yellow bananas"
+```
+
+Alternation terms can be empty which allows more advanced definitions of formats. For example the next definition defines the possibility of a loop.
+
+```tavor
+A = "a" A | B |
+B = "b"
+
+START = A
+```
+
+This example can hold for example the strings "", "a", "b", "ab", "aab" or any amount of "a" characters ending with one or no "b" character.
+
+## Grouping
+
+Tokens can be grouped using parenthesis. A group starts with <code>(</code> and ends with <code>)</code> and is a token on its own. This means that it can be mixed with other tokens. Additionally, a group starts a new scope between its parenthesis and can therefore hold a sequence of tokens.
+
+The following example declares that the token <code>START</code> either holds the string "old news" or "new news".
+
+```
+START = ("old" | "new") " news"
+```
+
+Groups can be nested too. For example the following can be used to define that the <code>START</code> token can either hold "a", "b", "1" or "2".
+
+```tavor
+START = (("a" | "b") | (1 | 2))
+```
+
+An even more complicated example is the definition of an one to three digits integer.
+
+```tavor
+Digit = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+
+START = Digit (Digit (Digit | ) | )
+```
+
+This could be also written with the following format definition.
+
+```tavor
+Digit = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+
+START = Digit | Digit Digit | Digit Digit Digit
 ```
 
 -------------
@@ -146,10 +217,6 @@ START = First ", " Second " and " Third
 ### Alternations and grouping
 
 ```
-Alternation = 1 | 2 | 3 // The token "Alternation" can hold either 1, 2 or 3.
-SameAlternationAsShortage = [123] // This is the same as the "Alternation" token except it is much shorter to define.
-AnotherAlternation = "a string" | [123] | Token // Alternations can hold every kind of token.
-Grouping = ("old" | "new") "letter" // Everything between parenthesis is a group. The token "Grouping" can therefore hold "oldletter" or "newletter". Groups can be nested too.
 Permutations = @(1 | 2 | 3) // Alternation groups can become permutation groups with the "@" right before the opening parenthesis. Each entry will be used once but the order is nonrelevant. For example the token "Permutations" can hold 123, 132, 213, 231, 312 or 321.
 ```
 
