@@ -1,3 +1,27 @@
+# The Tavor format
+
+The Tavor format is an [EBNF-like notation](https://en.wikipedia.org/wiki/Extended_Backus%E2%80%93Naur_Form) which allows the definition of data (e.g. file formats and protocols) without the need of programming. It is the default format of the Tavor platform and supports every feature which the platform currently provides.
+
+
+
+
+
+
+
+
+
+
+
+
+-------------
+
+TODO -> put this in its own .md and do not skimp on examples<br/>
+TODO explain every aspect. basics first<br/>
+TODO remove the old tavor-file.md when this section is complete
+
+TODO
+-------------
+
 # Tavor file format
 
 ## Comments
@@ -195,3 +219,4 @@ Print = {if var.Value == 1} "var is one" {else if var.Value == 2} "var is two" {
 
   Print = {if defined var} "var is: " $var.Value {else} "var is not defined" {endif}
   ```
+
