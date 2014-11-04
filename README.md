@@ -553,7 +553,7 @@ TODO<br/>
 TODO explain creating internal structures (instead of using a format file) with examples<br/>
 TODO explain how to use filters, fuzzers and delta debugging<br/>
 
-## <a name="extend"></a>How do I extend the Tavor framework
+## <a name="extend"></a>How do I extend the Tavor framework?
 
 TODO<br/>
 TODO Mention that if [Developing](#develop) is not enough because of missing features or so Tavor can be extend easily<br/>

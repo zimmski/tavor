@@ -1,10 +1,10 @@
 # The Tavor format
 
-The [Tavor](/) format is an [EBNF-like notation](https://en.wikipedia.org/wiki/Extended_Backus%E2%80%93Naur_Form) which allows the definition of data (e.g. file formats and protocols) without the need of programming. It is the default format of the [Tavor platform](/) and supports every feature which the platform currently provides.
+The [Tavor](/) format is an [EBNF-like notation](https://en.wikipedia.org/wiki/Extended_Backus%E2%80%93Naur_Form) which allows the definition of data (e.g. file formats and protocols) without the need of programming. It is the default format of the [Tavor framework](/) and supports every feature which the framework currently provides.
 
 The format is Unicode text encoded in UTF-8 and consists of terminal and non-terminal symbols which are called <code>tokens</code> throughout the Tavor framework. An explanation of the general meaning can be found in the [What are tokens?](/#token) section.
 
-Every example throughout this page is a complete Tavor format file. The content of each example can be for example saved into a file called <code>file.tavor</code> and then fuzzed with the Tavor binary.
+Every example throughout this page is a complete Tavor format file. The content of each example can be for instance saved into a file called <code>file.tavor</code> and then fuzzed with the Tavor binary.
 
 ```bash
 tavor --format-file file.tavor fuzz
@@ -217,7 +217,7 @@ START = Digit | Digit Digit | Digit Digit Digit
 ### Alternations and grouping
 
 ```
-Permutations = @(1 | 2 | 3) // Alternation groups can become permutation groups with the "@" right before the opening parenthesis. Each entry will be used once but the order is nonrelevant. For example the token "Permutations" can hold 123, 132, 213, 231, 312 or 321.
+Permutations = @(1 | 2 | 3) // Alternation groups can become permutation groups with the "@" right before the opening parenthesis. Each entry will be used once but the order is non-relevant. For example the token "Permutations" can hold 123, 132, 213, 231, 312 or 321.
 ```
 
 ### Optionals and repeats
