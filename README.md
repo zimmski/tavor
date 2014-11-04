@@ -1,6 +1,6 @@
 # Tavor [![GoDoc](https://godoc.org/github.com/zimmski/tavor?status.png)](https://godoc.org/github.com/zimmski/tavor) [![Build Status](https://travis-ci.org/zimmski/tavor.svg?branch=master)](https://travis-ci.org/zimmski/tavor) [![Coverage Status](https://coveralls.io/repos/zimmski/tavor/badge.png)](https://coveralls.io/r/zimmski/tavor)
 
-Tavor ([Sindarin](https://en.wikipedia.org/wiki/Sindarin) for "woodpecker") is a platform for implementing and doing everyday [fuzzing](#fuzzing) and [delta-debugging](#delta-debugging) as well as doing research on new methods without reimplementing basic algorithms. An [EBNF-like notation](#format) allows the definition of data (e.g. file formats and protocols) without the need of programming. Tavor also relaxes on the definitions of fuzzing and delta-debugging allowing the user to utilize implemented algorithms universally e.g. for key-driven testing, model-based testing, simulating user-behavior and genetic programming.
+Tavor ([Sindarin](https://en.wikipedia.org/wiki/Sindarin) for "woodpecker") is a framework for implementing and doing everyday [fuzzing](#fuzzing) and [delta-debugging](#delta-debugging) as well as doing research on new methods without reimplementing basic algorithms. An [EBNF-like notation](#format) allows the definition of data (e.g. file formats and protocols) without the need of programming. Tavor also relaxes on the definitions of fuzzing and delta-debugging allowing the user to utilize implemented algorithms universally e.g. for key-driven testing, model-based testing, simulating user-behavior and genetic programming.
 
 ### <a name="quick-example"></a>A quick example
 
@@ -75,8 +75,8 @@ Generating data like this is just one example of the capabilities of Tavor. Plea
 - [A complete example for fuzzing, executing and delta-debugging](#bigexample)
 - [Where are the precompiled binaries?](#precompiled)
 - [How do I build Tavor?](#build)
-- [How do I use the Tavor platform programmatically?](#programmatically)
-- [How do I extend Tavor?](#extend)
+- [How do I develop applications with the Tavor framework?](#develop)
+- [How do I extend the Tavor framework?](#extend)
 - [Missing features](#missing-features)
 - [Can I make feature requests, report bugs and problems?](#feature-request)
 
@@ -126,17 +126,17 @@ Although delta-debugging is described as method to isolate failure causes, it ca
 
 ## <a name="tavor-provides"></a>What does Tavor provide and how does it work?
 
-Tavor combines both fuzzing and delta-debugging into one platform by allowing all implemented methods to operate on one internal model-based structure represented by a graph. This structure can be defined and generated programmatically or by using a format file. Out of the box Tavor comes with its own [format](#format) which covers all functionality of the framework.
+Tavor combines both fuzzing and delta-debugging by allowing all implemented methods to operate on one internal model-based structure represented by a graph. This structure can be defined and generated via code or by using a format file. Out of the box Tavor comes with its own [format](#format) which covers all functionality of the framework.
 
-Tavor's generic fuzzing implementation is not fixed to one technique. Instead different fuzzing techniques and heuristics can be implemented and executed independently as [Tavor fuzzing strategies](#fuzzing-strategy). The same principle is used for delta-debugging where so called [Tavor reduce strategies](#reduce-strategy) can be implemented and used. Both types of strategies operate on the same internal structure independent of the format. This structure is basically a graph of nodes which are called [tokens](#token) throughout the Tavor platform. The structure itself is not fixed to a static definition but can be changed by so called [fuzzing filters](#fuzzing-filter).
+Tavor's generic fuzzing implementation is not fixed to one technique. Instead different fuzzing techniques and heuristics can be implemented and executed independently as [Tavor fuzzing strategies](#fuzzing-strategy). The same principle is used for delta-debugging where so called [Tavor reduce strategies](#reduce-strategy) can be implemented and used. Both types of strategies operate on the same internal structure independent of the format. This structure is basically a graph of nodes which are called [tokens](#token) throughout the Tavor framework. The structure itself is not fixed to a static definition but can be changed by so called [fuzzing filters](#fuzzing-filter).
 
 Even tough Tavor provides loads of functionality out of the box, a lot is still missing. A list of missing but planed features can be found in the [missing features section](#missing-features). For feature requests please have a look at the [feature request section](#feature-request).
 
 ### <a name="token"></a>What are tokens?
 
-Tavor's tokens differ from *lexical analysis tokens* in that they represent not just a group of characters but different kind of data with additional properties and abilities. Tokens can be constant integers and strings of all kind but also dynamic data like integer ranges, sequences and character classes. Furthermore tokens can encapsulate other tokens to not only group them together but to create building blocks that can be reused to, for example, repeat a group of tokens. Tokens can have states, conditions and logic. They can create new tokens dynamically and can depend on other tokens to generate data. Tavor's tokens are basically the foundation of the whole platform and every algorithm for fuzzing, parsing and delta-debugging uses them.
+Tavor's tokens differ from *lexical analysis tokens* in that they represent not just a group of characters but different kind of data with additional properties and abilities. Tokens can be constant integers and strings of all kind but also dynamic data like integer ranges, sequences and character classes. Furthermore tokens can encapsulate other tokens to not only group them together but to create building blocks that can be reused to, for example, repeat a group of tokens. Tokens can have states, conditions and logic. They can create new tokens dynamically and can depend on other tokens to generate data. Tavor's tokens are basically the foundation of the whole framework and every algorithm for fuzzing, parsing and delta-debugging uses them.
 
-If you want to know more about Tavor's tokens you can read through [Tavor's format definition](#format) or you can read about them in depth in the [programming](#programmatically) and [extending](#extend) sections.
+If you want to know more about Tavor's tokens you can read through [Tavor's format definition](#format) or you can read about them in depth in the [developing](#develop) and [extending](#extend) sections.
 
 ### <a name="fuzzing-strategy"></a>What are fuzzing strategies?
 
@@ -179,9 +179,9 @@ The Tavor format documentation has its own [page which can be found here](/doc/f
 ## <a name="use"></a>How do I use Tavor?
 
 Tavor can be used in three different ways:
-- [Using the binary](#binary) which makes everything provided officially by the Tavor project available via the command line.
-- [Programmatically](#programmatically) by implementing the internal structure via code using the Tavor framework and doing everything else too like fuzzing and delta-debugging.
-- [Programmatically extending Tavor](#extend) because of research or missing features.
+- [Using the binary](#binary) which makes everything officially provided by the Tavor project available via the command line.
+- [Developing applications with the Tavor framework](#develop) by implementing the internal structure via code and doing everything else too like fuzzing and delta-debugging.
+- [Extending the Tavor framework](#extend) because of research or missing features.
 
 ## <a name="binary"></a>The Tavor binary
 
@@ -510,7 +510,7 @@ echo ". ~/.bash_completion/tavor-bash_completion.sh" >> ~/.bashrc
 
 ## <a name="build"></a>How do I build Tavor?
 
-Tavor provides [precompiled 64 bit Linux binaries](#precompiled). Other platforms are currently not supported, but might work. Please have a look at the [feature request section](#feature-request) if you need them to work or you want more binaries.
+Tavor provides [precompiled 64 bit Linux binaries](#precompiled). Other architectures are currently not supported, but might work. Please have a look at the [feature request section](#feature-request) if you need them to work or you want more binaries.
 
 If you do not want to use the [precompiled binaries](#precompiled) but instead want to compile Tavor from scratch, just follow the these steps (NOTE: All steps must execute without any errors):
 
@@ -547,16 +547,16 @@ If you do not want to use the [precompiled binaries](#precompiled) but instead w
 
 You now have a binary "tavor" in your <code>$GOPATH/bin</code> (or if set <code>$GOBIN</code> folder) folder which can be used without any further actions.
 
-## <a name="programmatically"></a>How do I use the Tavor platform programmatically?
+## <a name="develop"></a>How do I develop applications with the Tavor framework?
 
 TODO<br/>
 TODO explain creating internal structures (instead of using a format file) with examples<br/>
 TODO explain how to use filters, fuzzers and delta debugging<br/>
 
-## <a name="extend"></a>How do I extend Tavor?
+## <a name="extend"></a>How do I extend the Tavor framework
 
 TODO<br/>
-TODO Mention that if [Programmatically](#programmatically) is not enough because of missing features or so Tavor can be extend easily<br/>
+TODO Mention that if [Developing](#develop) is not enough because of missing features or so Tavor can be extend easily<br/>
 TODO mention feature request section, but if someone is interested in really extending Tavor by her/himself... read on<br/>
 
 ### Filters

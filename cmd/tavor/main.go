@@ -195,7 +195,7 @@ func (s *reduceStrategy) Complete(match string) []flags.Completion {
 func checkArguments() string {
 	p := flags.NewNamedParser("tavor", flags.None)
 
-	p.ShortDescription = "A fuzzing and delta-debugging platform."
+	p.ShortDescription = "A generic fuzzing and delta-debugging framework."
 
 	if _, err := p.AddGroup("Tavor", "Tavor arguments", &opts); err != nil {
 		exitError(err.Error())
