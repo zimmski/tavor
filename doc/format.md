@@ -1,72 +1,147 @@
 # The Tavor format
 
-The Tavor format is an [EBNF-like notation](https://en.wikipedia.org/wiki/Extended_Backus%E2%80%93Naur_Form) which allows the definition of data (e.g. file formats and protocols) without the need of programming. It is the default format of the Tavor platform and supports every feature which the platform currently provides.
+The [Tavor](/) format is an [EBNF-like notation](https://en.wikipedia.org/wiki/Extended_Backus%E2%80%93Naur_Form) which allows the definition of data (e.g. file formats and protocols) without the need of programming. It is the default format of the [Tavor platform](/) and supports every feature which the platform currently provides.
 
+The format is Unicode text encoded in UTF-8 and consists of terminal and non-terminal symbols which are called <code>tokens</code> throughout the Tavor framework. An explanation of the general meaning can be found in the [What are tokens?](/#token) section.
 
+## <a name="table-of-content"></a>Table of content
 
+- [Token definition](#token-definition)
+- [Terminal tokens](#terminal-tokens)
+	+ [Numbers](#terminal-tokens-numbers)
+	+ [Strings](#terminal-tokens-strings)
+- [Concatenation](#concatenation)
 
+TODO update this
 
+## <a name="token-definition"></a>Token definition
 
+Every token in the format belongs to a non-terminal token definition which consists of a unique case-sensitive name and its definition part. Both are separated by exactly one equal sign. Syntactical white spaces are ignored. Every token definition must be declared by default in one line. A line ends with a new line character.
 
+To give an example, the following format declares the token <code>START</code> with the constant string token "Hello World" as its definition.
 
-
-
-
-
--------------
-
-TODO -> put this in its own .md and do not skimp on examples<br/>
-TODO explain every aspect. basics first<br/>
-TODO remove the old tavor-file.md when this section is complete
-
-TODO
--------------
-
-# Tavor file format
-
-## Comments
-
-```
-// single line comment
+```tavor
+START = "Hello World"
 ```
 
+Token names have the following rules:
+- Token names have to start with a letter.
+- Token names can only consist of letters, digits and the underscore sign "_".
+- Token names have to be unique in the format definition scope.
+
+Additional to these rules it is not allowed to declare a token without any usage in the format definition scope except if it is the <code>START</code> token which is used as the entry point of the format, meaning it defines the beginning of the format. Hence, it is required for every format definition.
+
+## <a name="terminal-tokens"></a>Terminal tokens
+
+Terminal tokens are the constants of the Tavor format.
+
+### <a name="terminal-tokens-numbers"></a>Numbers
+
+Currently only positive decimal integers are allowed. They are written as a sequence of digits.
+
+```tavor
+START = 123
 ```
-/* this comment can be a single line */
+
+### <a name="terminal-tokens-strings"></a>Strings
+
+Strings are character sequences between double quotes and can consist of any UTF8 encoded character except new lines, the double quote and the backslash which have to be escaped with a backslash.
+
+```tavor
+START = "The next word is \"quoted\" and here is a new line\n"
+```
+
+Since Tavor is using Go's text parser as foundation of its format parsing, the same rules for <code>interpreted string literals</code> apply. These rules can be looked up in [Go's language specification](https://golang.org/ref/spec#String_literals).
+
+## <a name="concatenation"></a>Concatenation
+
+Tokens in the definition part are automatically concatenated.
+
+```tavor
+START = "This is a string token and this " 123 " was a number token"
+```
+
+This example will be concatenated to the string "This is a string token and this 123 was a number token".
+
+## <a name="multi-line"></a>Multi line token definitions
+
+A token definition can be sometimes too long or poorly readable. It can be therefore split into multiple lines by using a comma before the newline character.
+
+```tavor
+START = "This",
+        "is",
+        "a",
+        "multi line",
+        "definition"
+```
+
+The token definition ends at the string "definition" since there is no comma before the new line character. This example also underlines that syntactical white spaces are ignored and can be used to make the format definition more human readable.
+
+## <a name="comments"></a>Comments
+
+The comments of the Tavor format follow the same rules as Go's comments which are specified in [Go's language specification](https://golang.org/ref/spec#Comments).
+
+There are two types of comments:
+- **Line comment** which starts with the character sequence <code>//</code> and ends at the next new line character.
+- **General comment** which starts with the character sequence <code>/\*</code> and ends at the character sequence <code>\*/</code>. A general comment can contain new line characters.
+
+```tavor
 /*
-    or multiple
-    lines
-    long
-    and can be inlined too
+
+This is a general comment
+which can have
+multiple lines
+
 */
+
+START = "This is a string" // this is a line comment
+
+// this is also a line comment
 ```
 
-## Token definition
+General comments can be used, like white space characters, between token definitions and tokens.
 
-The left side of a token definition defines the name of the token. The right site the format of the token. Both sides are separated by "=" and end at the end of the line.
-
-Naming convention for tokens:
-* Token names have to start with a letter
-* Token names can only consist of letters, digits and "_"
-* Reserved token names are
-    * START - parsing of data will start from this token. Is required for every format definition.
-
-```
-Token = "I am a constant string" 123
+```tavor
+START /* this is */ = "an" /* extreme */ "example" /* but
+it should make it clear how general comments */ "work"
 ```
 
-"I am a constant string" is a constant string. 123 is a constant number. They will be used as is. Everything is concatenated by default. So "I am a constant string" and 123 in this example are parsed as "I am a constant string123".
+## <a name="embedding"></a>Token embedding
 
-```
-AnotherToken = Token // AnotherToken embeds the token "Token".
-MultiLineToken = "a", // Token definitions can have multiple lines if there is a comma at the end of the line.
-                 "b",
-                 "c" // There is no comma at the end of the line which means that this token definitions ends here.
+Non-terminal tokens can be embedded in the definition part by using the name of the referenced token. The following example embeds the token <code>String</code> into the <code>START</code> token.
+
+```tavor
+START = String
+
+String = "this is a string"
 ```
 
+Token names declared in the global scope of a format definition can be used throughout the format regardless of their declaration position.
+
+Terminal and non-terminal tokens can be mixed.
+
+```tavor
+First  = "1."
+Second = "2."
+Third  = "3."
+
+START = First ", " Second " and " Third
 ```
-Umläüt = "Umlauts can be used since these definitions have to be in utf8"
-Quoting = "\"this is quoted\"" // Backspaces is used as escape character.
-```
+
+-------------
+-------------
+-------------
+-------------
+-------------
+-------------
+-------------
+-------------
+-------------
+-------------
+-------------
+-------------
+
+# TODO rewrite everything down below
 
 ### Alternations and grouping
 
