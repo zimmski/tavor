@@ -133,7 +133,7 @@ func (p *Pointer) PermutationsAll() uint {
 	p.cloneOnFirstUse()
 
 	if p.token == nil {
-		panic("Pointer token does not have a referecning token")
+		panic("Pointer token does not have a referencing token")
 	}
 
 	return p.token.PermutationsAll()
@@ -141,7 +141,7 @@ func (p *Pointer) PermutationsAll() uint {
 
 func (p *Pointer) String() string {
 	if p.token == nil {
-		panic("Pointer token does not have a referecning token")
+		panic("Pointer token does not have a referencing token")
 	}
 
 	return p.token.String()
