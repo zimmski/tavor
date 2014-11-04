@@ -10,7 +10,7 @@ Imagine a vending machine which ejects a product after receiving 100 worth of cr
 
 This state machine can be defined using the following [Tavor format](#format):
 
-```
+```tavor
 START = Credit0
 
 Credit0   = "Credit0"   "\n" ( Coin25 Credit25 | Coin50 Credit50 | )
