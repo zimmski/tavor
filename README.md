@@ -364,7 +364,7 @@ tavor --help fuzz
 
 ### Command: <code>graph</code>
 
-The <code>graph</code> command allows to print out a graph of the internal structure. This is needed since textual formats like the [Tavor format](#format) can be often difficult to mentally visualize. Currently only the DOT format is supported therefore third-party tools like [Graphviz](http://graphviz.org/) have to be used to convert the DOT data to other formats like JPEG, PNG or SVG.
+The <code>graph</code> command prints out a graph of the internal structure. This is needed since textual formats like the [Tavor format](#format) can be often difficult to mentally visualize. Currently only the DOT format is supported therefore third-party tools like [Graphviz](http://graphviz.org/) have to be used to convert the DOT data to other formats like JPEG, PNG or SVG.
 
 The following command prints the DOT graph of a format file to STDOUT:
 
@@ -402,7 +402,9 @@ To define the graph notation, the following image will be explained:
 
 ### Command: <code>reduce</code>
 
-The <code>reduce</code> command applies delta-debugging to a given input according to the given format file. The reduction generates reduced generations of the original input which have to be tested either by the user or a program. By default the reduction generation is printed to STDOUT and feedback is given through STDIN.
+The <code>reduce</code> command applies delta-debugging to a given input according to the given format file. The reduction generates reduced generations of the original input which have to be tested either by the user or a program. Every generation has to correspond to the given format file which implies that the original input has to be valid too. This is checked using the same mechanisms as used by the <code>validate</code> command.
+
+By default the reduction generation is printed to STDOUT and feedback is given through STDIN.
 
 ```bash
 tavor --format-file file.tavor reduce --input-file file.input
@@ -463,6 +465,20 @@ Please have a look at the reduce command help for more options and descriptions:
 
 ```bash
 tavor --help reduce
+```
+
+### Command: <code>validate</code>
+
+The <code>validate</code> command validates a given input file according to the given format file. This can be helpful since this is for instance needed for the <code>reduce</code> command which does apply delta-debugging only on valid inputs or in the general case to check an input which was not generated through the given format file.
+
+```bash
+tavor --format-file file.tavor validate --input-file file.input
+```
+
+Please have a look at the validate command help for more options and descriptions:
+
+```bash
+tavor --help validate
 ```
 
 ## <a name="bigexample"></a>A complete example for fuzzing, executing and delta-debugging
