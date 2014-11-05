@@ -142,7 +142,7 @@ Third  = 3 Dot
 START = First ", " Second " and " Third
 ```
 
-## Alternation
+## <a name="alternation"></a>Alternation
 
 Alternations are defined with the pipe character <code>|</code>. The following example defines that the token <code>START</code> can either hold 1, 2 or 3.
 
@@ -167,9 +167,9 @@ START = A
 
 This example can hold for example the strings "", "a", "b", "ab", "aab" or any amount of "a" characters ending with one or no "b" character.
 
-## Grouping
+## <a name="grouping"></a>Grouping
 
-Tokens can be grouped using parenthesis. A group starts with <code>(</code> and ends with <code>)</code> and is a token on its own. This means that it can be mixed with other tokens. Additionally, a group starts a new scope between its parenthesis and can therefore hold a sequence of tokens.
+Tokens can be grouped using parenthesis. A group starts with <code>(</code> and ends with <code>)</code> and is a token on its own. This means that it can be mixed with other tokens. Additionally, a group starts a new scope between its parenthesis and can therefore hold a sequence of tokens. The tokens between the parenthesis is called the <code>group body</code>.
 
 The following example declares that the token <code>START</code> either holds the string "old news" or "new news".
 
@@ -199,6 +199,64 @@ Digit = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
 START = Digit | Digit Digit | Digit Digit Digit
 ```
 
+Group parenthesis can have modifiers which give the group additional abilities. The following sections will introduce these modifiers.
+
+### <a name="grouping-optional"></a>Optional group
+
+The optional group allows the whole group token to be optional. In the next example the <code>START</code> token can hold the string "funny" or "very funny".
+
+```
+START = ?("very ") "funny"
+```
+
+### <a name="grouping-repeats"></a>Repeat groups
+
+The default modifier for the repeat group is the plus character <code>+</code>. The repetition is executed by default at least once. In the next example the string "a" is repeated and the <code>START</code> token can therefore hold the strings "a", "aa", "aaa" or any amount of "a" characters.
+
+```
+START = +("a")
+```
+
+Although the format definition allows the repetition to go on forever there are bounds since there is only a finite amount of memory available. The Tavor framework does also set a maximum repetition by default which can be altered by the <code>--max-repeat</code> option or the <code>MaxRepeat</code> variable in the <code>github.com/zimmski/tavor</code> package.
+
+By default the repetition modifier repeats from one to infinite which can be altered by arguments to the modifier. The next example repeats the string "a" exactly twice meaning the <code>START</code> token does only hold the string "aa".
+
+```
+START = +2("a")
+```
+
+It is also possible to define a repetition range. The next example repeats the string "a" at least twice but at most 4 times. This means that the <code>START</code> token can either hold the string "aa", "aaa" or "aaaa".
+
+```
+START = +2,4("a")
+```
+
+The <code>from</code> and <code>to</code> arguments can be empty too which sets them to their default values. For example the next definition repeats the string "a" at most 4 times.
+
+```
+START = +,4("a")
+```
+
+And the next example repeats the string "a" at least twice.
+
+```
+START = +2,("a")
+```
+
+Since the repetition zero, once or more is very common the modifier <code>\*</code> exists. In the next example the token <code>START</code> can either hold the string "a", "ab", "abb" or any amount of "b" characters prepended by an "a" character.
+
+```
+START = "a" *("b")
+```
+
+### <a name="grouping-permutation"></a>Permutation group
+
+The <code>@</code> is the permutation modifier which is combined with an alternation in the group body. Each alternation term will be executed exactly once but the order of execution is non-relevant. In the next example the <code>START</code> token can either hold 123, 132, 213, 231, 312 or 321.
+
+```
+START = @(1 | 2 | 3)
+```
+
 -------------
 -------------
 -------------
@@ -214,23 +272,6 @@ START = Digit | Digit Digit | Digit Digit Digit
 
 # TODO rewrite everything down below
 
-### Alternations and grouping
-
-```
-Permutations = @(1 | 2 | 3) // Alternation groups can become permutation groups with the "@" right before the opening parenthesis. Each entry will be used once but the order is non-relevant. For example the token "Permutations" can hold 123, 132, 213, 231, 312 or 321.
-```
-
-### Optionals and repeats
-
-```
-Optional = "i am not optional" ?("but hey i am optional!") // The constant string "but hey i am optional!" is optional.
-RepeatAtLeastOnce = "text" +("me") // "me" will be repeated at least once.
-OptionalRepeat = "text me" *("or me") // "me" can be repeated zero, one or more times.
-RepeatExactlyTwice = "text" +2("me") // "me" is repeated exactly twice.
-RepeatAtLeastTwice = "text" +2,("me") // "me" is repeated at least twice.
-RepeatAtMostTenTimes = "text" +,10("me") // "me" is repeated at most ten times.
-RepeatTwoToTenTimes = "text" +2,10("me") // "me" is repeated two to ten times.
-```
 
 ### Character classes
 
