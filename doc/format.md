@@ -173,7 +173,7 @@ Tokens can be grouped using parenthesis. A group starts with <code>(</code> and 
 
 The following example declares that the token <code>START</code> either holds the string "old news" or "new news".
 
-```
+```tavor
 START = ("old" | "new") " news"
 ```
 
@@ -205,7 +205,7 @@ Group parenthesis can have modifiers which give the group additional abilities. 
 
 The optional group allows the whole group token to be optional. In the next example the <code>START</code> token can hold the string "funny" or "very funny".
 
-```
+```tavor
 START = ?("very ") "funny"
 ```
 
@@ -213,7 +213,7 @@ START = ?("very ") "funny"
 
 The default modifier for the repeat group is the plus character <code>+</code>. The repetition is executed by default at least once. In the next example the string "a" is repeated and the <code>START</code> token can therefore hold the strings "a", "aa", "aaa" or any amount of "a" characters.
 
-```
+```tavor
 START = +("a")
 ```
 
@@ -221,31 +221,31 @@ Although the format definition allows the repetition to go on forever there are 
 
 By default the repetition modifier repeats from one to infinite which can be altered by arguments to the modifier. The next example repeats the string "a" exactly twice meaning the <code>START</code> token does only hold the string "aa".
 
-```
+```tavor
 START = +2("a")
 ```
 
 It is also possible to define a repetition range. The next example repeats the string "a" at least twice but at most 4 times. This means that the <code>START</code> token can either hold the string "aa", "aaa" or "aaaa".
 
-```
+```tavor
 START = +2,4("a")
 ```
 
 The <code>from</code> and <code>to</code> arguments can be empty too which sets them to their default values. For example the next definition repeats the string "a" at most 4 times.
 
-```
+```tavor
 START = +,4("a")
 ```
 
 And the next example repeats the string "a" at least twice.
 
-```
+```tavor
 START = +2,("a")
 ```
 
 Since the repetition zero, once or more is very common the modifier <code>\*</code> exists. In the next example the token <code>START</code> can either hold the string "a", "ab", "abb" or any amount of "b" characters prepended by an "a" character.
 
-```
+```tavor
 START = "a" *("b")
 ```
 
@@ -253,9 +253,60 @@ START = "a" *("b")
 
 The <code>@</code> is the permutation modifier which is combined with an alternation in the group body. Each alternation term will be executed exactly once but the order of execution is non-relevant. In the next example the <code>START</code> token can either hold 123, 132, 213, 231, 312 or 321.
 
-```
+```tavor
 START = @(1 | 2 | 3)
 ```
+
+## <a name="character-classes"></a>Character classes
+
+Character classes are a special kind of token and can be directly compared to character classes of regular expressions used in most programming languages such as Perl's implementation which is documented [here](http://perldoc.perl.org/perlre.html#Character-Classes-and-other-Special-Escapes). They behave like terminal tokens meaning that they cannot include others tokens but they are, unlike integers and strings, not single but multiple constants. A character class starts with the left bracket <code>[</code> and ends with the right bracket <code>]</code>. Like terminal tokens it is a token on its own and can be mixed with other tokens. The content between the brackets is called a pattern and can consists of almost any UTF8 encoded character, escape characters, special escapes and ranges. The character class token can be seen as a shortcut for a string alternation.
+
+For example the following definition lets the <code>START</code> token hold the strings "a", "b" or "c".
+
+```tavor
+START = "a" | "b" | "c"
+```
+
+With a character class this can be written as the following.
+
+```tavor
+START = [abc]
+```
+
+### <a name="character-classes-escapes"></a>Escape characters
+
+The following table holds UTF8 encoded characters which are not directly allowed within a character class pattern. Their equivalent escape sequence has to be used instead.
+
+| Character       | Escape sequence   |
+| --------------- | ----------------- |
+| <code>-</code>  | <code>\\-</code>  |
+| <code>\\</code> | <code>\\\\</code> |
+| form feed       | <code>\\f</code>  |
+| newline         | <code>\\n</code>  |
+| return          | <code>\\r</code>  |
+| tab             | <code>\\t</code>  |
+
+For example the following defines that the <code>START</code> token holds only white space characters.
+
+```tavor
+START = +([ \n\t\n\r])
+```
+
+Since some characters can be hard to type and read the <code>\x</code> escape sequence can be used to define them with their hexadecimal code points. There are two options to do this. Either only two hexadecimal characters are used in the form of <code>\x0A</code> or more than two hexadecimal digits are needed which have to use the form \x{0AF}. The second form allows up to 8 digits and is therefore fully Unicode ready.
+
+To give an example the following definition holds either the Unicode character "/" or "😃".
+
+```tavor
+START = [\x2F\x{1F603}]
+```
+
+### <a name="character-classes-special-escapes"></a>Special escape characters
+
+TODO Digits  = [\d]
+
+### <a name="character-classes-ranges"></a>Ranges
+
+TODO Range = [a-z]
 
 -------------
 -------------
@@ -271,16 +322,6 @@ START = @(1 | 2 | 3)
 -------------
 
 # TODO rewrite everything down below
-
-
-### Character classes
-
-```
-Letters  = [abc]
-Digits  = [\d]
-Hex  = [\x20]
-Unicode = [\x{10FFFF}] // Up to 8 Hex digits
-```
 
 ### Token attributes
 
@@ -349,7 +390,7 @@ DoubleTheCount = ${Letter.Count + Letter.Count}
 Every token on the right side of a definition can be saved into a variable.
 
 
-```
+```tavor
 START = "text"<var> Print
 
 Print = <var>.Value
@@ -359,7 +400,7 @@ This will save the string "text" into the variable "var" without preventing the 
 
 Since there are circumstances where a token should be just saved into a variable but not relayed to the output stream a second syntax can be used.
 
-```
+```tavor
 START = "text"<=var> Print
 
 Print = <var>.Value
@@ -379,7 +420,7 @@ This will search through the existing sequenced IDs without the one saved in the
 
 ### If, If else and else
 
-```
+```tavor
 START = Choose<var> Print
 
 Choose = 1 | 2 | 3
@@ -391,13 +432,13 @@ Print = {if var.Value == 1} "var is one" {else if var.Value == 2} "var is two" {
 
 * "=="
 
-  ```
+  ```tavor
   Print = (1 | 2 | 3)<var> {if var.Value == 1} "var is 1" {else} "var is not 1" {endif}
   ```
 
 * "defined"
 
-  ```
+  ```tavor
   START = Print "save this text"<var> Print
 
   Print = {if defined var} "var is: " $var.Value {else} "var is not defined" {endif}
