@@ -64,6 +64,8 @@ Credit0
 
 Generating data like this is just one example of the capabilities of Tavor. Please have a look at [the bigger example](#bigexample) with a complete overview over the basic features or keep reading to find out more about the background and capabilities of Tavor.
 
+Additionally you can find functional Tavor format files and fuzzer applications at [https://github.com/zimmski/fuzzer](https://github.com/zimmski/fuzzer).
+
 ## <a name="table-of-content"></a>Table of content
 
 - [What is fuzzing?](#fuzzing)

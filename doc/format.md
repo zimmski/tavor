@@ -259,7 +259,7 @@ START = @(1 | 2 | 3)
 
 ## <a name="character-classes"></a>Character classes
 
-Character classes are a special kind of token and can be directly compared to character classes of regular expressions used in most programming languages such as Perl's implementation which is documented [here](http://perldoc.perl.org/perlre.html#Character-Classes-and-other-Special-Escapes). They behave like terminal tokens meaning that they cannot include others tokens but they are, unlike integers and strings, not single but multiple constants. A character class starts with the left bracket <code>[</code> and ends with the right bracket <code>]</code>. Like terminal tokens it is a token on its own and can be mixed with other tokens. The content between the brackets is called a pattern and can consists of almost any UTF8 encoded character, escape characters, special escapes and ranges. The character class token can be seen as a shortcut for a string alternation.
+Character classes are a special kind of token and can be directly compared to character classes of regular expressions used in most programming languages such as Perl's implementation which is documented [here](http://perldoc.perl.org/perlre.html#Character-Classes-and-other-Special-Escapes). They behave like terminal tokens meaning that they cannot include others tokens but they are, unlike integers and strings, not single but multiple constants at once. A character class starts with the left bracket <code>[</code> and ends with the right bracket <code>]</code>. Character classes are like terminal tokens in that they are tokens on their own and can be therefore mixed with other tokens. The content between the brackets is called a pattern and can consists of almost any UTF8 encoded character, escape character, special escape and range. In general the character class token can be seen as a shortcut for a string alternation.
 
 For example the following definition lets the <code>START</code> token hold the strings "a", "b" or "c".
 
@@ -278,7 +278,7 @@ START = [abc]
 The following table holds UTF8 encoded characters which are not directly allowed within a character class pattern. Their equivalent escape sequence has to be used instead.
 
 | Character       | Escape sequence   |
-| --------------- | ----------------- |
+| :-------------- | :---------------- |
 | <code>-</code>  | <code>\\-</code>  |
 | <code>\\</code> | <code>\\\\</code> |
 | form feed       | <code>\\f</code>  |
@@ -292,7 +292,7 @@ For example the following defines that the <code>START</code> token holds only w
 START = +([ \n\t\n\r])
 ```
 
-Since some characters can be hard to type and read the <code>\x</code> escape sequence can be used to define them with their hexadecimal code points. There are two options to do this. Either only two hexadecimal characters are used in the form of <code>\x0A</code> or more than two hexadecimal digits are needed which have to use the form \x{0AF}. The second form allows up to 8 digits and is therefore fully Unicode ready.
+Since some characters can be hard to type and read the <code>\x</code> escape sequence can be used to define them with their hexadecimal code points. There are two options to do this. Either only two hexadecimal characters are used in the form of <code>\x0A</code> or more than two hexadecimal digits are needed which have to use the form <code>\x{0AF}</code>. The second form allows up to 8 digits and is therefore fully Unicode ready.
 
 To give an example the following definition holds either the Unicode character "/" or "😃".
 
@@ -300,13 +300,37 @@ To give an example the following definition holds either the Unicode character "
 START = [\x2F\x{1F603}]
 ```
 
-### <a name="character-classes-special-escapes"></a>Special escape characters
-
-TODO Digits  = [\d]
-
 ### <a name="character-classes-ranges"></a>Ranges
 
-TODO Range = [a-z]
+Ranges can be defined using the <code>-</code> character. A range holds all characters starting at the character before the <code>-</code> and ending at the character after the <code>-</code>. Both characters have to be either an UTF8 encoded or an escaped character. The starting character must have a lower value than the ending character.
+
+For example the following defines a decimal digit.
+
+```tavor
+START = [0123456789]
+```
+
+This can be easier defined using a range.
+
+```tavor
+START = [0-9]
+```
+
+It is also possible to use hexadecimal code points, since either range characters can be escape characters.
+
+```
+START = [\x23-\x5B]
+```
+
+### <a name="character-classes-special-escapes"></a>Special escape characters
+
+Special escape characters combine many characters into one escape character and can also hold additional functionality. The following table is an overview of all currently implemented special escape characters.
+
+| Special escape character | Character class           | Description                     |
+| :----------------------- | :------------------------ | :------------------------------ |
+| <code>\d</code>          | <code>[0-9]</code>        | Holds a decimal digit character |
+| <code>\s</code>          | <code>[ \f\n\r\t]</code>  | Holds the white space character |
+| <code>\w</code>          | <code>[a-zA-Z0-9_]</code> | Holds a word character          |
 
 -------------
 -------------
