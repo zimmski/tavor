@@ -332,6 +332,98 @@ Special escape characters combine many characters into one escape character and 
 | <code>\s</code>          | <code>[ \f\n\r\t]</code>  | Holds the white space character |
 | <code>\w</code>          | <code>[a-zA-Z0-9_]</code> | Holds a word character          |
 
+## <a name="attributes"></a>Token attributes
+
+Some tokens define attributes which can be used in a definition by prepending a dollar sign to their name and appending a dot followed by the attribute name.
+
+All list tokens have for example the <code>Count</code> attribute which holds the count of the direct child entries of the token.
+
+```tavor
+Number = +([0-9])
+START = "The number " Number " has " $Number.Count " digits"
+```
+
+When fuzzed this example will generate for example the string "The number 56 has 2 digits".
+
+### <a name="attributes-general"></a>General attributes
+
+The following enumeration defines and describes currently implemented general token attributes.
+
+**List token**
+
+A list token is a token which has in its definition either only a sequence of tokens or exactly one repeat group token.
+
+| Attribute           | Description                                                                                                  |
+| :------------------ | :----------------------------------------------------------------------------------------------------------- |
+| <code>Count</code>  | Holds the count of the token direct child entries                                                            |
+| <code>Unique</code> | Chooses at random a child of the token and embeds it. The choice is unique for every reference of the token. |
+
+### <a name="attributes-scope"></a>Scope of attributes
+
+The Tavor format allows the usage of token attributes as long as the referenced token exists in the current scope.
+
+Two main types of scopes exists:
+- **Global scope** which is the scope of the whole format definition. An entry of the global scope is set by the nearest token reference to the <code>START</code> token.
+- **Local scope** which is the scope held by a definition, group or any other token which opens up a new scope. Local scopes are initialized with entries from their parent scope at the time of the creation of the new local scope.
+
+To give an example the following format definition is used.
+
+```tavor
+List = +,10("a")
+
+Inner = "\tInner.1.Print: " $List.Count "\n",
+        "\tInner.1.List: " List "\n",
+        "\tInner.2.Print: " $List.Count "\n",
+        "\tInner.3.Print: " $List.Count "\n",
+        "\tInner.2.List: " List "\n",
+        "\tInner.4.Print: " $List.Count "\n"
+
+START = "Outer.1.Print: " $List.Count "\n",
+        "Outer.1.List: " List "\n",
+        "Outer.2.Print: " $List.Count "\n",
+        Inner,
+        "Outer.3.Print: " $List.Count "\n",
+        "Outer.2.List: " List "\n",
+        "Outer.4.Print: " $List.Count "\n",
+        Inner,
+        "Outer.5.Print: " $List.Count "\n",
+        "Outer.3.List: " List "\n",
+        "Outer.6.Print: " $List.Count "\n"
+```
+
+Can result in the following fuzzing generation.
+
+```
+Outer.1.Print: 1
+Outer.1.List: a
+Outer.2.Print: 1
+    Inner.1.Print: 1
+    Inner.1.List: aa
+    Inner.2.Print: 2
+    Inner.3.Print: 2
+    Inner.2.List: aaa
+    Inner.4.Print: 3
+Outer.3.Print: 1
+Outer.2.List: aaaa
+Outer.4.Print: 4
+    Inner.1.Print: 4
+    Inner.1.List: aaaaa
+    Inner.2.Print: 5
+    Inner.3.Print: 5
+    Inner.2.List: aaaaaa
+    Inner.4.Print: 6
+Outer.5.Print: 4
+Outer.3.List: aaaaaaa
+Outer.6.Print: 7
+```
+
+This example generation shows that the first <code>$List.Count</code> usage attributed as <code>Outer.1.Print</code> uses the list <code>Outer.1.List</code> because it is the first usage of the token <code>List</code> next to the <code>START</code> token.
+
+Additional observations can be made:
+- Every new <code>List</code> reference overwrites the current entry of the current scope (e.g. <code>Outer.2.Print</code> uses <code>Outer.1.List</code>, the first <code>Inner.2.Print</code> uses the first <code>Inner.1.List</code>)
+- An inner scope second <code>Inner.1.Print</code> uses <code>Outer.2.List</code>)
+- Parent scopes are not overwritten by their child scopes (e.g. <code>Outer.3.Print</code> uses <code>Outer.1.List</code>, <code>Outer.5.Print</code> uses <code>Outer.2.List</code>)
+
 -------------
 -------------
 -------------
@@ -346,21 +438,6 @@ Special escape characters combine many characters into one escape character and 
 -------------
 
 # TODO rewrite everything down below
-
-### Token attributes
-
-Token attributes can be used in token definitions by prepending a dollar sign to their name and separate the token name from the attribute by a dot.
-
-```
-Letters = *(Letter)
-Letter = "a" | "b" | "c"
-LetterCount = $Letters.Count // LetterCount then holds the count of the repeater Letters
-```
-
-Possible token attributes are:
-* Count - Holds the count of this token. Must be a repeater.
-* Index - Holds the index of a token. Must be a token of a repeater.
-* Unique - Chooses at random a token of a repeater.
 
 ### Special tokens
 
