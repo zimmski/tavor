@@ -366,6 +366,8 @@ Two main types of scopes exists:
 - **Global scope** which is the scope of the whole format definition. An entry of the global scope is set by the nearest token reference to the <code>START</code> token.
 - **Local scope** which is the scope held by a definition, group or any other token which opens up a new scope. Local scopes are initialized with entries from their parent scope at the time of the creation of the new local scope.
 
+Token definitions, who open a new local scope, inherit the global scope.
+
 To give an example the following format definition is used.
 
 ```tavor
@@ -421,7 +423,7 @@ This example generation shows that the first <code>$List.Count</code> usage attr
 
 Additional observations can be made:
 - Every new <code>List</code> reference overwrites the current entry of the current scope (e.g. <code>Outer.2.Print</code> uses <code>Outer.1.List</code>, the first <code>Inner.2.Print</code> uses the first <code>Inner.1.List</code>)
-- An inner scope second <code>Inner.1.Print</code> uses <code>Outer.2.List</code>)
+- An inner scope inherits from its parent scope (e.g. first <code>Inner.1.Print</code> uses <code>Outer.1.List</code>, second <code>Inner.1.Print</code> uses <code>Outer.2.List</code>)
 - Parent scopes are not overwritten by their child scopes (e.g. <code>Outer.3.Print</code> uses <code>Outer.1.List</code>, <code>Outer.5.Print</code> uses <code>Outer.2.List</code>)
 
 -------------
