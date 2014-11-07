@@ -41,7 +41,7 @@ Token names have the following rules:
 - Token names can only consist of letters, digits and the underscore sign "_".
 - Token names have to be unique in the format definition scope.
 
-Additional to these rules it is not allowed to declare a token without any usage in the format definition scope except if it is the <code>START</code> token which is used as the entry point of the format, meaning it defines the beginning of the format. Hence, it is required for every format definition.
+Additional to these rules it is not allowed to declare a token without any reference in the format definition scope except if it is the <code>START</code> token which is used as the entry point of the format. Meaning it defines the beginning of the format and is therefore required for every format definition.
 
 ## <a name="terminal-tokens"></a>Terminal tokens
 
@@ -257,6 +257,25 @@ The <code>@</code> is the permutation modifier which is combined with an alterna
 START = @(1 | 2 | 3)
 ```
 
+### <a name="reference-usage"></a>Difference between token reference and token usage
+
+The following example demonstrates the difference between a **token reference** and a **token usage**.
+
+```tavor
+Choice = "a" | "b" | "c"
+
+List = +2(Choice)
+
+START = "1. list: " List "\n",
+        "2. list: " List "\n"
+```
+
+This format defines two tokens called <code>Choice</code> and <code>List</code>.
+
+A **token reference** is the embedding of a token in a definition. There exists one token reference of <code>Choice</code>, which can be found in the <code>List</code> definition, and two for <code>List</code>, which are both in the <code>START</code> definition. Even though <code>Choice</code> is in a repeater group it is only referenced once.
+
+A **token usage** is the execution of a token during an operation like fuzzing or delta-debugging. <code>List</code> has two token usages in this format while <code>Choice</code> has 4. Every <code>List</code> token does have two <code>Choice</code> usages because of the repeat group in the definition of <code>List</code>.
+
 ## <a name="character-classes"></a>Character classes
 
 Character classes are a special kind of token and can be directly compared to character classes of regular expressions used in most programming languages such as Perl's implementation which is documented [here](http://perldoc.perl.org/perlre.html#Character-Classes-and-other-Special-Escapes). They behave like terminal tokens meaning that they cannot include others tokens but they are, unlike integers and strings, not single but multiple constants at once. A character class starts with the left bracket <code>[</code> and ends with the right bracket <code>]</code>. Character classes are like terminal tokens in that they are tokens on their own and can be therefore mixed with other tokens. The content between the brackets is called a pattern and can consists of almost any UTF8 encoded character, escape character, special escape and range. In general the character class token can be seen as a shortcut for a string alternation.
@@ -318,7 +337,7 @@ START = [0-9]
 
 It is also possible to use hexadecimal code points, since either range characters can be escape characters.
 
-```
+```tavor
 START = [\x23-\x5B]
 ```
 
