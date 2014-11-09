@@ -26,7 +26,7 @@ Vend = "Vend" "\n"
 ```
 (Please note that the new line escape sequences "\n" are just defined to make the output prettier)
 
-You can download this file called [<code>basic.tavor</code> from here](examples/quick/basic.tavor).
+You can download this file called [`basic.tavor` from here](examples/quick/basic.tavor).
 
 Now we can use Tavor to [fuzz](#fuzzing) the format by issuing the following command:
 
@@ -114,7 +114,7 @@ Fuzzing algorithms can be categorized into two areas:
 
 E.g. we feed a given data to a program which fails on executing. By delta-debugging this data we can reduce it to its minimum while still failing the execution. The reduction of the data is handled by software heuristics (semi-)automatically. The obvious advantage of this method, besides being done (semi-)automatically, is that we do not need to then handle uninteresting parts of the data while debugging the problem, we can focus on the important parts which actually lead to the failure.
 
-**Note**: Since delta-debugging reduces data it is also called <code>reducing</code>.
+**Note**: Since delta-debugging reduces data it is also called `reducing`.
 
 Delta-debugging consists of three areas:
 - A heuristic has to decide which parts of the data will be reduced next
@@ -166,7 +166,7 @@ Please have a look at [the documentation](https://godoc.org/github.com/zimmski/t
 
 Although the internal structure allows loops in its graph, Tavor currently unrolls loops for easier algorithm implementations and usage. A future version will supplement this by allowing loops by default.
 
-This graph for example loops between the states <code>Idle</code> and <code>Action</code>:
+This graph for example loops between the states `Idle` and `Action`:
 
 ![Looping](/doc/images/README/unroll-loop.png "Looping")
 
@@ -189,19 +189,19 @@ Tavor can be used in three different ways:
 
 The [Tavor binary](#precompiled) provides fuzzing and delta-debugging functionality for Tavor format files as well as some other commands. Sane default arguments should provide a pleasant experience.
 
-Since the binary acts on Tavor format files, the <code>--format-file</code> argument has to be used for every non-informational action. E.g. the following command fuzzes the given format file with the default fuzzing strategy:
+Since the binary acts on Tavor format files, the `--format-file` argument has to be used for every non-informational action. E.g. the following command fuzzes the given format file with the default fuzzing strategy:
 
 ```bash
 tavor --format-file file.tavor fuzz
 ```
 
-In contrast listing all available fuzzing strategies does not require the <code>--format-file</code> argument:
+In contrast listing all available fuzzing strategies does not require the `--format-file` argument:
 
 ```bash
 tavor fuzz --list-strategies
 ```
 
-To learn more about available arguments and commands, you can invoke the binary's help by executing the binary without any arguments or with the <code>--help</code> argument.
+To learn more about available arguments and commands, you can invoke the binary's help by executing the binary without any arguments or with the `--help` argument.
 
 Here is a complete overview of all arguments, commands and their options:
 
@@ -278,10 +278,10 @@ Available commands:
 
 ### General options
 
-The Tavor binary provides different kinds of general options which are informative or apply to all commands. Besides the <code>--format-file</code> general format option the following options are noteworthy:
+The Tavor binary provides different kinds of general options which are informative or apply to all commands. Besides the `--format-file` general format option the following options are noteworthy:
 
 - **--max-repeat** sets the maximum repetition of loops and repeating tokens. If not set, the default value (currently 2) is used. 0, meaning no maximum repetition, is currently now allowed because of the limitation mentioned [here](#unrolling).
-- **--seed** defines the seed for all random generators. If not set, a random value will be chosen. This argument makes the execution of every Tavor command deterministic. Meaning that a result or failure can be replayed with the same <code>--seed</code> argument, other arguments and Tavor version.
+- **--seed** defines the seed for all random generators. If not set, a random value will be chosen. This argument makes the execution of every Tavor command deterministic. Meaning that a result or failure can be replayed with the same `--seed` argument, other arguments and Tavor version.
 - **--verbose** switches Tavor into verbose mode which prints additional information, like the used seed, to STDERR.
 
 Please have a look at the help for more options and descriptions:
@@ -290,23 +290,23 @@ Please have a look at the help for more options and descriptions:
 tavor --help
 ```
 
-### Command: <code>fuzz</code>
+### Command: `fuzz`
 
-The <code>fuzz</code> command generates data using the given format file and prints it directly to STDOUT.
+The `fuzz` command generates data using the given format file and prints it directly to STDOUT.
 
 ```bash
 tavor --format-file file.tavor fuzz
 ```
 
-By default the <code>random</code> fuzzing strategy is used which can be altered using the <code>--strategy</code> fuzz command option.
+By default the `random` fuzzing strategy is used which can be altered using the `--strategy` fuzz command option.
 
 ```bash
 tavor --format-file file.tavor fuzz --strategy AllPermutations
 ```
 
-Fuzzing filters can be applied before the fuzzing generation using the <code>--filter</code> fuzz command option. Filters are applied in the same order as they are defined, meaning from left to right.
+Fuzzing filters can be applied before the fuzzing generation using the `--filter` fuzz command option. Filters are applied in the same order as they are defined, meaning from left to right.
 
-The following command will apply the <code>PositiveBoundaryValueAnalysis</code> fuzzing filter and then the <code>NegativeBoundaryValueAnalysis</code>:
+The following command will apply the `PositiveBoundaryValueAnalysis` fuzzing filter and then the `NegativeBoundaryValueAnalysis`:
 
 ```bash
 tavor --format-file file.tavor fuzz --filter PositiveBoundaryValueAnalysis --filter NegativeBoundaryValueAnalysis
@@ -316,21 +316,21 @@ Alternatively to printing to STDOUT an executable (or script) can be fed with th
 
 - #### exec
 
-  Executes a given command for every data generation. The validation of the data can be done via the executable and by using additional <code>--exec-*</code> fuzz command options.
+  Executes a given command for every data generation. The validation of the data can be done via the executable and by using additional `--exec-*` fuzz command options.
 
-  For example the following command will execute a binary called <code>validate</code> with the default exec settings which feed the generation via STDIN to the started process and apply no validation at all.
+  For example the following command will execute a binary called `validate` with the default exec settings which feed the generation via STDIN to the started process and apply no validation at all.
 
   ```bash
   tavor --format-file file.tavor fuzz --exec validate
   ```
 
-  The method of feeding the generation to the process can be changed using the <code>--exec-argument-type</code> fuzz command option. The following command puts the generation into a temporary file which is defined using the environment variable <code>TAVOR_FUZZ_FILE</code>:
+  The method of feeding the generation to the process can be changed using the `--exec-argument-type` fuzz command option. The following command puts the generation into a temporary file which is defined using the environment variable `TAVOR_FUZZ_FILE`:
 
   ```bash
   tavor --format-file file.tavor fuzz --exec validate --exec-argument-type environment
   ```
 
-  The fuzz command allows to validate the execution using additional <code>--exec-*</code> fuzz command options. For example the exit code of the process can be validated to be <code>0</code> using the <code>--exec-exact-exit-code</code> fuzz command option:
+  The fuzz command allows to validate the execution using additional `--exec-*` fuzz command options. For example the exit code of the process can be validated to be `0` using the `--exec-exact-exit-code` fuzz command option:
 
   ```bash
   tavor --format-file file.tavor fuzz --exec validate --exec-exact-exit-code 0
@@ -340,7 +340,7 @@ Alternatively to printing to STDOUT an executable (or script) can be fed with th
 
   Executes a given command and feeds every data generation to the running process using STDIN. Feedback is read using STDOUT. The running process can therefore control the fuzzing generation while it has to do all validation on its own.
 
-  The following command will execute a binary called <code>validate</code>:
+  The following command will execute a binary called `validate`:
 
   ```bash
   tavor --format-file file.tavor fuzz --script validate
@@ -349,9 +349,9 @@ Alternatively to printing to STDOUT an executable (or script) can be fed with th
   Feedback commands control the fuzzing generation and are read by Tavor using STDOUT of the running process. Each command has to end with a new line delimiter and exactly one command has to be given for every generation.
 
   - **YES** reports a positive outcome for the generation.
-  - **NO** reports a negative outcome for the generation. This is an error and will terminate the fuzzing generation if the <code>--exit-on-error</code> fuzz command option is used.
+  - **NO** reports a negative outcome for the generation. This is an error and will terminate the fuzzing generation if the `--exit-on-error` fuzz command option is used.
 
-<code>--result-*</code> is an additional fuzz command option kind which can be used to influence the fuzzing generation itself. For example the <code>--result-separator</code> fuzz command option changes the separator of the generations if they are printed to STDOUT. The following command will use <code>@@@@</code> instead of the default <code>\n</code> separator to feed the fuzzing generations to the running process:
+`--result-*` is an additional fuzz command option kind which can be used to influence the fuzzing generation itself. For example the `--result-separator` fuzz command option changes the separator of the generations if they are printed to STDOUT. The following command will use `@@@@` instead of the default `\n` separator to feed the fuzzing generations to the running process:
 
 ```bash
 tavor --format-file file.tavor fuzz --script validate --result-separator "@@@@"
@@ -363,9 +363,9 @@ Please have a look at the fuzz command help for more options and descriptions:
 tavor --help fuzz
 ```
 
-### Command: <code>graph</code>
+### Command: `graph`
 
-The <code>graph</code> command prints out a graph of the internal structure. This is needed since textual formats like the [Tavor format](#format) can be often difficult to mentally visualize. Currently only the DOT format is supported therefore third-party tools like [Graphviz](http://graphviz.org/) have to be used to convert the DOT data to other formats like JPEG, PNG or SVG.
+The `graph` command prints out a graph of the internal structure. This is needed since textual formats like the [Tavor format](#format) can be often difficult to mentally visualize. Currently only the DOT format is supported therefore third-party tools like [Graphviz](http://graphviz.org/) have to be used to convert the DOT data to other formats like JPEG, PNG or SVG.
 
 The following command prints the DOT graph of a format file to STDOUT:
 
@@ -379,7 +379,7 @@ To save the graph to a file the output of the command can be simply redirected:
 tavor --format-file file.tavor graph > file.dot
 ```
 
-The output can also be piped directly into the <code>dot</code> command of [Graphviz](http://graphviz.org/):
+The output can also be piped directly into the `dot` command of [Graphviz](http://graphviz.org/):
 
 ```
 tavor --format-file file.tavor graph | dot -Tsvg -o outfile.svg
@@ -401,9 +401,9 @@ To define the graph notation, the following image will be explained:
 - The small dot is the start of the whole graph (arrow to a)
 - Double bordered circles represent end-state tokens (f)
 
-### Command: <code>reduce</code>
+### Command: `reduce`
 
-The <code>reduce</code> command applies delta-debugging to a given input according to the given format file. The reduction generates reduced generations of the original input which have to be tested either by the user or a program. Every generation has to correspond to the given format file which implies that the original input has to be valid too. This is checked using the same mechanisms as used by the <code>validate</code> command.
+The `reduce` command applies delta-debugging to a given input according to the given format file. The reduction generates reduced generations of the original input which have to be tested either by the user or a program. Every generation has to correspond to the given format file which implies that the original input has to be valid too. This is checked using the same mechanisms as used by the `validate` command.
 
 By default the reduction generation is printed to STDOUT and feedback is given through STDIN.
 
@@ -411,7 +411,7 @@ By default the reduction generation is printed to STDOUT and feedback is given t
 tavor --format-file file.tavor reduce --input-file file.input
 ```
 
-By default the <code>BinarySearch</code> reduce strategy is used which can be altered using the <code>--strategy</code> reduce command option.
+By default the `BinarySearch` reduce strategy is used which can be altered using the `--strategy` reduce command option.
 
 ```bash
 tavor --format-file file.tavor reduce --input-file file.input --strategy random
@@ -421,21 +421,21 @@ Alternatively to printing to STDOUT an executable (or script) can be fed with th
 
 - #### exec
 
-  Executes a given command for every generation. The validation of the data can be done via the executable and by using additional <code>--exec-\*</code> reduce command options. At least one <code>--exec-\*</code> matcher must be used to validate the reduced generations.
+  Executes a given command for every generation. The validation of the data can be done via the executable and by using additional `--exec-\*` reduce command options. At least one `--exec-\*` matcher must be used to validate the reduced generations.
 
-  For example the following command will execute a binary called <code>validate</code> with the default exec settings which feed the generation via STDIN to the started process. The <code>--exec-exact-exit-code</code> reduce command option is used to validate that the exit code of the original data matches the exit codes of reduce generations.
+  For example the following command will execute a binary called `validate` with the default exec settings which feed the generation via STDIN to the started process. The `--exec-exact-exit-code` reduce command option is used to validate that the exit code of the original data matches the exit codes of reduce generations.
 
   ```bash
   tavor --format-file file.tavor reduce --input-file file.input --exec validate --exec-exact-exit-code
   ```
 
-  The method of feeding the generation to the process can be changed using the <code>--exec-argument-type</code> reduce command option. The following command puts the generation into a temporary file which is defined using the environment variable <code>TAVOR_DD_FILE</code>:
+  The method of feeding the generation to the process can be changed using the `--exec-argument-type` reduce command option. The following command puts the generation into a temporary file which is defined using the environment variable `TAVOR_DD_FILE`:
 
   ```bash
   tavor --format-file file.tavor reduce --input-file file.input --exec validate --exec-exact-exit-code --exec-argument-type environment
   ```
 
-  The reduce command allows to validate the execution using additional <code>--exec-*</code> reduce command options. For example the exit code and STDERR can be validated to match the original input using the <code>--exec-exact-exit-code</code> and <code>--exec-exact-stderr</code> reduce command options:
+  The reduce command allows to validate the execution using additional `--exec-*` reduce command options. For example the exit code and STDERR can be validated to match the original input using the `--exec-exact-exit-code` and `--exec-exact-stderr` reduce command options:
 
   ```bash
   tavor --format-file file.tavor reduce --input-file file.input --exec validate --exec-exact-exit-code --exec-exact-stderr
@@ -445,7 +445,7 @@ Alternatively to printing to STDOUT an executable (or script) can be fed with th
 
   Executes a given command and feeds every data generation to the running process using STDIN. Feedback is read using STDOUT. The running process can therefore control the reduce generation while it has to do all validation on its own.
 
-  The following command will execute a binary called <code>validate</code>:
+  The following command will execute a binary called `validate`:
 
   ```bash
   tavor --format-file file.tavor reduce --input-file file.input --script validate
@@ -456,7 +456,7 @@ Alternatively to printing to STDOUT an executable (or script) can be fed with th
   - **YES** reports a positive outcome for the generation. The reduce strategy will therefore continue reducing this generation.
   - **NO** reports a negative outcome for the generation. This is an error and the reduce strategy will therefore produce a different generation.
 
-<code>--result-*</code> is an additional reduce command option kind which can be used to influence the reduce generation itself. For example the <code>--result-separator</code> reduce command option changes the separator of the generations if they are printed to STDOUT. The following command will use <code>@@@@</code> instead of the default <code>\n</code> separator to feed the reduce generations to the running process:
+`--result-*` is an additional reduce command option kind which can be used to influence the reduce generation itself. For example the `--result-separator` reduce command option changes the separator of the generations if they are printed to STDOUT. The following command will use `@@@@` instead of the default `\n` separator to feed the reduce generations to the running process:
 
 ```bash
 tavor --format-file file.tavor reduce --input-file file.input --script validate --result-separator "@@@@"
@@ -468,9 +468,9 @@ Please have a look at the reduce command help for more options and descriptions:
 tavor --help reduce
 ```
 
-### Command: <code>validate</code>
+### Command: `validate`
 
-The <code>validate</code> command validates a given input file according to the given format file. This can be helpful since this is for instance needed for the <code>reduce</code> command which does apply delta-debugging only on valid inputs or in the general case to check an input which was not generated through the given format file.
+The `validate` command validates a given input file according to the given format file. This can be helpful since this is for instance needed for the `reduce` command which does apply delta-debugging only on valid inputs or in the general case to check an input which was not generated through the given format file.
 
 ```bash
 tavor --format-file file.tavor validate --input-file file.input
@@ -547,7 +547,7 @@ If you do not want to use the [precompiled binaries](#precompiled) but instead w
   make test
   ```
 
-You now have a binary "tavor" in your <code>$GOPATH/bin</code> (or if set <code>$GOBIN</code> folder) folder which can be used without any further actions.
+You now have a binary "tavor" in your `$GOPATH/bin` (or if set `$GOBIN` folder) folder which can be used without any further actions.
 
 ## <a name="develop"></a>How do I develop applications with the Tavor framework?
 

@@ -2,15 +2,15 @@
 
 The [Tavor](/) format is an [EBNF-like notation](https://en.wikipedia.org/wiki/Extended_Backus%E2%80%93Naur_Form) which allows the definition of data (e.g. file formats and protocols) without the need of programming. It is the default format of the [Tavor framework](/) and supports every feature which the framework currently provides.
 
-The format is Unicode text encoded in UTF-8 and consists of terminal and non-terminal symbols which are called <code>tokens</code> throughout the Tavor framework. An explanation of the general meaning can be found in the [What are tokens?](/#token) section.
+The format is Unicode text encoded in UTF-8 and consists of terminal and non-terminal symbols which are called `tokens` throughout the Tavor framework. An explanation of the general meaning can be found in the [What are tokens?](/#token) section.
 
-Every example throughout this page is a complete Tavor format file. The content of each example can be for instance saved into a file called <code>file.tavor</code> and then fuzzed with the Tavor binary.
+Every example throughout this page is a complete Tavor format file. The content of each example can be for instance saved into a file called `file.tavor` and then fuzzed with the Tavor binary.
 
 ```bash
 tavor --format-file file.tavor fuzz
 ```
 
-Since some examples have more than one permutation, meaning there is more than one possible fuzzing generation, it is advisable to use the <code>AllPermutations</code> fuzzing strategy to print out every possible permutation of the fuzzed format.
+Since some examples have more than one permutation, meaning there is more than one possible fuzzing generation, it is advisable to use the `AllPermutations` fuzzing strategy to print out every possible permutation of the fuzzed format.
 
 ```bash
 tavor --format-file file.tavor fuzz --strategy AllPermutations
@@ -30,7 +30,7 @@ TODO update this
 
 Every token in the format belongs to a non-terminal token definition which consists of a unique case-sensitive name and its definition part. Both are separated by exactly one equal sign. Syntactical white spaces are ignored. Every token definition must be declared by default in one line. A line ends with a new line character.
 
-To give an example, the following format declares the token <code>START</code> with the constant string token "Hello World" as its definition.
+To give an example, the following format declares the token `START` with the constant string token "Hello World" as its definition.
 
 ```tavor
 START = "Hello World"
@@ -41,7 +41,7 @@ Token names have the following rules:
 - Token names can only consist of letters, digits and the underscore sign "_".
 - Token names have to be unique in the format definition scope.
 
-Additional to these rules it is not allowed to declare a token without any reference in the format definition scope except if it is the <code>START</code> token which is used as the entry point of the format. Meaning it defines the beginning of the format and is therefore required for every format definition.
+Additional to these rules it is not allowed to declare a token without any reference in the format definition scope except if it is the `START` token which is used as the entry point of the format. Meaning it defines the beginning of the format and is therefore required for every format definition.
 
 ## <a name="terminal-tokens"></a>Terminal tokens
 
@@ -63,7 +63,7 @@ Strings are character sequences between double quotes and can consist of any UTF
 START = "The next word is \"quoted\" and here is a new line\n"
 ```
 
-Since Tavor is using Go's text parser as foundation of its format parsing, the same rules for <code>interpreted string literals</code> apply. These rules can be looked up in [Go's language specification](https://golang.org/ref/spec#String_literals).
+Since Tavor is using Go's text parser as foundation of its format parsing, the same rules for `interpreted string literals` apply. These rules can be looked up in [Go's language specification](https://golang.org/ref/spec#String_literals).
 
 ## <a name="concatenation"></a>Concatenation
 
@@ -94,8 +94,8 @@ The token definition ends at the string "definition" since there is no comma bef
 The comments of the Tavor format follow the same rules as Go's comments which are specified in [Go's language specification](https://golang.org/ref/spec#Comments).
 
 There are two types of comments:
-- **Line comment** which starts with the character sequence <code>//</code> and ends at the next new line character.
-- **General comment** which starts with the character sequence <code>/\*</code> and ends at the character sequence <code>\*/</code>. A general comment can contain new line characters.
+- **Line comment** which starts with the character sequence `//` and ends at the next new line character.
+- **General comment** which starts with the character sequence `/\*` and ends at the character sequence `\*/`. A general comment can contain new line characters.
 
 ```tavor
 /*
@@ -120,7 +120,7 @@ it should make it clear how general comments */ "work"
 
 ## <a name="embedding"></a>Token embedding
 
-Non-terminal tokens can be embedded in the definition part by using the name of the referenced token. The following example embeds the token <code>String</code> into the <code>START</code> token.
+Non-terminal tokens can be embedded in the definition part by using the name of the referenced token. The following example embeds the token `String` into the `START` token.
 
 ```tavor
 START = String
@@ -144,7 +144,7 @@ START = First ", " Second " and " Third
 
 ## <a name="alternation"></a>Alternation
 
-Alternations are defined with the pipe character <code>|</code>. The following example defines that the token <code>START</code> can either hold 1, 2 or 3.
+Alternations are defined with the pipe character `|`. The following example defines that the token `START` can either hold 1, 2 or 3.
 
 ```tavor
 START = 1 | 2 | 3
@@ -169,15 +169,15 @@ This example can hold for example the strings "", "a", "b", "ab", "aab" or any a
 
 ## <a name="grouping"></a>Grouping
 
-Tokens can be grouped using parenthesis. A group starts with <code>(</code> and ends with <code>)</code> and is a token on its own. This means that it can be mixed with other tokens. Additionally, a group starts a new scope between its parenthesis and can therefore hold a sequence of tokens. The tokens between the parenthesis is called the <code>group body</code>.
+Tokens can be grouped using parenthesis. A group starts with `(` and ends with `)` and is a token on its own. This means that it can be mixed with other tokens. Additionally, a group starts a new scope between its parenthesis and can therefore hold a sequence of tokens. The tokens between the parenthesis is called the `group body`.
 
-The following example declares that the token <code>START</code> either holds the string "old news" or "new news".
+The following example declares that the token `START` either holds the string "old news" or "new news".
 
 ```tavor
 START = ("old" | "new") " news"
 ```
 
-Groups can be nested too. For example the following can be used to define that the <code>START</code> token can either hold "a", "b", "1" or "2".
+Groups can be nested too. For example the following can be used to define that the `START` token can either hold "a", "b", "1" or "2".
 
 ```tavor
 START = (("a" | "b") | (1 | 2))
@@ -203,7 +203,7 @@ Group parenthesis can have modifiers which give the group additional abilities. 
 
 ### <a name="grouping-optional"></a>Optional group
 
-The optional group allows the whole group token to be optional. In the next example the <code>START</code> token can hold the string "funny" or "very funny".
+The optional group allows the whole group token to be optional. In the next example the `START` token can hold the string "funny" or "very funny".
 
 ```tavor
 START = ?("very ") "funny"
@@ -211,27 +211,27 @@ START = ?("very ") "funny"
 
 ### <a name="grouping-repeats"></a>Repeat groups
 
-The default modifier for the repeat group is the plus character <code>+</code>. The repetition is executed by default at least once. In the next example the string "a" is repeated and the <code>START</code> token can therefore hold the strings "a", "aa", "aaa" or any amount of "a" characters.
+The default modifier for the repeat group is the plus character `+`. The repetition is executed by default at least once. In the next example the string "a" is repeated and the `START` token can therefore hold the strings "a", "aa", "aaa" or any amount of "a" characters.
 
 ```tavor
 START = +("a")
 ```
 
-Although the format definition allows the repetition to go on forever there are bounds since there is only a finite amount of memory available. The Tavor framework does also set a maximum repetition by default which can be altered by the <code>--max-repeat</code> option or the <code>MaxRepeat</code> variable in the <code>github.com/zimmski/tavor</code> package.
+Although the format definition allows the repetition to go on forever there are bounds since there is only a finite amount of memory available. The Tavor framework does also set a maximum repetition by default which can be altered by the `--max-repeat` option or the `MaxRepeat` variable in the `github.com/zimmski/tavor` package.
 
-By default the repetition modifier repeats from one to infinite which can be altered by arguments to the modifier. The next example repeats the string "a" exactly twice meaning the <code>START</code> token does only hold the string "aa".
+By default the repetition modifier repeats from one to infinite which can be altered by arguments to the modifier. The next example repeats the string "a" exactly twice meaning the `START` token does only hold the string "aa".
 
 ```tavor
 START = +2("a")
 ```
 
-It is also possible to define a repetition range. The next example repeats the string "a" at least twice but at most 4 times. This means that the <code>START</code> token can either hold the string "aa", "aaa" or "aaaa".
+It is also possible to define a repetition range. The next example repeats the string "a" at least twice but at most 4 times. This means that the `START` token can either hold the string "aa", "aaa" or "aaaa".
 
 ```tavor
 START = +2,4("a")
 ```
 
-The <code>from</code> and <code>to</code> arguments can be empty too which sets them to their default values. For example the next definition repeats the string "a" at most 4 times.
+The `from` and `to` arguments can be empty too which sets them to their default values. For example the next definition repeats the string "a" at most 4 times.
 
 ```tavor
 START = +,4("a")
@@ -243,7 +243,7 @@ And the next example repeats the string "a" at least twice.
 START = +2,("a")
 ```
 
-Since the repetition zero, once or more is very common the modifier <code>\*</code> exists. In the next example the token <code>START</code> can either hold the string "a", "ab", "abb" or any amount of "b" characters prepended by an "a" character.
+Since the repetition zero, once or more is very common the modifier `\*` exists. In the next example the token `START` can either hold the string "a", "ab", "abb" or any amount of "b" characters prepended by an "a" character.
 
 ```tavor
 START = "a" *("b")
@@ -251,7 +251,7 @@ START = "a" *("b")
 
 ### <a name="grouping-permutation"></a>Permutation group
 
-The <code>@</code> is the permutation modifier which is combined with an alternation in the group body. Each alternation term will be executed exactly once but the order of execution is non-relevant. In the next example the <code>START</code> token can either hold 123, 132, 213, 231, 312 or 321.
+The `@` is the permutation modifier which is combined with an alternation in the group body. Each alternation term will be executed exactly once but the order of execution is non-relevant. In the next example the `START` token can either hold 123, 132, 213, 231, 312 or 321.
 
 ```tavor
 START = @(1 | 2 | 3)
@@ -270,17 +270,17 @@ START = "1. list: " List "\n",
         "2. list: " List "\n"
 ```
 
-This format defines two tokens called <code>Choice</code> and <code>List</code>.
+This format defines two tokens called `Choice` and `List`.
 
-A **token reference** is the embedding of a token in a definition. There exists one token reference of <code>Choice</code>, which can be found in the <code>List</code> definition, and two for <code>List</code>, which are both in the <code>START</code> definition. Even though <code>Choice</code> is in a repeater group it is only referenced once.
+A **token reference** is the embedding of a token in a definition. There exists one token reference of `Choice`, which can be found in the `List` definition, and two for `List`, which are both in the `START` definition. Even though `Choice` is in a repeater group it is only referenced once.
 
-A **token usage** is the execution of a token during an operation like fuzzing or delta-debugging. <code>List</code> has two token usages in this format while <code>Choice</code> has 4. Every <code>List</code> token does have two <code>Choice</code> usages because of the repeat group in the definition of <code>List</code>.
+A **token usage** is the execution of a token during an operation like fuzzing or delta-debugging. `List` has two token usages in this format while `Choice` has 4. Every `List` token does have two `Choice` usages because of the repeat group in the definition of `List`.
 
 ## <a name="character-classes"></a>Character classes
 
-Character classes are a special kind of token and can be directly compared to character classes of regular expressions used in most programming languages such as Perl's implementation which is documented [here](http://perldoc.perl.org/perlre.html#Character-Classes-and-other-Special-Escapes). They behave like terminal tokens meaning that they cannot include others tokens but they are, unlike integers and strings, not single but multiple constants at once. A character class starts with the left bracket <code>[</code> and ends with the right bracket <code>]</code>. Character classes are like terminal tokens in that they are tokens on their own and can be therefore mixed with other tokens. The content between the brackets is called a pattern and can consists of almost any UTF8 encoded character, escape character, special escape and range. In general the character class token can be seen as a shortcut for a string alternation.
+Character classes are a special kind of token and can be directly compared to character classes of regular expressions used in most programming languages such as Perl's implementation which is documented [here](http://perldoc.perl.org/perlre.html#Character-Classes-and-other-Special-Escapes). They behave like terminal tokens meaning that they cannot include others tokens but they are, unlike integers and strings, not single but multiple constants at once. A character class starts with the left bracket `[` and ends with the right bracket `]`. Character classes are like terminal tokens in that they are tokens on their own and can be therefore mixed with other tokens. The content between the brackets is called a pattern and can consists of almost any UTF8 encoded character, escape character, special escape and range. In general the character class token can be seen as a shortcut for a string alternation.
 
-For example the following definition lets the <code>START</code> token hold the strings "a", "b" or "c".
+For example the following definition lets the `START` token hold the strings "a", "b" or "c".
 
 ```tavor
 START = "a" | "b" | "c"
@@ -298,20 +298,20 @@ The following table holds UTF8 encoded characters which are not directly allowed
 
 | Character       | Escape sequence   |
 | :-------------- | :---------------- |
-| <code>-</code>  | <code>\\-</code>  |
-| <code>\\</code> | <code>\\\\</code> |
-| form feed       | <code>\\f</code>  |
-| newline         | <code>\\n</code>  |
-| return          | <code>\\r</code>  |
-| tab             | <code>\\t</code>  |
+| `-`  | `\\-`  |
+| `\\` | `\\\\` |
+| form feed       | `\\f`  |
+| newline         | `\\n`  |
+| return          | `\\r`  |
+| tab             | `\\t`  |
 
-For example the following defines that the <code>START</code> token holds only white space characters.
+For example the following defines that the `START` token holds only white space characters.
 
 ```tavor
 START = +([ \n\t\n\r])
 ```
 
-Since some characters can be hard to type and read the <code>\x</code> escape sequence can be used to define them with their hexadecimal code points. There are two options to do this. Either only two hexadecimal characters are used in the form of <code>\x0A</code> or more than two hexadecimal digits are needed which have to use the form <code>\x{0AF}</code>. The second form allows up to 8 digits and is therefore fully Unicode ready.
+Since some characters can be hard to type and read the `\x` escape sequence can be used to define them with their hexadecimal code points. There are two options to do this. Either only two hexadecimal characters are used in the form of `\x0A` or more than two hexadecimal digits are needed which have to use the form `\x{0AF}`. The second form allows up to 8 digits and is therefore fully Unicode ready.
 
 To give an example the following definition holds either the Unicode character "/" or "😃".
 
@@ -321,7 +321,7 @@ START = [\x2F\x{1F603}]
 
 ### <a name="character-classes-ranges"></a>Ranges
 
-Ranges can be defined using the <code>-</code> character. A range holds all characters starting at the character before the <code>-</code> and ending at the character after the <code>-</code>. Both characters have to be either an UTF8 encoded or an escaped character. The starting character must have a lower value than the ending character.
+Ranges can be defined using the `-` character. A range holds all characters starting at the character before the `-` and ending at the character after the `-`. Both characters have to be either an UTF8 encoded or an escaped character. The starting character must have a lower value than the ending character.
 
 For example the following defines a decimal digit.
 
@@ -347,15 +347,15 @@ Special escape characters combine many characters into one escape character and 
 
 | Special escape character | Character class           | Description                     |
 | :----------------------- | :------------------------ | :------------------------------ |
-| <code>\d</code>          | <code>[0-9]</code>        | Holds a decimal digit character |
-| <code>\s</code>          | <code>[ \f\n\r\t]</code>  | Holds the white space character |
-| <code>\w</code>          | <code>[a-zA-Z0-9_]</code> | Holds a word character          |
+| `\d`          | `[0-9]`        | Holds a decimal digit character |
+| `\s`          | `[ \f\n\r\t]`  | Holds the white space character |
+| `\w`          | `[a-zA-Z0-9_]` | Holds a word character          |
 
 ## <a name="attributes"></a>Token attributes
 
 Some tokens define attributes which can be used in a definition by prepending a dollar sign to their name and appending a dot followed by the attribute name.
 
-All list tokens have for example the <code>Count</code> attribute which holds the count of the direct child entries of the token.
+All list tokens have for example the `Count` attribute which holds the count of the direct child entries of the token.
 
 ```tavor
 Number = +([0-9])
@@ -374,15 +374,15 @@ A list token is a token which has in its definition either only a sequence of to
 
 | Attribute           | Description                                                                                                  |
 | :------------------ | :----------------------------------------------------------------------------------------------------------- |
-| <code>Count</code>  | Holds the count of the token direct child entries                                                            |
-| <code>Unique</code> | Chooses at random a child of the token and embeds it. The choice is unique for every reference of the token. |
+| `Count`  | Holds the count of the token direct child entries                                                            |
+| `Unique` | Chooses at random a child of the token and embeds it. The choice is unique for every reference of the token. |
 
 ### <a name="attributes-scope"></a>Scope of attributes
 
 The Tavor format allows the usage of token attributes as long as the referenced token exists in the current scope.
 
 Two main types of scopes exists:
-- **Global scope** which is the scope of the whole format definition. An entry of the global scope is set by the nearest token reference to the <code>START</code> token.
+- **Global scope** which is the scope of the whole format definition. An entry of the global scope is set by the nearest token reference to the `START` token.
 - **Local scope** which is the scope held by a definition, group or any other token which opens up a new scope. Local scopes are initialized with entries from their parent scope at the time of the creation of the new local scope.
 
 Token definitions, who open a new local scope, inherit the global scope.
@@ -438,12 +438,12 @@ Outer.3.List: aaaaaaa
 Outer.6.Print: 7
 ```
 
-This example generation shows that the first <code>$List.Count</code> usage attributed as <code>Outer.1.Print</code> uses the list <code>Outer.1.List</code> because it is the first usage of the token <code>List</code> next to the <code>START</code> token.
+This example generation shows that the first `$List.Count` usage attributed as `Outer.1.Print` uses the list `Outer.1.List` because it is the first usage of the token `List` next to the `START` token.
 
 Additional observations can be made:
-- Every new <code>List</code> reference overwrites the current entry of the current scope (e.g. <code>Outer.2.Print</code> uses <code>Outer.1.List</code>, the first <code>Inner.2.Print</code> uses the first <code>Inner.1.List</code>)
-- An inner scope inherits from its parent scope (e.g. first <code>Inner.1.Print</code> uses <code>Outer.1.List</code>, second <code>Inner.1.Print</code> uses <code>Outer.2.List</code>)
-- Parent scopes are not overwritten by their child scopes (e.g. <code>Outer.3.Print</code> uses <code>Outer.1.List</code>, <code>Outer.5.Print</code> uses <code>Outer.2.List</code>)
+- Every new `List` reference overwrites the current entry of the current scope (e.g. `Outer.2.Print` uses `Outer.1.List`, the first `Inner.2.Print` uses the first `Inner.1.List`)
+- An inner scope inherits from its parent scope (e.g. first `Inner.1.Print` uses `Outer.1.List`, second `Inner.1.Print` uses `Outer.2.List`)
+- Parent scopes are not overwritten by their child scopes (e.g. `Outer.3.Print` uses `Outer.1.List`, `Outer.5.Print` uses `Outer.2.List`)
 
 -------------
 -------------
