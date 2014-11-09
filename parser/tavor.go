@@ -1372,7 +1372,7 @@ func (p *tavorParser) parseSpecialTokenDefinition() (rune, error) {
 				}
 			}
 
-			to := math.MaxInt64
+			to := math.MaxInt32
 			if okTo {
 				to, err = strconv.Atoi(rawTo)
 				if err != nil {

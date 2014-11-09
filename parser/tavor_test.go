@@ -578,7 +578,7 @@ func TestTavorParserSpecialTokens(t *testing.T) {
 		"$Spec = type: Int,\nfrom: 2,\nstep: 2\nSTART = Spec\n",
 	))
 	Nil(t, err)
-	Equal(t, tok, primitives.NewRangeIntWithStep(2, math.MaxInt64, 2))
+	Equal(t, tok, primitives.NewRangeIntWithStep(2, math.MaxUint32, 2))
 
 	// Sequence
 	tok, err = ParseTavor(strings.NewReader(

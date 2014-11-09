@@ -10,6 +10,8 @@ clean:
 coverage:
 	go test -coverprofile=coverage.out
 	go tool cover -html=coverage.out
+crosscompile:
+	gox -os="linux" ./...
 debug-install: clean
 	go install -race -v ./...
 dependencies:

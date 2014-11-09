@@ -321,7 +321,7 @@ func (p *RangeInt) Permutations() uint {
 	perms := (p.to-p.from)/p.step + 1
 
 	if perms < 0 {
-		return math.MaxInt64
+		return math.MaxUint32
 	}
 
 	return uint(perms)
