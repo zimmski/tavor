@@ -542,6 +542,48 @@ Existing: 2
 Existing: 4
 ```
 
+## <a name="expressions"></a>Expressions
+
+Expressions can be used in token definitions and allow dynamic and complex operations using operators who can have different numbers of operands. An expressions starts with the dollar sign `$` and the opening curly brace `{` and ends with the closing curly brace `}`.
+
+A good example for an expression is an addition.
+
+```tavor
+START = ${1 + 2}
+```
+
+Every operand of an operator can currently either be a number or a token attribute. The usual dollar sign for a token attribute can be omitted.
+
+```tavor
+$Number = type: Int
+
+START = ${Number.Value + 1}
+```
+
+The following sections describe the currently implemented operators.
+
+### <a name="expressions-arithmetic"></a>Arithemtic operators
+
+Arithmetic operators have two operands between the operator sign. Please note that operators currently always embed the right side. This means that `2 * 3 + 4` will result into `2 * (3 + 4)` and not `(2 * 3) + 4`.
+
+#### Operators
+
+| Operator | Description    |
+| :------- | :------------- |
+| `+`      | Addition       |
+| `-`      | Subtraction    |
+| `*`      | Multiplication |
+| `/`      | Division       |
+
+#### Example usages
+
+```tavor
+START = ${9 + 8 + 7} "\n",
+        ${6 - 5} "\n",
+        ${4 * 3} "\n",
+        ${10 / 2} "\n"
+```
+
 -------------
 -------------
 -------------
@@ -556,19 +598,6 @@ Existing: 4
 -------------
 
 # TODO rewrite everything down below
-```
-
-### Expressions
-
-Expressions can be used on the right side of a token definition.
-
-```
-Sum = ${1 + 2 + 3} // Sum will be interpreted as 6
-
-SomeIdOrMore = $Id.Existing | ${Id.Existing + 1}
-
-DoubleTheCount = ${Letter.Count + Letter.Count}
-```
 
 ### Variables
 
