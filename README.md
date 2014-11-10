@@ -79,6 +79,7 @@ Additionally you can find functional Tavor format files and fuzzer applications 
 - [How do I build Tavor?](#build)
 - [How do I develop applications with the Tavor framework?](#develop)
 - [How do I extend the Tavor framework?](#extend)
+- [How stable is Tavor?](#stability)
 - [Missing features](#missing-features)
 - [Can I make feature requests, report bugs and problems?](#feature-request)
 
@@ -589,6 +590,14 @@ TODO<br/>
 ### Still looking for something else?
 
 TODO explain if the reader has not find what she/he looks for -> link to the feature request section<br/>
+
+## <a name="stability"></a>How stable is Tavor?
+
+Tavor is still in development and fare from a 1.0 release. There are [some bugs](https://github.com/zimmski/tavor/issues?q=is%3Aopen+is%3Aissue+label%3Abug) and a lot of [functionality is still missing](https://github.com/zimmski/tavor/issues?q=is%3Aopen+is%3Aissue+label%3Aenhancement) but basic features are stable enough and are successufully used in production by many projects.
+
+[Individual package code coverage](https://coveralls.io/r/zimmski/tavor) is currently low but since most tests do cover a lot of Tavor's components this is not a big issue. However 100% coverage using hand written tests is a required feature of the 1.0 release as well as fully fuzzing the Tavor format and the Tavor binary. This means that Tavor will be equipped to test every feature of the binary and the Tavor format itself.
+
+Since Tavor is still a moving target, backwards-incompatible changes will happen but are documented for every release. This is necessary to make working with Tavor as easy as possible while still providing loads of functionality.
 
 ## <a name="missing-features"></a>Missing features
 
