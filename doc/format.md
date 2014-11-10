@@ -445,6 +445,103 @@ Additional observations can be made:
 - An inner scope inherits from its parent scope (e.g. first `Inner.1.Print` uses `Outer.1.List`, second `Inner.1.Print` uses `Outer.2.List`)
 - Parent scopes are not overwritten by their child scopes (e.g. `Outer.3.Print` uses `Outer.1.List`, `Outer.5.Print` uses `Outer.2.List`)
 
+## <a name="special-tokens"></a>Special tokens
+
+Special tokens are an addition to regular token definitions of the Tavor format. They provide specific functionality which can be utilized by embedding them like regular tokens or through their additional token attributes. Special tokens can be defined by prepending a dollar sign to their name. They do not have a format definition on their right-hand side. Instead, arguments written as key-value pairs, which are separated by a colon, define the token. Since special tokens are typed, the `type` argument must be defined.
+
+A simple example for a special token is the definition of an integer token.
+
+```tavor
+$Number = type: Int
+
+Addition = Number " + " (Number | Addition)
+
+START = Addition
+```
+
+This format definition generates additions with random integers as numbers like for example `47245 + 6160 + 6137`.
+
+Using arguments of the `Int` type the number can be bounded in its range.
+
+```tavor
+$Number = type: Int,
+          from: 1,
+          to:   10
+
+Addition = Number " + " (Number | Addition)
+
+START = Addition
+```
+
+Which generates for example `10 + 5 + 8 + 9`.
+
+The following sections describe the currently implemented special tokens.
+
+### <a name="special-tokens-Int"></a>Type `Int`
+
+The `Int` type implements a random integer.
+
+#### Optional arguments
+
+| Argument   | Description                                  |
+| :--------- | :------------------------------------------- |
+| `from`     | First integer value (defaults to `0`)        |
+| `to`       | Last integer value (defaults to `2147483647`) |
+
+#### Token attributes
+
+| Attribute | Description                            |
+| :-------- | :------------------------------------- |
+| `Value`   | Embeds a new token based on its parent |
+
+### <a name="special-tokens-Sequence"></a>Type `Sequence`
+
+The `Sequence` type implements a generator for integers.
+
+#### Optional arguments
+
+| Argument   | Description                               |
+| :--------- | :---------------------------------------- |
+| `start`    | First sequence value (defaults to 1)      |
+| `step`     | Increment of the sequence (defaults to 1) |
+
+#### Token attributes
+
+| Attribute  | Description                                                 |
+| :--------- | :---------------------------------------------------------- |
+| `Existing` | Embeds a new token holding one existing value of the parent |
+| `Next`     | Embeds a new token holding the next value of the parent     |
+| `Reset`    | Embeds a new token which on execution resets the parent     |
+
+#### Example usages
+
+The following example defines a sequence called `Id` which generates integers starting from 0 incremented by 2. It will therefore generate the sequence 0, 2, 4, 6 and so on. The example starts of by generating the first three values of the sequence using the token attribute `Next`. Afterwards the sequence is reseted using the token attribute `Reset` and then again three values are generated. Since the sequence got reseted before that the same values as in the beginning are generated. Ending the definition are three usages of the `Existing` token attribute which chooses at random one value out of all currently in use values of the sequence. Meaning it is possible that `Existing` chooses the same number more than once.
+
+```tavor
+$Id = type:  Sequence,
+      start: 0,
+      step:  2
+
+START = +3("First Next: " $Id.Next "\n"),
+        $Id.Reset,
+        +3("Second Next: " $Id.Next "\n"),
+        +3("Existing: " $Id.Existing "\n")
+```
+
+Will generate for example:
+
+```
+First Next: 0
+First Next: 2
+First Next: 4
+Second Next: 0
+Second Next: 2
+Second Next: 4
+Existing: 4
+Existing: 2
+Existing: 4
+```
+
 -------------
 -------------
 -------------
@@ -459,40 +556,6 @@ Additional observations can be made:
 -------------
 
 # TODO rewrite everything down below
-
-### Special tokens
-
-Special tokens can be defined by prepending a dollar sign to their name. Special tokens do not have a format on their right side like regular tokens, instead arguments written as key-value pairs, which are separated by a colon, define the token. At least the "type" argument must be defined.
-
-```
-$Number = type: Int
-Arithmetic = Number "+" Number
-```
-
-Possible arguments are:
-* type - Defines the type of the token. Can be "Int" or "Sequence"
-
-Additional (optional) arguments for each type are:
-* "Int"
-    * from - First integer value
-    * to - Last integer value
-* "Sequence"
-    * start - First sequence value. Default is 1.
-    * step - Increment of the sequence. Default is 1.
-
-Possible attributes for each type are:
-* "Int"
-    * Value - The value of the Int
-* "Sequence"
-    * Next - Indicates the next value of the sequence.
-    * Existing - Indicates an available value of the sequence in the whole data.
-    * Reset - The sequence is reseted when this token is reached.
-
-```
-$Id = type: Sequence,
-      start: 0,
-      step: 2
-NextId = $Id.Next
 ```
 
 ### Expressions
