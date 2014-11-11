@@ -584,6 +584,27 @@ START = ${9 + 8 + 7} "\n",
         ${10 / 2} "\n"
 ```
 
+### <a name="expressions-set"></a>Set operators (experimental)
+
+Set operators are currently experimental since only a specific case has been implemented. The `not in` operator queries the `Existing` token attribute of a sequence to not include the given argument. The argument is between parenthesis for backwards-compatible reasons, since future versions of this feature will be able to use more than one argument.
+
+```tavor
+$Id = type: Sequence
+
+Pair = $Id.Next<id> " " ${Id.Existing not in (id)} "\n"
+
+START = $Id.Reset +2(Pair)
+```
+
+This will generate:
+
+```
+1 2
+2 1
+```
+
+The `Existing` token attribute can choose only between the values `1` and `2`, since the sequence generates only two values in this format definition. The `not in` operator excludes the given argument which is the variable `id` that holds the current sequence value. Hence if the current value is `1` only `2` can be used by `Existing` and if the value is `2` only `1` can be used.
+
 ## <a name="variables"></a>Variables
 
 Every token of a token definition can be saved into a variable which consists of a name and a reference to a token usage. Variables follow the [same scope rules](#attributes-scope) as token attributes. It is therefore possible to for example define the same variable name more than once in one token sequence. They also do not overwrite variables definitions of parent scopes. Variables can be defined by using the `<` character after the token which should be saved, then defining the name of the variable and closing with the `>` character. They have a range of token attributes like `Value` which embeds a new token based on the current state of the referenced token.
@@ -643,18 +664,6 @@ The two usages of the `Number` token are hence only saved as variables and not r
 -------------
 
 # TODO rewrite everything down below
-
-### Set operators
-
-Some attributes can be combined with set operators. For example
-
-```
-$Id = type: Sequence
-
-Pair = $Id.Next<id> " " ${Id.Existing not in (id)}
-```
-
-This will search through the existing sequenced IDs without the one saved in the variable "id".
 
 ### If, else if and else
 
