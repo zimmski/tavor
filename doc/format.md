@@ -632,7 +632,7 @@ Pair = $Id.Next<id> " " ${Id.Existing not in (id)}
 
 This will search through the existing sequenced IDs without the one saved in the variable "id".
 
-### If, If else and else
+### If, else if and else
 
 ```tavor
 START = Choose<var> Print

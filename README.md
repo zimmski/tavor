@@ -81,7 +81,7 @@ Additionally you can find functional Tavor format files and fuzzer applications 
 - [How do I extend the Tavor framework?](#extend)
 - [How stable is Tavor?](#stability)
 - [Missing features](#missing-features)
-- [Can I make feature requests, report bugs and problems?](#feature-request)
+- [Can I make feature requests and report bugs and problems?](#feature-request)
 
 ## <a name="fuzzing"></a>What is fuzzing?
 
@@ -182,8 +182,8 @@ The Tavor format documentation has its own [page which can be found here](/doc/f
 ## <a name="use"></a>How do I use Tavor?
 
 Tavor can be used in three different ways:
-- [Using the binary](#binary) which makes everything officially provided by the Tavor project available via the command line.
-- [Developing applications with the Tavor framework](#develop) by implementing the internal structure via code and doing everything else too like fuzzing and delta-debugging.
+- [Using the binary](#binary) which makes everything officially provided by the Tavor framework available via the command line.
+- [Developing applications with the Tavor framework](#develop) by implementing the internal structure via code and doing everything else like fuzzing and delta-debugging too via code.
 - [Extending the Tavor framework](#extend) because of research or missing features.
 
 ## <a name="binary"></a>The Tavor binary
@@ -615,6 +615,6 @@ Since Tavor is still a moving target, backwards-incompatible changes will happen
 
 There are also a lot of smaller features and enhancements waiting in the [issue tracker](https://github.com/zimmski/tavor/issues).
 
-## <a name="feature-request"></a>Can I make feature requests, report bugs and problems?
+## <a name="feature-request"></a>Can I make feature requests and report bugs and problems?
 
 Sure, just submit an [issue via the project tracker](https://github.com/zimmski/tavor/issues/new) and I will see what I can do. Please note that I do not guarantee to implement anything soon and bugs and problems are more important to me than new features. If you need something implemented or fixed right away you can contact me via mail <mz@nethead.at> to do contract work for you.
