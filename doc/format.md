@@ -650,44 +650,38 @@ This format definition will generate for example:
 
 The two usages of the `Number` token are hence only saved as variables and not relayed to the generation.
 
--------------
--------------
--------------
--------------
--------------
--------------
--------------
--------------
--------------
--------------
--------------
--------------
+## <a name="statements"></a>Statements
 
-# TODO rewrite everything down below
+Statements allows the Tavor format to have a control flow in its token definitions which depends on the generated tokens and values. All statements start with the opening curly brace `{` and end with closing curly brace `}`. Right after `{`, the statement operator must be defined.
 
-### If, else if and else
+### <a name="statements-if"></a>`if` statement
+
+The `if` statement allows to embed conditions into token definitions and defines an if body which is a scope on its own. The body lies between an opening `{if condition}` statement and an ending `{endif}` statement. The condition can be formed using the if statement's operators.
+
+The following example will generate the character "A" if the variable `var` is equal to `1`.
 
 ```tavor
-START = Choose<var> Print
-
 Choose = 1 | 2 | 3
 
-Print = {if var.Value == 1} "var is one" {else if var.Value == 2} "var is two" {else} "var is three" {endif}
+START = Choose<var> "->" {if var.Value == 1}"A"{endif}
 ```
 
-### Condition operators
+Additional to the `if` statement, the statements `else` and `else if` can be used. They can only be defined inside an if body and always belong to the `if` statement which the body belongs to. Both statement operators create a new scope.
 
-* "=="
+The following example will generate the character "A" if the variable `var` is equal to `1`, "B" if its equal to `2` and "C" if its some other value.
 
-  ```tavor
-  Print = (1 | 2 | 3)<var> {if var.Value == 1} "var is 1" {else} "var is not 1" {endif}
-  ```
+```tavor
+Choose = 1 | 2 | 3
 
-* "defined"
+START = Choose<var> "->" {if var.Value == 1}"A"{else if var.Value == 2}"B"{else}"C"{endif}
+```
 
-  ```tavor
-  START = Print "save this text"<var> Print
 
-  Print = {if defined var} "var is: " $var.Value {else} "var is not defined" {endif}
-  ```
+#### <a name="statements-if-operators"></a>Operators
 
+Operands can be (if not otherwise described) defined tokens of all kind, variables or terminal tokens.
+
+| Operator  | Usage        | Description                              |
+| :-------- | :----------- | :--------------------------------------- |
+| `==`      | `op1 == op2` | Returns true if op1 is equal to op2      |
+| `defined` | `defined op` | Returns true if op is a defined variable |
