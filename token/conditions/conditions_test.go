@@ -7,6 +7,7 @@ import (
 
 	"github.com/zimmski/tavor/test"
 	"github.com/zimmski/tavor/token"
+	"github.com/zimmski/tavor/token/lists"
 	"github.com/zimmski/tavor/token/primitives"
 )
 
@@ -17,7 +18,7 @@ func TestConditionsTokensToBeTokens(t *testing.T) {
 }
 
 func TestVariableIf(t *testing.T) {
-	o := NewIf(IfPair{
+	var o token.Token = NewIf(IfPair{
 		Head: NewBooleanEqual(primitives.NewConstantInt(1), primitives.NewConstantInt(1)),
 		Body: primitives.NewConstantString("a"),
 	})
@@ -36,6 +37,15 @@ func TestVariableIf(t *testing.T) {
 	Equal(t, "a", o.String())
 
 	Equal(t, o.Permutation(2).(*token.PermutationError).Type, token.PermutationErrorIndexOutOfBound)
+
+	o = lists.NewAll(
+		NewIf(IfPair{
+			Head: NewBooleanEqual(primitives.NewConstantInt(1), primitives.NewConstantInt(2)),
+			Body: primitives.NewConstantString("a"),
+		}),
+		primitives.NewConstantString("b"),
+	)
+	Equal(t, "b", o.String())
 }
 
 func TestVariableElse(t *testing.T) {

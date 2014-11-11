@@ -182,7 +182,7 @@ func (c *If) String() string {
 		}
 	}
 
-	panic("This should not happen")
+	return ""
 }
 
 /*
