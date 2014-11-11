@@ -584,6 +584,51 @@ START = ${9 + 8 + 7} "\n",
         ${10 / 2} "\n"
 ```
 
+## <a name="variables"></a>Variables
+
+Every token of a token definition can be saved into a variable which consists of a name and a reference to a token usage. Variables follow the [same scope rules](#attributes-scope) as token attributes. It is therefore possible to for example define the same variable name more than once in one token sequence. They also do not overwrite variables definitions of parent scopes. Variables can be defined by using the `<` character after the token which should be saved, then defining the name of the variable and closing with the `>` character. They have a range of token attributes like `Value` which embeds a new token based on the current state of the referenced token.
+
+In the following example the string token "text" will be saved into the variable `var`. The `Print` token uses this variable by embedding the referenced token.
+
+```tavor
+START = "text"<var> "->" Print
+
+Print = $var.Value
+```
+
+This generates the string "text->text"
+
+### <a name="variables-token-attributes"></a> Token attributes
+
+Variables have the following token attributes:
+
+| Attribute | Description                                                       |
+| :-------- | :---------------------------------------------------------------- |
+| `Count`   | Holds the count of the referenced token's direct child entries    |
+| `Index`   | Holds the index of the referenced token in relation to its parent |
+| `Value`   | Embeds a new token based on the referenced token                  |
+
+### <a name="variables-just-save"></a>Just-save operator
+
+Tokens which are saved to a variables are by default relayed to the generation. This means that their usage generates data as usual. Since this is sometimes unwanted, the just-save operator can be used to omit the relay. This is accomplished by adding the equal sign `=` after the `<` character.
+
+```tavor
+$Number = type: Int
+
+START = Number<=a> Number<=b>,
+        a " + " b " = " ${a.Value + b.Value} "\n",
+        a " * " b " = " ${a.Value * b.Value} "\n"
+```
+
+This format definition will generate for example:
+
+```
+5 + 3 = 8
+5 * 3 = 15
+```
+
+The two usages of the `Number` token are hence only saved as variables and not relayed to the generation.
+
 -------------
 -------------
 -------------
@@ -598,27 +643,6 @@ START = ${9 + 8 + 7} "\n",
 -------------
 
 # TODO rewrite everything down below
-
-### Variables
-
-Every token on the right side of a definition can be saved into a variable.
-
-
-```tavor
-START = "text"<var> Print
-
-Print = <var>.Value
-```
-
-This will save the string "text" into the variable "var" without preventing the relay of the string to the output stream.
-
-Since there are circumstances where a token should be just saved into a variable but not relayed to the output stream a second syntax can be used.
-
-```tavor
-START = "text"<=var> Print
-
-Print = <var>.Value
-```
 
 ### Set operators
 
