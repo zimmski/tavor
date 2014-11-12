@@ -100,8 +100,8 @@ func (s *BinarySearchStrategy) setReduction(tok token.ReduceToken, reduction uin
 	}
 }
 
-// Reduce starts the first step of the reduce strategy returning a channel which controls the step flow and a channel for the feedback on the step.
-// The channel returns a value if the step is complete and waits with calculating the next step until a value is put in and feedback is given. The channels are automatically closed when there are no more steps. The error return argument is not nil if an error occurs during the setup of the reduce strategy.
+// Reduce starts the first step of the reduce strategy returning a channel which controls the step flow and a channel for the feedback of the step.
+// The channel returns a value if the step is complete and waits with calculating the next step until a value is put in and feedback is given. The channels are automatically closed when there are no more steps. The error return argument is not nil if an error occurs during the initialization of the reduce strategy.
 func (s *BinarySearchStrategy) Reduce() (chan struct{}, chan<- ReduceFeedbackType, error) {
 	if token.LoopExists(s.root) {
 		return nil, nil, &Error{
