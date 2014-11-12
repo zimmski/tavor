@@ -558,13 +558,98 @@ TODO explain how to use filters, fuzzers and delta debugging<br/>
 
 ## <a name="extend"></a>How do I extend the Tavor framework?
 
-TODO<br/>
-TODO Mention that if [Developing](#develop) is not enough because of missing features or so Tavor can be extend easily<br/>
-TODO mention feature request section, but if someone is interested in really extending Tavor by her/himself... read on<br/>
+If the [Tavor format](#format) and the [implemented functionality of the framework](#develop) is not enough to implement your applications needs, you can easily extend and change the Tavor framework. The following sections will provide starting points, hints and conventions to help you write your own Tavor extensions like fuzzing and reduce strategies or even your own tokens.
 
-### Filters
+Since implementing new extensions and doing changes is trickier than using the existing framework, it is advisable to read the code documentation, which can be found in a nice representation on [https://godoc.org/github.com/zimmski/tavor/](https://godoc.org/github.com/zimmski/tavor/), and of course the actual code.
 
-TODO<br/>
+Code for the Tavor framework has to be deterministic. This means that no functionality is allowed to have its own source or seed of randomness. Methods of interfaces that define a random generator have to be implemented deterministically so that the same random seed will always result in the same result. This also applies to hand written tests and code who is concurrent.
+
+If you are aiming to get your extensions and changes offically incorporated into the Tavor framework, please **first** [create an issue](https://github.com/zimmski/tavor/issues/new) in the issue tracker and discuss your implementation goals and plans with an outline. Please note that every feature and change has to be tested with handwritten tests, so please include a test plan in your outline too.
+
+If extending Tavor yourself is not for you, but you still need new features, you can take a look at the [feature request section](#feature-request).
+
+### Fuzzing filters [![GoDoc](https://godoc.org/github.com/zimmski/tavor?status.png)](https://godoc.org/github.com/zimmski/tavor/fuzz/filter)
+
+Fuzzing filter code and all officially implemented fuzzing filters can be found in the package [github.com/zimmski/tavor/fuzz/filter](/fuzz/filter) and its sub-packages.
+
+A fuzzing filter has to implement the `Filter` interface which is exported by the [github.com/zimmski/tavor/fuzz/filter](/fuzz/filter) package. The interface defines the `Apply` method that applies the filter onto a token which is passed to the method. The method's concern is therefore only one token at a time. The error return argument is not nil, if an error is encountered during the filter execution. On success a replacement for the token is returned. This can be either `nil`, meaning the token should not be replaced, or a slice of tokens which will replace the old token using an alternation group.
+
+Applying a filter can be done manually or using the `ApplyFilters` function exported by the [github.com/zimmski/tavor/fuzz/filter](/fuzz/filter) package. `ApplyFilters` can apply more than one filter, correctly traverses the graph, handle errors of filters and does not apply filters onto filter generated tokens. The last property is needed to avoid filter loops.
+
+The `Register` function of the [github.com/zimmski/tavor/fuzz/filter](/fuzz/filter) package allows to register filters by an identifier name which can be then used within the framework. This is for example needed for the Tavor binary which applies filters defined via CLI arguments. The function `New` of the [github.com/zimmski/tavor/fuzz/filter](/fuzz/filter) package then allows to generate a new instance of the registered filter given the name.
+
+**Example**
+
+The following fuzzing filter searches the token graph for constant string tokens which hold the string "old" and replaced them with a constant string token holding the string "new".
+
+```go
+import (
+	"github.com/zimmski/tavor/token"
+	"github.com/zimmski/tavor/token/primitives"
+)
+
+type SampleFilter struct{}
+
+func NewSampleFilter() *SampleFilter {
+	return &SampleFilter{}
+}
+
+func (f *SampleFilter) Apply(tok token.Token) ([]token.Token, error) {
+	c, ok := tok.(*primitives.ConstantString)
+	if !ok || c.String() != "old" {
+		return nil, nil
+	}
+
+	return []token.Token{
+		primitives.NewConstantString("new"),
+	}, nil
+}
+```
+One option to apply this filter is by using the following code. Which will change the generation from "old string" to "new string" after the filter is applied.
+
+```go
+import (
+	"fmt"
+
+	"github.com/zimmski/tavor/fuzz/filter"
+	"github.com/zimmski/tavor/token"
+	"github.com/zimmski/tavor/token/lists"
+	"github.com/zimmski/tavor/token/primitives"
+)
+
+func main() {
+	var doc token.Token = lists.NewAll(
+		primitives.NewConstantString("old"),
+		primitives.NewConstantString(" "),
+		primitives.NewConstantString("string"),
+	)
+
+	var filters = []filter.Filter{
+		NewSampleFilter(),
+	}
+
+	doc, err := filter.ApplyFilters(filters, doc)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(doc.String())
+}
+```
+
+This filter can by also registered as a framework-wide usable filter using the following code. Please note that this should be usually done in an `init` function inside the package of a filter.
+
+```go
+import (
+	"github.com/zimmski/tavor/fuzz/filter"
+)
+
+func init() {
+	filter.Register("SampleFilter", func() filter.Filter {
+		return NewSampleFilter()
+	})
+}
+```
 
 ### Fuzzing strategies
 
@@ -586,10 +671,6 @@ TODO<br/>
 ### Special tokens
 
 TODO<br/>
-
-### Still looking for something else?
-
-TODO explain if the reader has not find what she/he looks for -> link to the feature request section<br/>
 
 ## <a name="stability"></a>How stable is Tavor?
 
