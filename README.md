@@ -457,17 +457,17 @@ Alternatively to printing to STDOUT an executable (or script) can be fed with th
 	- **YES** reports a positive outcome for the generation. The reduce strategy will therefore continue reducing this generation.
 	- **NO** reports a negative outcome for the generation. This is an error and the reduce strategy will therefore produce a different generation.
 
-	`--result-*` is an additional reduce command option kind which can be used to influence the reduce generation itself. For example the `--result-separator` reduce command option changes the separator of the generations if they are printed to STDOUT. The following command will use `@@@@` instead of the default `\n` separator to feed the reduce generations to the running process:
+`--result-*` is an additional reduce command option kind which can be used to influence the reduce generation itself. For example the `--result-separator` reduce command option changes the separator of the generations if they are printed to STDOUT. The following command will use `@@@@` instead of the default `\n` separator to feed the reduce generations to the running process:
 
-	```bash
-	tavor --format-file file.tavor reduce --input-file file.input --script validate --result-separator "@@@@"
-	```
+```bash
+tavor --format-file file.tavor reduce --input-file file.input --script validate --result-separator "@@@@"
+```
 
-	Please have a look at the reduce command help for more options and descriptions:
+Please have a look at the reduce command help for more options and descriptions:
 
-	```bash
-	tavor --help reduce
-	```
+```bash
+tavor --help reduce
+```
 
 ### Command: `validate`
 
