@@ -21,6 +21,18 @@ func NewConstantInt(value int) *ConstantInt {
 	}
 }
 
+// SetValue sets the value of the token
+func (p *ConstantInt) SetValue(v int) {
+	p.value = v
+}
+
+// Value returns the value of the token
+func (p *ConstantInt) Value() int {
+	return p.value
+}
+
+// Token interface methods
+
 // Clone returns a copy of the token and all its children
 func (p *ConstantInt) Clone() token.Token {
 	return &ConstantInt{
