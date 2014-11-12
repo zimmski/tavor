@@ -570,15 +570,15 @@ If extending Tavor yourself is not for you, but you still need new features, you
 
 ### Fuzzing filters [![GoDoc](https://godoc.org/github.com/zimmski/tavor?status.png)](https://godoc.org/github.com/zimmski/tavor/fuzz/filter)
 
-Fuzzing filter code and all officially implemented fuzzing filters can be found in the package [github.com/zimmski/tavor/fuzz/filter](/fuzz/filter) and its sub-packages.
+The fuzzing filter code and all officially implemented fuzzing filters can be found in the package [github.com/zimmski/tavor/fuzz/filter](/fuzz/filter) and its sub-packages.
 
 A fuzzing filter has to implement the `Filter` interface which is exported by the [github.com/zimmski/tavor/fuzz/filter](/fuzz/filter) package. The interface defines the `Apply` method that applies the filter onto a token which is passed to the method. The method's concern is therefore only one token at a time. The error return argument is not nil, if an error is encountered during the filter execution. On success a replacement for the token is returned. This can be either `nil`, meaning the token should not be replaced, or a slice of tokens which will replace the old token using an alternation group.
 
-Applying a filter can be done manually or using the `ApplyFilters` function exported by the [github.com/zimmski/tavor/fuzz/filter](/fuzz/filter) package. `ApplyFilters` can apply more than one filter, correctly traverses the graph, handle errors of filters and does not apply filters onto filter generated tokens. The last property is needed to avoid filter loops.
+Applying a filter can be done manually or using the `ApplyFilters` function exported by the [github.com/zimmski/tavor/fuzz/filter](/fuzz/filter) package. It can apply more than one filter, does correctly traverse the graph, handle errors of filters and does not apply filters onto filter generated tokens. The last property is needed to avoid filter loops.
 
-The `Register` function of the [github.com/zimmski/tavor/fuzz/filter](/fuzz/filter) package allows to register filters by an identifier name which can be then used within the framework. This is for example needed for the Tavor binary which applies filters defined via CLI arguments. The function `New` of the [github.com/zimmski/tavor/fuzz/filter](/fuzz/filter) package then allows to generate a new instance of the registered filter given the name.
+The `Register` function of the [github.com/zimmski/tavor/fuzz/filter](/fuzz/filter) package allows to register filters by an identifier which can be then used within the framework. The function `New` of the [github.com/zimmski/tavor/fuzz/filter](/fuzz/filter) package allows to generate a new instance of the registered filter given the identifier. This is for example needed for the Tavor binary, which applies filters defined by CLI arguments.
 
-**Example**
+**Examples**
 
 The following fuzzing filter searches the token graph for constant string tokens which hold the string "old" and replaced them with a constant string token holding the string "new".
 
@@ -637,7 +637,7 @@ func main() {
 }
 ```
 
-This filter can by also registered as a framework-wide usable filter using the following code. Please note that this should be usually done in an `init` function inside the package of a filter.
+This filter can be registered as a framework-wide usable filter using the following code. Please note that this should be usually done in an `init` function inside the package of a filter.
 
 ```go
 import (
