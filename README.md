@@ -553,6 +553,7 @@ You now have a binary "tavor" in your `$GOPATH/bin` (or if set `$GOBIN` folder) 
 ## <a name="develop"></a>How do I develop applications with the Tavor framework?
 
 TODO<br/>
+TODO create a header outline<br/>
 TODO explain creating internal structures (instead of using a format file) with examples<br/>
 TODO explain how to use filters, fuzzers and delta debugging<br/>
 
@@ -570,13 +571,13 @@ If extending Tavor yourself is not for you, but you still need new features, you
 
 ### Fuzzing filters [![GoDoc](https://godoc.org/github.com/zimmski/tavor?status.png)](https://godoc.org/github.com/zimmski/tavor/fuzz/filter)
 
-The fuzzing filter code and all officially implemented fuzzing filters can be found in the package [github.com/zimmski/tavor/fuzz/filter](/fuzz/filter) and its sub-packages.
+The fuzzing filter code and all officially implemented fuzzing filters can be found in the [github.com/zimmski/tavor/fuzz/filter](/fuzz/filter) package and its sub-packages.
 
 A fuzzing filter has to implement the `Filter` interface which is exported by the [github.com/zimmski/tavor/fuzz/filter](/fuzz/filter) package. The interface defines the `Apply` method that applies the filter onto a token which is passed to the method. The method's concern is therefore only one token at a time. The error return argument is not nil, if an error is encountered during the filter execution. On success a replacement for the token is returned. This can be either `nil`, meaning the token should not be replaced, or a slice of tokens which will replace the old token using an alternation group.
 
 Applying a filter can be done manually or using the `ApplyFilters` function exported by the [github.com/zimmski/tavor/fuzz/filter](/fuzz/filter) package. It can apply more than one filter, does correctly traverse the graph, handle errors of filters and does not apply filters onto filter generated tokens. The last property is needed to avoid filter loops.
 
-The `Register` function of the [github.com/zimmski/tavor/fuzz/filter](/fuzz/filter) package allows to register filters by an identifier which can be then used within the framework. The function `New` of the [github.com/zimmski/tavor/fuzz/filter](/fuzz/filter) package allows to generate a new instance of the registered filter given the identifier. This is for example needed for the Tavor binary, which applies filters defined by CLI arguments.
+The `Register` function of the [github.com/zimmski/tavor/fuzz/filter](/fuzz/filter) package allows to register filters based on an identifier which can be then used within the framework. The function `New` of the [github.com/zimmski/tavor/fuzz/filter](/fuzz/filter) package allows to generate a new instance of the registered filter given the identifier. This is for example needed for the Tavor binary, which applies filters defined by CLI arguments.
 
 **Examples**
 
@@ -605,7 +606,7 @@ func (f *SampleFilter) Apply(tok token.Token) ([]token.Token, error) {
 	}, nil
 }
 ```
-One option to apply this filter is by using the following code. Which will change the generation from "old string" to "new string" after the filter is applied.
+One way to apply this filter is by using the following code. Which will change the generation from "old string" to "new string" after the filter is applied.
 
 ```go
 import (
@@ -637,7 +638,7 @@ func main() {
 }
 ```
 
-This filter can be registered as a framework-wide usable filter using the following code. Please note that this should be usually done in an `init` function inside the package of a filter.
+The filter can be registered as a framework-wide usable filter using the following code. Please note that this should be usually done in an `init` function inside the package of a filter.
 
 ```go
 import (
@@ -651,9 +652,138 @@ func init() {
 }
 ```
 
-### Fuzzing strategies
+### Fuzzing strategies [![GoDoc](https://godoc.org/github.com/zimmski/tavor?status.png)](https://godoc.org/github.com/zimmski/tavor/fuzz/strategy)
 
-TODO<br/>
+The fuzzing strategy code and all officially implemented fuzzing strategies can be found in the [github.com/zimmski/tavor/fuzz/strategy](/fuzz/strategy) package and its sub-packages.
+
+Each fuzzing strategy instance has to be associated on construction with exactly one token. This allows an instance to hold a dedicated state of the given token's graph, which makes optimizations for multiple fuzzing operations possible.
+
+A fuzzing strategy has to implement the `Strategy` interface which is exported by the [github.com/zimmski/tavor/fuzz/strategy](/fuzz/strategy) package. The interface defines the `Fuzz` method which starts the first iteration of the fuzzing strategy in a new go routine and returns a channel which controls the iteration flow. The error return argument is not nil, if an error is encountered during the initialization. On success a value is returned by the channel which marks the completion of the iteration. A value has to be put back in, to initiate the calculation of the next fuzzing iteration. This passing of values is needed to avoid data races within the token graph. The channel must be closed when there are no more iterations or the strategy caller wants to end the fuzzing process. Please note that this can also occur right after receiving the channel. Hence when there are no iterations. Since the `Fuzz` method is running in its own go routine, it can be implemented statefully without using savepoints.
+
+The `Register` function of the [github.com/zimmski/tavor/fuzz/strategy](/fuzz/strategy) package allows to register strategies based on an identifier which can be then used within the framework. The function `New` of the [github.com/zimmski/tavor/fuzz/strategy](/fuzz/strategy) package allows to generate a new instance of the registered strategy given the identifier. This is for example needed for the Tavor binary, which can execute a specific strategy defined by a CLI argument.
+
+**Examples**
+
+The following fuzzing strategy searches the token graph for constant integer tokens which have a value within 1 and 10 and increments their content by replacing the original value. This strategy falls therefore in the category of mutation-based fuzzing, since it does change the original data. It is also stateless since there is no need to keep track of current events between iterations. The graph is simply searched and changed once per iteration. An additional property is that the defined operation allows the strategy to end, which is strictly not necessary.
+
+Please note that the search of tokens could be cached, which would give the fuzzing strategy instance a kind of state. It would strictly speaking still not be a stateful fuzzing strategy, since there is no connection between iterations. That is no iteration depends on a previous iteration. Caching tokens would also imply that changes in the graph, which could be made outside the fuzzing go routing, must be handled or a contract has to be made between caller and callee of the fuzzing strategy.
+
+```go
+import (
+	"github.com/zimmski/tavor/rand"
+	"github.com/zimmski/tavor/token"
+	"github.com/zimmski/tavor/token/primitives"
+)
+
+type SampleStrategy struct {
+	root token.Token
+}
+
+func NewSampleStrategy(tok token.Token) *SampleStrategy {
+	return &SampleStrategy{
+		root: tok,
+	}
+}
+
+func (s *SampleStrategy) Fuzz(r rand.Rand) (chan struct{}, error) {
+	continueFuzzing := make(chan struct{})
+
+	go func() {
+		for {
+			found := false
+
+			token.Walk(s.root, func(tok token.Token) {
+				intTok, ok := tok.(*primitives.ConstantInt)
+				if !ok {
+					return
+				}
+
+				v := intTok.Value()
+				if v >= 1 && v <= 10 {
+					found = true
+
+					v++
+
+					intTok.SetValue(v)
+				}
+			})
+
+			if !found {
+				break
+			}
+
+			continueFuzzing <- struct{}{}
+
+			if _, ok := <-continueFuzzing; !ok {
+				// the fuzzing strategy caller can close the channel too
+
+				return
+			}
+		}
+
+		close(continueFuzzing)
+	}()
+
+	return continueFuzzing, nil
+}
+```
+
+One way to execute this strategy is by using the following code. Please note that the implemented strategy does not need a random generator. The argument for the `Fuzz` method can be therefore just `nil`.
+
+```go
+import (
+	"fmt"
+
+	"github.com/zimmski/tavor/token"
+	"github.com/zimmski/tavor/token/lists"
+	"github.com/zimmski/tavor/token/primitives"
+)
+
+func main() {
+	var doc token.Token = lists.NewAll(
+		primitives.NewConstantInt(7),
+		primitives.NewConstantString(" "),
+		primitives.NewConstantInt(9),
+	)
+
+	strat := NewSampleStrategy(doc)
+
+	continueFuzzing, err := strat.Fuzz(nil)
+	if err != nil {
+		panic(err)
+	}
+
+	for i := range continueFuzzing {
+		fmt.Println(doc.String())
+
+		continueFuzzing <- i
+	}
+}
+```
+
+This program results in the following output.
+
+```
+8 10
+9 11
+10 11
+11 11
+```
+
+The strategy can be registered as a framework-wide usable strategy using the following code. Please note that this should be usually done in an `init` function inside the package of a strategy.
+
+```go
+import (
+	"github.com/zimmski/tavor/fuzz/strategy"
+	"github.com/zimmski/tavor/token"
+)
+
+func init() {
+	strategy.Register("SampleStrategy", func(tok token.Token) strategy.Strategy {
+		return NewSampleStrategy(tok)
+	})
+}
+```
 
 ### Delta-debugging strategies
 
