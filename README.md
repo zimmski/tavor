@@ -83,6 +83,8 @@ Additionally you can find functional Tavor format files and fuzzer applications 
 - [Missing features](#missing-features)
 - [Can I make feature requests and report bugs and problems?](#feature-request)
 
+TODO update table of content with header3 sections when done
+
 ## <a name="fuzzing"></a>What is fuzzing?
 
 > Fuzz testing or fuzzing is a software testing technique, often automated or semi-automated, that involves providing invalid, unexpected, or random data to the inputs of a computer program. The program is then monitored for exceptions such as crashes, or failing built-in code assertions or for finding potential memory leaks. Fuzzing is commonly used to test for security problems in software or computer systems.
@@ -118,11 +120,12 @@ E.g. we feed a given data to a program which fails on executing. By delta-debugg
 **Note**: Since delta-debugging reduces data it is also called `reducing`.
 
 Delta-debugging consists of three areas:
+
 - A heuristic has to decide which parts of the data will be reduced next
 - The reduction itself e.g.
-	- Remove repetitions
-	- Remove optional data
-	- Replace data with something else e.g. replace an uninteresting complex function with a constant value
+	+ Remove repetitions
+	+ Remove optional data
+	+ Replace data with something else e.g. replace an uninteresting complex function with a constant value
 - Testing the new resulting data concerning the failure
 
 Although delta-debugging is described as method to isolate failure causes, it can be also used to isolate anything given isolating constraints. For example we could reduce an input for a program which leads to a positive outcome to its minimum.
@@ -658,7 +661,7 @@ The fuzzing strategy code and all officially implemented fuzzing strategies can 
 
 Each fuzzing strategy instance has to be associated on construction with exactly one token. This allows an instance to hold a dedicated state of the given token's graph, which makes optimizations for multiple fuzzing operations possible.
 
-A fuzzing strategy has to implement the `Strategy` interface which is exported by the [github.com/zimmski/tavor/fuzz/strategy](/fuzz/strategy) package. The interface defines the `Fuzz` method which starts the first iteration of the fuzzing strategy in a new go routine and returns a channel which controls the iteration flow. The error return argument is not nil, if an error is encountered during the initialization. On success a value is returned by the channel which marks the completion of the iteration. A value has to be put back in, to initiate the calculation of the next fuzzing iteration. This passing of values is needed to avoid data races within the token graph. The channel must be closed when there are no more iterations or the strategy caller wants to end the fuzzing process. Please note that this can also occur right after receiving the channel. Hence when there are no iterations. Since the `Fuzz` method is running in its own go routine, it can be implemented statefully without using savepoints.
+A fuzzing strategy has to implement the `Strategy` interface which is exported by the [github.com/zimmski/tavor/fuzz/strategy](/fuzz/strategy) package. The interface defines the `Fuzz` method which starts the first iteration of the fuzzing strategy in a new goroutine and returns a channel which controls the fuzzing process. The error return argument is not nil, if an error is encountered during the initialization. On success a value is returned by the channel which marks the completion of the iteration. A value has to be put back in, to initiate the calculation of the next fuzzing iteration. This passing of values is needed to avoid data races within the token graph. The channel must be closed when there are no more iterations or the strategy caller wants to end the fuzzing process. Please note that this can also occur right after receiving the channel. Hence when there are no iterations. Since the `Fuzz` method is running in its own goroutine, it can be implemented statefully without using savepoints.
 
 The `Register` function of the [github.com/zimmski/tavor/fuzz/strategy](/fuzz/strategy) package allows to register strategies based on an identifier which can be then used within the framework. The function `New` of the [github.com/zimmski/tavor/fuzz/strategy](/fuzz/strategy) package allows to generate a new instance of the registered strategy given the identifier. This is for example needed for the Tavor binary, which can execute a specific strategy defined by a CLI argument.
 
@@ -692,10 +695,10 @@ func (s *SampleStrategy) Fuzz(r rand.Rand) (chan struct{}, error) {
 		for {
 			found := false
 
-			token.Walk(s.root, func(tok token.Token) {
+			err := token.Walk(s.root, func(tok token.Token) error {
 				intTok, ok := tok.(*primitives.ConstantInt)
 				if !ok {
-					return
+					return nil
 				}
 
 				v := intTok.Value()
@@ -706,7 +709,12 @@ func (s *SampleStrategy) Fuzz(r rand.Rand) (chan struct{}, error) {
 
 					intTok.SetValue(v)
 				}
+
+				return nil
 			})
+			if err != nil {
+				panic(err)
+			}
 
 			if !found {
 				break
@@ -785,11 +793,208 @@ func init() {
 }
 ```
 
-### Delta-debugging strategies
+### Reduce strategies [![GoDoc](https://godoc.org/github.com/zimmski/tavor?status.png)](https://godoc.org/github.com/zimmski/tavor/reduce/strategy)
 
-TODO<br/>
+The reduce strategy code and all officially implemented reduce strategies can be found in the [github.com/zimmski/tavor/reduce/strategy](/reduce/strategy) package and its sub-packages.
 
-### Tokens
+Each reduce strategy instance has to be associated on construction with exactly one token. This allows an instance to hold a dedicated state of the given token's graph, which makes optimizations for multiple reduce operations possible.
+
+A reduce strategy has to implement the `Strategy` interface which is exported by the [github.com/zimmski/tavor/reduce/strategy](/reduce/strategy) package. The interface defines the `Reduce` method which starts the first step of the reduce strategy in a new goroutine and returns two channels to control the reduce process. The error return argument is not nil, if an error is encountered during the initialization. On success a value is returned by the control channel which marks the completion of the iteration. A feedback has to be given through the feedback channel as well as a value to the control channel to initiate the calculation of the next reduce step. This passing of values is needed to avoid data races within the token graph. The channels must be closed when there are no more steps or the strategy caller wants to end the reduce process. Please note that this can also occur right after receiving the channels. Hence when there are no steps. Since the `Reduce` method is running in its own goroutine, it can be implemented statefully without using savepoints.
+
+Currently only two different feedback answers can be given. They are defined by the `ReduceFeedbackType` type which is exported by the [github.com/zimmski/tavor/reduce/strategy](/reduce/strategy) package. One feedback answer is `Good` which communicates to the reduce strategy that the current step produced a successful result. This can mean for example that the result has the right syntax or is better than the last good result. The meaning of the feedback and the response of the strategy to the feedback are purely dependent on the application. Responses could be for example to proceed with a given optimization path or to simply end the whole reducing process, since it is often enough to find one solution. The second feedback answer is `Bad` which communicates exactly the opposite of `Good` to the strategy. This answer is often more complicated to handle since it means that in some scenarios a revert of the current step to the last good step has to occur before the reduce process can continue.
+
+Please note that all reduce strategies should currently implement algorithms which produce valid generations according to the internal token graph. Hence for example a constant integer should not be replaced by a constant string. This is a convention which is not enforced but highly recommended to avoid problems until it is safely supported by a future version of Tavor.
+
+The `Register` function of the [github.com/zimmski/tavor/reduce/strategy](/reduce/strategy) package allows to register strategies based on an identifier which can be then used within the framework. The function `New` of the [github.com/zimmski/tavor/reduce/strategy](/reduce/strategy) package allows to generate a new instance of the registered strategy given the identifier. This is for example needed for the Tavor binary, which can execute a specific strategy defined by a CLI argument.
+
+**Examples**
+
+The following reduce strategy searches the token graph for repeat tokens holding one constant string token as its internal token and reduces the repetition by one token for every reduce step. This could be done more efficiently but it is very simple and should demonstrate that reduce strategies can be implemented very easily to start with. It is a stateful strategy since every step depends on the previous one. Additionally it is guaranteed to end, since only a finite amount of tokens is targeted without generating new ones.
+
+```go
+import (
+	"errors"
+
+	"github.com/zimmski/tavor/reduce/strategy"
+	"github.com/zimmski/tavor/token"
+	"github.com/zimmski/tavor/token/lists"
+	"github.com/zimmski/tavor/token/primitives"
+)
+
+type SampleStrategy struct {
+	root token.Token
+}
+
+func NewSampleStrategy(tok token.Token) *SampleStrategy {
+	return &SampleStrategy{
+		root: tok,
+	}
+}
+
+func (s *SampleStrategy) Reduce() (chan struct{}, chan<- strategy.ReduceFeedbackType, error) {
+	continueReducing := make(chan struct{})
+	feedbackReducing := make(chan strategy.ReduceFeedbackType)
+
+	go func() {
+		done := errors.New("done")
+
+		err := token.Walk(s.root, func(tok token.Token) error {
+			repeat, ok := tok.(*lists.Repeat)
+			if !ok || repeat.InternalLen() != 1 {
+				return nil
+			}
+
+			char, err := repeat.InternalGet(0)
+			if err != nil {
+				return err
+			}
+			if _, ok := char.(*primitives.ConstantString); !ok {
+				return nil
+			}
+
+			for i := repeat.Reduces(); i >= 1; {
+				found := false
+				l := len(repeat.String())
+				for ; i >= 1; i-- {
+					if err := repeat.Reduce(i); err != nil {
+						return err
+					}
+
+					if l-1 == len(repeat.String()) {
+						found = true
+
+						break
+					}
+				}
+
+				if !found {
+					break
+				}
+
+				continueReducing <- struct{}{}
+
+				feedback, ok := <-feedbackReducing
+				if !ok {
+					return nil
+				}
+
+				if _, ok := <-continueReducing; !ok {
+					return nil
+				}
+
+				if feedback == strategy.Good {
+					return done
+				}
+			}
+
+			return nil
+		})
+		if err != nil && err != done {
+			panic(err)
+		}
+
+		close(continueReducing)
+		close(feedbackReducing)
+	}()
+
+	return continueReducing, feedbackReducing, nil
+}
+```
+
+One way to execute this strategy is by using the following code.
+
+```go
+import (
+	"fmt"
+
+	"github.com/zimmski/tavor/reduce/strategy"
+	"github.com/zimmski/tavor/token"
+	"github.com/zimmski/tavor/token/lists"
+	"github.com/zimmski/tavor/token/primitives"
+)
+
+func main() {
+	aRepeat := lists.NewRepeat(primitives.NewConstantString("a"), 0, 100)
+	aRepeat.Permutation(7)
+	bRepeat := lists.NewRepeat(primitives.NewConstantString("b"), 1, 100)
+	bRepeat.Permutation(5)
+	cRepeat := lists.NewRepeat(primitives.NewConstantString("c"), 7, 100)
+	cRepeat.Permutation(9)
+	dRepeat := lists.NewRepeat(primitives.NewConstantString("d"), 1, 100)
+	dRepeat.Permutation(2)
+
+	var doc token.Token = lists.NewAll(
+		aRepeat,
+		bRepeat,
+		cRepeat,
+		dRepeat,
+	)
+
+	fmt.Println(doc.String())
+
+	strat := NewSampleStrategy(doc)
+
+	continueFuzzing, feedbackReducing, err := strat.Reduce()
+	if err != nil {
+		panic(err)
+	}
+
+	for i := range continueFuzzing {
+		out := doc.String()
+
+		fmt.Println(out)
+
+		if len(out) <= 10 {
+			feedbackReducing <- strategy.Good
+		} else {
+			feedbackReducing <- strategy.Bad
+		}
+
+		continueFuzzing <- i
+	}
+}
+```
+
+This program results in the following output.
+
+```
+aaaaaabbbbbcccccccccccccccdd
+aaaaabbbbbcccccccccccccccdd
+aaaabbbbbcccccccccccccccdd
+aaabbbbbcccccccccccccccdd
+aabbbbbcccccccccccccccdd
+abbbbbcccccccccccccccdd
+bbbbbcccccccccccccccdd
+bbbbcccccccccccccccdd
+bbbcccccccccccccccdd
+bbcccccccccccccccdd
+bcccccccccccccccdd
+bccccccccccccccdd
+bcccccccccccccdd
+bccccccccccccdd
+bcccccccccccdd
+bccccccccccdd
+bcccccccccdd
+bccccccccdd
+bcccccccdd
+```
+
+The strategy can be registered as a framework-wide usable strategy using the following code. Please note that this should be usually done in an `init` function inside the package of a strategy.
+
+```go
+import (
+	"github.com/zimmski/tavor/reduce/strategy"
+	"github.com/zimmski/tavor/token"
+)
+
+func init() {
+	strategy.Register("SampleStrategy", func(tok token.Token) strategy.Strategy {
+		return NewSampleStrategy(tok)
+	})
+}
+```
+
+### Tokens [![GoDoc](https://godoc.org/github.com/zimmski/tavor?status.png)](https://godoc.org/github.com/zimmski/tavor/tokens)
 
 TODO<br/>
 TODO explain the different interfaces for tokens<br/>
