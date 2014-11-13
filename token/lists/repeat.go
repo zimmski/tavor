@@ -276,8 +276,9 @@ func (l *Repeat) Deactivate() {
 
 // ReduceToken interface methods
 
-func combinations(n int, k int) <-chan []int {
+func combinations(n int, k int) (<-chan []int, chan<- struct{}) {
 	ret := make(chan []int)
+	cancel := make(chan struct{})
 
 	go func() {
 		is := make([]int, k)
@@ -290,7 +291,13 @@ func combinations(n int, k int) <-chan []int {
 			// send the current progress
 			cur := make([]int, k)
 			copy(cur, is)
-			ret <- cur
+			select {
+			case ret <- cur:
+			case <-cancel:
+				close(ret)
+
+				return
+			}
 
 			// special case, of no elements to choose
 			if k == 0 {
@@ -352,7 +359,7 @@ func combinations(n int, k int) <-chan []int {
 		close(ret)
 	}()
 
-	return ret
+	return ret, cancel
 }
 
 // Reduce sets a specific reduction for this token
@@ -396,9 +403,12 @@ func (l *Repeat) Reduce(i uint) error {
 
 	var sel []int
 
-	for c := range combinations(len(l.reducingOriginalValue), j+int(l.From())) {
+	ch, cancel := combinations(len(l.reducingOriginalValue), j+int(l.From()))
+	for c := range ch {
 		if i == 0 {
 			sel = c
+
+			close(cancel)
 
 			break
 		}

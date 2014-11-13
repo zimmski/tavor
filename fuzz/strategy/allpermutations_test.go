@@ -1,6 +1,7 @@
 package strategy
 
 import (
+	"runtime"
 	"strings"
 	"testing"
 
@@ -518,6 +519,8 @@ func TestAllPermutationsStrategy(t *testing.T) {
 }
 
 func validateTavorAllPermutations(t *testing.T, format string, expect []string) {
+	beforeGoroutineCount := runtime.NumGoroutine()
+
 	r := test.NewRandTest(1)
 
 	o, err := parser.ParseTavor(strings.NewReader(format))
@@ -536,6 +539,8 @@ func validateTavorAllPermutations(t *testing.T, format string, expect []string) 
 	}
 
 	Equal(t, got, expect)
+
+	Equal(t, 0, runtime.NumGoroutine()-beforeGoroutineCount, "check for goroutine leaks")
 }
 
 func validateTokenAllPermutations(t *testing.T, tok token.Token, expect []string) {

@@ -1,6 +1,7 @@
 package lists
 
 import (
+	"runtime"
 	"testing"
 
 	. "github.com/zimmski/tavor/test/assert"
@@ -256,15 +257,20 @@ func TestRepeatCombinations(t *testing.T) {
 		},
 	}
 
+	beforeGoroutineCount := runtime.NumGoroutine()
+
 	for _, test := range tests {
 		var actual [][]int
 
-		for c := range combinations(test.n, test.k) {
+		ch, _ := combinations(test.n, test.k)
+		for c := range ch {
 			actual = append(actual, c)
 		}
 
 		Equal(t, test.expected, actual)
 	}
+
+	Equal(t, 0, runtime.NumGoroutine()-beforeGoroutineCount, "check for goroutine leaks")
 }
 
 func TestRepeatReduce(t *testing.T) {
@@ -345,6 +351,8 @@ func TestRepeatReduce(t *testing.T) {
 		},
 	}
 
+	beforeGoroutineCount := runtime.NumGoroutine()
+
 	for _, test := range tests {
 		o := NewRepeat(a, test.from, test.to)
 		o.value = make([]token.Token, test.to)
@@ -374,4 +382,6 @@ func TestRepeatReduce(t *testing.T) {
 			Equal(t, test.expected, actual)
 		}
 	}
+
+	Equal(t, 0, runtime.NumGoroutine()-beforeGoroutineCount, "check for goroutine leaks")
 }
