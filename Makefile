@@ -30,9 +30,9 @@ markdown:
 test:
 	go test -race ./...
 tools:
-	go get -u code.google.com/p/go.tools/cmd/cover
-	go get -u code.google.com/p/go.tools/cmd/godoc
-	go get -u code.google.com/p/go.tools/cmd/vet
+	go get -u golang.org/x/tools/cmd/cover
+	go get -u golang.org/x/tools/cmd/godoc
+	go get -u golang.org/x/tools/cmd/vet
 	go get -u github.com/golang/lint
 	go install github.com/golang/lint/golint
 	go get -u github.com/kisielk/errcheck
