@@ -3,7 +3,7 @@ package tavor
 
 const (
 	// Version of the framework and tools
-	Version = "0.3"
+	Version = "0.4"
 )
 
 // MaxRepeat determines the maximum copies in graph cycles.
