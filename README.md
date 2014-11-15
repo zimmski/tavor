@@ -205,7 +205,7 @@ In contrast listing all available fuzzing strategies does not require the `--for
 tavor fuzz --list-strategies
 ```
 
-To learn more about available arguments and commands, you can invoke the binary's help by executing the binary without any arguments or with the `--help` argument.
+To learn more about available arguments and commands, you can invoke the help by executing the binary without any arguments or with the `--help` argument.
 
 Here is a complete overview of all arguments, commands and their options:
 
@@ -659,7 +659,7 @@ func init() {
 
 The fuzzing strategy code and all officially implemented fuzzing strategies can be found in the [github.com/zimmski/tavor/fuzz/strategy](/fuzz/strategy) package and its sub-packages.
 
-Each fuzzing strategy instance has to be associated on construction with exactly one token. This allows an instance to hold a dedicated state of the given token's graph, which makes optimizations for multiple fuzzing operations possible.
+Each fuzzing strategy instance has to be associated on construction with exactly one token. This allows an instance to hold a dedicated state of the given token graph, which makes optimizations for multiple fuzzing operations possible.
 
 A fuzzing strategy has to implement the `Strategy` interface which is exported by the [github.com/zimmski/tavor/fuzz/strategy](/fuzz/strategy) package. The interface defines the `Fuzz` method which starts the first iteration of the fuzzing strategy in a new goroutine and returns a channel which controls the fuzzing process. The error return argument is not nil, if an error is encountered during the initialization. On success a value is returned by the channel which marks the completion of the iteration. A value has to be put back in, to initiate the calculation of the next fuzzing iteration. This passing of values is needed to avoid data races within the token graph. The channel must be closed when there are no more iterations or the strategy caller wants to end the fuzzing process. Please note that this can also occur right after receiving the channel. Hence when there are no iterations. Since the `Fuzz` method is running in its own goroutine, it can be implemented statefully without using savepoints.
 
@@ -797,7 +797,7 @@ func init() {
 
 The reduce strategy code and all officially implemented reduce strategies can be found in the [github.com/zimmski/tavor/reduce/strategy](/reduce/strategy) package and its sub-packages.
 
-Each reduce strategy instance has to be associated on construction with exactly one token. This allows an instance to hold a dedicated state of the given token's graph, which makes optimizations for multiple reduce operations possible.
+Each reduce strategy instance has to be associated on construction with exactly one token. This allows an instance to hold a dedicated state of the given token graph, which makes optimizations for multiple reduce operations possible.
 
 A reduce strategy has to implement the `Strategy` interface which is exported by the [github.com/zimmski/tavor/reduce/strategy](/reduce/strategy) package. The interface defines the `Reduce` method which starts the first step of the reduce strategy in a new goroutine and returns two channels to control the reduce process. The error return argument is not nil, if an error is encountered during the initialization. On success a value is returned by the control channel which marks the completion of the iteration. A feedback has to be given through the feedback channel as well as a value to the control channel to initiate the calculation of the next reduce step. This passing of values is needed to avoid data races within the token graph. The channels must be closed when there are no more steps or the strategy caller wants to end the reduce process. Please note that this can also occur right after receiving the channels. Hence when there are no steps. Since the `Reduce` method is running in its own goroutine, it can be implemented statefully without using savepoints.
 
@@ -996,16 +996,22 @@ func init() {
 
 ### Tokens [![GoDoc](https://godoc.org/github.com/zimmski/tavor?status.png)](https://godoc.org/github.com/zimmski/tavor/tokens)
 
-TODO<br/>
-TODO explain the different interfaces for tokens<br/>
+TODO explain the Token interface<br/>
+TODO explain the List interface<br/>
+TODO explain the ForwardToken interface<br/>
+TODO explain that there are even more interfaces (see documentation) but that they are to specialized to mention here, they should be red in the code documentation or source<br/>
 
-### Attributes for tokens
+### <a name="extend-token-attributes"></a>Token attributes
 
-TODO<br/>
+Every token type and interface can have its own token attributes. Currently it is not possible to define these attributes externally. Instead they must be implemented directly in the format parsers. For example the method `selectTokenAttribute` of the [Tavor format parser](/parser/tavor.go) has to be extended. Since token attributes embed a new token, which is for example executed by fuzzing and reduce operations, a suitable token type, which can be connected to the original token, must be used. The `Reset` token attribute of the `Sequence` special token uses for example a token of the [SequenceResetItem](https://godoc.org/github.com/zimmski/tavor/token/sequences#SequenceResetItem) type.
+
+The mentioned implementation inconveniences will be addressed in future versions of Tavor.
 
 ### Special tokens
 
-TODO<br/>
+Special tokens provide additional types for formats. Currently it is not possible to define special tokens and their arguments externally. Instead they must be implemented directly in the format parsers. For example the method `parseSpecialTokenDefinition` of the [Tavor format parser](/parser/tavor.go) has to be extended. To add token attributes to special tokens, please have a look at the  [token attributes section](#extend-token-attributes). It is only necessary to implement the [Token interface](https://godoc.org/github.com/zimmski/tavor/token#Token), since special tokens behave like regular tokens. Arguments for the special tokens have to be currently parsed and validated by hand. They are used as initialization values for the instanced token. It is therefore not possible to lookup argument values after the special token definition is processed.
+
+The mentioned implementation inconveniences will be addressed in future versions of Tavor.
 
 ## <a name="stability"></a>How stable is Tavor?
 
