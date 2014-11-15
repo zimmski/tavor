@@ -994,12 +994,243 @@ func init() {
 }
 ```
 
-### Tokens [![GoDoc](https://godoc.org/github.com/zimmski/tavor?status.png)](https://godoc.org/github.com/zimmski/tavor/tokens)
+### <a name="extend-tokens"></a>Tokens [![GoDoc](https://godoc.org/github.com/zimmski/tavor?status.png)](https://godoc.org/github.com/zimmski/tavor/tokens)
 
-TODO explain the Token interface<br/>
-TODO explain the List interface<br/>
-TODO explain the ForwardToken interface<br/>
-TODO explain that there are even more interfaces (see documentation) but that they are to specialized to mention here, they should be red in the code documentation or source<br/>
+[Tokens](#token) are the building blocks of the Tavor framework and format. All tokens have to implement the [Token interface](#extend-tokens-Token) which defines basic methods to generate, replicate, permutate and parse a token instance. Additional functionality is defined by token interfaces like the [List interface](https://godoc.org/github.com/zimmski/tavor/token#List) and the [Forward interface](https://godoc.org/github.com/zimmski/tavor/token#ForwardToken). All token interfaces are used throughout the Tavor framework. It is therefore advised to read [the documentation of the different interfaces](https://godoc.org/github.com/zimmski/tavor/token).
+
+Every token implementation should differentiate between the internal and external representation. A token with a choice like a range integer can hold many values but only one at any given time. It is therefore necessary to save the range internally but forward the current value externally.
+
+#### <a name="extend-tokens-Token"></a>`Token` interface [![GoDoc](https://godoc.org/github.com/zimmski/tavor?status.png)](https://godoc.org/github.com/zimmski/tavor/token#Token)
+
+The `Token` interface is the base interface of all tokens. Its methods can be grouped into the following areas.
+
+- **Generation** to output the external representation of the token.
+- **Replication** to create an exact copy of the token.
+- **Permutation** to permutate (e.g. fuzz) the token.
+- **Parsing** to parse arbitrary input with the token.
+
+The [Token documentation](https://godoc.org/github.com/zimmski/tavor/token#Token) describes all needed methods and their needed functionality.
+
+**Examples**
+
+The following token defines a smiley which has eyes, a mouth and can have a nose. The token is able to permutate different generations of smileys and even parse them. The code will be described in group of method areas. The example should in general show how easy it is to create new token types. It must be noted that the example could be as well implemented with the available token types or with the following Tavor format `START = [:;] ?("-") [)(D]`.
+
+Since the `Smiley` token has to hold three different informations, it is necessary to create a struct. Instead of directly using the runes for the eyes and mouth in the struct, only indexes are used. This is not necessary but is a good convention to separate data and implementation.
+
+```go
+import (
+	"github.com/zimmski/tavor/rand"
+	"github.com/zimmski/tavor/token"
+)
+
+var (
+	eyes   = []rune{':', ';'}
+	mouths = []rune{')', '(', 'D'}
+)
+
+type Smiley struct {
+	eyes  int
+	nose  bool
+	mouth int
+}
+```
+
+For easier construction the function `NewSmiley` is defined which sets default values for all members of the `Smiley` struct.
+
+```go
+func NewSmiley() *Smiley {
+	return &Smiley{
+		eyes:  0,
+		nose:  false,
+		mouth: 0,
+	}
+}
+```
+
+The struct must implement the `Token` interface which is grouped into method areas. The `Generation` area deals with the output of the current value. This is used to output generations of tokens. Currently only the `String` method is necessary for the `Token` interface.
+
+```go
+func (s *Smiley) String() string {
+	nose := ""
+
+	if s.nose {
+		nose = "-"
+	}
+
+	return string(eyes[s.eyes]) + nose + string(mouths[s.mouth])
+}
+```
+
+The `Replication` area deals with replicating the token. This is done by the `Clone` method. Please note that the new token must be independent. This means that token internal slices, maps and other allocated structures must be copied as well.
+
+```go
+func (s *Smiley) Clone() token.Token {
+	return &Smiley{
+		eyes:  s.eyes,
+		nose:  s.nose,
+		mouth: s.mouth,
+	}
+}
+```
+
+The `Permutation` area generates distinct permutations of a token. The method `Permutations` defines how many permutations a single token holds. The `Smiley` token has a constant number of permutations since the amount of eyes and mouths is constant. Other token like range integers depend on their initial values. The method `PermutationsAll` calculates the permutations of the token itself and all its children. Since the `Smiley` token has no children it is the same as `Permutations`. It is important to note that calculating the amount of permutations is not a straightforward task. The list tokens [All](/token/lists/all.go) and [One](/token/lists/one.go) for example can have the same amount of children but have very different permutation calculations. The `Permutation` method completes the area. It sets a distinct permutation of the token. It is a good convention to put the execution of the permutation in its own method `permutation` since the resulting state can be cached. The `Permutation` of the `Token` interface then handels the validation and meta-handling of the permutation number.
+
+```go
+func (s *Smiley) Permutations() uint {
+	return uint(len(eyes) * 2 * len(mouths))
+}
+
+func (s *Smiley) PermutationsAll() uint {
+	return s.Permutations()
+}
+
+func (s *Smiley) Permutation(i uint) error {
+	permutations := s.Permutations()
+
+	if i < 1 || i > permutations {
+		return &token.PermutationError{
+			Type: token.PermutationErrorIndexOutOfBound,
+		}
+	}
+
+	s.permutation(i - 1)
+
+	return nil
+}
+
+func (s *Smiley) permutation(i uint) {
+	p := uint(0)
+
+	// This could be done more efficient but to keep the example simple we traverse over every permutation to find the right one.
+OUT:
+	for eyes := range eyes {
+		for _, nose := range []bool{false, true} {
+			for mouth := range mouths {
+				if i == p {
+					s.eyes = eyes
+					s.nose = nose
+					s.mouth = mouth
+
+					break OUT
+				}
+
+				p++
+			}
+		}
+	}
+}
+```
+
+Finally the `Parsing` area which deals with parsing the token from an input. This looks very verbose but it is necessary to handle every syntax error to generate adequate parsing errors. Please note that these messages could be further improved by not only stating that something was expected but actually giving examples on what was expected.
+
+```go
+func (s *Smiley) Parse(pars *token.InternalParser, cur int) (int, []error) {
+	// Check if there is room for at least a smiley without a nose
+	if cur+2 > pars.DataLen {
+		return cur, []error{&token.ParserError{
+			Message: "No room for a smiley",
+			Type:    token.ParseErrorUnexpectedEOF,
+		}}
+	}
+
+	found := false
+	for i, eyes := range eyes {
+		if rune(pars.Data[cur]) == eyes {
+			s.eyes = i
+
+			found = true
+
+			break
+		}
+	}
+	if !found {
+		return cur, []error{&token.ParserError{
+			Message: "Expected smiley eyes",
+			Type:    token.ParseErrorUnexpectedData,
+		}}
+	}
+
+	cur++
+
+	if pars.Data[cur] == '-' {
+		s.nose = true
+
+		cur++
+	} else {
+		s.nose = false
+	}
+
+	// Check if there is room for the smiley mouth
+	if cur > pars.DataLen {
+		return cur, []error{&token.ParserError{
+			Message: "No room for the smiley mouth",
+			Type:    token.ParseErrorUnexpectedEOF,
+		}}
+	}
+
+	found = false
+	for i, mouth := range mouths {
+		if rune(pars.Data[cur]) == mouth {
+			s.mouth = i
+
+			found = true
+
+			break
+		}
+	}
+	if !found {
+		return cur, []error{&token.ParserError{
+			Message: "Expected smiley mouth",
+			Type:    token.ParseErrorUnexpectedData,
+		}}
+	}
+
+	cur++
+
+	return cur, nil
+}
+```
+
+The `Smiley` token can then be used to create structures like with any other token of the framework. Although to give an easier example, it will be used alone. The next program will create a new `Smiley` token, permutate over all permutations and parses a string. Each step is printed to STDOUT.
+
+```go
+import (
+	"fmt"
+
+	"github.com/zimmski/tavor/token"
+)
+
+func main() {
+	s := NewSmiley()
+	fmt.Println("New:", s.String())
+
+	fmt.Print("Permutations:")
+	for i := uint(1); i <= s.Permutations(); i++ {
+		s.Permutation(i)
+		fmt.Print(" ", s.String())
+	}
+	fmt.Println()
+
+	p := &token.InternalParser{}
+	p.Data = ":-D"
+	p.DataLen = len(p.Data)
+
+	_, errs := s.Parse(p, 0)
+	if errs != nil {
+		panic(errs)
+	}
+
+	fmt.Println("Parsed:", s.String())
+}
+```
+
+This program results in the following output.
+
+```
+New: :)
+Permutations: :) :( :D :-) :-( :-D ;) ;( ;D ;-) ;-( ;-D
+Parsed: :-D
+```
 
 ### <a name="extend-token-attributes"></a>Token attributes
 
