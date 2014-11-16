@@ -998,11 +998,11 @@ func init() {
 
 [Tokens](#token) are the building blocks of the Tavor framework and format. All tokens have to implement the [Token interface](#extend-tokens-Token) which defines basic methods to generate, replicate, permutate and parse a token instance. Additional functionality is defined by token interfaces like the [List interface](https://godoc.org/github.com/zimmski/tavor/token#List) and the [Forward interface](https://godoc.org/github.com/zimmski/tavor/token#ForwardToken). All token interfaces are used throughout the Tavor framework. It is therefore advised to read [the documentation of the different interfaces](https://godoc.org/github.com/zimmski/tavor/token).
 
-Every token implementation should differentiate between the internal and external representation. A token with a choice like a range integer can hold many values but only one at any given time. It is therefore necessary to save the range internally but forward the current value externally.
+Every token implementation should differentiate between the internal and external representation. A token with a choice like a range integer can hold many values but only one at any given time. It is therefore necessary to save the range internally but forward the current value externally. The differentiation is especially important for token types who generate new tokens out of their internal ones. The original internal tokens should not be connected to the external ones since it is otherwise possible to change the internal representation without any contract.
 
 #### <a name="extend-tokens-Token"></a>`Token` interface [![GoDoc](https://godoc.org/github.com/zimmski/tavor?status.png)](https://godoc.org/github.com/zimmski/tavor/token#Token)
 
-The `Token` interface is the base interface of all tokens. Its methods can be grouped into the following areas.
+The `Token` interface is the base interface of all tokens. Its methods can be grouped into the following categories.
 
 - **Generation** to output the external representation of the token.
 - **Replication** to create an exact copy of the token.
@@ -1013,9 +1013,9 @@ The [Token documentation](https://godoc.org/github.com/zimmski/tavor/token#Token
 
 **Examples**
 
-The following token defines a smiley which has eyes, a mouth and can have a nose. The token is able to permutate different generations of smileys and even parse them. The code will be described in group of method areas. The example should in general show how easy it is to create new token types. It must be noted that the example could be as well implemented with the available token types or with the following Tavor format `START = [:;] ?("-") [)(D]`.
+The following token defines a smiley which has eyes, a mouth and can have a nose. The token is able to permutate different generations of smileys and even parse them. The code will be described in group of method categories. The example should in general show how easy it is to create new token types. It must be noted that the example could be as well implemented with the available token types or with the following Tavor format `START = [:;] ?("-") [)(D]`.
 
-Since the `Smiley` token has to hold three different informations, it is necessary to create a struct. Instead of directly using the runes for the eyes and mouth in the struct, only indexes are used. This is not necessary but is a good convention to separate data and implementation.
+Since the `Smiley` token has to hold three different informations, it is necessary to create a struct. Instead of directly using the runes for the eyes and mouth in the struct, only indexes are used. This is not necessary but is a good convention to separate the data from its source.
 
 ```go
 import (
@@ -1035,7 +1035,7 @@ type Smiley struct {
 }
 ```
 
-For easier construction the function `NewSmiley` is defined which sets default values for all members of the `Smiley` struct.
+For easier construction the function `NewSmiley` is defined which sets default values for all members of the `Smiley` struct. Note that even tough `0` and `false` are the initialization values of the used types and could be therefore left out, it is more important to explicitly declare what the default values of a token should look like.
 
 ```go
 func NewSmiley() *Smiley {
@@ -1047,7 +1047,7 @@ func NewSmiley() *Smiley {
 }
 ```
 
-The struct must implement the `Token` interface which is grouped into method areas. The `Generation` area deals with the output of the current value. This is used to output generations of tokens. Currently only the `String` method is necessary for the `Token` interface.
+The struct must implement the `Token` interface which is grouped into method categories. The `Generation` category deals with the output of the current value. This is used to output generations of tokens. Currently only the `String` method is necessary for the `Token` interface.
 
 ```go
 func (s *Smiley) String() string {
@@ -1061,7 +1061,7 @@ func (s *Smiley) String() string {
 }
 ```
 
-The `Replication` area deals with replicating the token. This is done by the `Clone` method. Please note that the new token must be independent. This means that token internal slices, maps and other allocated structures must be copied as well.
+The `Replication` category deals with replicating the token. This is done by the `Clone` method. Please note that the new token must be independent. This means that token internal slices, maps and other allocated structures must be copied as well.
 
 ```go
 func (s *Smiley) Clone() token.Token {
@@ -1073,7 +1073,7 @@ func (s *Smiley) Clone() token.Token {
 }
 ```
 
-The `Permutation` area generates distinct permutations of a token. The method `Permutations` defines how many permutations a single token holds. The `Smiley` token has a constant number of permutations since the amount of eyes and mouths is constant. Other token like range integers depend on their initial values. The method `PermutationsAll` calculates the permutations of the token itself and all its children. Since the `Smiley` token has no children it is the same as `Permutations`. It is important to note that calculating the amount of permutations is not a straightforward task. The list tokens [All](/token/lists/all.go) and [One](/token/lists/one.go) for example can have the same amount of children but have very different permutation calculations. The `Permutation` method completes the area. It sets a distinct permutation of the token. It is a good convention to put the execution of the permutation in its own method `permutation` since the resulting state can be cached. The `Permutation` of the `Token` interface then handels the validation and meta-handling of the permutation number.
+The `Permutation` category generates distinct permutations of a token. The method `Permutations` defines how many permutations a single token holds. The `Smiley` token has a constant number of permutations since the amount of eyes and mouths is constant. Other token like range integers depend on their initial values. The method `PermutationsAll` calculates the permutations of the token itself and all its children. Since the `Smiley` token has no children it is the same as `Permutations`. It is important to note that calculating the amount of permutations is not a straightforward task. The list tokens [All](/token/lists/all.go) and [One](/token/lists/one.go) for example can have the same amount of children but have very different permutation calculations. The `Permutation` method completes the category. It sets a distinct permutation of the token. It is a good convention to put the execution of the permutation in its own method `permutation` since the resulting state can be cached. The `Permutation` of the `Token` interface then handels the validation and meta-handling of the permutation number.
 
 ```go
 func (s *Smiley) Permutations() uint {
@@ -1121,7 +1121,7 @@ OUT:
 }
 ```
 
-Finally the `Parsing` area which deals with parsing the token from an input. This looks very verbose but it is necessary to handle every syntax error to generate adequate parsing errors. Please note that these messages could be further improved by not only stating that something was expected but actually giving examples on what was expected.
+Finally the `Parsing` category which deals with parsing the token from an input. This looks very verbose but it is necessary to handle every syntax error to generate adequate parsing errors. Please note that these messages could be further improved by not only stating that something was expected but actually giving examples on what was expected.
 
 ```go
 func (s *Smiley) Parse(pars *token.InternalParser, cur int) (int, []error) {
@@ -1191,7 +1191,7 @@ func (s *Smiley) Parse(pars *token.InternalParser, cur int) (int, []error) {
 }
 ```
 
-The `Smiley` token can then be used to create structures like with any other token of the framework. Although to give an easier example, it will be used alone. The next program will create a new `Smiley` token, permutate over all permutations and parses a string. Each step is printed to STDOUT.
+The `Smiley` token can then be used to create structures like with any other token of the framework. However to give an easier example, it will be used alone. The next program will create a new `Smiley` token, permutate over all permutations and parses a string. Each step is printed to STDOUT.
 
 ```go
 import (
