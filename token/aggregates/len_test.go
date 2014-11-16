@@ -18,7 +18,7 @@ func TestLenTokensToBeTokens(t *testing.T) {
 }
 
 func TestConstantInt(t *testing.T) {
-	list := lists.NewLeast(primitives.NewConstantInt(1), 1)
+	list := lists.NewRepeat(primitives.NewConstantInt(1), 1, 10)
 	Equal(t, "1", list.String())
 
 	o := NewLen(list)
