@@ -13,7 +13,6 @@ func TestIntTokensToBeTokens(t *testing.T) {
 	var tok *token.Token
 
 	Implements(t, tok, &ConstantInt{})
-	Implements(t, tok, &RandomInt{})
 	Implements(t, tok, &RangeInt{})
 }
 
@@ -32,25 +31,6 @@ func TestConstantInt(t *testing.T) {
 
 	Nil(t, o.Permutation(1))
 	Equal(t, "10", o.String())
-
-	Equal(t, o.Permutation(2).(*token.PermutationError).Type, token.PermutationErrorIndexOutOfBound)
-}
-
-func TestRandomInt(t *testing.T) {
-	o := NewRandomInt()
-	Equal(t, "0", o.String())
-
-	r := test.NewRandTest(1)
-	o.FuzzAll(r)
-	Equal(t, "1", o.String())
-
-	o2 := o.Clone()
-	Equal(t, o.String(), o2.String())
-
-	Equal(t, 1, o.Permutations())
-
-	Nil(t, o.Permutation(1))
-	Equal(t, "0", o.String())
 
 	Equal(t, o.Permutation(2).(*token.PermutationError).Type, token.PermutationErrorIndexOutOfBound)
 }

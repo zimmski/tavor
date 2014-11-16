@@ -548,14 +548,13 @@ func TestTavorParserSpecialTokens(t *testing.T) {
 	var tok token.Token
 	var err error
 
-	// RandomInt
+	// RangeInt
 	tok, err = ParseTavor(strings.NewReader(
 		"$Spec = type: Int\nSTART = Spec\n",
 	))
 	Nil(t, err)
-	Equal(t, tok, primitives.NewRandomInt())
+	Equal(t, tok, primitives.NewRangeInt(0, math.MaxInt32))
 
-	// RangeInt
 	tok, err = ParseTavor(strings.NewReader(
 		"$Spec = type: Int,\nfrom: 2,\nto: 10\nSTART = Spec\n",
 	))
@@ -712,7 +711,7 @@ func TestTavorParserAndCuriousCaseOfFuzzing(t *testing.T) {
 		"START = $int.Value\n$int = type: Int\n",
 	))
 	Nil(t, err)
-	Equal(t, tok, primitives.NewRandomInt())
+	Equal(t, tok, primitives.NewRangeInt(0, math.MaxInt32))
 
 	// Tokens should be cloned so they are different internally
 	{

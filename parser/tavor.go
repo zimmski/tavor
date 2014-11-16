@@ -917,7 +917,7 @@ func (p *tavorParser) selectTokenAttribute(tok token.Token, tokenName string, at
 		case "Reset":
 			return i.ResetItem(), nil
 		}
-	case *primitives.RandomInt, *primitives.RangeInt:
+	case *primitives.RangeInt:
 		switch attribute {
 		case "Value":
 			return i.Clone(), nil
@@ -1359,53 +1359,49 @@ func (p *tavorParser) parseSpecialTokenDefinition() (rune, error) {
 		rawFrom, okFrom := arguments["from"]
 		rawTo, okTo := arguments["to"]
 
-		if okFrom || okTo {
-			from := 0
-			if okFrom {
-				from, err = strconv.Atoi(rawFrom)
-				if err != nil {
-					return zeroRune, &token.ParserError{
-						Message:  "\"from\" needs an integer value",
-						Type:     token.ParseErrorInvalidArgumentValue,
-						Position: p.scan.Pos(),
-					}
+		from := 0
+		if okFrom {
+			from, err = strconv.Atoi(rawFrom)
+			if err != nil {
+				return zeroRune, &token.ParserError{
+					Message:  "\"from\" needs an integer value",
+					Type:     token.ParseErrorInvalidArgumentValue,
+					Position: p.scan.Pos(),
 				}
 			}
-
-			to := math.MaxInt32
-			if okTo {
-				to, err = strconv.Atoi(rawTo)
-				if err != nil {
-					return zeroRune, &token.ParserError{
-						Message:  "\"to\" needs an integer value",
-						Type:     token.ParseErrorInvalidArgumentValue,
-						Position: p.scan.Pos(),
-					}
-				}
-			}
-
-			step := 1
-
-			if raw, ok := arguments["step"]; ok {
-				step, err = strconv.Atoi(raw)
-				if err != nil {
-					return zeroRune, &token.ParserError{
-						Message:  "\"step\" needs an integer value",
-						Type:     token.ParseErrorInvalidArgumentValue,
-						Position: p.scan.Pos(),
-					}
-				}
-
-				usedArguments["step"] = struct{}{}
-			}
-
-			usedArguments["from"] = struct{}{}
-			usedArguments["to"] = struct{}{}
-
-			tok = primitives.NewRangeIntWithStep(from, to, step)
-		} else {
-			tok = primitives.NewRandomInt()
 		}
+
+		to := math.MaxInt32
+		if okTo {
+			to, err = strconv.Atoi(rawTo)
+			if err != nil {
+				return zeroRune, &token.ParserError{
+					Message:  "\"to\" needs an integer value",
+					Type:     token.ParseErrorInvalidArgumentValue,
+					Position: p.scan.Pos(),
+				}
+			}
+		}
+
+		step := 1
+
+		if raw, ok := arguments["step"]; ok {
+			step, err = strconv.Atoi(raw)
+			if err != nil {
+				return zeroRune, &token.ParserError{
+					Message:  "\"step\" needs an integer value",
+					Type:     token.ParseErrorInvalidArgumentValue,
+					Position: p.scan.Pos(),
+				}
+			}
+
+			usedArguments["step"] = struct{}{}
+		}
+
+		usedArguments["from"] = struct{}{}
+		usedArguments["to"] = struct{}{}
+
+		tok = primitives.NewRangeIntWithStep(from, to, step)
 	case "Sequence":
 		start := 1
 		step := 1
