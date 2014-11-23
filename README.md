@@ -4,7 +4,7 @@ Tavor ([Sindarin](https://en.wikipedia.org/wiki/Sindarin) for "woodpecker") is a
 
 ### <a name="quick-example"></a>A quick example
 
-Imagine a vending machine which ejects a product after receiving 100 worth of credits. It is possible to input 25 and 50 credit coins into the machine. After receiving enough credits the machine ejects a product and resets the credit counter to zero. To keep it simple, we specify that the machine does not handle credit overflows. A representation of the states and actions of the machine could look like this:
+Imagine that you want to test a vending machine which ejects a product after receiving 100 worth of credits. It is possible to input 25 and 50 credit coins into the machine. After receiving enough credits the machine ejects a product and resets the credit counter to zero. To keep it simple, we specify that the machine does not handle credit overflows. A representation of the states and actions of the machine could look like this:
 
 ![Basic states and actions](examples/quick/basic.png "Basic states and actions")
 
@@ -71,19 +71,38 @@ Additionally you can find functional Tavor format files and fuzzer applications 
 - [What is fuzzing?](#fuzzing)
 - [What is delta-debugging?](#delta-debugging)
 - [What does Tavor provide and how does it work?](#tavor-provides)
+  + [What are tokens?](#token)
+  + [What are fuzzing strategies?](#fuzzing-strategy)
+  + [What are fuzzing filters?](#fuzzing-filter)
+  + [What are reduce strategies?](#reduce-strategy)
+  + [Unrolling loops](#unrolling)
 - [The Tavor format](#format)
 - [How do I use Tavor?](#use)
 - [The Tavor binary](#binary)
+  + [General options](#binary-general)
+  + [Command: `fuzz`](#binary-fuzz)
+  + [Command: `graph`](#binary-graph)
+  + [Command: `reduce`](#binary-reduce)
+  + [Command: `validate`](#binary-validate)
 - [A complete example for fuzzing, executing and delta-debugging](#bigexample)
 - [Where are the precompiled binaries?](#precompiled)
+  + [Bash Completion](#bash-completion)
 - [How do I build Tavor?](#build)
 - [How do I develop applications with the Tavor framework?](#develop)
+  + [Token structures](#develop-token-structures)
+  + [Fuzzing filters](#develop-fuzzing-filters)
+  + [Fuzzing strategies](#develop-fuzzing-strategies)
+  + [Reduce Strategies](#develop-reduce-strategies)
 - [How do I extend the Tavor framework?](#extend)
+  + [Fuzzing filters](#extend-fuzzing-filters)
+  + [Fuzzing strategies](#extend-fuzzing-strategies)
+  + [Reduce strategies](#extend-reduce-strategies)
+  + [Tokens](#extend-tokens)
+  + [Token attributes](#extend-token-attributes)
+  + [Special tokens](#extend-special-tokens)
 - [How stable is Tavor?](#stability)
 - [Missing features](#missing-features)
 - [Can I make feature requests and report bugs and problems?](#feature-request)
-
-TODO update table of content with header3 sections when done
 
 ## <a name="fuzzing"></a>What is fuzzing?
 
@@ -280,7 +299,7 @@ Available commands:
       --input-file=   Input file which gets parsed and validated via the format file
 ```
 
-### General options
+### <a name="binary-general"></a>General options
 
 The Tavor binary provides different kinds of general options which are informative or apply to all commands. Besides the `--format-file` general format option the following options are noteworthy:
 
@@ -294,7 +313,7 @@ Please have a look at the help for more options and descriptions:
 tavor --help
 ```
 
-### Command: `fuzz`
+### <a name="binary-fuzz"></a>Command: `fuzz`
 
 The `fuzz` command generates data using the given format file and prints it directly to STDOUT.
 
@@ -367,7 +386,7 @@ Please have a look at the fuzz command help for more options and descriptions:
 tavor --help fuzz
 ```
 
-### Command: `graph`
+### <a name="binary-graph"></a>Command: `graph`
 
 The `graph` command prints out a graph of the internal structure. This is needed since textual formats like the [Tavor format](#format) can be often difficult to mentally visualize. Currently only the DOT format is supported therefore third-party tools like [Graphviz](http://graphviz.org/) have to be used to convert the DOT data to other formats like JPEG, PNG or SVG.
 
@@ -405,7 +424,7 @@ To define the graph notation, the following image will be explained:
 - The small dot is the start of the whole graph (arrow to a)
 - Double bordered circles represent end-state tokens (f)
 
-### Command: `reduce`
+### <a name="binary-reduce"></a>Command: `reduce`
 
 The `reduce` command applies delta-debugging to a given input according to the given format file. The reduction generates reduced generations of the original input which have to be tested either by the user or a program. Every generation has to correspond to the given format file which implies that the original input has to be valid too. This is checked using the same mechanisms as used by the `validate` command.
 
@@ -472,7 +491,7 @@ Please have a look at the reduce command help for more options and descriptions:
 tavor --help reduce
 ```
 
-### Command: `validate`
+### <a name="binary-validate"></a>Command: `validate`
 
 The `validate` command validates a given input file according to the given format file. This can be helpful since this is for instance needed for the `reduce` command which does apply delta-debugging only on valid inputs or in the general case to check an input which was not generated through the given format file.
 
@@ -488,10 +507,7 @@ tavor --help validate
 
 ## <a name="bigexample"></a>A complete example for fuzzing, executing and delta-debugging
 
-TODO this example should give a complete overview of how Tavor can be used.<br/>
-TODO do a key-word driven format-file<br/>
-TODO executor for the key-words<br/>
-TODO delta-debug keywords because of an intentional error<br/>
+The complete example has its own [page which can be found here](/doc/complete-example.md).
 
 ## <a name="precompiled"></a>Where are the precompiled binaries?
 
@@ -555,10 +571,23 @@ You now have a binary "tavor" in your `$GOPATH/bin` (or if set `$GOBIN` folder) 
 
 ## <a name="develop"></a>How do I develop applications with the Tavor framework?
 
-TODO<br/>
-TODO create a header outline<br/>
-TODO explain creating internal structures (instead of using a format file) with examples<br/>
-TODO explain how to use filters, fuzzers and delta debugging<br/>
+TODO
+
+### <a name="develop-token-structures"></a>Token structures
+
+TODO
+
+### <a name="develop-fuzzing-filters"></a>Fuzzing filters
+
+TODO
+
+### <a name="develop-fuzzing-strategies"></a>Fuzzing strategies
+
+TODO
+
+### <a name="develop-reduce-strategies"></a>Reduce Strategies
+
+TODO
 
 ## <a name="extend"></a>How do I extend the Tavor framework?
 
@@ -572,7 +601,7 @@ If you are aiming to get your extensions and changes offically incorporated into
 
 If extending Tavor yourself is not for you, but you still need new features, you can take a look at the [feature request section](#feature-request).
 
-### Fuzzing filters [![GoDoc](https://godoc.org/github.com/zimmski/tavor?status.png)](https://godoc.org/github.com/zimmski/tavor/fuzz/filter)
+### <a name="extend-fuzzing-filters"></a>Fuzzing filters [![GoDoc](https://godoc.org/github.com/zimmski/tavor?status.png)](https://godoc.org/github.com/zimmski/tavor/fuzz/filter)
 
 The fuzzing filter code and all officially implemented fuzzing filters can be found in the [github.com/zimmski/tavor/fuzz/filter](/fuzz/filter) package and its sub-packages.
 
@@ -655,7 +684,7 @@ func init() {
 }
 ```
 
-### Fuzzing strategies [![GoDoc](https://godoc.org/github.com/zimmski/tavor?status.png)](https://godoc.org/github.com/zimmski/tavor/fuzz/strategy)
+### <a name="extend-fuzzing-strategies"></a>Fuzzing strategies [![GoDoc](https://godoc.org/github.com/zimmski/tavor?status.png)](https://godoc.org/github.com/zimmski/tavor/fuzz/strategy)
 
 The fuzzing strategy code and all officially implemented fuzzing strategies can be found in the [github.com/zimmski/tavor/fuzz/strategy](/fuzz/strategy) package and its sub-packages.
 
@@ -793,7 +822,7 @@ func init() {
 }
 ```
 
-### Reduce strategies [![GoDoc](https://godoc.org/github.com/zimmski/tavor?status.png)](https://godoc.org/github.com/zimmski/tavor/reduce/strategy)
+### <a name="extend-reduce-strategies"></a>Reduce strategies [![GoDoc](https://godoc.org/github.com/zimmski/tavor?status.png)](https://godoc.org/github.com/zimmski/tavor/reduce/strategy)
 
 The reduce strategy code and all officially implemented reduce strategies can be found in the [github.com/zimmski/tavor/reduce/strategy](/reduce/strategy) package and its sub-packages.
 
@@ -1238,7 +1267,7 @@ Every token type and interface can have its own token attributes. Currently it i
 
 The mentioned implementation inconveniences will be addressed in future versions of Tavor.
 
-### Special tokens
+### <a name="extend-special-tokens"></a>Special tokens
 
 Special tokens provide additional types for formats. Currently it is not possible to define special tokens and their arguments externally. Instead they must be implemented directly in the format parsers. For example the method `parseSpecialTokenDefinition` of the [Tavor format parser](/parser/tavor.go) has to be extended. To add token attributes to special tokens, please have a look at the  [token attributes section](#extend-token-attributes). It is only necessary to implement the [Token interface](https://godoc.org/github.com/zimmski/tavor/token#Token), since special tokens behave like regular tokens. Arguments for the special tokens have to be currently parsed and validated by hand. They are used as initialization values for the instanced token. It is therefore not possible to lookup argument values after the special token definition is processed.
 
