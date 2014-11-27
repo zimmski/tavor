@@ -1,0 +1,12 @@
+START = Credit0
+
+Credit0   = "credit" "\t"   0 "\n" ( Coin25 Credit25 | Coin50 Credit50 | )
+Credit25  = "credit" "\t"  25 "\n" ( Coin25 Credit50 | Coin50 Credit75 )
+Credit50  = "credit" "\t"  50 "\n" ( Coin25 Credit75 | Coin50 Credit100 )
+Credit75  = "credit" "\t"  75 "\n" Coin25 Credit100
+Credit100 = "credit" "\t" 100 "\n" Vend Credit0
+
+Coin25 = "coin" "\t" 25 "\n"
+Coin50 = "coin" "\t" 50 "\n"
+
+Vend = "vend" "\n"
