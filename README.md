@@ -62,7 +62,7 @@ Vend
 Credit0
 ```
 
-Generating data like this is just one example of the capabilities of Tavor. Please have a look at [the bigger example](#bigexample) with a complete overview over the basic features or keep reading to find out more about the background and capabilities of Tavor.
+Generating data like this is just one example of the capabilities of Tavor. Please have a look at [the bigger example](#complete-example) with a complete overview over the basic features or keep reading to find out more about the background and capabilities of Tavor.
 
 Additionally you can find functional Tavor format files and fuzzer applications at [https://github.com/zimmski/fuzzer](https://github.com/zimmski/fuzzer).
 
@@ -84,7 +84,7 @@ Additionally you can find functional Tavor format files and fuzzer applications 
   + [Command: `graph`](#binary-graph)
   + [Command: `reduce`](#binary-reduce)
   + [Command: `validate`](#binary-validate)
-- [A complete example for fuzzing, executing and delta-debugging](#bigexample)
+- [A complete example for fuzzing, executing and delta-debugging](#complete-example)
 - [Where are the precompiled binaries?](#precompiled)
   + [Bash Completion](#bash-completion)
 - [How do I build Tavor?](#build)
@@ -505,7 +505,7 @@ Please have a look at the validate command help for more options and description
 tavor --help validate
 ```
 
-## <a name="bigexample"></a>A complete example for fuzzing, executing and delta-debugging
+## <a name="complete-example"></a>A complete example for fuzzing, executing and delta-debugging
 
 The complete example has its own [page which can be found here](/doc/complete-example.md).
 
@@ -571,23 +571,161 @@ You now have a binary "tavor" in your `$GOPATH/bin` (or if set `$GOBIN` folder) 
 
 ## <a name="develop"></a>How do I develop applications with the Tavor framework?
 
-TODO
+The [Tavor format](#format) does currently not allow to add source code as attributes to tokens. This prevents the implementation of many use-cases. One example is dynamically adding tokens according to a data source e.g. a database or the outcome of static code analysis. To work around this limitations, the Tavor framework can be used directly using Go code. This makes it also possible to create binaries which are independent of the Tavor binary.
 
-### <a name="develop-token-structures"></a>Token structures
+All main components of the Tavor framework as well as lots of helper functions are exported by the respective packages which are broadly described in the following subsections as well as in the [source code documentation](https://godoc.org/github.com/zimmski/tavor/). It is also advisable to read the source code of the packages, official fuzzers and delta-debuggers at [https://github.com/zimmski/fuzzer](https://github.com/zimmski/fuzzer), the Tavor binary and of course the [complete example of the Tavor documentation](#complete-example).
 
-TODO
+### <a name="develop-token-structures"></a>Token structures [![GoDoc](https://godoc.org/github.com/zimmski/tavor?status.png)](https://godoc.org/github.com/zimmski/tavor/token)
 
-### <a name="develop-fuzzing-filters"></a>Fuzzing filters
+All operations of the Tavor framework are applied to token structures which can be either made using the Tavor format or manually by instantiating tokens. Officially implemented tokens can be found in their respective packages which are grouped by their usage type.
 
-TODO
+- [aggregates](https://godoc.org/github.com/zimmski/tavor/token/aggregates)
+- [conditions](https://godoc.org/github.com/zimmski/tavor/token/conditions)
+- [constraints](https://godoc.org/github.com/zimmski/tavor/token/constraints)
+- [expressions](https://godoc.org/github.com/zimmski/tavor/token/expressions)
+- [filters](https://godoc.org/github.com/zimmski/tavor/token/filters)
+- [lists](https://godoc.org/github.com/zimmski/tavor/token/lists)
+- [primitives](https://godoc.org/github.com/zimmski/tavor/token/primitives)
+- [sequences](https://godoc.org/github.com/zimmski/tavor/token/sequences)
+- [variables](https://godoc.org/github.com/zimmski/tavor/token/variables)
 
-### <a name="develop-fuzzing-strategies"></a>Fuzzing strategies
+All tokens have a `New*` function which can be used to instantiate tokens with sane default values. For example a constant string can be created with the following code.
 
-TODO
+```go
+tok := primitives.NewConstantString("text")
+```
 
-### <a name="develop-reduce-strategies"></a>Reduce Strategies
+A sequence of tokens can be for example created with the following code.
 
-TODO
+```go
+tok := lists.NewAll(
+	primitives.NewConstantString("This is example number "),
+	primitives.NewConstantInt(2),
+	primitives.NewConstantString(" which is still not the last one.")
+)
+```
+
+It is also possible to create token structures using the Tavor format. The [parser package](https://godoc.org/github.com/zimmski/tavor/parser) exports the function `ParseTavor` which reads and parses a Tavor formatted input. It returns the root of the token representation on success. The previous example can be rewritten using the following code.
+
+```go
+tok, err := parser.ParseTavor(strings.NewReader(`
+	START = "This is example number " 2 " which is still not the last one."
+`))
+```
+
+Every token implements at least the [Token interface](https://godoc.org/github.com/zimmski/tavor/token#Token) which specifies basic methods for generating, replicating, permutating and parsing. [Other token interfaces](https://godoc.org/github.com/zimmski/tavor/token) add specific functionality to a token. The [List interface](https://godoc.org/github.com/zimmski/tavor/token#List) for example states that a token can have internal and external child tokens and specifies methods to access them.
+
+More information regarding tokens can be found in the [extending section](#extend-tokens).
+
+### <a name="develop-fuzzing-filters"></a>Fuzzing filters [![GoDoc](https://godoc.org/github.com/zimmski/tavor?status.png)](https://godoc.org/github.com/zimmski/tavor/fuzz/filter)
+
+All officially implemented fuzzing filters can be found in the [github.com/zimmski/tavor/fuzz/filter package](https://godoc.org/github.com/zimmski/tavor/fuzz/filter). Each filter has a `New*` function which can be used to instantiate a new instance of the filter with sane default values. Additionally all filters have to implement the [Filter interface](https://godoc.org/github.com/zimmski/tavor/fuzz/filter#Filter) which specifies the `Apply` method that applies the filter onto one given token. However, the common case is to use the `ApplyFilters` function which applies one or more filters onto a whole token structure. It also handles loops in the structure and the replacement of tokens.
+
+```go
+var filters = []filter.Filter{
+	filter.NewPositiveBoundaryValueAnalysisFilter(),
+}
+
+tok, err := filter.ApplyFilters(filters, tok)
+if err != nil {
+	panic(err)
+}
+```
+
+More information regarding fuzzing filters can be found in the [extending section](#extend-fuzzing-filters).
+
+### <a name="develop-fuzzing-strategies"></a>Fuzzing strategies [![GoDoc](https://godoc.org/github.com/zimmski/tavor?status.png)](https://godoc.org/github.com/zimmski/tavor/fuzz/strategy)
+
+All officially implemented fuzzing strategies can be found in the [github.com/zimmski/tavor/fuzz/strategy package](https://godoc.org/github.com/zimmski/tavor/fuzz/strategy). Each strategy has a `New*` function which can be used to instantiate a new instance of the strategy with sane default values. Additionally all strategies have to implement the [Strategy interface](https://godoc.org/github.com/zimmski/tavor/fuzz/strategy#Strategy) which specifies the `Fuzz` method that applies the strategy onto a token structure. The following example uses the `AllPermutations` strategy to permutate over the given token.
+
+```go
+import (
+	"fmt"
+
+	"github.com/zimmski/tavor/fuzz/strategy"
+	"github.com/zimmski/tavor/token"
+	"github.com/zimmski/tavor/token/lists"
+	"github.com/zimmski/tavor/token/primitives"
+)
+
+func main() {
+	var tok token.Token = lists.NewOnce(
+		primitives.NewConstantInt(1),
+		primitives.NewConstantInt(2),
+		primitives.NewConstantInt(3),
+	)
+
+	strat := strategy.NewAllPermutationsStrategy(tok)
+
+	continueFuzzing, err := strat.Fuzz(nil)
+	if err != nil {
+		panic(err)
+	}
+
+	for i := range continueFuzzing {
+		fmt.Println(tok.String())
+
+		continueFuzzing <- i
+	}
+}
+```
+
+This program has the following output.
+
+```
+123
+132
+213
+231
+312
+321
+```
+
+More information regarding fuzzing strategies can be found in the [extending section](#extend-fuzzing-strategies).
+
+### <a name="develop-reduce-strategies"></a>Reduce Strategies [![GoDoc](https://godoc.org/github.com/zimmski/tavor?status.png)](https://godoc.org/github.com/zimmski/tavor/reduce/strategy)
+
+All officially implemented reduce strategies can be found in the [github.com/zimmski/tavor/reduce/strategy package](https://godoc.org/github.com/zimmski/tavor/reduce/strategy). Each strategy has a `New*` function which can be used to instantiate a new instance of the strategy with sane default values. Additionally all strategies have to implement the [Strategy interface](https://godoc.org/github.com/zimmski/tavor/reduce/strategy#Strategy) which specifies the `Reduce` method that applies the strategy onto a token structure. The following example uses the `binarysearch` strategy to reduce a given token.
+
+```go
+import (
+	"fmt"
+
+	"github.com/zimmski/tavor/reduce/strategy"
+	"github.com/zimmski/tavor/token/lists"
+	"github.com/zimmski/tavor/token/primitives"
+)
+
+func main() {
+	tok := lists.NewRepeat(primitives.NewConstantString("a"), 0, 100)
+	tok.Permutation(20)
+
+	fmt.Println(tok.String())
+
+	strat := strategy.NewBinarySearch(tok)
+
+	continueFuzzing, feedbackReducing, err := strat.Reduce()
+	if err != nil {
+		panic(err)
+	}
+
+	for i := range continueFuzzing {
+		out := tok.String()
+
+		fmt.Println(out)
+
+		if len(out) == 5 {
+			feedbackReducing <- strategy.Good
+		} else {
+			feedbackReducing <- strategy.Bad
+		}
+
+		continueFuzzing <- i
+	}
+}
+```
+
+More information regarding reduce strategies can be found in the [extending section](#extend-reduce-strategies).
 
 ## <a name="extend"></a>How do I extend the Tavor framework?
 
@@ -1044,7 +1182,7 @@ The [Token documentation](https://godoc.org/github.com/zimmski/tavor/token#Token
 
 The following token defines a smiley which has eyes, a mouth and can have a nose. The token is able to permutate different generations of smileys and even parse them. The code will be described in group of method categories. The example should in general show how easy it is to create new token types. It must be noted that the example could be as well implemented with the available token types or with the following Tavor format `START = [:;] ?("-") [)(D]`.
 
-Since the `Smiley` token has to hold three different informations, it is necessary to create a struct. Instead of directly using the runes for the eyes and mouth in the struct, only indexes are used. This is not necessary but is a good convention to separate the data from its source.
+Since the `Smiley` token has to hold three different information, it is necessary to create a struct. Instead of directly using the runes for the eyes and mouth in the struct, only indexes are used. This is not necessary but is a good convention to separate the data from its source.
 
 ```go
 import (
