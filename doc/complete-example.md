@@ -14,8 +14,17 @@ The following components will be defined:
 - [Executor](/examples/complete/executor.go)
 - [Implementation](/examples/complete/implementation/vending.go)
 - [Bash script to run all key-driven files](/examples/complete/run.sh)
+- [Bash script to run all key-driven files and reduce failed ones](/examples/complete/run-and-reduce.sh)
 
-## <a name="tavor-format"></a>Tavor format
+## <a name="table-of-content"></a>Table of content
+
+- [Tavor format and fuzzing](#tavor-format-and-fuzzing)
+- [Implementing an executor](#executor)
+- [Test execution](#test-execution)
+- [Introducing intentional bugs](#bugs)
+- [Delta-debugging of inputs](#delta-debugging)
+
+## <a name="tavor-format-and-fuzzing"></a>Tavor format and fuzzing
 
 The following Tavor format, saved as [vending.tavor](/examples/complete/vending.tavor), defines a model of all possible valid states of the given state machine. Since this model should generate key-driven files, a set of keys and a key-driven format have to be defined.
 
@@ -111,7 +120,7 @@ tavor --format-file vending.tavor --max-repeat 2 fuzz --strategy AllPermutations
 
 This command results into exactly **31** files created in the folder `testset` and concludes our fuzzing related work using the Tavor format.
 
-## <a name="executor"></a>Executor
+## <a name="executor"></a>Implementing an executor
 
 The executor connects the key-driven test files with the implementation under test. It reads, parses and validates one key-driven file, executes sequentially each key with its arguments by invoking actions of the implementation and validates these actions. A test passes if each key executes without any problem. We will first define the groundwork of the executor since it is not yet defined how the implementation can be contacted.
 
@@ -387,7 +396,7 @@ done
 
 Executing this script reveals no errors meaning all tests passed. Since this is not very exciting we will integrate in the next section some bugs into the implementation.
 
-## <a name="bugs"></a>Introducing bugs
+## <a name="bugs"></a>Introducing intentional bugs
 
 The following subsections will introduce bugs into the implementation. Each bug will fail at least one test of our generated test set and will be studied isolated from other bugs. Meaning each section starts with a fresh original version of the implementation.
 
@@ -648,3 +657,49 @@ credit  0
 ```
 
 As you can see this is the minimum which still triggers the same bug as the original key-driven file.
+
+Reducing key-driven test files allows developers to always debug with the minimum set of actions to trigger a bug which can save a lot of debugging time. It is therefore a handy addition to the execution of a test suite. We can modify our bash script to automatically reduce failed files.
+
+```bash
+#!/bin/bash
+
+shopt -s nullglob
+
+for file in testset/*.test
+do
+	echo "Test $file"
+
+	./executor $file
+
+	if [ $? -ne 0 ]; then
+		echo "Error detected."
+
+		echo "Reduce original file to its minimum."
+
+		tavor --format-file vending.tavor reduce --input-file $file --exec "./executor TAVOR_DD_FILE" --exec-argument-type argument --exec-exact-exit-code > $file.reduced
+
+		echo "Saved to $file.reduced"
+
+		break
+	fi
+done
+```
+
+This script will run the executor with every key-driven test file of the `testset` and stop at the first failed file. The failed file will be then reduced to its minimum which will be saved next to the original file with the extension `.reduced`.
+
+Executing this script with the introduced bug will for example result in the following output.
+
+```
+Test testset/1f6b08c8273b8e46128e4d84e4e7e621.test
+credit [0]
+coin [50]
+credit [50]
+coin [25]
+credit [75]
+coin [25]
+credit [100]
+Error: Credit should be 100 but was 75
+Error detected.
+Reduce original file to its minimum.
+Saved to testset/1f6b08c8273b8e46128e4d84e4e7e621.test.reduced
+```
