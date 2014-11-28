@@ -387,4 +387,169 @@ done
 
 Executing this script reveals no errors meaning all tests passed. Since this is not very exciting we will integrate in the next section some bugs into the implementation.
 
-##
+## Introducing bugs
+
+The following subsections will introduce bugs into the implementation. Each bug will fail at least one test of our generated test set and will be studied isolated from other bugs. Meaning each section starts with a fresh original version of the implementation.
+
+### The `Coin` method does to increase the credit
+
+This bug can be introduced easily with one of the following code replacements for the `Coin` method of our implementation:
+
+- Remove the addition statements.
+
+	```go
+	func (v *VendingMachine) Coin(credit int) error {
+		switch credit {
+		case coin25:
+		case coin50:
+		default:
+			return ErrUnknownCoin
+		}
+
+		return nil
+	}
+	```
+- Using a non-pointer type as receiver for the `Coin` method which will leave the state of the machine untouched.
+
+	```go
+	func (v VendingMachine) Coin(credit int) error {
+		switch credit {
+		case coin25:
+			v.credit += credit
+		case coin50:
+			v.credit += credit
+		default:
+			return ErrUnknownCoin
+		}
+
+		return nil
+	}
+	```
+
+Running our script to execute all key-driven files will immediately result in an failed test. For example with the file `testset/1f6b08c8273b8e46128e4d84e4e7e621.test`:
+
+```
+Test testset/1f6b08c8273b8e46128e4d84e4e7e621.test
+credit [0]
+coin [50]
+credit [50]
+Error: Credit should be 50 but was 0
+Error detected, will exit loop
+```
+
+### The `Vend` method does to decrease the credit
+
+Similar to the previous example we can modify the code to leave the `credit` member variable untouched with one of the following replacements of the `Vend` replacements:
+
+- Remove the subtraction statements.
+
+	```go
+	func (v *VendingMachine) Vend() bool {
+		if v.credit < 100 {
+			return false
+		}
+
+		return true
+	}
+	```
+- Using a non-pointer type as receiver for the `Vend` method which will leave the state of the machine untouched.
+
+	```go
+	func (v VendingMachine) Vend() bool {
+		if v.credit < 100 {
+			return false
+		}
+
+		v.credit -= 100
+
+		return true
+	}
+	```
+
+Running our script to execute all key-driven files will immediately result in an failed test. For example with the file `testset/1f6b08c8273b8e46128e4d84e4e7e621.test`:
+
+```
+Test testset/1f6b08c8273b8e46128e4d84e4e7e621.test
+credit [0]
+coin [50]
+credit [50]
+coin [25]
+credit [75]
+coin [25]
+credit [100]
+vend []
+credit [0]
+Error: Credit should be 0 but was 100
+Error detected, will exit loop
+```
+
+### Every second 25 coin does not increase the credit
+
+The bug type "works the first time but not the second" is very common in most programs. Since our vending machine implementation is too easy we have to introduce an additional state member variable to trigger such a bug. The following code snippets has to replace the original implementation:
+
+```go
+type VendingMachine struct {
+	credit    int
+	coinsOf25 int
+}
+
+func NewVendingMachine() *VendingMachine {
+	return &VendingMachine{
+		credit:    0,
+		coinsOf25: 0,
+	}
+}
+
+func (v *VendingMachine) Coin(credit int) error {
+	switch credit {
+	case coin25:
+		if v.coinsOf25%2 == 0 {
+			v.credit += credit
+		}
+
+		v.coinsOf25++
+	case coin50:
+		v.credit += credit
+	default:
+		return ErrUnknownCoin
+	}
+
+	return nil
+}
+```
+
+Running our script to execute all key-driven files will immediately result in an failed test. For example with the file `testset/1f6b08c8273b8e46128e4d84e4e7e621.test`:
+
+```
+Test testset/1f6b08c8273b8e46128e4d84e4e7e621.test
+credit [0]
+coin [50]
+credit [50]
+coin [25]
+credit [75]
+coin [25]
+credit [100]
+Error: Credit should be 100 but was 75
+Error detected, will exit loop
+```
+
+This especially interesting with a long running key-driven file which inserts two 25 coins in a second or third vending loop. For example the file `testset/fba58bb35d28010b61c8004fadcb88a3.test` triggers the bug in the second loop.
+
+```
+credit [0]
+coin [50]
+credit [50]
+coin [50]
+credit [100]
+vend []
+credit [0]
+coin [50]
+credit [50]
+coin [25]
+credit [75]
+coin [25]
+credit [100]
+Error: Credit should be 100 but was 75
+```
+
+This is an interesting test case since the first iteration of the vending loop is not relevant to the bug. It shows that actions which trigger a flaw most not be a minimal set of actions but they can be reduced to such a set. This is one of the major operations of Tavor which is called **delta-debugging** or **reducing** in general. The next main section will cover how Tavor can be used to reduce an input to its minimum.
