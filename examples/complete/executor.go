@@ -78,7 +78,7 @@ func main() {
 }
 
 var (
-	ErrInvalidParametersCount = errors.New("Invalid parmaters count")
+	errInvalidParametersCount = errors.New("Invalid parmaters count")
 )
 
 func init() {
@@ -86,7 +86,7 @@ func init() {
 
 	actions["credit"] = func(parameters []string) error {
 		if len(parameters) != 1 {
-			return ErrInvalidParametersCount
+			return errInvalidParametersCount
 		}
 
 		expected, err := strconv.Atoi(parameters[0])
@@ -105,7 +105,7 @@ func init() {
 
 	actions["coin"] = func(parameters []string) error {
 		if len(parameters) != 1 {
-			return ErrInvalidParametersCount
+			return errInvalidParametersCount
 		}
 
 		coin, err := strconv.Atoi(parameters[0])
@@ -123,7 +123,7 @@ func init() {
 
 	actions["vend"] = func(parameters []string) error {
 		if len(parameters) != 0 {
-			return ErrInvalidParametersCount
+			return errInvalidParametersCount
 		}
 
 		vend := machine.Vend()

@@ -202,33 +202,38 @@ import (
 )
 
 const (
-	Coin25 = 25
-	Coin50 = 50
+	coin25 = 25
+	coin50 = 50
 )
 
 var (
+	// ErrUnknownCoin states that a given coin is unknown to the vending machine
 	ErrUnknownCoin = errors.New("Unknown coin")
 )
 
+// VendingMachine holds the state of a vending machine
 type VendingMachine struct {
 	credit int
 }
 
+// NewVendingMachine returns a instantiated state of a vending machine
 func NewVendingMachine() *VendingMachine {
 	return &VendingMachine{
 		credit: 0,
 	}
 }
 
+// Credit returns the current credit of the vending machine
 func (v VendingMachine) Credit() int {
 	return v.credit
 }
 
+// Coin inserts a coin into the vending machine. On success the credit of the machine will be increased by the coin.
 func (v *VendingMachine) Coin(credit int) error {
 	switch credit {
-	case Coin25:
+	case coin25:
 		v.credit += credit
-	case Coin50:
+	case coin50:
 		v.credit += credit
 	default:
 		return ErrUnknownCoin
@@ -237,6 +242,7 @@ func (v *VendingMachine) Coin(credit int) error {
 	return nil
 }
 
+// Vend executes a vend of the machine if enough credit (100) has been put in and returns true.
 func (v *VendingMachine) Vend() bool {
 	if v.credit < 100 {
 		return false
@@ -248,11 +254,11 @@ func (v *VendingMachine) Vend() bool {
 }
 ```
 
-This implementation can be now used in the executor to define actions to the defined keys.
+This implementation can be now used in the executor to define actions for the defined keys.
 
 ```go
 var (
-	ErrInvalidParametersCount = errors.New("Invalid parmaters count")
+	errInvalidParametersCount = errors.New("Invalid parmaters count")
 )
 
 func init() {
@@ -260,7 +266,7 @@ func init() {
 
 	actions["credit"] = func(parameters []string) error {
 		if len(parameters) != 1 {
-			return ErrInvalidParametersCount
+			return errInvalidParametersCount
 		}
 
 		expected, err := strconv.Atoi(parameters[0])
@@ -279,7 +285,7 @@ func init() {
 
 	actions["coin"] = func(parameters []string) error {
 		if len(parameters) != 1 {
-			return ErrInvalidParametersCount
+			return errInvalidParametersCount
 		}
 
 		coin, err := strconv.Atoi(parameters[0])
@@ -297,7 +303,7 @@ func init() {
 
 	actions["vend"] = func(parameters []string) error {
 		if len(parameters) != 0 {
-			return ErrInvalidParametersCount
+			return errInvalidParametersCount
 		}
 
 		vend := machine.Vend()
@@ -379,4 +385,6 @@ do
 done
 ```
 
-Executing this script reveals no error meaning all tests passed.
+Executing this script reveals no errors meaning all tests passed. Since this is not very exciting we will integrate in the next section some bugs into the implementation.
+
+##
