@@ -15,7 +15,7 @@ The following components will be defined:
 - [Implementation](/examples/complete/implementation/vending.go)
 - [Bash script to run all key-driven files](/examples/complete/run.sh)
 
-## Tavor format
+## <a name="tavor-format"></a>Tavor format
 
 The following Tavor format, saved as [vending.tavor](/examples/complete/vending.tavor), defines a model of all possible valid states of the given state machine. Since this model should generate key-driven files, a set of keys and a key-driven format have to be defined.
 
@@ -111,7 +111,7 @@ tavor --format-file vending.tavor --max-repeat 2 fuzz --strategy AllPermutations
 
 This command results into exactly **31** files created in the folder `testset` and concludes our fuzzing related work using the Tavor format.
 
-## Executor
+## <a name="executor"></a>Executor
 
 The executor connects the key-driven test files with the implementation under test. It reads, parses and validates one key-driven file, executes sequentially each key with its arguments by invoking actions of the implementation and validates these actions. A test passes if each key executes without any problem. We will first define the groundwork of the executor since it is not yet defined how the implementation can be contacted.
 
@@ -320,7 +320,7 @@ As you can see, each action does exactly what the key suggests. `credit` checks 
 
 Since we have now defined all components for testing the given state machine we can proceed to execute the actual tests.
 
-## Test execution
+## <a name="test-execution"></a>Test execution
 
 Since all components have been defined and the test set has been generated we can execute single key-driven files via the executor.
 
@@ -387,11 +387,11 @@ done
 
 Executing this script reveals no errors meaning all tests passed. Since this is not very exciting we will integrate in the next section some bugs into the implementation.
 
-## Introducing bugs
+## <a name="bugs"></a>Introducing bugs
 
 The following subsections will introduce bugs into the implementation. Each bug will fail at least one test of our generated test set and will be studied isolated from other bugs. Meaning each section starts with a fresh original version of the implementation.
 
-### The `Coin` method does to increase the credit
+### <a name="bugs-coin"></a>The `Coin` method does to increase the credit
 
 This bug can be introduced easily with one of the following code replacements for the `Coin` method of our implementation:
 
@@ -437,7 +437,7 @@ Error: Credit should be 50 but was 0
 Error detected, will exit loop
 ```
 
-### The `Vend` method does to decrease the credit
+### <a name="bugs-vend"></a>The `Vend` method does to decrease the credit
 
 Similar to the previous example we can modify the code to leave the `credit` member variable untouched with one of the following replacements of the `Vend` replacements:
 
@@ -483,7 +483,7 @@ Error: Credit should be 0 but was 100
 Error detected, will exit loop
 ```
 
-### Every second 25 coin does not increase the credit
+### <a name="bugs-second-25-coin"></a>Every second 25 coin does not increase the credit
 
 The bug type "works the first time but not the second" is very common in most programs. Since our vending machine implementation is too easy we have to introduce an additional state member variable to trigger such a bug. The following code snippets has to replace the original implementation:
 
@@ -553,3 +553,98 @@ Error: Credit should be 100 but was 75
 ```
 
 This is an interesting test case since the first iteration of the vending loop is not relevant to the bug. It shows that actions which trigger a flaw most not be a minimal set of actions but they can be reduced to such a set. This is one of the major operations of Tavor which is called **delta-debugging** or **reducing** in general. The next main section will cover how Tavor can be used to reduce an input to its minimum.
+
+## <a name="delta-debugging"></a>Delta-debugging of inputs
+
+**Delta-debugging** or in general **reducing** is a method to reduce data to its minimum while still complying to defined constraints. In our example the data is a key-driven test file which fails and the constraint is that the reduced test case should still fail. Therefore the final result of the delta-debugging process should be a minimal test case which still triggers the same bug as the original test case. This can be automatically or semi-automatically done by the `reduce` command of the Tavor binary. The binary uses our Tavor format file to parse and validate the given key-driven file and tries to reduce its data according to rules defined by the format file. For instance optional content like repetitions can be reduced to a minimal repetition. In our example we can reduce the iterations of the vending loop.
+
+We will use bug and the key-driven test file `testset/fba58bb35d28010b61c8004fadcb88a3.test` which were introduced in [one of the subsections of "Introducing bugs"](#bugs-second-25-coin). The file has the following content.
+
+```
+credit	0
+coin	50
+credit	50
+coin	50
+credit	100
+vend
+credit	0
+coin	50
+credit	50
+coin	25
+credit	75
+coin	25
+credit	100
+vend
+credit	0
+```
+
+The introduced bug will be triggered in the second vending iteration. Every second 25 coin does not increase the machine's credit counter. This can be easily tested with our generated test set but the given file shows that there are key-driven files for this bug that could be reduced because of unnecessary loops.
+
+We will first use the semi-automatic method of the Tavor `reduce` command. The given format file will be used to reduce the given input. Every reduction step displays the question "Does the error still exist?" to the user. The user's task is to inspect the reduced output of the original data and decide by giving an answer if the problem does still exists (**yes**) or not (**no**). The following command starts this process.
+
+```bash
+tavor --format-file vending.tavor reduce --input-file testset/fba58bb35d28010b61c8004fadcb88a3.test
+```
+
+This should result in the following output and interaction.
+
+credit  0
+
+
+Does the error still exist? [yes|no]: no
+credit  0
+coin    50
+credit  50
+coin    50
+credit  100
+vend
+credit  0
+
+
+Does the error still exist? [yes|no]: no
+credit  0
+coin    50
+credit  50
+coin    25
+credit  75
+coin    25
+credit  100
+vend
+credit  0
+
+
+Does the error still exist? [yes|no]: yes
+credit  0
+coin    50
+credit  50
+coin    25
+credit  75
+coin    25
+credit  100
+vend
+credit  0
+```
+
+The last reduction output is the minimum which still triggers the same bug as the original. Additionally it is shown that the default reduce strategy of the Tavor `reduce` command outputs the smallest data first which is simply the `credit  0` command.
+
+This semi-automatic process can be tedious for big input data especially because of the manual validation. The Tavor binary does therefore provide several methods to reduce completely automatically. Since we already have a executor which tests key-driven files we can use it in this process. This is additionally aided by the executor which exits with different exit status codes on success or failure. We can therefore conclude that a reduced generation of our original failing key-driven file has to have the same exit status code as the original one. This can be automatically done by the following command. Which uses the executor to validate reduced data which is temporary written to a file. Each exit status code of the executor is compared to the original exit status code. If it is not equal the reduction process will try an alternative reduction step until a reduction path is found which leads to the minimum.
+
+```bash
+tavor --format-file vending.tavor reduce --input-file testset/fba58bb35d28010b61c8004fadcb88a3.test --exec "./executor TAVOR_DD_FILE" --exec-argument-type argument --exec-exact-exit-code
+```
+
+Which results into the following output.
+
+```
+credit  0
+coin    50
+credit  50
+coin    25
+credit  75
+coin    25
+credit  100
+vend
+credit  0
+```
+
+As you can see this is the minimum which still triggers the same bug as the original key-driven file.
