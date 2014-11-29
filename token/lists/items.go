@@ -201,7 +201,7 @@ func (l *UniqueItem) Clone() token.Token {
 	return n
 }
 
-/*
+/* TODO FIXME this
 // Fuzz fuzzes this token using the random generator by choosing one of the possible permutations for this token
 func (l *UniqueItem) Fuzz(r rand.Rand) {
 	if l.index == -1 {
