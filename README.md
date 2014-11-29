@@ -99,7 +99,7 @@ Additionally you can find functional Tavor format files and fuzzer applications 
   + [Reduce strategies](#extend-reduce-strategies)
   + [Tokens](#extend-tokens)
   + [Token attributes](#extend-token-attributes)
-  + [Special tokens](#extend-special-tokens)
+  + [Typed tokens](#extend-typed-tokens)
 - [How stable is Tavor?](#stability)
 - [Missing features](#missing-features)
 - [Can I make feature requests and report bugs and problems?](#feature-request)
@@ -1401,13 +1401,13 @@ Parsed: :-D
 
 ### <a name="extend-token-attributes"></a>Token attributes
 
-Every token type and interface can have its own token attributes. Currently it is not possible to define these attributes externally. Instead they must be implemented directly in the format parsers. For example the method `selectTokenAttribute` of the [Tavor format parser](/parser/tavor.go) has to be extended. Since token attributes embed a new token, which is for example executed by fuzzing and reduce operations, a suitable token type, which can be connected to the original token, must be used. The `Reset` token attribute of the `Sequence` special token uses for example a token of the [SequenceResetItem](https://godoc.org/github.com/zimmski/tavor/token/sequences#SequenceResetItem) type.
+Every token type and interface can have its own token attributes. Currently it is not possible to define these attributes externally. Instead they must be implemented directly in the format parsers. For example the method `selectTokenAttribute` of the [Tavor format parser](/parser/tavor.go) has to be extended. Since token attributes embed a new token, which is for example executed by fuzzing and reduce operations, a suitable token type, which can be connected to the original token, must be used. The `Reset` token attribute of the `Sequence` typed token uses for example a token of the [SequenceResetItem](https://godoc.org/github.com/zimmski/tavor/token/sequences#SequenceResetItem) type.
 
 The mentioned implementation inconveniences will be addressed in future versions of Tavor.
 
-### <a name="extend-special-tokens"></a>Special tokens
+### <a name="extend-typed-tokens"></a>Typed tokens
 
-Special tokens provide additional types for formats. Currently it is not possible to define special tokens and their arguments externally. Instead they must be implemented directly in the format parsers. For example the method `parseSpecialTokenDefinition` of the [Tavor format parser](/parser/tavor.go) has to be extended. To add token attributes to special tokens, please have a look at the  [token attributes section](#extend-token-attributes). It is only necessary to implement the [Token interface](https://godoc.org/github.com/zimmski/tavor/token#Token), since special tokens behave like regular tokens. Arguments for the special tokens have to be currently parsed and validated by hand. They are used as initialization values for the instanced token. It is therefore not possible to lookup argument values after the special token definition is processed.
+Typed tokens provide additional types for formats. Currently it is not possible to define typed tokens and their arguments externally. Instead they must be implemented directly in the format parsers. For example the method `parseTypedTokenDefinition` of the [Tavor format parser](/parser/tavor.go) has to be extended. To add token attributes to typed tokens, please have a look at the  [token attributes section](#extend-token-attributes). It is only necessary to implement the [Token interface](https://godoc.org/github.com/zimmski/tavor/token#Token), since typed tokens behave like regular tokens. Arguments for the typed tokens have to be currently parsed and validated by hand. They are used as initialization values for the instanced token. It is therefore not possible to lookup argument values after the typed token definition is processed.
 
 The mentioned implementation inconveniences will be addressed in future versions of Tavor.
 

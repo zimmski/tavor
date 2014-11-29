@@ -39,9 +39,9 @@ tavor --format-file file.tavor fuzz --strategy AllPermutations
 - [Token attributes](#attributes)
 	+ [General attributes](#attributes-general)
 	+ [Scope of attributes](#attributes-scope)
-- [Special tokens](#special-tokens)
-	+ [Type `Int`](#special-tokens-Int)
-	+ [Type `Sequence`](#special-tokens-Sequence)
+- [Typed tokens](#typed-tokens)
+	+ [Type `Int`](#typed-tokens-Int)
+	+ [Type `Sequence`](#typed-tokens-Sequence)
 - [Expressions](#expressions)
 	+ [Arithemtic operators](#expressions-arithmetic)
 	+ [Set operators (experimental)](#expressions-set)
@@ -470,11 +470,11 @@ Additional observations can be made:
 - An inner scope inherits from its parent scope (e.g. first `Inner.1.Print` uses `Outer.1.List`, second `Inner.1.Print` uses `Outer.2.List`)
 - Parent scopes are not overwritten by their child scopes (e.g. `Outer.3.Print` uses `Outer.1.List`, `Outer.5.Print` uses `Outer.2.List`)
 
-## <a name="special-tokens"></a>Special tokens
+## <a name="typed-tokens"></a>Typed tokens
 
-Special tokens are an addition to regular token definitions of the Tavor format. They provide specific functionality which can be utilized by embedding them like regular tokens or through their additional token attributes. Special tokens can be defined by prepending a dollar sign to their name. They do not have a format definition on their right-hand side. Instead, a type and optional arguments written as key-value pairs, which are separated by a colon, define the token.
+Typed tokens are an addition to regular token definitions of the Tavor format. They provide specific functionality which can be utilized by embedding them like regular tokens or through their additional token attributes. Typed tokens can be defined by prepending a dollar sign to their name. They do not have a format definition on their right-hand side. Instead, a type and optional arguments written as key-value pairs, which are separated by a colon, define the token.
 
-A simple example for a special token is the definition of an integer token.
+A simple example for a typed token is the definition of an integer token.
 
 ```tavor
 $Number Int
@@ -499,9 +499,9 @@ START = Addition
 
 Which generates for example `10 + 5 + 8 + 9`.
 
-The following sections describe the currently implemented special tokens.
+The following sections describe the currently implemented typed tokens.
 
-### <a name="special-tokens-Int"></a>Type `Int`
+### <a name="typed-tokens-Int"></a>Type `Int`
 
 The `Int` type implements a random integer.
 
@@ -518,7 +518,7 @@ The `Int` type implements a random integer.
 | :-------- | :------------------------------------- |
 | `Value`   | Embeds a new token based on its parent |
 
-### <a name="special-tokens-Sequence"></a>Type `Sequence`
+### <a name="typed-tokens-Sequence"></a>Type `Sequence`
 
 The `Sequence` type implements a generator for integers.
 

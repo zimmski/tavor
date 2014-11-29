@@ -277,8 +277,8 @@ const (
 	ParseErrorInvalidTokenType
 	// ParseErrorUnusedToken token is unused
 	ParseErrorUnusedToken
-	// ParseErrorMissingSpecialTokenArgument a special token argument is missing
-	ParseErrorMissingSpecialTokenArgument
+	// ParseErrorMissingTypedTokenArgument a typed token argument is missing
+	ParseErrorMissingTypedTokenArgument
 	// ParseErrorNonTerminatedString string is not properly terminated
 	ParseErrorNonTerminatedString
 	// ParseErrorNoTokenForVariable variable is not assigned to a token
@@ -287,8 +287,8 @@ const (
 	ParseErrorTokenAlreadyDefined
 	// ParseErrorTokenNotDefined there is no token with this name
 	ParseErrorTokenNotDefined
-	// ParseErrorTypeNotDefinedForSpecialToken type is not defined for this special token
-	ParseErrorTypeNotDefinedForSpecialToken
+	// ParseErrorTypeNotDefinedForTypedToken type is not defined for this typed token
+	ParseErrorTypeNotDefinedForTypedToken
 	// ParseErrorExpectRune the given rune would be expected
 	ParseErrorExpectRune
 	// ParseErrorExpectOperator the given operator would be expected
@@ -297,10 +297,10 @@ const (
 	ParseErrorUnknownBooleanOperator
 	// ParseErrorUnknownCondition the condition is unknown
 	ParseErrorUnknownCondition
-	// ParseErrorUnknownSpecialTokenArgument the special token argument is unknown
-	ParseErrorUnknownSpecialTokenArgument
-	// ParseErrorUnknownSpecialTokenType the special token type is unknown
-	ParseErrorUnknownSpecialTokenType
+	// ParseErrorUnknownTypedTokenArgument the typed token argument is unknown
+	ParseErrorUnknownTypedTokenArgument
+	// ParseErrorUnknownTypedTokenType the typed token type is unknown
+	ParseErrorUnknownTypedTokenType
 	// ParseErrorUnknownTokenAttribute the token attribute is unknown
 	ParseErrorUnknownTokenAttribute
 	// ParseErrorUnexpectedTokenDefinitionTermination token definition was unexpectedly terminated

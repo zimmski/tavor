@@ -94,7 +94,7 @@ func (p *tavorParser) parseGlobalScope(variableScope map[string]token.Token) err
 
 			continue
 		case '$':
-			c, err = p.parseSpecialTokenDefinition()
+			c, err = p.parseTypedTokenDefinition()
 			if err != nil {
 				return err
 			}
@@ -1262,14 +1262,14 @@ func (p *tavorParser) parseTokenDefinition(variableScope map[string]token.Token)
 	return c, nil
 }
 
-func (p *tavorParser) parseSpecialTokenDefinition() (rune, error) {
+func (p *tavorParser) parseTypedTokenDefinition() (rune, error) {
 	var c rune
 	var err error
 
-	log.Debug("START special token")
+	log.Debug("START typed token")
 
 	c = p.scan.Scan()
-	log.Debugf("parseSpecialTokenDefinition after $ %d:%v -> %v", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
+	log.Debugf("parseTypedTokenDefinition after $ %d:%v -> %v", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
 
 	name := p.scan.TokenText()
 	if _, ok := p.lookup[name]; ok {
@@ -1285,8 +1285,8 @@ func (p *tavorParser) parseSpecialTokenDefinition() (rune, error) {
 	c, err = p.expectScanRune(scanner.Ident)
 	if err != nil {
 		return zeroRune, &token.ParserError{
-			Message:  "special token has no type",
-			Type:     token.ParseErrorTypeNotDefinedForSpecialToken,
+			Message:  "typed token has no type",
+			Type:     token.ParseErrorTypeNotDefinedForTypedToken,
 			Position: p.scan.Pos(),
 		}
 	}
@@ -1316,7 +1316,7 @@ func (p *tavorParser) parseSpecialTokenDefinition() (rune, error) {
 			}
 
 			c = p.scan.Scan()
-			log.Debugf("parseSpecialTokenDefinition argument value %d:%v -> %v", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
+			log.Debugf("parseTypedTokenDefinition argument value %d:%v -> %v", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
 
 			switch c {
 			case scanner.Ident, scanner.String, scanner.Int:
@@ -1330,7 +1330,7 @@ func (p *tavorParser) parseSpecialTokenDefinition() (rune, error) {
 			}
 
 			c = p.scan.Scan()
-			log.Debugf("parseSpecialTokenDefinition after argument value %d:%v -> %v", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
+			log.Debugf("parseTypedTokenDefinition after argument value %d:%v -> %v", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
 
 			if c != ',' {
 				break
@@ -1438,8 +1438,8 @@ func (p *tavorParser) parseSpecialTokenDefinition() (rune, error) {
 		tok = sequences.NewSequence(start, step)
 	default:
 		return zeroRune, &token.ParserError{
-			Message:  fmt.Sprintf("unknown special token type %q", typ),
-			Type:     token.ParseErrorUnknownSpecialTokenType,
+			Message:  fmt.Sprintf("unknown typed token type %q", typ),
+			Type:     token.ParseErrorUnknownTypedTokenType,
 			Position: p.scan.Pos(),
 		}
 	}
@@ -1447,8 +1447,8 @@ func (p *tavorParser) parseSpecialTokenDefinition() (rune, error) {
 	for arg := range arguments {
 		if _, ok := usedArguments[arg]; !ok {
 			return zeroRune, &token.ParserError{
-				Message:  fmt.Sprintf("unknown special token argument %q", arg),
-				Type:     token.ParseErrorUnknownSpecialTokenArgument,
+				Message:  fmt.Sprintf("unknown typed token argument %q", arg),
+				Type:     token.ParseErrorUnknownTypedTokenArgument,
 				Position: p.scan.Pos(),
 			}
 		}
@@ -1462,9 +1462,9 @@ func (p *tavorParser) parseSpecialTokenDefinition() (rune, error) {
 	log.Debugf("added (%p)%#v as token %s", tok, tok, name)
 
 	c = p.scan.Scan()
-	log.Debugf("parseSpecialTokenDefinition after newline %d:%v -> %v", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
+	log.Debugf("parseTypedTokenDefinition after newline %d:%v -> %v", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
 
-	log.Debug("END special token")
+	log.Debug("END typed token")
 
 	return c, nil
 }
