@@ -496,8 +496,13 @@ func main() {
 					execCommand.Env = []string{fmt.Sprintf("TAVOR_FUZZ_FILE=%s", tmp.Name())}
 				}
 
-				execCommand.Stderr = io.MultiWriter(&cmdStderr, os.Stderr)
-				execCommand.Stdout = io.MultiWriter(&cmdStdout, os.Stdout)
+				if opts.General.Verbose || opts.General.Debug {
+					execCommand.Stderr = io.MultiWriter(&cmdStderr, os.Stderr)
+					execCommand.Stdout = io.MultiWriter(&cmdStdout, os.Stdout)
+				} else {
+					execCommand.Stderr = &cmdStderr
+					execCommand.Stdout = &cmdStdout
+				}
 
 				stdin, err := execCommand.StdinPipe()
 				if err != nil {
@@ -852,8 +857,13 @@ func main() {
 					execCommand.Env = []string{fmt.Sprintf("TAVOR_DD_FILE=%s", tmp.Name())}
 				}
 
-				execCommand.Stderr = io.MultiWriter(&execStderr, os.Stderr)
-				execCommand.Stdout = io.MultiWriter(&execStdout, os.Stdout)
+				if opts.General.Verbose || opts.General.Debug {
+					execCommand.Stderr = io.MultiWriter(&execStderr, os.Stderr)
+					execCommand.Stdout = io.MultiWriter(&execStdout, os.Stdout)
+				} else {
+					execCommand.Stderr = &execStderr
+					execCommand.Stdout = &execStdout
+				}
 
 				stdin, err := execCommand.StdinPipe()
 				if err != nil {
@@ -939,8 +949,13 @@ func main() {
 						execCommand.Env = []string{fmt.Sprintf("TAVOR_DD_FILE=%s", tmp.Name())}
 					}
 
-					execCommand.Stderr = io.MultiWriter(&cmdStderr, os.Stderr)
-					execCommand.Stdout = io.MultiWriter(&cmdStdout, os.Stdout)
+					if opts.General.Verbose || opts.General.Debug {
+						execCommand.Stderr = io.MultiWriter(&cmdStderr, os.Stderr)
+						execCommand.Stdout = io.MultiWriter(&cmdStdout, os.Stdout)
+					} else {
+						execCommand.Stderr = &cmdStderr
+						execCommand.Stdout = &cmdStdout
+					}
 
 					stdin, err := execCommand.StdinPipe()
 					if err != nil {
