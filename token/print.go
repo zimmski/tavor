@@ -19,7 +19,7 @@ func prettyPrintTreeRek(w io.Writer, tok Token, level int) {
 		if v := t.Get(); v != nil {
 			prettyPrintTreeRek(w, v, level+1)
 		}
-	case List:
+	case ListToken:
 		for i := 0; i < t.Len(); i++ {
 			c, _ := t.Get(i)
 
@@ -41,7 +41,7 @@ func prettyPrintInternalTreeRek(w io.Writer, tok Token, level int) {
 		if v := t.InternalGet(); v != nil {
 			prettyPrintInternalTreeRek(w, v, level+1)
 		}
-	case List:
+	case ListToken:
 		for i := 0; i < t.InternalLen(); i++ {
 			c, _ := t.InternalGet(i)
 

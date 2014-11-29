@@ -27,7 +27,7 @@ func ResetResetTokens(root Token) {
 			if v := tok.Get(); v != nil {
 				queue.Push(v)
 			}
-		case List:
+		case ListToken:
 			for i := 0; i < tok.Len(); i++ {
 				c, _ := tok.Get(i)
 				queue.Push(c)
@@ -78,7 +78,7 @@ func SetScope(root Token, scope map[string]Token) {
 					scope: nScope,
 				})
 			}
-		case List:
+		case ListToken:
 			for i := 0; i < t.Len(); i++ {
 				c, _ := t.Get(i)
 
@@ -111,7 +111,7 @@ func SetInternalScope(root Token, scope map[string]Token) {
 			if v := t.InternalGet(); v != nil {
 				queue.Push(v)
 			}
-		case List:
+		case ListToken:
 			for i := 0; i < t.InternalLen(); i++ {
 				c, _ := t.InternalGet(i)
 

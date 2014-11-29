@@ -24,7 +24,7 @@ func TestPointerList(t *testing.T) {
 		Nil(t, err)
 		Equal(t, a, o.Get())
 
-		var list *token.List
+		var list *token.ListToken
 		o = primitives.NewEmptyPointer(list)
 
 		err = o.Set(a)

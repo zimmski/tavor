@@ -44,7 +44,7 @@ func (s *BinarySearchStrategy) getTree(root token.Token, fromChildren bool) []bi
 		switch t := root.(type) {
 		case token.ForwardToken:
 			queue.Push(t.Get())
-		case token.List:
+		case token.ListToken:
 			l := t.Len()
 
 			for i := 0; i < l; i++ {
@@ -78,7 +78,7 @@ func (s *BinarySearchStrategy) getTree(root token.Token, fromChildren bool) []bi
 			c := t.Get()
 
 			queue.Push(c)
-		case token.List:
+		case token.ListToken:
 			l := t.Len()
 
 			for i := 0; i < l; i++ {

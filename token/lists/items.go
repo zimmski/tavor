@@ -10,11 +10,11 @@ import (
 // ListItem implements a list item token which references a List token and holds one index of the list to reference a list item
 type ListItem struct {
 	index int
-	list  token.List
+	list  token.ListToken
 }
 
 // NewListItem returns a new instance of a ListItem token referencing the given list and the given index
-func NewListItem(index int, list token.List) *ListItem {
+func NewListItem(index int, list token.ListToken) *ListItem {
 	return &ListItem{
 		index: index,
 		list:  list,
@@ -166,14 +166,14 @@ func (l *IndexItem) SetScope(variableScope map[string]token.Token) {
 // UniqueItem implements a list item token which holds an distinct list item of a referenced List token
 type UniqueItem struct {
 	original *UniqueItem
-	list     token.List
+	list     token.ListToken
 	picked   map[int]struct{}
 
 	index int
 }
 
 // NewUniqueItem returns a new instance of a UniqueItem token referencing the given List token
-func NewUniqueItem(list token.List) *UniqueItem {
+func NewUniqueItem(list token.ListToken) *UniqueItem {
 	l := &UniqueItem{
 		list:   list,
 		picked: make(map[int]struct{}),

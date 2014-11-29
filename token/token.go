@@ -33,8 +33,6 @@ type Token interface {
 
 // List defines a general list token
 type List interface {
-	Token
-
 	// Get returns the current referenced token at the given index. The error return argument is not nil, if the index is out of bound.
 	Get(i int) (Token, error)
 	// Len returns the number of the current referenced tokens
@@ -48,6 +46,12 @@ type List interface {
 	InternalLogicalRemove(tok Token) Token
 	// InternalReplace replaces an old with a new internal token if it is referenced by this token
 	InternalReplace(oldToken, newToken Token)
+}
+
+// ListToken combines the Token and List interface
+type ListToken interface {
+	Token
+	List
 }
 
 // Forward defines a forward token which can reference another token

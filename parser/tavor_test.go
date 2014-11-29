@@ -724,9 +724,9 @@ func TestTavorParserAndCuriousCaseOfFuzzing(t *testing.T) {
 			lists.NewOne(primitives.NewConstantInt(1), primitives.NewConstantInt(2)),
 		))
 
-		va, _ := tok.(token.List).Get(0)
+		va, _ := tok.(token.ListToken).Get(0)
 		a := va.(*lists.One)
-		vb, _ := tok.(token.List).Get(1)
+		vb, _ := tok.(token.ListToken).Get(1)
 		b := vb.(*lists.One)
 
 		True(t, Exactly(t, a, b))

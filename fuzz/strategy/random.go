@@ -74,7 +74,7 @@ func (s *RandomStrategy) fuzz(tok token.Token, r rand.Rand) {
 		if v := t.Get(); v != nil {
 			s.fuzz(v, r)
 		}
-	case token.List:
+	case token.ListToken:
 		l := t.Len()
 
 		for i := 0; i < l; i++ {
@@ -138,7 +138,7 @@ func (s *RandomStrategy) fuzzYADDA(root token.Token, r rand.Rand) {
 					scope: nScope,
 				})
 			}
-		case token.List:
+		case token.ListToken:
 			for i := 0; i < t.Len(); i++ {
 				c, _ := t.Get(i)
 
@@ -178,7 +178,7 @@ func (s *RandomStrategy) fuzzYADDA(root token.Token, r rand.Rand) {
 			if v := t.Get(); v != nil {
 				queue.Push(v)
 			}
-		case token.List:
+		case token.ListToken:
 			for i := 0; i < t.Len(); i++ {
 				c, _ := t.Get(i)
 

@@ -28,7 +28,7 @@ func Walk(root Token, walkFunc func(tok Token) error) error {
 					queue.Push(v)
 				}
 			}
-		case List:
+		case ListToken:
 			for i := 0; i < t.Len(); i++ {
 				c, _ := t.Get(i)
 

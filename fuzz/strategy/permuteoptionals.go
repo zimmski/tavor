@@ -39,7 +39,7 @@ func (s *PermuteOptionalsStrategy) findOptionals(r rand.Rand, root token.Token, 
 		switch t := root.(type) {
 		case token.ForwardToken:
 			queue.Push(t.Get())
-		case token.List:
+		case token.ListToken:
 			l := t.Len()
 
 			for i := 0; i < l; i++ {
@@ -79,7 +79,7 @@ func (s *PermuteOptionalsStrategy) findOptionals(r rand.Rand, root token.Token, 
 
 				queue.Push(c)
 			}
-		case token.List:
+		case token.ListToken:
 			l := t.Len()
 
 			for i := 0; i < l; i++ {

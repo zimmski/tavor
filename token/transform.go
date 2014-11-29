@@ -27,7 +27,7 @@ func MinimizeTokens(root Token) Token {
 				switch pTok := p.(type) {
 				case ForwardToken:
 					pTok.InternalReplace(tok, r)
-				case List:
+				case ListToken:
 					pTok.InternalReplace(tok, r)
 				}
 
@@ -44,7 +44,7 @@ func MinimizeTokens(root Token) Token {
 				queue.Push(v)
 				parents[v] = tok
 			}
-		case List:
+		case ListToken:
 			for i := 0; i < tok.InternalLen(); i++ {
 				c, _ := tok.InternalGet(i)
 
@@ -175,7 +175,7 @@ func UnrollPointers(root Token) Token {
 					switch tt := iTok.parent.tok.(type) {
 					case ForwardToken:
 						tt.InternalReplace(t, c)
-					case List:
+					case ListToken:
 						tt.InternalReplace(t, c)
 					}
 				} else {
@@ -209,7 +209,7 @@ func UnrollPointers(root Token) Token {
 						switch tt := parent.(type) {
 						case ForwardToken:
 							tt.InternalReplace(this, that)
-						case List:
+						case ListToken:
 							tt.InternalReplace(this, that)
 						}
 					} else {
@@ -240,7 +240,7 @@ func UnrollPointers(root Token) Token {
 
 						ta = l
 						tt = tt.parent
-					case List:
+					case ListToken:
 						log.Debugf("remove (%p)%#v from (%p)%#v", ta, ta, l, l)
 
 						c := l.InternalLogicalRemove(ta)
@@ -268,7 +268,7 @@ func UnrollPointers(root Token) Token {
 
 				parents[v] = iTok.tok
 			}
-		case List:
+		case ListToken:
 			for i := 0; i < t.InternalLen(); i++ {
 				c, _ := t.InternalGet(i)
 
@@ -296,7 +296,7 @@ func UnrollPointers(root Token) Token {
 		switch tt := parent.(type) {
 		case ForwardToken:
 			tt.InternalReplace(child, child)
-		case List:
+		case ListToken:
 			tt.InternalReplace(child, child)
 		}
 	}

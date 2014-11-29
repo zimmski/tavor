@@ -35,7 +35,7 @@ func LoopExists(root Token) bool {
 			if v := tok.InternalGet(); v != nil {
 				queue.Push(v)
 			}
-		case List:
+		case ListToken:
 			for i := 0; i < tok.InternalLen(); i++ {
 				c, _ := tok.InternalGet(i)
 

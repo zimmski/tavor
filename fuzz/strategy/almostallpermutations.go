@@ -49,7 +49,7 @@ func (s *AlmostAllPermutationsStrategy) getLevel(root token.Token, fromChildren 
 			if v := t.Get(); v != nil {
 				queue.Push(v)
 			}
-		case token.List:
+		case token.ListToken:
 			l := t.Len()
 
 			for i := 0; i < l; i++ {

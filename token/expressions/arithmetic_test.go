@@ -12,7 +12,7 @@ import (
 )
 
 func TestArithmeticExpressionTokensToBeTokens(t *testing.T) {
-	var tok *token.List
+	var tok *token.ListToken
 
 	Implements(t, tok, &AddArithmetic{})
 	Implements(t, tok, &SubArithmetic{})

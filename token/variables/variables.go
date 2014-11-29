@@ -28,7 +28,7 @@ func (v *Variable) Name() string {
 
 // Len returns the number of the current referenced tokens
 func (v *Variable) Len() int {
-	if l, ok := v.token.(token.List); ok {
+	if l, ok := v.token.(token.ListToken); ok {
 		return l.Len()
 	}
 
