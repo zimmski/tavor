@@ -1,14 +1,14 @@
 # A complete example
 
-This example provides a complete overview of Tavor. It does not utilize every feature but every component which should give you an idea on how Tavor can be used in your own projects. The example tests an implementation of the following state machine.
+This example provides a complete overview of Tavor. It does not utilize every single feature but every component which should give you an idea on how Tavor can be used in your own projects. The example tests an implementation of the following state machine.
 
 ![Basic states and actions](/examples/quick/basic.png "Basic states and actions")
 
 It uses the *Tavor format* to define this state machine and the *Tavor binary* to generate key-driven test files. An *executor* translates keys of a file into actions for the implementation under test. After successfully testing the original implementation, some bugs will be introduced to show the failure of some tests as well as automatically delta-debugging the failed key-driven test files.
 
-**Please note:** The implementation of this example has intentional concurrency and other problems. Future versions of Tavor will help to identify, test and resolve such flaws. As Tavor evolves this example will evolve. This also concerns the given state machine and Tavor format. Both could be defined much more efficient with the help of state variables which are common in model-based testing tools but not yet implemented in the Tavor format. However, state variables can be easily implemented via code.
+**Please note:** The implementation of this example has intentional concurrency and other problems. Future versions of Tavor will help to identify, test and resolve such flaws. As Tavor evolves this example will also evolve. This also concerns the given state machine and Tavor format. Both could be defined much more efficiently with the help of state variables which are common in model-based testing tools but not yet implemented in the Tavor format. However, state variables can be easily implemented via code.
 
-The following components will be defined:
+The following components will be defined and described in the following sections:
 
 - [Tavor format](/examples/complete/vending.tavor)
 - [Executor](/examples/complete/executor.go)
@@ -567,7 +567,7 @@ This is an interesting test case since the first iteration of the vending loop i
 
 **Delta-debugging** or in general **reducing** is a method to reduce data to its minimum while still complying to defined constraints. In our example the data is a key-driven test file which fails and the constraint is that the reduced test case should still fail. Therefore the final result of the delta-debugging process should be a minimal test case which still triggers the same bug as the original test case. This can be automatically or semi-automatically done by the `reduce` command of the Tavor binary. The binary uses our Tavor format file to parse and validate the given key-driven file and tries to reduce its data according to rules defined by the format file. For instance optional content like repetitions can be reduced to a minimal repetition. In our example we can reduce the iterations of the vending loop.
 
-We will use bug and the key-driven test file `testset/fba58bb35d28010b61c8004fadcb88a3.test` which were introduced in [one of the subsections of "Introducing bugs"](#bugs-second-25-coin). The file has the following content.
+We will use the bug and the key-driven test file `testset/fba58bb35d28010b61c8004fadcb88a3.test` which were introduced in [one of the subsections of "Introducing bugs"](#bugs-second-25-coin). The file has the following content.
 
 ```
 credit	0
@@ -589,18 +589,18 @@ credit	0
 
 The introduced bug will be triggered in the second vending iteration. Every second 25 coin does not increase the machine's credit counter. This can be easily tested with our generated test set but the given file shows that there are key-driven files for this bug that could be reduced because of unnecessary loops.
 
-We will first use the semi-automatic method of the Tavor `reduce` command. The given format file will be used to reduce the given input. Every reduction step displays the question "Does the error still exist?" to the user. The user's task is to inspect the reduced output of the original data and decide by giving an answer if the problem does still exists (**yes**) or not (**no**). The following command starts this process.
+We will first use the semi-automatic method of the Tavor `reduce` command. The given format file will be used to reduce the given input. Every reduction step displays the question "Do the constraints of the original input still hold for this generation?" to the user. The user's task is to inspect and validate the reduced output of the original data and decide by giving feedback if the bug is triggered (**yes**) or not (**no**). The following command starts this process.
 
 ```bash
 tavor --format-file vending.tavor reduce --input-file testset/fba58bb35d28010b61c8004fadcb88a3.test
 ```
 
-This should result in the following output and interaction.
+This should result in the following output and feedbacks.
 
 credit  0
 
 
-Does the error still exist? [yes|no]: no
+Do the constraints of the original input still hold for this generation? [yes|no]: no
 credit  0
 coin    50
 credit  50
@@ -610,7 +610,7 @@ vend
 credit  0
 
 
-Does the error still exist? [yes|no]: no
+Do the constraints of the original input still hold for this generation? [yes|no]: no
 credit  0
 coin    50
 credit  50
@@ -622,7 +622,7 @@ vend
 credit  0
 
 
-Does the error still exist? [yes|no]: yes
+Do the constraints of the original input still hold for this generation? [yes|no]: yes
 credit  0
 coin    50
 credit  50
@@ -634,9 +634,9 @@ vend
 credit  0
 ```
 
-The last reduction output is the minimum which still triggers the same bug as the original. Additionally it is shown that the default reduce strategy of the Tavor `reduce` command outputs the smallest data first which is simply the `credit  0` command.
+The last reduction output is the minimum which still triggers the same bug as the original test ccase. Additionally it is shown that the default reduce strategy of the Tavor `reduce` command tries to output the smallest generation first which is simply the `credit  0` command.
 
-This semi-automatic process can be tedious for big input data especially because of the manual validation. The Tavor binary does therefore provide several methods to reduce completely automatically. Since we already have a executor which tests key-driven files we can use it in this process. This is additionally aided by the executor which exits with different exit status codes on success or failure. We can therefore conclude that a reduced generation of our original failing key-driven file has to have the same exit status code as the original one. This can be automatically done by the following command. Which uses the executor to validate reduced data which is temporary written to a file. Each exit status code of the executor is compared to the original exit status code. If it is not equal the reduction process will try an alternative reduction step until a reduction path is found which leads to the minimum.
+This semi-automatic process can be tedious for big data especially because of the manual validation. The Tavor binary does therefore provide several methods to reduce completely automatically. Since we already have a executor which tests key-driven files we can use it in this process. This is additionally aided by the executor which exits with different exit status codes on success or failure. We can therefore conclude that a reduced generation of our original failing key-driven file has to have the same exit status code as the original one. This can be automatically done by the following command. Which uses the executor to validate reduced data which is temporary written to a file. Each exit status code of the executor is compared to the original exit status code. If it is not equal, the reduction process will try an alternative reduction step until a reduction path is found which leads to the minimum.
 
 ```bash
 tavor --format-file vending.tavor reduce --input-file testset/fba58bb35d28010b61c8004fadcb88a3.test --exec "./executor TAVOR_DD_FILE" --exec-argument-type argument --exec-exact-exit-code
@@ -685,7 +685,7 @@ do
 done
 ```
 
-This script will run the executor with every key-driven test file of the `testset` and stop at the first failed file. The failed file will be then reduced to its minimum which will be saved next to the original file with the extension `.reduced`.
+This script will run the executor with every key-driven test file of the `testset` folder and stop at the first failed file. The failed file will be then reduced to its minimum which will be saved next to the original file with the extension `.reduced`.
 
 Executing this script with the introduced bug will for example result in the following output.
 

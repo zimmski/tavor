@@ -1198,7 +1198,7 @@ func main() {
 					fmt.Print(opts.Reduce.ResultSeparator)
 
 					for {
-						fmt.Printf("\nDoes the error still exist? [yes|no]: ")
+						fmt.Printf("\nDo the constraints of the original input still hold for this generation? [yes|no]: ")
 
 						line, _, err := readCLI.ReadLine()
 						if err != nil {
