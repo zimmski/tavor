@@ -1282,48 +1282,63 @@ func (p *tavorParser) parseSpecialTokenDefinition() (rune, error) {
 
 	tokenPosition := p.scan.Position
 
-	if c, err = p.expectScanRune('='); err != nil {
-		return zeroRune, err
+	c, err = p.expectScanRune(scanner.Ident)
+	if err != nil {
+		return zeroRune, &token.ParserError{
+			Message:  "special token has no type",
+			Type:     token.ParseErrorTypeNotDefinedForSpecialToken,
+			Position: p.scan.Pos(),
+		}
 	}
+
+	typ := p.scan.TokenText()
 
 	arguments := make(map[string]string)
 
-	for {
-		c, err = p.expectScanRune(scanner.Ident)
-		if err != nil {
+	c = p.scan.Scan()
+
+	if c == '=' {
+		if c, err = p.expectRune('=', c); err != nil {
 			return zeroRune, err
 		}
 
-		arg := p.scan.TokenText()
-
-		_, err = p.expectScanRune(':')
-		if err != nil {
-			return zeroRune, err
-		}
-
-		c = p.scan.Scan()
-		log.Debugf("parseSpecialTokenDefinition argument value %d:%v -> %v", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
-
-		switch c {
-		case scanner.Ident, scanner.String, scanner.Int:
-			arguments[arg] = p.scan.TokenText()
-		default:
-			return zeroRune, &token.ParserError{
-				Message:  fmt.Sprintf("invalid argument value %v", c),
-				Type:     token.ParseErrorInvalidArgumentValue,
-				Position: p.scan.Pos(),
+		for {
+			c, err = p.expectScanRune(scanner.Ident)
+			if err != nil {
+				return zeroRune, err
 			}
-		}
 
-		c = p.scan.Scan()
-		log.Debugf("parseSpecialTokenDefinition after argument value %d:%v -> %v", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
+			arg := p.scan.TokenText()
 
-		if c != ',' {
-			break
-		}
+			_, err = p.expectScanRune(':')
+			if err != nil {
+				return zeroRune, err
+			}
 
-		if c, err = p.expectScanRune('\n'); err != nil {
-			return zeroRune, err
+			c = p.scan.Scan()
+			log.Debugf("parseSpecialTokenDefinition argument value %d:%v -> %v", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
+
+			switch c {
+			case scanner.Ident, scanner.String, scanner.Int:
+				arguments[arg] = p.scan.TokenText()
+			default:
+				return zeroRune, &token.ParserError{
+					Message:  fmt.Sprintf("invalid argument value %v", c),
+					Type:     token.ParseErrorInvalidArgumentValue,
+					Position: p.scan.Pos(),
+				}
+			}
+
+			c = p.scan.Scan()
+			log.Debugf("parseSpecialTokenDefinition after argument value %d:%v -> %v", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
+
+			if c != ',' {
+				break
+			}
+
+			if c, err = p.expectScanRune('\n'); err != nil {
+				return zeroRune, err
+			}
 		}
 	}
 
@@ -1340,19 +1355,8 @@ func (p *tavorParser) parseSpecialTokenDefinition() (rune, error) {
 		return zeroRune, err
 	}
 
-	typ, ok := arguments["type"]
-	if !ok {
-		return zeroRune, &token.ParserError{
-			Message:  "special token has no type argument",
-			Type:     token.ParseErrorTypeNotDefinedForSpecialToken,
-			Position: p.scan.Pos(),
-		}
-	}
-
 	var tok token.Token
-	usedArguments := map[string]struct{}{
-		"type": struct{}{},
-	}
+	usedArguments := make(map[string]struct{})
 
 	switch typ {
 	case "Int":

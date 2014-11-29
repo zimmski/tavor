@@ -359,8 +359,7 @@ func TestAllPermutationsStrategy(t *testing.T) {
 		validateTavorAllPermutations(
 			t,
 			`
-				$Id = type: Sequence,
-					start: 2,
+				$Id Sequence = start: 2,
 					step: 2
 
 				ExistingLiteral = 1,
@@ -389,8 +388,7 @@ func TestAllPermutationsStrategy(t *testing.T) {
 		validateTavorAllPermutations(
 			t,
 			`
-				$Id = type: Sequence,
-					start: 2,
+				$Id Sequence = start: 2,
 					step: 2
 
 				Inputs = *(Input)
@@ -410,8 +408,7 @@ func TestAllPermutationsStrategy(t *testing.T) {
 		validateTavorAllPermutations(
 			t,
 			`
-				$Id = type: Sequence,
-					start: 2,
+				$Id Sequence = start: 2,
 					step: 2
 
 				A = $Id.Next

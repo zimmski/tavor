@@ -109,70 +109,70 @@ func TestTavorParseErrors(t *testing.T) {
 	Equal(t, token.ParseErrorTokenAlreadyDefined, err.(*token.ParserError).Type)
 	Nil(t, tok)
 
-	// expect = in special token
+	// no type for special token
+	tok, err = ParseTavor(strings.NewReader("$START = To: 123\n"))
+	Equal(t, token.ParseErrorTypeNotDefinedForSpecialToken, err.(*token.ParserError).Type)
+	Nil(t, tok)
+
+	// expect identifier as type for special token
 	tok, err = ParseTavor(strings.NewReader("$START 123\n"))
-	Equal(t, token.ParseErrorExpectRune, err.(*token.ParserError).Type)
+	Equal(t, token.ParseErrorTypeNotDefinedForSpecialToken, err.(*token.ParserError).Type)
 	Nil(t, tok)
 
 	// expect identifier in special token
-	tok, err = ParseTavor(strings.NewReader("$START = 123\n"))
+	tok, err = ParseTavor(strings.NewReader("$START Int = 123\n"))
 	Equal(t, token.ParseErrorExpectRune, err.(*token.ParserError).Type)
 	Nil(t, tok)
 
 	// expect : in special token
-	tok, err = ParseTavor(strings.NewReader("$START = argument\n"))
+	tok, err = ParseTavor(strings.NewReader("$START Int = argument\n"))
 	Equal(t, token.ParseErrorExpectRune, err.(*token.ParserError).Type)
 	Nil(t, tok)
 
 	// expect valid argument value in special token
-	tok, err = ParseTavor(strings.NewReader("$START = argument:\n"))
+	tok, err = ParseTavor(strings.NewReader("$START Int = argument:\n"))
 	Equal(t, token.ParseErrorInvalidArgumentValue, err.(*token.ParserError).Type)
 	Nil(t, tok)
 
 	// expect no eof after argument value in special token
-	tok, err = ParseTavor(strings.NewReader("$START = argument:value"))
+	tok, err = ParseTavor(strings.NewReader("$START Int = argument:value"))
 	Equal(t, token.ParseErrorNewLineNeeded, err.(*token.ParserError).Type)
 	Nil(t, tok)
 
 	// expect new line in special token
-	tok, err = ParseTavor(strings.NewReader("$START = argument:value$"))
+	tok, err = ParseTavor(strings.NewReader("$START Int = argument:value$"))
 	Equal(t, token.ParseErrorExpectRune, err.(*token.ParserError).Type)
 	Nil(t, tok)
 
-	// undefined type argument special token
-	tok, err = ParseTavor(strings.NewReader("$START = hey: ok\n"))
-	Equal(t, token.ParseErrorTypeNotDefinedForSpecialToken, err.(*token.ParserError).Type)
-	Nil(t, tok)
-
 	// unknown type argument special token
-	tok, err = ParseTavor(strings.NewReader("$START = type: ok\n"))
+	tok, err = ParseTavor(strings.NewReader("$START Unknown\n"))
 	Equal(t, token.ParseErrorUnknownSpecialTokenType, err.(*token.ParserError).Type)
 	Nil(t, tok)
 
 	// unknown special token argument
-	tok, err = ParseTavor(strings.NewReader("$START = type: Int,\nok: value\n"))
+	tok, err = ParseTavor(strings.NewReader("$START Int = ok: value\n"))
 	Equal(t, token.ParseErrorUnknownSpecialTokenArgument, err.(*token.ParserError).Type)
 	Nil(t, tok)
 
 	// invalid arguments for special token Int
-	tok, err = ParseTavor(strings.NewReader("$START = type: Int,\nfrom:abc,\nto:123\n"))
+	tok, err = ParseTavor(strings.NewReader("$START Int = from:abc,\nto:123\n"))
 	Equal(t, token.ParseErrorInvalidArgumentValue, err.(*token.ParserError).Type)
 	Nil(t, tok)
 
-	tok, err = ParseTavor(strings.NewReader("$START = type: Int,\nfrom:123,\nto:abc\n"))
+	tok, err = ParseTavor(strings.NewReader("$START Int = from:123,\nto:abc\n"))
 	Equal(t, token.ParseErrorInvalidArgumentValue, err.(*token.ParserError).Type)
 	Nil(t, tok)
 
-	tok, err = ParseTavor(strings.NewReader("$START = type: Int,\nfrom:123,\nto:456,\nstep:abc\n"))
+	tok, err = ParseTavor(strings.NewReader("$START Int = from:123,\nto:456,\nstep:abc\n"))
 	Equal(t, token.ParseErrorInvalidArgumentValue, err.(*token.ParserError).Type)
 	Nil(t, tok)
 
 	// invalid arguments for special token Sequence
-	tok, err = ParseTavor(strings.NewReader("$START = type: Sequence,\nstart:abc\n"))
+	tok, err = ParseTavor(strings.NewReader("$START Sequence = start:abc\n"))
 	Equal(t, token.ParseErrorInvalidArgumentValue, err.(*token.ParserError).Type)
 	Nil(t, tok)
 
-	tok, err = ParseTavor(strings.NewReader("$START = type: Sequence,\nstep:abc\n"))
+	tok, err = ParseTavor(strings.NewReader("$START Sequence = step:abc\n"))
 	Equal(t, token.ParseErrorInvalidArgumentValue, err.(*token.ParserError).Type)
 	Nil(t, tok)
 
@@ -182,12 +182,12 @@ func TestTavorParseErrors(t *testing.T) {
 	Nil(t, tok)
 
 	// open expression
-	tok, err = ParseTavor(strings.NewReader("$Spec = type: Sequence\nSTART = ${Spec.Next\n"))
+	tok, err = ParseTavor(strings.NewReader("$Spec Sequence\nSTART = ${Spec.Next\n"))
 	Equal(t, token.ParseErrorExpectRune, err.(*token.ParserError).Type)
 	Nil(t, tok)
 
 	// missing operator expression term
-	tok, err = ParseTavor(strings.NewReader("$Spec = type: Sequence\nSTART = ${Spec.Next +}\n"))
+	tok, err = ParseTavor(strings.NewReader("$Spec Sequence\nSTART = ${Spec.Next +}\n"))
 	Equal(t, token.ParseErrorExpectedExpressionTerm, err.(*token.ParserError).Type)
 	Nil(t, tok)
 
@@ -550,62 +550,62 @@ func TestTavorParserSpecialTokens(t *testing.T) {
 
 	// RangeInt
 	tok, err = ParseTavor(strings.NewReader(
-		"$Spec = type: Int\nSTART = Spec\n",
+		"$Spec Int\nSTART = Spec\n",
 	))
 	Nil(t, err)
 	Equal(t, tok, primitives.NewRangeInt(0, math.MaxInt32))
 
 	tok, err = ParseTavor(strings.NewReader(
-		"$Spec = type: Int,\nfrom: 2,\nto: 10\nSTART = Spec\n",
+		"$Spec Int = from: 2,\nto: 10\nSTART = Spec\n",
 	))
 	Nil(t, err)
 	Equal(t, tok, primitives.NewRangeInt(2, 10))
 
 	tok, err = ParseTavor(strings.NewReader(
-		"$Spec = type: Int,\nfrom: 2,\nto: 10,\nstep: 2\nSTART = Spec\n",
+		"$Spec Int = from: 2,\nto: 10,\nstep: 2\nSTART = Spec\n",
 	))
 	Nil(t, err)
 	Equal(t, tok, primitives.NewRangeIntWithStep(2, 10, 2))
 
 	tok, err = ParseTavor(strings.NewReader(
-		"$Spec = type: Int,\nto: 10,\nstep: 2\nSTART = Spec\n",
+		"$Spec Int = to: 10,\nstep: 2\nSTART = Spec\n",
 	))
 	Nil(t, err)
 	Equal(t, tok, primitives.NewRangeIntWithStep(0, 10, 2))
 
 	tok, err = ParseTavor(strings.NewReader(
-		"$Spec = type: Int,\nfrom: 2,\nstep: 2\nSTART = Spec\n",
+		"$Spec Int = from: 2,\nstep: 2\nSTART = Spec\n",
 	))
 	Nil(t, err)
 	Equal(t, tok, primitives.NewRangeIntWithStep(2, math.MaxInt32, 2))
 
 	// Sequence
 	tok, err = ParseTavor(strings.NewReader(
-		"$Spec = type: Sequence\nSTART = $Spec.Next\n",
+		"$Spec Sequence\nSTART = $Spec.Next\n",
 	))
 	Nil(t, err)
 	Equal(t, tok, sequences.NewSequence(1, 1).Item())
 
 	tok, err = ParseTavor(strings.NewReader(
-		"$Spec = type: Sequence,\nstart: 2\nSTART = $Spec.Next\n",
+		"$Spec Sequence = start: 2\nSTART = $Spec.Next\n",
 	))
 	Nil(t, err)
 	Equal(t, tok, sequences.NewSequence(2, 1).Item())
 
 	tok, err = ParseTavor(strings.NewReader(
-		"$Spec = type: Sequence,\nstep: 3\nSTART = $Spec.Next\n",
+		"$Spec Sequence = step: 3\nSTART = $Spec.Next\n",
 	))
 	Nil(t, err)
 	Equal(t, tok, sequences.NewSequence(1, 3).Item())
 
 	tok, err = ParseTavor(strings.NewReader(
-		"$Spec = type: Sequence\nSTART = $Spec.Existing\n",
+		"$Spec Sequence\nSTART = $Spec.Existing\n",
 	))
 	Nil(t, err)
 	Equal(t, tok, sequences.NewSequence(1, 1).ExistingItem(nil))
 
 	tok, err = ParseTavor(strings.NewReader(
-		"$Spec = type: Sequence\nSTART = $Spec.Reset\n",
+		"$Spec Sequence\nSTART = $Spec.Reset\n",
 	))
 	Nil(t, err)
 	Equal(t, tok, sequences.NewSequence(1, 1).ResetItem())
@@ -617,7 +617,7 @@ func TestTavorParserExpressions(t *testing.T) {
 
 	// simple expression
 	tok, err = ParseTavor(strings.NewReader(
-		"$Spec = type: Sequence\nSTART = ${Spec.Next}\n",
+		"$Spec Sequence\nSTART = ${Spec.Next}\n",
 	))
 	Nil(t, err)
 	Equal(t, tok, sequences.NewSequence(1, 1).Item())
@@ -677,7 +677,7 @@ func TestTavorParserExpressions(t *testing.T) {
 
 	// mixed operator
 	tok, err = ParseTavor(strings.NewReader(
-		"$Spec = type: Sequence\nSTART = ${Spec.Next + 1}\n",
+		"$Spec Sequence\nSTART = ${Spec.Next + 1}\n",
 	))
 	Nil(t, err)
 	Equal(t, tok, expressions.NewAddArithmetic(
@@ -708,7 +708,7 @@ func TestTavorParserAndCuriousCaseOfFuzzing(t *testing.T) {
 
 	// Token attribute forward usage
 	tok, err = ParseTavor(strings.NewReader(
-		"START = $int.Value\n$int = type: Int\n",
+		"START = $int.Value\n$int Int\n",
 	))
 	Nil(t, err)
 	Equal(t, tok, primitives.NewRangeInt(0, math.MaxInt32))
@@ -736,8 +736,7 @@ func TestTavorParserAndCuriousCaseOfFuzzing(t *testing.T) {
 	// Correct sequence behaviour
 	{
 		tok, err = ParseTavor(strings.NewReader(`
-			$Id = type: Sequence,
-				start: 2,
+			$Id Sequence = start: 2,
 				step: 2
 
 			START = $Id.Reset $Id.Next $Id.Existing
@@ -1267,7 +1266,7 @@ func TestTavorParserVariables(t *testing.T) {
 	// not in with variables
 	{
 		tok, err := ParseTavor(strings.NewReader(`
-			$Literal = type: Sequence
+			$Literal Sequence
 
 			And = $Literal.Next<x> " " ${Literal.Existing not in (x)} " " ${Literal.Existing not in (x)} "\n"
 

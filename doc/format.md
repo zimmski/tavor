@@ -472,26 +472,25 @@ Additional observations can be made:
 
 ## <a name="special-tokens"></a>Special tokens
 
-Special tokens are an addition to regular token definitions of the Tavor format. They provide specific functionality which can be utilized by embedding them like regular tokens or through their additional token attributes. Special tokens can be defined by prepending a dollar sign to their name. They do not have a format definition on their right-hand side. Instead, arguments written as key-value pairs, which are separated by a colon, define the token. Since special tokens are typed, the `type` argument must be defined.
+Special tokens are an addition to regular token definitions of the Tavor format. They provide specific functionality which can be utilized by embedding them like regular tokens or through their additional token attributes. Special tokens can be defined by prepending a dollar sign to their name. They do not have a format definition on their right-hand side. Instead, a type and optional arguments written as key-value pairs, which are separated by a colon, define the token.
 
 A simple example for a special token is the definition of an integer token.
 
 ```tavor
-$Number = type: Int
+$Number Int
 
 Addition = Number " + " (Number | Addition)
 
 START = Addition
 ```
 
-This format definition generates additions with random integers as numbers like for example `47245 + 6160 + 6137`.
+This format definition generates additions with random integers as numbers like for example `47245 + 6160 + 6137`. Note that since arguments are optional, the right hand side is optional too.
 
 Using arguments of the `Int` type the number can be bounded in its range.
 
 ```tavor
-$Number = type: Int,
-          from: 1,
-          to:   10
+$Number Int = from: 1,
+              to:   10
 
 Addition = Number " + " (Number | Addition)
 
@@ -543,9 +542,8 @@ The `Sequence` type implements a generator for integers.
 The following example defines a sequence called `Id` which generates integers starting from 0 incremented by 2. It will therefore generate the sequence 0, 2, 4, 6 and so on. The example starts of by generating the first three values of the sequence using the token attribute `Next`. Afterwards the sequence is reseted using the token attribute `Reset` and then again three values are generated. Since the sequence got reseted before that the same values as in the beginning are generated. Ending the definition are three usages of the `Existing` token attribute which chooses at random one value out of all currently in use values of the sequence. Meaning it is possible that `Existing` chooses the same number more than once.
 
 ```tavor
-$Id = type:  Sequence,
-      start: 0,
-      step:  2
+$Id Sequence = start: 0,
+               step:  2
 
 START = +3("First Next: " $Id.Next "\n"),
         $Id.Reset,
@@ -580,7 +578,7 @@ START = ${1 + 2}
 Every operand of an operator can currently either be a number or a token attribute. The usual dollar sign for a token attribute can be omitted.
 
 ```tavor
-$Number = type: Int
+$Number Int
 
 START = ${Number.Value + 1}
 ```
@@ -614,7 +612,7 @@ START = ${9 + 8 + 7} "\n",
 Set operators are currently experimental since only a specific case has been implemented. The `not in` operator queries the `Existing` token attribute of a sequence to not include the given argument. The argument is between parenthesis for backwards-compatible reasons, since future versions of this feature will be able to use more than one argument.
 
 ```tavor
-$Id = type: Sequence
+$Id Sequence
 
 Pair = $Id.Next<id> " " ${Id.Existing not in (id)} "\n"
 
@@ -659,7 +657,7 @@ Variables have the following token attributes:
 Tokens which are saved to a variables are by default relayed to the generation. This means that their usage generates data as usual. Since this is sometimes unwanted, the just-save operator can be used to omit the relay. This is accomplished by adding the equal sign `=` after the `<` character.
 
 ```tavor
-$Number = type: Int
+$Number Int
 
 START = Number<=a> Number<=b>,
         a " + " b " = " ${a.Value + b.Value} "\n",

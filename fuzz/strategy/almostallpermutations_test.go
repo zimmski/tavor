@@ -358,8 +358,7 @@ func TestAlmostAllPermutationsStrategy(t *testing.T) {
 		// correct sequence and multi-OR token behaviour
 
 		o, err := parser.ParseTavor(strings.NewReader(`
-			$Id = type: Sequence,
-				start: 2,
+			$Id Sequence = start: 2,
 				step: 2
 
 			ExistingLiteral = 1,
@@ -400,8 +399,7 @@ func TestAlmostAllPermutationsStrategy(t *testing.T) {
 		// Correct list pointer behaviour
 
 		o, err := parser.ParseTavor(strings.NewReader(`
-			$Id = type: Sequence,
-				start: 2,
+			$Id Sequence = start: 2,
 				step: 2
 
 			Inputs = *(Input)
@@ -433,8 +431,7 @@ func TestAlmostAllPermutationsStrategy(t *testing.T) {
 		// Correct sequence deep or behaviour
 
 		o, err := parser.ParseTavor(strings.NewReader(`
-			$Id = type: Sequence,
-				start: 2,
+			$Id Sequence = start: 2,
 				step: 2
 
 			A = $Id.Next
