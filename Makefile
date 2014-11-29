@@ -21,10 +21,10 @@ fmt:
 	gofmt -l -w $(ROOT_DIR)/
 install: clean
 	go install -v ./...
-lint: install
-	go tool vet -all=true -v=true $(ROOT_DIR)/
-	golint $(ROOT_DIR)/...
+lint: install fmt
 	errcheck github.com/zimmski/tavor/...
+	golint $(ROOT_DIR)/...
+	go tool vet -all=true -v=true $(ROOT_DIR)/ 2>&1 | grep --invert-match -P "(Checking file|\%p of wrong type|can't check non-constant format)" || true
 markdown:
 	orange
 test:
