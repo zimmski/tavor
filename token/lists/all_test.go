@@ -5,7 +5,6 @@ import (
 
 	. "github.com/zimmski/tavor/test/assert"
 
-	"github.com/zimmski/tavor/test"
 	"github.com/zimmski/tavor/token"
 	"github.com/zimmski/tavor/token/primitives"
 )
@@ -39,11 +38,6 @@ func TestAll(t *testing.T) {
 	Equal(t, err.(*ListError).Type, ListErrorOutOfBound)
 	Nil(t, i)
 
-	r := test.NewRandTest(0)
-	o.FuzzAll(r)
-	Equal(t, "10abc", o.String())
-	Equal(t, 2, o.Len())
-
 	c := primitives.NewRangeInt(1, 2)
 	o = NewAll(a, b, c)
 	Equal(t, "10abc1", o.String())
@@ -54,8 +48,7 @@ func TestAll(t *testing.T) {
 	Nil(t, o.Permutation(1))
 	Equal(t, "10abc1", o.String())
 
-	r.Seed(1)
-	o.FuzzAll(r)
+	Nil(t, c.Permutation(2))
 	Equal(t, "10abc2", o.String())
 	Equal(t, 3, o.Len())
 

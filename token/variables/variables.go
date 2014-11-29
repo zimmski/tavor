@@ -2,7 +2,6 @@ package variables
 
 import (
 	"github.com/zimmski/tavor/log"
-	"github.com/zimmski/tavor/rand"
 	"github.com/zimmski/tavor/token"
 	"github.com/zimmski/tavor/token/primitives"
 )
@@ -43,18 +42,6 @@ func (v *Variable) Clone() token.Token {
 		name:  v.name,
 		token: v.token.Clone(),
 	}
-}
-
-// Fuzz fuzzes this token using the random generator by choosing one of the possible permutations for this token
-func (v *Variable) Fuzz(r rand.Rand) {
-	// do nothing
-}
-
-// FuzzAll calls Fuzz for this token and then FuzzAll for all children of this token
-func (v *Variable) FuzzAll(r rand.Rand) {
-	v.Fuzz(r)
-
-	v.token.Fuzz(r)
 }
 
 // Parse tries to parse the token beginning from the current position in the parser data.
@@ -187,16 +174,6 @@ func (v *VariableValue) Clone() token.Token {
 	return &VariableValue{
 		variable: v.variable,
 	}
-}
-
-// Fuzz fuzzes this token using the random generator by choosing one of the possible permutations for this token
-func (v *VariableValue) Fuzz(r rand.Rand) {
-	// do nothing
-}
-
-// FuzzAll calls Fuzz for this token and then FuzzAll for all children of this token
-func (v *VariableValue) FuzzAll(r rand.Rand) {
-	v.Fuzz(r)
 }
 
 // Parse tries to parse the token beginning from the current position in the parser data.

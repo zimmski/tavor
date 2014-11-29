@@ -8,7 +8,6 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"github.com/zimmski/tavor/rand"
 	"github.com/zimmski/tavor/token"
 )
 
@@ -273,18 +272,6 @@ func (c *CharacterClass) Clone() token.Token {
 
 		value: c.value,
 	}
-}
-
-// Fuzz fuzzes this token using the random generator by choosing one of the possible permutations for this token
-func (c *CharacterClass) Fuzz(r rand.Rand) {
-	i := uint(r.Intn(int(c.permutations)))
-
-	c.permutation(i)
-}
-
-// FuzzAll calls Fuzz for this token and then FuzzAll for all children of this token
-func (c *CharacterClass) FuzzAll(r rand.Rand) {
-	c.Fuzz(r)
 }
 
 // Parse tries to parse the token beginning from the current position in the parser data.

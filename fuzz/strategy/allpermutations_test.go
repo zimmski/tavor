@@ -39,35 +39,30 @@ func TestAllPermutationsStrategygetLevel(t *testing.T) {
 
 		Equal(t, tree, []allPermutationsLevel{
 			allPermutationsLevel{
-				token:           d,
-				permutation:     1,
-				maxPermutations: 1,
+				token:       d,
+				permutation: 1,
 
 				children: []allPermutationsLevel{
 					allPermutationsLevel{
-						token:           a,
-						permutation:     1,
-						maxPermutations: 1,
+						token:       a,
+						permutation: 1,
 
 						children: nilChildren,
 					},
 					allPermutationsLevel{
-						token:           b,
-						permutation:     1,
-						maxPermutations: 2,
+						token:       b,
+						permutation: 1,
 
 						children: nilChildren,
 					},
 					allPermutationsLevel{
-						token:           c,
-						permutation:     1,
-						maxPermutations: 1,
+						token:       c,
+						permutation: 1,
 
 						children: []allPermutationsLevel{
 							allPermutationsLevel{
-								token:           c1,
-								permutation:     1,
-								maxPermutations: 1,
+								token:       c1,
+								permutation: 1,
 
 								children: nilChildren,
 							},
@@ -81,29 +76,25 @@ func TestAllPermutationsStrategygetLevel(t *testing.T) {
 
 		Equal(t, tree, []allPermutationsLevel{
 			allPermutationsLevel{
-				token:           a,
-				permutation:     1,
-				maxPermutations: 1,
+				token:       a,
+				permutation: 1,
 
 				children: nilChildren,
 			},
 			allPermutationsLevel{
-				token:           b,
-				permutation:     1,
-				maxPermutations: 2,
+				token:       b,
+				permutation: 1,
 
 				children: nilChildren,
 			},
 			allPermutationsLevel{
-				token:           c,
-				permutation:     1,
-				maxPermutations: 1,
+				token:       c,
+				permutation: 1,
 
 				children: []allPermutationsLevel{
 					allPermutationsLevel{
-						token:           c1,
-						permutation:     1,
-						maxPermutations: 1,
+						token:       c1,
+						permutation: 1,
 
 						children: nilChildren,
 					},

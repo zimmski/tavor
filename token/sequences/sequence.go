@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/zimmski/tavor/rand"
 	"github.com/zimmski/tavor/token"
 	"github.com/zimmski/tavor/token/lists"
 )
@@ -26,7 +25,7 @@ func NewSequence(start, step int) *Sequence {
 	}
 }
 
-func (s *Sequence) existing(r rand.Rand, except []token.Token) int {
+func (s *Sequence) existing(r uint, except []token.Token) int {
 	n := s.value - s.start
 
 	if n == 0 {
@@ -36,7 +35,7 @@ func (s *Sequence) existing(r rand.Rand, except []token.Token) int {
 	n /= s.step
 
 	if len(except) == 0 {
-		return r.Intn(n)*s.step + s.start
+		return int(r)*s.step + s.start
 	}
 
 	checked := make(map[int]struct{})
@@ -52,7 +51,7 @@ func (s *Sequence) existing(r rand.Rand, except []token.Token) int {
 	}
 
 	for n != len(checked) {
-		i := r.Intn(n)*s.step + s.start
+		i := int(r)*s.step + s.start
 
 		if _, ok := checked[i]; ok {
 			continue
@@ -119,12 +118,6 @@ func (s *Sequence) ResetItem() *SequenceResetItem {
 // Clone returns a copy of the token and all its children
 func (s *Sequence) Clone() token.Token { panic("unusable token") }
 
-// Fuzz fuzzes this token using the random generator by choosing one of the possible permutations for this token
-func (s *Sequence) Fuzz(r rand.Rand) { panic("unusable token") }
-
-// FuzzAll calls Fuzz for this token and then FuzzAll for all children of this token
-func (s *Sequence) FuzzAll(r rand.Rand) { panic("unusable token") }
-
 // Parse tries to parse the token beginning from the current position in the parser data.
 // If the parsing is successful the error argument is nil and the next current position after the token is returned.
 func (s *Sequence) Parse(pars *token.InternalParser, cur int) (int, []error) {
@@ -157,16 +150,6 @@ func (s *SequenceItem) Clone() token.Token {
 	}
 }
 
-// Fuzz fuzzes this token using the random generator by choosing one of the possible permutations for this token
-func (s *SequenceItem) Fuzz(r rand.Rand) {
-	s.permutation(0)
-}
-
-// FuzzAll calls Fuzz for this token and then FuzzAll for all children of this token
-func (s *SequenceItem) FuzzAll(r rand.Rand) {
-	s.Fuzz(r)
-}
-
 // Parse tries to parse the token beginning from the current position in the parser data.
 // If the parsing is successful the error argument is nil and the next current position after the token is returned.
 func (s *SequenceItem) Parse(pars *token.InternalParser, cur int) (int, []error) {
@@ -187,7 +170,7 @@ func (s *SequenceItem) Permutation(i uint) error {
 		}
 	}
 
-	s.permutation(i - 1)
+	// s.permutation(i - 1)
 
 	return nil
 }
@@ -236,29 +219,24 @@ func (s *SequenceExistingItem) Clone() token.Token {
 	return &c
 }
 
-// Fuzz fuzzes this token using the random generator by choosing one of the possible permutations for this token
-func (s *SequenceExistingItem) Fuzz(r rand.Rand) {
-	s.permutation(r)
-}
-
-// FuzzAll calls Fuzz for this token and then FuzzAll for all children of this token
-func (s *SequenceExistingItem) FuzzAll(r rand.Rand) {
-	s.Fuzz(r)
-}
-
 // Parse tries to parse the token beginning from the current position in the parser data.
 // If the parsing is successful the error argument is nil and the next current position after the token is returned.
 func (s *SequenceExistingItem) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	panic("TODO implement")
 }
 
-func (s *SequenceExistingItem) permutation(r rand.Rand) {
-	s.value = s.sequence.existing(r, s.except)
+func (s *SequenceExistingItem) permutation(i uint) {
+	s.value = s.sequence.existing(i, s.except)
 }
 
 // Permutation sets a specific permutation for this token
 func (s *SequenceExistingItem) Permutation(i uint) error {
 	permutations := s.Permutations()
+
+	if permutations == 0 {
+		// TODO FIXME ignore this for now
+		return nil
+	}
 
 	if i < 1 || i > permutations {
 		return &token.PermutationError{
@@ -266,14 +244,14 @@ func (s *SequenceExistingItem) Permutation(i uint) error {
 		}
 	}
 
-	s.permutation(rand.NewIncrementRand(0))
+	s.permutation(i - 1)
 
 	return nil
 }
 
 // Permutations returns the number of permutations for this token
 func (s *SequenceExistingItem) Permutations() uint {
-	return 1
+	return uint((s.sequence.value - s.sequence.start) / s.sequence.step)
 }
 
 // PermutationsAll returns the number of all possible permutations for this token including its children
@@ -345,7 +323,7 @@ func (s *SequenceExistingItem) InternalReplace(oldToken, newToken token.Token) {
 
 // Reset resets the (internal) state of this token and its dependences
 func (s *SequenceExistingItem) Reset() {
-	s.permutation(rand.NewIncrementRand(0))
+	s.permutation(0)
 }
 
 // ScopeToken interface methods
@@ -371,16 +349,6 @@ func (s *SequenceResetItem) Clone() token.Token {
 	return &SequenceResetItem{
 		sequence: s.sequence,
 	}
-}
-
-// Fuzz fuzzes this token using the random generator by choosing one of the possible permutations for this token
-func (s *SequenceResetItem) Fuzz(r rand.Rand) {
-	s.permutation(0)
-}
-
-// FuzzAll calls Fuzz for this token and then FuzzAll for all children of this token
-func (s *SequenceResetItem) FuzzAll(r rand.Rand) {
-	s.Fuzz(r)
 }
 
 // Parse tries to parse the token beginning from the current position in the parser data.

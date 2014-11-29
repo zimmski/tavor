@@ -3,7 +3,6 @@ package lists
 import (
 	"strconv"
 
-	"github.com/zimmski/tavor/rand"
 	"github.com/zimmski/tavor/token"
 )
 
@@ -29,16 +28,6 @@ func (l *ListItem) Clone() token.Token {
 		index: l.index,
 		list:  l.list,
 	}
-}
-
-// Fuzz fuzzes this token using the random generator by choosing one of the possible permutations for this token
-func (l *ListItem) Fuzz(r rand.Rand) {
-	// do nothing
-}
-
-// FuzzAll calls Fuzz for this token and then FuzzAll for all children of this token
-func (l *ListItem) FuzzAll(r rand.Rand) {
-	l.Fuzz(r)
 }
 
 // Parse tries to parse the token beginning from the current position in the parser data.
@@ -109,16 +98,6 @@ func (l *IndexItem) Clone() token.Token {
 	}
 }
 
-// Fuzz fuzzes this token using the random generator by choosing one of the possible permutations for this token
-func (l *IndexItem) Fuzz(r rand.Rand) {
-	// do nothing
-}
-
-// FuzzAll calls Fuzz for this token and then FuzzAll for all children of this token
-func (l *IndexItem) FuzzAll(r rand.Rand) {
-	l.Fuzz(r)
-}
-
 // Parse tries to parse the token beginning from the current position in the parser data.
 // If the parsing is successful the error argument is nil and the next current position after the token is returned.
 func (l *IndexItem) Parse(pars *token.InternalParser, cur int) (int, []error) {
@@ -186,7 +165,7 @@ func NewUniqueItem(list token.ListToken) *UniqueItem {
 	return l
 }
 
-func (l *UniqueItem) pick(r rand.Rand) {
+func (l *UniqueItem) pick(i int) {
 	nList := l.original.list.Len()
 	nPicked := len(l.original.picked)
 
@@ -196,7 +175,7 @@ func (l *UniqueItem) pick(r rand.Rand) {
 
 	// TODO make this WAYYYYYYYYY more effiecent
 	for {
-		c := r.Intn(nList)
+		c := i
 
 		if _, ok := l.original.picked[c]; !ok {
 			l.index = c
@@ -222,17 +201,14 @@ func (l *UniqueItem) Clone() token.Token {
 	return n
 }
 
+/*
 // Fuzz fuzzes this token using the random generator by choosing one of the possible permutations for this token
 func (l *UniqueItem) Fuzz(r rand.Rand) {
 	if l.index == -1 {
 		l.pick(r)
 	}
 }
-
-// FuzzAll calls Fuzz for this token and then FuzzAll for all children of this token
-func (l *UniqueItem) FuzzAll(r rand.Rand) {
-	l.Fuzz(r)
-}
+*/
 
 // Parse tries to parse the token beginning from the current position in the parser data.
 // If the parsing is successful the error argument is nil and the next current position after the token is returned.
@@ -281,7 +257,7 @@ func (l *UniqueItem) String() string {
 // Index returns the index of this token in its parent token
 func (l *UniqueItem) Index() int {
 	if l.index == -1 {
-		l.pick(rand.NewIncrementRand(0))
+		l.pick(0)
 	}
 
 	return l.index

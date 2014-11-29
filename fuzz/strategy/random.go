@@ -67,7 +67,10 @@ func (s *RandomStrategy) Fuzz(r rand.Rand) (chan struct{}, error) {
 }
 
 func (s *RandomStrategy) fuzz(tok token.Token, r rand.Rand) {
-	tok.Fuzz(r)
+	err := tok.Permutation(uint(r.Intn(int(tok.Permutations())) + 1))
+	if err != nil {
+		log.Panic(err)
+	}
 
 	switch t := tok.(type) {
 	case token.ForwardToken:
@@ -170,7 +173,10 @@ func (s *RandomStrategy) fuzzYADDA(root token.Token, r rand.Rand) {
 		case *sequences.SequenceExistingItem, *lists.UniqueItem, *primitives.CharacterClass:
 			log.Debugf("Fuzz again %p(%#v)", tok, tok)
 
-			tok.Fuzz(r)
+			err := tok.Permutation(uint(r.Intn(int(tok.Permutations())) + 1))
+			if err != nil {
+				log.Panic(err)
+			}
 		}
 
 		switch t := tok.(type) {

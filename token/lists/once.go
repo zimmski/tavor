@@ -2,9 +2,7 @@ package lists
 
 import (
 	"bytes"
-	"math"
 
-	"github.com/zimmski/tavor/rand"
 	"github.com/zimmski/tavor/token"
 )
 
@@ -49,24 +47,6 @@ func (l *Once) Clone() token.Token {
 	}
 
 	return &c
-}
-
-// Fuzz fuzzes this token using the random generator by choosing one of the possible permutations for this token
-func (l *Once) Fuzz(r rand.Rand) {
-	ii := int64(l.Permutations())
-	if ii < 0 { // TODO FIXME
-		ii = math.MaxInt64
-	}
-	l.permutation(uint(r.Int63n(ii)))
-}
-
-// FuzzAll calls Fuzz for this token and then FuzzAll for all children of this token
-func (l *Once) FuzzAll(r rand.Rand) {
-	l.Fuzz(r)
-
-	for i := range l.values {
-		l.tokens[l.values[i]].FuzzAll(r)
-	}
 }
 
 // Parse tries to parse the token beginning from the current position in the parser data.

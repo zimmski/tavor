@@ -5,7 +5,6 @@ import (
 
 	. "github.com/zimmski/tavor/test/assert"
 
-	"github.com/zimmski/tavor/test"
 	"github.com/zimmski/tavor/token"
 )
 
@@ -16,19 +15,40 @@ func TestFuncExpressionTokensToBeTokens(t *testing.T) {
 }
 
 func TestFuncExpression(t *testing.T) {
-	s := "abc"
+	o := NewFuncExpression(
+		false,
+		func(state interface{}, i uint) interface{} {
+			return i == 1
+		},
+		func(state interface{}) uint {
+			return 2
+		},
+		func(state interface{}) uint {
+			return 2
+		},
+		func(state interface{}) string {
+			i, ok := state.(bool)
+			if !ok {
+				panic("unknown type")
+			}
 
-	o := NewFuncExpression(func() string {
-		return s
-	})
-	Equal(t, "abc", o.String())
+			if i {
+				return "abc"
+			}
 
-	r := test.NewRandTest(0)
-	o.FuzzAll(r)
+			return ""
+		},
+	)
+	Equal(t, 2, o.Permutations())
+	Equal(t, 2, o.PermutationsAll())
+	Equal(t, "", o.String())
+
+	Nil(t, o.Permutation(1))
+	Equal(t, "", o.String())
+
+	Nil(t, o.Permutation(2))
 	Equal(t, "abc", o.String())
 
 	o2 := o.Clone()
 	Equal(t, o.String(), o2.String())
-
-	Equal(t, 1, o.Permutations())
 }

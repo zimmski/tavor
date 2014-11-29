@@ -5,7 +5,6 @@ import (
 
 	. "github.com/zimmski/tavor/test/assert"
 
-	"github.com/zimmski/tavor/test"
 	"github.com/zimmski/tavor/token"
 	"github.com/zimmski/tavor/token/lists"
 	"github.com/zimmski/tavor/token/primitives"
@@ -26,6 +25,8 @@ func TestAddArithmetic(t *testing.T) {
 
 	o := NewAddArithmetic(a, b)
 	Equal(t, "3", o.String())
+	Equal(t, 1, o.Permutations())
+	Equal(t, 10, o.PermutationsAll())
 
 	i, err := o.Get(0)
 	Nil(t, err)
@@ -37,15 +38,11 @@ func TestAddArithmetic(t *testing.T) {
 	Equal(t, err.(*lists.ListError).Type, lists.ListErrorOutOfBound)
 	Nil(t, i)
 
-	r := test.NewRandTest(2)
-	o.FuzzAll(r)
+	Nil(t, a.Permutation(3))
 	Equal(t, "5", o.String())
 
 	o2 := o.Clone()
 	Equal(t, o.String(), o2.String())
-
-	Equal(t, 1, o.Permutations())
-	Equal(t, 10, o.PermutationsAll())
 }
 
 func TestSubArithmetic(t *testing.T) {
@@ -54,6 +51,8 @@ func TestSubArithmetic(t *testing.T) {
 
 	o := NewSubArithmetic(a, b)
 	Equal(t, "-1", o.String())
+	Equal(t, 1, o.Permutations())
+	Equal(t, 10, o.PermutationsAll())
 
 	i, err := o.Get(0)
 	Nil(t, err)
@@ -65,15 +64,11 @@ func TestSubArithmetic(t *testing.T) {
 	Equal(t, err.(*lists.ListError).Type, lists.ListErrorOutOfBound)
 	Nil(t, i)
 
-	r := test.NewRandTest(2)
-	o.FuzzAll(r)
+	Nil(t, a.Permutation(3))
 	Equal(t, "1", o.String())
 
 	o2 := o.Clone()
 	Equal(t, o.String(), o2.String())
-
-	Equal(t, 1, o.Permutations())
-	Equal(t, 10, o.PermutationsAll())
 }
 
 func TestMulArithmetic(t *testing.T) {
@@ -82,6 +77,8 @@ func TestMulArithmetic(t *testing.T) {
 
 	o := NewMulArithmetic(a, b)
 	Equal(t, "2", o.String())
+	Equal(t, 1, o.Permutations())
+	Equal(t, 10, o.PermutationsAll())
 
 	i, err := o.Get(0)
 	Nil(t, err)
@@ -93,15 +90,11 @@ func TestMulArithmetic(t *testing.T) {
 	Equal(t, err.(*lists.ListError).Type, lists.ListErrorOutOfBound)
 	Nil(t, i)
 
-	r := test.NewRandTest(2)
-	o.FuzzAll(r)
+	Nil(t, a.Permutation(3))
 	Equal(t, "6", o.String())
 
 	o2 := o.Clone()
 	Equal(t, o.String(), o2.String())
-
-	Equal(t, 1, o.Permutations())
-	Equal(t, 10, o.PermutationsAll())
 }
 
 func TestDivArithmetic(t *testing.T) {
@@ -110,6 +103,8 @@ func TestDivArithmetic(t *testing.T) {
 
 	o := NewDivArithmetic(a, b)
 	Equal(t, "3", o.String())
+	Equal(t, 1, o.Permutations())
+	Equal(t, 5, o.PermutationsAll())
 
 	i, err := o.Get(0)
 	Nil(t, err)
@@ -121,13 +116,9 @@ func TestDivArithmetic(t *testing.T) {
 	Equal(t, err.(*lists.ListError).Type, lists.ListErrorOutOfBound)
 	Nil(t, i)
 
-	r := test.NewRandTest(2)
-	o.FuzzAll(r)
+	Nil(t, a.Permutation(3))
 	Equal(t, "4", o.String())
 
 	o2 := o.Clone()
 	Equal(t, o.String(), o2.String())
-
-	Equal(t, 1, o.Permutations())
-	Equal(t, 5, o.PermutationsAll())
 }

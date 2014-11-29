@@ -5,7 +5,6 @@ import (
 
 	. "github.com/zimmski/tavor/test/assert"
 
-	"github.com/zimmski/tavor/test"
 	"github.com/zimmski/tavor/token"
 	"github.com/zimmski/tavor/token/primitives"
 )
@@ -26,20 +25,6 @@ func TestOptional(t *testing.T) {
 	o := NewOptional(a)
 	Equal(t, "1", o.String())
 	True(t, Exactly(t, a, o.Get()))
-
-	r := test.NewRandTest(0)
-	o.FuzzAll(r)
-	Equal(t, "", o.String())
-
-	o.FuzzAll(r)
-	Equal(t, "1", o.String())
-
-	o.Fuzz(r)
-	Equal(t, "", o.String())
-
-	o2 := o.Clone()
-	Equal(t, o.String(), o2.String())
-
 	Equal(t, 2, o.Permutations())
 	Equal(t, 2, o.PermutationsAll())
 
@@ -49,6 +34,9 @@ func TestOptional(t *testing.T) {
 	Equal(t, "1", o.String())
 
 	Equal(t, o.Permutation(3).(*token.PermutationError).Type, token.PermutationErrorIndexOutOfBound)
+
+	o2 := o.Clone()
+	Equal(t, o.String(), o2.String())
 }
 
 func TestOptionalOptionalTokenInterface(t *testing.T) {

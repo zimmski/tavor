@@ -5,7 +5,6 @@ import (
 
 	. "github.com/zimmski/tavor/test/assert"
 
-	"github.com/zimmski/tavor/test"
 	"github.com/zimmski/tavor/token"
 )
 
@@ -27,8 +26,7 @@ func TestPointer(t *testing.T) {
 	Equal(t, 1, o.Permutations())
 	Equal(t, 7, o.PermutationsAll())
 
-	r := test.NewRandTest(1)
-	o.FuzzAll(r)
+	Nil(t, o.Get().Permutation(2))
 	// this uses a clone
 	Equal(t, "5", o.String())
 	// this is the original one which must be untouched
@@ -38,8 +36,8 @@ func TestPointer(t *testing.T) {
 
 	// cloned pointers are always different to their original one
 
-	o.FuzzAll(r)
-	o2.FuzzAll(r)
+	Nil(t, o.Get().Permutation(3))
+	Nil(t, o2.(*Pointer).Get().Permutation(4))
 
 	// original token still untouched
 	Equal(t, "4", a.String())
@@ -48,8 +46,8 @@ func TestPointer(t *testing.T) {
 	// second cloned token
 	Equal(t, "7", o2.String())
 
-	Nil(t, o.Permutation(1))
-	Equal(t, "6", o.String())
+	Nil(t, o.Get().Permutation(5))
+	Equal(t, "8", o.String())
 
 	Equal(t, o.Permutation(8).(*token.PermutationError).Type, token.PermutationErrorIndexOutOfBound)
 }

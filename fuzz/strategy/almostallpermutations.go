@@ -9,9 +9,8 @@ import (
 )
 
 type almostAllPermutationsLevel struct {
-	token           token.Token
-	permutation     uint
-	maxPermutations uint
+	token       token.Token
+	permutation uint
 }
 
 // AlmostAllPermutationsStrategy implements a fuzzing strategy that generates "almost" all possible permutations of a token graph.
@@ -68,9 +67,8 @@ func (s *AlmostAllPermutationsStrategy) getLevel(root token.Token, fromChildren 
 		s.setTokenPermutation(tok, 1)
 
 		level = append(level, almostAllPermutationsLevel{
-			token:           tok,
-			permutation:     1,
-			maxPermutations: tok.Permutations(),
+			token:       tok,
+			permutation: 1,
 		})
 	}
 
@@ -128,6 +126,8 @@ func (s *AlmostAllPermutationsStrategy) setTokenPermutation(tok token.Token, per
 	if per, ok := s.resetedLookup[tok]; ok && per == permutation {
 		// Permutation already set in this step
 	} else {
+		log.Debugf("set %#v(%p) to permutation %d", tok, tok, permutation)
+
 		if err := tok.Permutation(permutation); err != nil {
 			panic(err)
 		}
@@ -144,12 +144,12 @@ func (s *AlmostAllPermutationsStrategy) fuzz(continueFuzzing chan struct{}, leve
 STEP:
 	for {
 		for i := range level {
-			if level[i].permutation > level[i].maxPermutations {
+			if level[i].permutation > level[i].token.Permutations() {
 				if i <= last {
 					log.Debugf("max reached redo everything <= %d and increment next", i)
 
 					level[i+1].permutation++
-					if level[i+1].permutation <= level[i+1].maxPermutations {
+					if level[i+1].permutation <= level[i+1].token.Permutations() {
 						s.setTokenPermutation(level[i+1].token, level[i+1].permutation)
 					}
 					s.getLevel(level[i+1].token, true) // set all children to permutation 1
@@ -183,10 +183,10 @@ STEP:
 			}
 		}
 
-		if level[0].permutation > level[0].maxPermutations {
+		if level[0].permutation > level[0].token.Permutations() {
 			found := false
 			for i := 1; i < len(level); i++ {
-				if level[i].permutation < level[i].maxPermutations {
+				if level[i].permutation < level[i].token.Permutations() {
 					found = true
 
 					break

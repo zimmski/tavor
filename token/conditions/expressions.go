@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/zimmski/tavor/log"
-	"github.com/zimmski/tavor/rand"
 	"github.com/zimmski/tavor/token"
 	"github.com/zimmski/tavor/token/lists"
 	"github.com/zimmski/tavor/token/primitives"
@@ -36,16 +35,6 @@ func (c *BooleanTrue) Evaluate() bool {
 // Clone returns a copy of the token and all its children
 func (c *BooleanTrue) Clone() token.Token {
 	return &BooleanTrue{}
-}
-
-// Fuzz fuzzes this token using the random generator by choosing one of the possible permutations for this token
-func (c *BooleanTrue) Fuzz(r rand.Rand) {
-	// do nothing
-}
-
-// FuzzAll calls Fuzz for this token and then FuzzAll for all children of this token
-func (c *BooleanTrue) FuzzAll(r rand.Rand) {
-	// do nothing
 }
 
 // Parse tries to parse the token beginning from the current position in the parser data.
@@ -137,16 +126,6 @@ func (c *BooleanEqual) Clone() token.Token {
 		a: c.a,
 		b: c.b,
 	}
-}
-
-// Fuzz fuzzes this token using the random generator by choosing one of the possible permutations for this token
-func (c *BooleanEqual) Fuzz(r rand.Rand) {
-	// do nothing
-}
-
-// FuzzAll calls Fuzz for this token and then FuzzAll for all children of this token
-func (c *BooleanEqual) FuzzAll(r rand.Rand) {
-	// do nothing
 }
 
 // Parse tries to parse the token beginning from the current position in the parser data.
@@ -259,16 +238,6 @@ func (c *VariableDefined) Clone() token.Token {
 	}
 }
 
-// Fuzz fuzzes this token using the random generator by choosing one of the possible permutations for this token
-func (c *VariableDefined) Fuzz(r rand.Rand) {
-	// do nothing
-}
-
-// FuzzAll calls Fuzz for this token and then FuzzAll for all children of this token
-func (c *VariableDefined) FuzzAll(r rand.Rand) {
-	// do nothing
-}
-
 // Parse tries to parse the token beginning from the current position in the parser data.
 // If the parsing is successful the error argument is nil and the next current position after the token is returned.
 func (c *VariableDefined) Parse(pars *token.InternalParser, cur int) (int, []error) {
@@ -357,16 +326,6 @@ func (c *ExpressionPointer) Clone() token.Token {
 	return &ExpressionPointer{
 		token: c.token.Clone(),
 	}
-}
-
-// Fuzz fuzzes this token using the random generator by choosing one of the possible permutations for this token
-func (c *ExpressionPointer) Fuzz(r rand.Rand) {
-	// do nothing
-}
-
-// FuzzAll calls Fuzz for this token and then FuzzAll for all children of this token
-func (c *ExpressionPointer) FuzzAll(r rand.Rand) {
-	// do nothing
 }
 
 // Parse tries to parse the token beginning from the current position in the parser data.

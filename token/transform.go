@@ -90,9 +90,8 @@ func UnrollPointers(root Token) Token {
 		switch t := iTok.tok.(type) {
 		case PointerToken:
 			child := t.InternalGet()
-
 			if child == nil {
-				log.Panicf("Child is nil")
+				log.Panicf("Child of (%p)%#v is nil", t, t)
 
 				continue
 			}
@@ -108,6 +107,11 @@ func UnrollPointers(root Token) Token {
 					log.Debugf("Child (%p)%#v is a pointer lets go one further", p, p)
 
 					child = p.InternalGet()
+					if child == nil {
+						log.Panicf("Child of (%p)%#v is nil", p, p)
+
+						continue
+					}
 
 					p, ok = child.(PointerToken)
 					if !ok {

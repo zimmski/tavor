@@ -5,7 +5,6 @@ import (
 
 	. "github.com/zimmski/tavor/test/assert"
 
-	"github.com/zimmski/tavor/test"
 	"github.com/zimmski/tavor/token"
 	"github.com/zimmski/tavor/token/lists"
 	"github.com/zimmski/tavor/token/primitives"
@@ -23,10 +22,8 @@ func TestVariableIf(t *testing.T) {
 		Body: primitives.NewConstantString("a"),
 	})
 	Equal(t, "a", o.String())
-
-	r := test.NewRandTest(0)
-	o.FuzzAll(r)
-	Equal(t, "a", o.String())
+	Equal(t, 1, o.Permutations())
+	Equal(t, 1, o.PermutationsAll())
 
 	o2 := o.Clone()
 	Equal(t, o.String(), o2.String())
@@ -60,10 +57,8 @@ func TestVariableElse(t *testing.T) {
 		},
 	)
 	Equal(t, "b", o.String())
-
-	r := test.NewRandTest(0)
-	o.FuzzAll(r)
-	Equal(t, "b", o.String())
+	Equal(t, 1, o.Permutations())
+	Equal(t, 1, o.PermutationsAll())
 
 	o2 := o.Clone()
 	Equal(t, o.String(), o2.String())

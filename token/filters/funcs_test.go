@@ -5,8 +5,6 @@ import (
 
 	. "github.com/zimmski/tavor/test/assert"
 
-	"github.com/zimmski/tavor/rand"
-	"github.com/zimmski/tavor/test"
 	"github.com/zimmski/tavor/token"
 	"github.com/zimmski/tavor/token/primitives"
 )
@@ -19,42 +17,40 @@ func TestFuncFilterTokensToBeTokens(t *testing.T) {
 
 func TestFuncExpression(t *testing.T) {
 	o := NewFuncFilter(
-		primitives.NewConstantInt(1),
-		func(r rand.Rand, tok token.Token) interface{} {
-			c := r.Int()%2 == 0
-
-			if c {
-				tok.FuzzAll(r)
-			}
-
-			return c
+		primitives.NewRangeInt(1, 10),
+		false,
+		func(state interface{}, tok token.Token, i uint) interface{} {
+			return i == 1
+		},
+		func(state interface{}, tok token.Token) uint {
+			return 2
+		},
+		func(state interface{}, tok token.Token) uint {
+			return 2 * tok.PermutationsAll()
 		},
 		func(state interface{}, tok token.Token) string {
-			switch i := state.(type) {
-			case bool:
-				if i {
-					return tok.String()
-				}
+			i, ok := state.(bool)
+			if !ok {
+				panic("unknown type")
+			}
 
-				return ""
-			case nil:
+			if i {
 				return tok.String()
 			}
 
-			panic("unknown type")
+			return ""
 		},
 	)
-	Equal(t, "1", o.String())
-
-	r := test.NewRandTest(1)
-	o.FuzzAll(r)
+	Equal(t, 2, o.Permutations())
+	Equal(t, 20, o.PermutationsAll())
 	Equal(t, "", o.String())
 
-	o.FuzzAll(r)
+	Nil(t, o.Permutation(1))
+	Equal(t, "", o.String())
+
+	Nil(t, o.Permutation(2))
 	Equal(t, "1", o.String())
 
 	o2 := o.Clone()
 	Equal(t, o.String(), o2.String())
-
-	Equal(t, 1, o.Permutations())
 }

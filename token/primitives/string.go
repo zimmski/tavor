@@ -3,7 +3,6 @@ package primitives
 import (
 	"fmt"
 
-	"github.com/zimmski/tavor/rand"
 	"github.com/zimmski/tavor/token"
 )
 
@@ -24,16 +23,6 @@ func (p *ConstantString) Clone() token.Token {
 	return &ConstantString{
 		value: p.value,
 	}
-}
-
-// Fuzz fuzzes this token using the random generator by choosing one of the possible permutations for this token
-func (p *ConstantString) Fuzz(r rand.Rand) {
-	// do nothing
-}
-
-// FuzzAll calls Fuzz for this token and then FuzzAll for all children of this token
-func (p *ConstantString) FuzzAll(r rand.Rand) {
-	p.Fuzz(r)
 }
 
 // Parse tries to parse the token beginning from the current position in the parser data.

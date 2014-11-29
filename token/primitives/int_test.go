@@ -5,7 +5,6 @@ import (
 
 	. "github.com/zimmski/tavor/test/assert"
 
-	"github.com/zimmski/tavor/test"
 	"github.com/zimmski/tavor/token"
 )
 
@@ -20,35 +19,20 @@ func TestConstantInt(t *testing.T) {
 	o := NewConstantInt(10)
 	Equal(t, "10", o.String())
 
-	r := test.NewRandTest(0)
-	o.FuzzAll(r)
-	Equal(t, "10", o.String())
-
-	o2 := o.Clone()
-	Equal(t, o.String(), o2.String())
-
 	Equal(t, 1, o.Permutations())
 
 	Nil(t, o.Permutation(1))
 	Equal(t, "10", o.String())
 
 	Equal(t, o.Permutation(2).(*token.PermutationError).Type, token.PermutationErrorIndexOutOfBound)
+
+	o2 := o.Clone()
+	Equal(t, o.String(), o2.String())
 }
 
 func TestRangeInt(t *testing.T) {
 	o := NewRangeInt(2, 4)
 	Equal(t, "2", o.String())
-
-	r := test.NewRandTest(1)
-	o.FuzzAll(r)
-	Equal(t, "3", o.String())
-	o.FuzzAll(r)
-	Equal(t, "4", o.String())
-	o.FuzzAll(r)
-	Equal(t, "2", o.String())
-
-	o2 := o.Clone()
-	Equal(t, o.String(), o2.String())
 
 	Equal(t, 3, o.Permutations())
 
@@ -59,15 +43,10 @@ func TestRangeInt(t *testing.T) {
 
 	Equal(t, o.Permutation(4).(*token.PermutationError).Type, token.PermutationErrorIndexOutOfBound)
 
+	o2 := o.Clone()
+	Equal(t, o.String(), o2.String())
+
 	// range with step 2
 	o = NewRangeIntWithStep(2, 6, 2)
-	Equal(t, "2", o.String())
-
-	r.Seed(1)
-	o.FuzzAll(r)
-	Equal(t, "4", o.String())
-	o.FuzzAll(r)
-	Equal(t, "6", o.String())
-	o.FuzzAll(r)
 	Equal(t, "2", o.String())
 }

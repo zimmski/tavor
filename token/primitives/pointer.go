@@ -2,10 +2,8 @@ package primitives
 
 import (
 	"fmt"
-	"reflect"
-
-	"github.com/zimmski/tavor/rand"
 	"github.com/zimmski/tavor/token"
+	"reflect"
 )
 
 // Pointer implements a general pointer token which references a token
@@ -75,27 +73,12 @@ func (p *Pointer) Clone() token.Token {
 func (p *Pointer) cloneOnFirstUse() {
 	if !p.cloned && p.token != nil {
 		// clone everything on first use until we hit pointers
-		p.token = p.token.Clone()
+		if _, ok := p.token.(*Pointer); !ok {
+			p.token = p.token.Clone()
 
-		p.cloned = true
+			p.cloned = true
+		}
 	}
-}
-
-// Fuzz fuzzes this token using the random generator by choosing one of the possible permutations for this token
-func (p *Pointer) Fuzz(r rand.Rand) {
-	p.cloneOnFirstUse()
-}
-
-// FuzzAll calls Fuzz for this token and then FuzzAll for all children of this token
-func (p *Pointer) FuzzAll(r rand.Rand) {
-	p.Fuzz(r)
-
-	if p.token == nil {
-		return
-	}
-
-	// fuzz with the clone not the original token
-	p.token.FuzzAll(r)
 }
 
 // Parse tries to parse the token beginning from the current position in the parser data.
@@ -106,8 +89,6 @@ func (p *Pointer) Parse(pars *token.InternalParser, cur int) (int, []error) {
 
 // Permutation sets a specific permutation for this token
 func (p *Pointer) Permutation(i uint) error {
-	p.cloneOnFirstUse()
-
 	permutations := p.Permutations()
 
 	if i < 1 || i > permutations {
@@ -151,6 +132,8 @@ func (p *Pointer) String() string {
 
 // Get returns the current referenced token
 func (p *Pointer) Get() token.Token {
+	p.cloneOnFirstUse()
+
 	return p.token
 }
 

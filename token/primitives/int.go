@@ -5,7 +5,6 @@ import (
 	"math"
 	"strconv"
 
-	"github.com/zimmski/tavor/rand"
 	"github.com/zimmski/tavor/token"
 )
 
@@ -38,16 +37,6 @@ func (p *ConstantInt) Clone() token.Token {
 	return &ConstantInt{
 		value: p.value,
 	}
-}
-
-// Fuzz fuzzes this token using the random generator by choosing one of the possible permutations for this token
-func (p *ConstantInt) Fuzz(r rand.Rand) {
-	// do nothing
-}
-
-// FuzzAll calls Fuzz for this token and then FuzzAll for all children of this token
-func (p *ConstantInt) FuzzAll(r rand.Rand) {
-	p.Fuzz(r)
 }
 
 // Parse tries to parse the token beginning from the current position in the parser data.
@@ -173,18 +162,6 @@ func (p *RangeInt) Clone() token.Token {
 
 		value: p.value,
 	}
-}
-
-// Fuzz fuzzes this token using the random generator by choosing one of the possible permutations for this token
-func (p *RangeInt) Fuzz(r rand.Rand) {
-	i := r.Int63n(int64(p.Permutations()))
-
-	p.permutation(uint(i))
-}
-
-// FuzzAll calls Fuzz for this token and then FuzzAll for all children of this token
-func (p *RangeInt) FuzzAll(r rand.Rand) {
-	p.Fuzz(r)
 }
 
 // Parse tries to parse the token beginning from the current position in the parser data.

@@ -75,7 +75,10 @@ func (s *PermuteOptionalsStrategy) findOptionals(r rand.Rand, root token.Token, 
 			c := t.Get()
 
 			if c != nil {
-				c.Fuzz(r)
+				err := c.Permutation(uint(r.Intn(int(c.Permutations())) + 1))
+				if err != nil {
+					log.Panic(err)
+				}
 
 				queue.Push(c)
 			}
@@ -85,7 +88,10 @@ func (s *PermuteOptionalsStrategy) findOptionals(r rand.Rand, root token.Token, 
 			for i := 0; i < l; i++ {
 				c, _ := t.Get(i)
 
-				c.Fuzz(r)
+				err := c.Permutation(uint(r.Intn(int(c.Permutations())) + 1))
+				if err != nil {
+					log.Panic(err)
+				}
 
 				queue.Push(c)
 			}

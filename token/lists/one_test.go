@@ -5,7 +5,6 @@ import (
 
 	. "github.com/zimmski/tavor/test/assert"
 
-	"github.com/zimmski/tavor/test"
 	"github.com/zimmski/tavor/token"
 	"github.com/zimmski/tavor/token/primitives"
 )
@@ -40,11 +39,6 @@ func TestOne(t *testing.T) {
 
 	Equal(t, o.Permutation(3).(*token.PermutationError).Type, token.PermutationErrorIndexOutOfBound)
 
-	r := test.NewRandTest(1)
-	o.FuzzAll(r)
-	Equal(t, "b", o.String())
-	Equal(t, 1, o.Len())
-
 	c := primitives.NewRangeInt(5, 10)
 	o = NewOne(c)
 	Equal(t, "5", o.String())
@@ -52,14 +46,10 @@ func TestOne(t *testing.T) {
 	Equal(t, 1, o.Permutations())
 	Equal(t, 6, o.PermutationsAll())
 
-	o.FuzzAll(r)
-	Equal(t, "6", o.String())
-	Equal(t, 1, o.Len())
-
 	o2 := o.Clone()
 	Equal(t, o.String(), o2.String())
 
-	Nil(t, o.Permutation(1))
+	Nil(t, c.Permutation(2))
 	Equal(t, "6", o.String())
 
 	Equal(t, o.Permutation(2).(*token.PermutationError).Type, token.PermutationErrorIndexOutOfBound)
