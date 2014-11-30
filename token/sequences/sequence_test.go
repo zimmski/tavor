@@ -37,8 +37,8 @@ func TestSequenceItem(t *testing.T) {
 	Equal(t, "10", o.String())
 
 	Nil(t, o.Permutation(1))
-	Equal(t, "10", o.String())
-	Equal(t, 12, s.Next())
+	Equal(t, "12", o.String())
+	Equal(t, 14, s.Next())
 
 	o2 := o.Clone()
 	Equal(t, o.String(), o2.String())
@@ -46,7 +46,7 @@ func TestSequenceItem(t *testing.T) {
 	Equal(t, 1, o.Permutations())
 
 	o.Reset()
-	Equal(t, "14", o.String())
+	Equal(t, "16", o.String())
 }
 
 func TestExistingSequenceItem(t *testing.T) {
