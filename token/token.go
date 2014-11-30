@@ -257,6 +257,27 @@ type InternalParser struct { // TODO move this some place else
 	DataLen int
 }
 
+// GetPosition returns a text position in the data given an index of the data
+func (p InternalParser) GetPosition(i int) scanner.Position {
+	// TODO this could be done MUCH better e.g. memorize or keep count while parsing is happening
+	l := 1
+	c := 1
+
+	for j := 0; j < i; j++ {
+		if p.Data[j] == '\n' {
+			l++
+			c = 1
+		} else {
+			c++
+		}
+	}
+
+	return scanner.Position{
+		Line:   l,
+		Column: c,
+	}
+}
+
 ////////////////////////
 // TODO was in parser.go but "import cycle not allowed" forced me to do this
 

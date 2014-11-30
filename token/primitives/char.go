@@ -295,6 +295,8 @@ func (c *CharacterClass) Parse(pars *token.InternalParser, cur int) (int, []erro
 			return cur, []error{&token.ParserError{
 				Message: fmt.Sprintf("expected %q or %+v but got %q", c.charsLookup, c.charRanges, v),
 				Type:    token.ParseErrorUnexpectedData,
+
+				Position: pars.GetPosition(cur),
 			}}
 		}
 	}

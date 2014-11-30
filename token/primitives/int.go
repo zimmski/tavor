@@ -51,6 +51,8 @@ func (p *ConstantInt) Parse(pars *token.InternalParser, cur int) (int, []error) 
 		return cur, []error{&token.ParserError{
 			Message: fmt.Sprintf("expected %q but got early EOF", v),
 			Type:    token.ParseErrorUnexpectedEOF,
+
+			Position: pars.GetPosition(cur),
 		}}
 	}
 
@@ -58,6 +60,8 @@ func (p *ConstantInt) Parse(pars *token.InternalParser, cur int) (int, []error) 
 		return cur, []error{&token.ParserError{
 			Message: fmt.Sprintf("expected %q but got %q", v, got),
 			Type:    token.ParseErrorUnexpectedData,
+
+			Position: pars.GetPosition(cur),
 		}}
 	}
 
@@ -171,6 +175,8 @@ func (p *RangeInt) Parse(pars *token.InternalParser, cur int) (int, []error) {
 		return cur, []error{&token.ParserError{
 			Message: fmt.Sprintf("expected integer in range %d-%d with step %d but got early EOF", p.from, p.to, p.step),
 			Type:    token.ParseErrorUnexpectedEOF,
+
+			Position: pars.GetPosition(cur),
 		}}
 	}
 
@@ -212,6 +218,8 @@ func (p *RangeInt) Parse(pars *token.InternalParser, cur int) (int, []error) {
 		return cur, []error{&token.ParserError{
 			Message: fmt.Sprintf("expected integer in range %d-%d with step %d but got %q", p.from, p.to, p.step, pars.Data[cur:i]),
 			Type:    token.ParseErrorUnexpectedData,
+
+			Position: pars.GetPosition(cur),
 		}}
 	}
 

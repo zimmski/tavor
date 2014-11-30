@@ -36,6 +36,8 @@ func (p *ConstantString) Parse(pars *token.InternalParser, cur int) (int, []erro
 		return cur, []error{&token.ParserError{
 			Message: fmt.Sprintf("expected %q but got early EOF", p.value),
 			Type:    token.ParseErrorUnexpectedEOF,
+
+			Position: pars.GetPosition(cur),
 		}}
 	}
 
@@ -43,6 +45,8 @@ func (p *ConstantString) Parse(pars *token.InternalParser, cur int) (int, []erro
 		return cur, []error{&token.ParserError{
 			Message: fmt.Sprintf("expected %q but got %q", p.value, got),
 			Type:    token.ParseErrorUnexpectedData,
+
+			Position: pars.GetPosition(cur),
 		}}
 	}
 

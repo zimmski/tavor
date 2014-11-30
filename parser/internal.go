@@ -49,6 +49,8 @@ func ParseInternal(root token.Token, src io.Reader) []error {
 		return []error{&token.ParserError{
 			Message: msg,
 			Type:    token.ParseErrorExpectedEOF,
+
+			Position: p.GetPosition(nex),
 		}}
 	}
 
