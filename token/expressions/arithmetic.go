@@ -3,7 +3,6 @@ package expressions
 import (
 	"strconv"
 
-	"github.com/zimmski/tavor/rand"
 	"github.com/zimmski/tavor/token"
 	"github.com/zimmski/tavor/token/lists"
 )
@@ -28,19 +27,6 @@ func (e *AddArithmetic) Clone() token.Token {
 		a: e.a.Clone(),
 		b: e.b.Clone(),
 	}
-}
-
-// Fuzz fuzzes this token using the random generator by choosing one of the possible permutations for this token
-func (e *AddArithmetic) Fuzz(r rand.Rand) {
-	// do nothing
-}
-
-// FuzzAll calls Fuzz for this token and then FuzzAll for all children of this token
-func (e *AddArithmetic) FuzzAll(r rand.Rand) {
-	e.Fuzz(r)
-
-	e.a.FuzzAll(r)
-	e.b.FuzzAll(r)
 }
 
 // Parse tries to parse the token beginning from the current position in the parser data.
@@ -158,19 +144,6 @@ func (e *SubArithmetic) Clone() token.Token {
 	}
 }
 
-// Fuzz fuzzes this token using the random generator by choosing one of the possible permutations for this token
-func (e *SubArithmetic) Fuzz(r rand.Rand) {
-	// do nothing
-}
-
-// FuzzAll calls Fuzz for this token and then FuzzAll for all children of this token
-func (e *SubArithmetic) FuzzAll(r rand.Rand) {
-	e.Fuzz(r)
-
-	e.a.FuzzAll(r)
-	e.b.FuzzAll(r)
-}
-
 // Parse tries to parse the token beginning from the current position in the parser data.
 // If the parsing is successful the error argument is nil and the next current position after the token is returned.
 func (e *SubArithmetic) Parse(pars *token.InternalParser, cur int) (int, []error) {
@@ -286,19 +259,6 @@ func (e *MulArithmetic) Clone() token.Token {
 	}
 }
 
-// Fuzz fuzzes this token using the random generator by choosing one of the possible permutations for this token
-func (e *MulArithmetic) Fuzz(r rand.Rand) {
-	// do nothing
-}
-
-// FuzzAll calls Fuzz for this token and then FuzzAll for all children of this token
-func (e *MulArithmetic) FuzzAll(r rand.Rand) {
-	e.Fuzz(r)
-
-	e.a.FuzzAll(r)
-	e.b.FuzzAll(r)
-}
-
 // Parse tries to parse the token beginning from the current position in the parser data.
 // If the parsing is successful the error argument is nil and the next current position after the token is returned.
 func (e *MulArithmetic) Parse(pars *token.InternalParser, cur int) (int, []error) {
@@ -412,19 +372,6 @@ func (e *DivArithmetic) Clone() token.Token {
 		a: e.a.Clone(),
 		b: e.b.Clone(),
 	}
-}
-
-// Fuzz fuzzes this token using the random generator by choosing one of the possible permutations for this token
-func (e *DivArithmetic) Fuzz(r rand.Rand) {
-	// do nothing
-}
-
-// FuzzAll calls Fuzz for this token and then FuzzAll for all children of this token
-func (e *DivArithmetic) FuzzAll(r rand.Rand) {
-	e.Fuzz(r)
-
-	e.a.FuzzAll(r)
-	e.b.FuzzAll(r)
 }
 
 // Parse tries to parse the token beginning from the current position in the parser data.

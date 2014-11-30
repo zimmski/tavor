@@ -5,7 +5,6 @@ import (
 
 	. "github.com/zimmski/tavor/test/assert"
 
-	"github.com/zimmski/tavor/test"
 	"github.com/zimmski/tavor/token"
 )
 
@@ -37,8 +36,7 @@ func TestSequenceItem(t *testing.T) {
 	o := s.Item()
 	Equal(t, "10", o.String())
 
-	r := test.NewRandTest(0)
-	o.FuzzAll(r)
+	Nil(t, o.Permutation(1))
 	Equal(t, "12", o.String())
 	Equal(t, 14, s.Next())
 
@@ -46,6 +44,9 @@ func TestSequenceItem(t *testing.T) {
 	Equal(t, o.String(), o2.String())
 
 	Equal(t, 1, o.Permutations())
+
+	o.Reset()
+	Equal(t, "16", o.String())
 }
 
 func TestExistingSequenceItem(t *testing.T) {
@@ -60,18 +61,16 @@ func TestExistingSequenceItem(t *testing.T) {
 
 	o = s.ExistingItem(nil)
 	Equal(t, "10", o.String())
+	Equal(t, 3, o.Permutations())
 
-	r := test.NewRandTest(1)
-	o.FuzzAll(r)
+	Nil(t, o.Permutation(2))
 	Equal(t, "12", o.String())
 
-	o.FuzzAll(r)
+	Nil(t, o.Permutation(3))
 	Equal(t, "14", o.String())
 
-	o.FuzzAll(r)
+	Nil(t, o.Permutation(1))
 	Equal(t, "10", o.String())
-
-	Equal(t, 1, o.Permutations())
 }
 
 func TestResetSequenceItem(t *testing.T) {
@@ -81,9 +80,9 @@ func TestResetSequenceItem(t *testing.T) {
 	Equal(t, 12, s.Next())
 	Equal(t, 14, s.Next())
 
-	r := test.NewRandTest(0)
 	o := s.ResetItem()
-	o.FuzzAll(r)
+
+	Nil(t, o.Permutation(1))
 
 	Equal(t, 10, s.Next())
 	Equal(t, 12, s.Next())

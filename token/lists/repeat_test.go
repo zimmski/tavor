@@ -6,7 +6,6 @@ import (
 
 	. "github.com/zimmski/tavor/test/assert"
 
-	"github.com/zimmski/tavor/test"
 	"github.com/zimmski/tavor/token"
 	"github.com/zimmski/tavor/token/primitives"
 )
@@ -41,11 +40,6 @@ func TestRepeat(t *testing.T) {
 	Equal(t, "aaaaaaa", o.String())
 
 	Equal(t, o.Permutation(7).(*token.PermutationError).Type, token.PermutationErrorIndexOutOfBound)
-
-	r := test.NewRandTest(2)
-	o.FuzzAll(r)
-	Equal(t, "aaaaaaa", o.String())
-	Equal(t, 7, o.Len())
 
 	o = NewRepeat(primitives.NewRangeInt(1, 2), 0, 2)
 	Equal(t, "", o.String())
@@ -92,11 +86,6 @@ func TestRepeat(t *testing.T) {
 	Equal(t, "1111", o.String())
 
 	Equal(t, o.Permutation(10).(*token.PermutationError).Type, token.PermutationErrorIndexOutOfBound)
-
-	r.Seed(3)
-	o.FuzzAll(r)
-	Equal(t, "12312", o.String())
-	Equal(t, 5, o.Len())
 
 	o2 := o.Clone()
 	Equal(t, o.String(), o2.String())

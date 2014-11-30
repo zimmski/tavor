@@ -7,9 +7,8 @@ import (
 )
 
 type allPermutationsLevel struct {
-	token           token.Token
-	permutation     uint
-	maxPermutations uint
+	token       token.Token
+	permutation uint
 
 	children []allPermutationsLevel
 }
@@ -42,9 +41,8 @@ func (s *AllPermutationsStrategy) getTree(root token.Token, fromChildren bool) [
 		s.setPermutation(tok, 1)
 
 		tree = append(tree, allPermutationsLevel{
-			token:           tok,
-			permutation:     1,
-			maxPermutations: tok.Permutations(),
+			token:       tok,
+			permutation: 1,
 
 			children: s.getTree(tok, true),
 		})
@@ -143,7 +141,7 @@ STEP:
 					return true, true
 				}
 			} else {
-				if !justastep && (tree[0].token != s.root || tree[0].permutation <= tree[0].maxPermutations) && !s.nextStep(continueFuzzing) {
+				if !justastep && (tree[0].token != s.root || tree[0].permutation <= tree[0].token.Permutations()) && !s.nextStep(continueFuzzing) {
 					return false, false
 				}
 			}
@@ -151,9 +149,9 @@ STEP:
 
 		tree[0].permutation++
 
-		if tree[0].permutation > tree[0].maxPermutations {
+		if tree[0].permutation > tree[0].token.Permutations() {
 			for i := 0; i < len(tree); i++ {
-				log.Debugf("check %d vs %d for %#v", tree[i].permutation, tree[i].maxPermutations, tree[i])
+				log.Debugf("check %d vs %d for %#v", tree[i].permutation, tree[i].token.Permutations(), tree[i])
 			}
 
 			i := 0
@@ -193,7 +191,7 @@ STEP:
 
 				tree[i].permutation++
 
-				if tree[i].permutation <= tree[i].maxPermutations {
+				if tree[i].permutation <= tree[i].token.Permutations() {
 					for j := 0; j < i; j++ {
 						tree[j].permutation = 1
 						s.setPermutation(tree[j].token, tree[j].permutation)

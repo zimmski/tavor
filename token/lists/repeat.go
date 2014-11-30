@@ -5,7 +5,6 @@ import (
 	"math"
 	"strconv"
 
-	"github.com/zimmski/tavor/rand"
 	"github.com/zimmski/tavor/token"
 	"github.com/zimmski/tavor/token/primitives"
 )
@@ -86,22 +85,6 @@ func (l *Repeat) Clone() token.Token {
 	return &c
 }
 
-// Fuzz fuzzes this token using the random generator by choosing one of the possible permutations for this token
-func (l *Repeat) Fuzz(r rand.Rand) {
-	i := r.Intn(int(l.To() - l.From() + 1))
-
-	l.permutation(uint(i))
-}
-
-// FuzzAll calls Fuzz for this token and then FuzzAll for all children of this token
-func (l *Repeat) FuzzAll(r rand.Rand) {
-	l.Fuzz(r)
-
-	for _, tok := range l.value {
-		tok.FuzzAll(r)
-	}
-}
-
 // Parse tries to parse the token beginning from the current position in the parser data.
 // If the parsing is successful the error argument is nil and the next current position after the token is returned.
 func (l *Repeat) Parse(pars *token.InternalParser, cur int) (int, []error) {
@@ -140,6 +123,8 @@ func (l *Repeat) Parse(pars *token.InternalParser, cur int) (int, []error) {
 
 func (l *Repeat) permutation(i uint) {
 	toks := make([]token.Token, int(i)+int(l.From()))
+
+	token.ReleaseTokens(l)
 
 	for i := range toks {
 		toks[i] = l.token.Clone()

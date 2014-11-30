@@ -3,7 +3,6 @@ package conditions
 import (
 	"fmt"
 
-	"github.com/zimmski/tavor/rand"
 	"github.com/zimmski/tavor/token"
 	"github.com/zimmski/tavor/token/lists"
 )
@@ -22,16 +21,6 @@ func (c *IfPair) Clone() token.Token {
 		Head: c.Head.Clone().(BooleanExpression),
 		Body: c.Body.Clone(),
 	}
-}
-
-// Fuzz fuzzes this token using the random generator by choosing one of the possible permutations for this token
-func (c *IfPair) Fuzz(r rand.Rand) {
-	// do nothing
-}
-
-// FuzzAll calls Fuzz for this token and then FuzzAll for all children of this token
-func (c *IfPair) FuzzAll(r rand.Rand) {
-	// do nothing
 }
 
 // Parse tries to parse the token beginning from the current position in the parser data.
@@ -132,16 +121,6 @@ func (c *If) Clone() token.Token {
 	return &If{
 		Pairs: nPairs,
 	}
-}
-
-// Fuzz fuzzes this token using the random generator by choosing one of the possible permutations for this token
-func (c *If) Fuzz(r rand.Rand) {
-	// do nothing
-}
-
-// FuzzAll calls Fuzz for this token and then FuzzAll for all children of this token
-func (c *If) FuzzAll(r rand.Rand) {
-	c.Fuzz(r)
 }
 
 // Parse tries to parse the token beginning from the current position in the parser data.

@@ -40,9 +40,9 @@ func TestRandomStrategy(t *testing.T) {
 	_, ok := <-ch
 	True(t, ok)
 
-	Equal(t, "78", c.String())
-	Equal(t, "7", a.String())
-	Equal(t, "8", b.String())
+	Equal(t, "67", c.String())
+	Equal(t, "6", a.String())
+	Equal(t, "7", b.String())
 
 	ch <- struct{}{}
 
@@ -59,8 +59,8 @@ func TestRandomStrategy(t *testing.T) {
 	True(t, ok)
 
 	Equal(t, "", c.String())
-	Equal(t, "7", a.String())
-	Equal(t, "8", b.String())
+	Equal(t, "6", a.String())
+	Equal(t, "7", b.String())
 
 	close(ch)
 
@@ -70,9 +70,9 @@ func TestRandomStrategy(t *testing.T) {
 	ch, err = o.Fuzz(r)
 	Nil(t, err)
 	for i := range ch {
-		Equal(t, "78", c.String())
-		Equal(t, "7", a.String())
-		Equal(t, "8", b.String())
+		Equal(t, "67", c.String())
+		Equal(t, "6", a.String())
+		Equal(t, "7", b.String())
 
 		ch <- i
 	}
@@ -103,7 +103,7 @@ func TestRandomStrategyCases(t *testing.T) {
 			_, ok := <-ch
 			True(t, ok)
 
-			Equal(t, "abc1 b2 c0 a", root.String())
+			Equal(t, "abc0 a1 b2 c", root.String())
 
 			ch <- struct{}{}
 
@@ -112,7 +112,7 @@ func TestRandomStrategyCases(t *testing.T) {
 		}
 
 		// rerun
-		/*{ TODO this does currently not work because Unique Items are not put back into the list if they are thrown away
+		{
 			r.Seed(1)
 
 			ch, err := o.Fuzz(r)
@@ -121,14 +121,13 @@ func TestRandomStrategyCases(t *testing.T) {
 			_, ok := <-ch
 			True(t, ok)
 
-			Equal(t, "abc1 b2 c0 a", root.String())
+			Equal(t, "abc0 a1 b2 c", root.String())
 
 			ch <- struct{}{}
 
 			_, ok = <-ch
 			False(t, ok)
 		}
-		*/
 	}
 }
 

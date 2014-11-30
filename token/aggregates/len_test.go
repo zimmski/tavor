@@ -5,7 +5,6 @@ import (
 
 	. "github.com/zimmski/tavor/test/assert"
 
-	"github.com/zimmski/tavor/test"
 	"github.com/zimmski/tavor/token"
 	"github.com/zimmski/tavor/token/lists"
 	"github.com/zimmski/tavor/token/primitives"
@@ -23,25 +22,27 @@ func TestConstantInt(t *testing.T) {
 
 	o := NewLen(list)
 	Equal(t, "1", o.String())
+	Equal(t, 1, o.Permutations())
+	Equal(t, 1, o.Permutations())
 
-	r := test.NewRandTest(1)
-	list.Fuzz(r)
+	Nil(t, list.Permutation(1))
+	Equal(t, "1", o.String())
+
+	Nil(t, list.Permutation(2))
 	Equal(t, "11", list.String())
 	Equal(t, "2", o.String())
 
-	list.Fuzz(r)
+	Nil(t, list.Permutation(3))
 	Equal(t, "111", list.String())
 	Equal(t, "3", o.String())
 
-	list.FuzzAll(r)
+	Nil(t, list.Permutation(4))
 	Equal(t, "1111", list.String())
 	Equal(t, "4", o.String())
 
-	list.FuzzAll(r)
+	Nil(t, list.Permutation(5))
 	Equal(t, "11111", list.String())
 	Equal(t, "5", o.String())
-
-	o.FuzzAll(r)
 
 	o2 := o.Clone()
 	Equal(t, o.String(), o2.String())

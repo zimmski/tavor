@@ -1,37 +1,44 @@
 package expressions
 
 import (
-	"github.com/zimmski/tavor/rand"
 	"github.com/zimmski/tavor/token"
 )
 
 // FuncExpression implements a expression token which executes a given list on output
 type FuncExpression struct {
-	function func() string
+	permutationFunc     func(state interface{}, i uint) interface{}
+	permutationsFunc    func(state interface{}) uint
+	permutationsAllFunc func(state interface{}) uint
+	stringFunc          func(state interface{}) string
+	state               interface{}
 }
 
 // NewFuncExpression returns a new instance of a FuncExpression token given the output function
-func NewFuncExpression(f func() string) *FuncExpression {
+func NewFuncExpression(
+	state interface{},
+	permutationFunc func(state interface{}, i uint) interface{},
+	permutationsFunc func(state interface{}) uint,
+	permutationsAllFunc func(state interface{}) uint,
+	stringFunc func(state interface{}) string,
+) *FuncExpression {
 	return &FuncExpression{
-		function: f,
+		permutationFunc:     permutationFunc,
+		permutationsFunc:    permutationsFunc,
+		permutationsAllFunc: permutationsAllFunc,
+		stringFunc:          stringFunc,
+		state:               state,
 	}
 }
 
 // Clone returns a copy of the token and all its children
 func (e *FuncExpression) Clone() token.Token {
 	return &FuncExpression{
-		function: e.function,
+		permutationFunc:     e.permutationFunc,
+		permutationsFunc:    e.permutationsFunc,
+		permutationsAllFunc: e.permutationsAllFunc,
+		stringFunc:          e.stringFunc,
+		state:               e.state,
 	}
-}
-
-// Fuzz fuzzes this token using the random generator by choosing one of the possible permutations for this token
-func (e *FuncExpression) Fuzz(r rand.Rand) {
-	// do nothing
-}
-
-// FuzzAll calls Fuzz for this token and then FuzzAll for all children of this token
-func (e *FuncExpression) FuzzAll(r rand.Rand) {
-	e.Fuzz(r)
 }
 
 // Parse tries to parse the token beginning from the current position in the parser data.
@@ -42,19 +49,29 @@ func (e *FuncExpression) Parse(pars *token.InternalParser, cur int) (int, []erro
 
 // Permutation sets a specific permutation for this token
 func (e *FuncExpression) Permutation(i uint) error {
-	panic("TODO Not implemented")
+	permutations := e.Permutations()
+
+	if i < 1 || i > permutations {
+		return &token.PermutationError{
+			Type: token.PermutationErrorIndexOutOfBound,
+		}
+	}
+
+	e.state = e.permutationFunc(e.state, i-1)
+
+	return nil
 }
 
 // Permutations returns the number of permutations for this token
 func (e *FuncExpression) Permutations() uint {
-	return 1 // TODO this depends on the function
+	return e.permutationsFunc(e.state)
 }
 
 // PermutationsAll returns the number of all possible permutations for this token including its children
 func (e *FuncExpression) PermutationsAll() uint {
-	return e.Permutations()
+	return e.permutationsAllFunc(e.state)
 }
 
 func (e *FuncExpression) String() string {
-	return e.function()
+	return e.stringFunc(e.state)
 }

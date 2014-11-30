@@ -5,7 +5,6 @@ import (
 
 	. "github.com/zimmski/tavor/test/assert"
 
-	"github.com/zimmski/tavor/test"
 	"github.com/zimmski/tavor/token"
 	"github.com/zimmski/tavor/token/primitives"
 )
@@ -61,10 +60,6 @@ func TestOnce(t *testing.T) {
 
 	Nil(t, o.Permutation(2))
 	Equal(t, "101abc", o.String())
-
-	r := test.NewRandTest(6)
-	o.FuzzAll(r)
-	Equal(t, "10abc2", o.String())
 	Equal(t, 3, o.Len())
 
 	o2 := o.Clone()

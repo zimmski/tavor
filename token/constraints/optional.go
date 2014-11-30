@@ -1,7 +1,6 @@
 package constraints
 
 import (
-	"github.com/zimmski/tavor/rand"
 	"github.com/zimmski/tavor/token"
 )
 
@@ -29,20 +28,6 @@ func (c *Optional) Clone() token.Token {
 	return &Optional{
 		token: c.token.Clone(),
 		value: c.value,
-	}
-}
-
-// Fuzz fuzzes this token using the random generator by choosing one of the possible permutations for this token
-func (c *Optional) Fuzz(r rand.Rand) {
-	c.permutation(uint(r.Int() % 2))
-}
-
-// FuzzAll calls Fuzz for this token and then FuzzAll for all children of this token
-func (c *Optional) FuzzAll(r rand.Rand) {
-	c.Fuzz(r)
-
-	if !c.value {
-		c.token.FuzzAll(r)
 	}
 }
 

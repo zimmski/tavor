@@ -9,6 +9,7 @@ import (
 	. "github.com/zimmski/tavor/test/assert"
 
 	"github.com/zimmski/tavor"
+	"github.com/zimmski/tavor/fuzz/strategy"
 	"github.com/zimmski/tavor/test"
 	"github.com/zimmski/tavor/token"
 	"github.com/zimmski/tavor/token/aggregates"
@@ -518,11 +519,11 @@ func TestTavorParserTokenAttributes(t *testing.T) {
 	var err error
 
 	// token attribute List.Count
-	tok, err = ParseTavor(strings.NewReader(
-		"Digit = 1 | 2 | 3\n" +
-			"Digits = *(Digit)\n" +
-			"START = Digits \"->\" $Digits.Count\n",
-	))
+	tok, err = ParseTavor(strings.NewReader(`
+		Digit = 1 | 2 | 3
+		Digits = *(Digit)
+		START = Digits "->" $Digits.Count
+	`))
 	Nil(t, err)
 	{
 		v, _ := tok.(*lists.All).Get(0)
@@ -538,9 +539,15 @@ func TestTavorParserTokenAttributes(t *testing.T) {
 			aggregates.NewLen(list),
 		))
 
-		r := test.NewRandTest(2)
-		tok.FuzzAll(r)
-		Equal(t, "12->2", tok.String())
+		strat := strategy.NewRandomStrategy(tok)
+		ch, err := strat.Fuzz(test.NewRandTest(1))
+		Nil(t, err)
+
+		for i := range ch {
+			Equal(t, "3->1", tok.String())
+
+			ch <- i
+		}
 	}
 }
 
@@ -743,11 +750,15 @@ func TestTavorParserAndCuriousCaseOfFuzzing(t *testing.T) {
 		`))
 		Nil(t, err)
 
-		r := test.NewRandTest(1)
+		strat := strategy.NewRandomStrategy(tok)
+		ch, err := strat.Fuzz(test.NewRandTest(1))
+		Nil(t, err)
 
-		tok.FuzzAll(r)
+		for i := range ch {
+			Equal(t, "22", tok.String())
 
-		Equal(t, "22", tok.String())
+			ch <- i
+		}
 	}
 
 	// Correct list behaviour
@@ -759,11 +770,15 @@ func TestTavorParserAndCuriousCaseOfFuzzing(t *testing.T) {
 		`))
 		Nil(t, err)
 
-		r := test.NewRandTest(1)
+		strat := strategy.NewRandomStrategy(tok)
+		ch, err := strat.Fuzz(test.NewRandTest(1))
+		Nil(t, err)
 
-		tok.FuzzAll(r)
+		for i := range ch {
+			Equal(t, "211", tok.String())
 
-		Equal(t, "211", tok.String())
+			ch <- i
+		}
 	}
 
 	// Attributes in repeats

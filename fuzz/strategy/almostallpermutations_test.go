@@ -34,9 +34,9 @@ func TestAlmostAllPermutationsStrategygetLevel(t *testing.T) {
 
 		Equal(t, level, []almostAllPermutationsLevel{
 			almostAllPermutationsLevel{
-				token:           d,
-				permutation:     1,
-				maxPermutations: 1,
+				parent:      d,
+				tokenIndex:  -1,
+				permutation: 1,
 			},
 		})
 
@@ -44,19 +44,19 @@ func TestAlmostAllPermutationsStrategygetLevel(t *testing.T) {
 
 		Equal(t, level, []almostAllPermutationsLevel{
 			almostAllPermutationsLevel{
-				token:           a,
-				permutation:     1,
-				maxPermutations: 1,
+				parent:      d,
+				tokenIndex:  0,
+				permutation: 1,
 			},
 			almostAllPermutationsLevel{
-				token:           b,
-				permutation:     1,
-				maxPermutations: 2,
+				parent:      d,
+				tokenIndex:  1,
+				permutation: 1,
 			},
 			almostAllPermutationsLevel{
-				token:           c,
-				permutation:     1,
-				maxPermutations: 1,
+				parent:      d,
+				tokenIndex:  2,
+				permutation: 1,
 			},
 		})
 	}
@@ -383,6 +383,7 @@ func TestAlmostAllPermutationsStrategy(t *testing.T) {
 			ch <- i
 		}
 
+		/* TODO original result, should we go back to this?
 		Equal(t, got, []string{
 			"2 1 1",
 			"2 2 1",
@@ -392,6 +393,14 @@ func TestAlmostAllPermutationsStrategy(t *testing.T) {
 			"2 3 2",
 			"2 1 3",
 			"2 2 3",
+			"2 3 3",
+		})
+		*/
+		Equal(t, got, []string{
+			"2 1 1",
+			"2 2 1",
+			"2 1 2",
+			"2 1 3",
 			"2 3 3",
 		})
 	}
@@ -457,6 +466,61 @@ func TestAlmostAllPermutationsStrategy(t *testing.T) {
 			"241",
 			"242",
 			"243",
+		})
+	}
+	{
+		// correct unqiue behavior
+		o, err := parser.ParseTavor(strings.NewReader(`
+				Items = "a" "b" "c"
+				START = Items " -> " $Items.Unique
+		`))
+		Nil(t, err)
+
+		s := NewAlmostAllPermutationsStrategy(o)
+
+		var got []string
+
+		ch, err := s.Fuzz(r)
+		Nil(t, err)
+		for i := range ch {
+			got = append(got, o.String())
+
+			ch <- i
+		}
+
+		Equal(t, got, []string{
+			"abc -> a",
+			"abc -> b",
+			"abc -> c",
+		})
+	}
+	{
+		// check if the strategy really works as expected
+		o, err := parser.ParseTavor(strings.NewReader(`
+				START = +2(?(1)?(2))
+		`))
+		Nil(t, err)
+
+		s := NewAlmostAllPermutationsStrategy(o)
+
+		var got []string
+
+		ch, err := s.Fuzz(r)
+		Nil(t, err)
+		for i := range ch {
+			got = append(got, o.String())
+
+			ch <- i
+		}
+
+		Equal(t, got, []string{
+			"12",
+			"112",
+			"212",
+			"12",
+			"121",
+			"122",
+			"1212",
 		})
 	}
 }

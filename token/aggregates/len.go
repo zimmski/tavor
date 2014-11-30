@@ -3,7 +3,6 @@ package aggregates
 import (
 	"strconv"
 
-	"github.com/zimmski/tavor/rand"
 	"github.com/zimmski/tavor/token"
 )
 
@@ -24,16 +23,6 @@ func (a *Len) Clone() token.Token {
 	return &Len{
 		token: a.token,
 	}
-}
-
-// Fuzz fuzzes this token using the random generator by choosing one of the possible permutations for this token
-func (a *Len) Fuzz(r rand.Rand) {
-	// do nothing
-}
-
-// FuzzAll calls Fuzz for this token and then FuzzAll for all children of this token
-func (a *Len) FuzzAll(r rand.Rand) {
-	a.Fuzz(r)
 }
 
 // Parse tries to parse the token beginning from the current position in the parser data.

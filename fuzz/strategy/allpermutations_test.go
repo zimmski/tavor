@@ -39,35 +39,30 @@ func TestAllPermutationsStrategygetLevel(t *testing.T) {
 
 		Equal(t, tree, []allPermutationsLevel{
 			allPermutationsLevel{
-				token:           d,
-				permutation:     1,
-				maxPermutations: 1,
+				token:       d,
+				permutation: 1,
 
 				children: []allPermutationsLevel{
 					allPermutationsLevel{
-						token:           a,
-						permutation:     1,
-						maxPermutations: 1,
+						token:       a,
+						permutation: 1,
 
 						children: nilChildren,
 					},
 					allPermutationsLevel{
-						token:           b,
-						permutation:     1,
-						maxPermutations: 2,
+						token:       b,
+						permutation: 1,
 
 						children: nilChildren,
 					},
 					allPermutationsLevel{
-						token:           c,
-						permutation:     1,
-						maxPermutations: 1,
+						token:       c,
+						permutation: 1,
 
 						children: []allPermutationsLevel{
 							allPermutationsLevel{
-								token:           c1,
-								permutation:     1,
-								maxPermutations: 1,
+								token:       c1,
+								permutation: 1,
 
 								children: nilChildren,
 							},
@@ -81,29 +76,25 @@ func TestAllPermutationsStrategygetLevel(t *testing.T) {
 
 		Equal(t, tree, []allPermutationsLevel{
 			allPermutationsLevel{
-				token:           a,
-				permutation:     1,
-				maxPermutations: 1,
+				token:       a,
+				permutation: 1,
 
 				children: nilChildren,
 			},
 			allPermutationsLevel{
-				token:           b,
-				permutation:     1,
-				maxPermutations: 2,
+				token:       b,
+				permutation: 1,
 
 				children: nilChildren,
 			},
 			allPermutationsLevel{
-				token:           c,
-				permutation:     1,
-				maxPermutations: 1,
+				token:       c,
+				permutation: 1,
 
 				children: []allPermutationsLevel{
 					allPermutationsLevel{
-						token:           c1,
-						permutation:     1,
-						maxPermutations: 1,
+						token:       c1,
+						permutation: 1,
 
 						children: nilChildren,
 					},
@@ -510,6 +501,48 @@ func TestAllPermutationsStrategy(t *testing.T) {
 			[]string{
 				"abc",
 				"aabbcc",
+			},
+		)
+	}
+	{
+		// correct unqiue behavior
+		validateTavorAllPermutations(
+			t,
+			`
+				Items = "a" "b" "c"
+				START = Items " -> " $Items.Unique
+			`,
+			[]string{
+				"abc -> a",
+				"abc -> b",
+				"abc -> c",
+			},
+		)
+	}
+	{
+		// check if the strategy really works as expected
+		validateTavorAllPermutations(
+			t,
+			`
+				START = +2(?(1)?(2))
+			`,
+			[]string{
+				"",
+				"1",
+				"2",
+				"12",
+				"1",
+				"11",
+				"21",
+				"121",
+				"2",
+				"12",
+				"22",
+				"122",
+				"12",
+				"112",
+				"212",
+				"1212",
 			},
 		)
 	}

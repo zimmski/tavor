@@ -3,7 +3,6 @@ package lists
 import (
 	"strconv"
 
-	"github.com/zimmski/tavor/rand"
 	"github.com/zimmski/tavor/token"
 )
 
@@ -29,16 +28,6 @@ func (l *ListItem) Clone() token.Token {
 		index: l.index,
 		list:  l.list,
 	}
-}
-
-// Fuzz fuzzes this token using the random generator by choosing one of the possible permutations for this token
-func (l *ListItem) Fuzz(r rand.Rand) {
-	// do nothing
-}
-
-// FuzzAll calls Fuzz for this token and then FuzzAll for all children of this token
-func (l *ListItem) FuzzAll(r rand.Rand) {
-	l.Fuzz(r)
 }
 
 // Parse tries to parse the token beginning from the current position in the parser data.
@@ -109,16 +98,6 @@ func (l *IndexItem) Clone() token.Token {
 	}
 }
 
-// Fuzz fuzzes this token using the random generator by choosing one of the possible permutations for this token
-func (l *IndexItem) Fuzz(r rand.Rand) {
-	// do nothing
-}
-
-// FuzzAll calls Fuzz for this token and then FuzzAll for all children of this token
-func (l *IndexItem) FuzzAll(r rand.Rand) {
-	l.Fuzz(r)
-}
-
 // Parse tries to parse the token beginning from the current position in the parser data.
 // If the parsing is successful the error argument is nil and the next current position after the token is returned.
 func (l *IndexItem) Parse(pars *token.InternalParser, cur int) (int, []error) {
@@ -186,7 +165,7 @@ func NewUniqueItem(list token.ListToken) *UniqueItem {
 	return l
 }
 
-func (l *UniqueItem) pick(r rand.Rand) {
+func (l *UniqueItem) pick(i uint) {
 	nList := l.original.list.Len()
 	nPicked := len(l.original.picked)
 
@@ -194,15 +173,16 @@ func (l *UniqueItem) pick(r rand.Rand) {
 		panic("already picked everything!") // TODO
 	}
 
-	// TODO make this WAYYYYYYYYY more effiecent
-	for {
-		c := r.Intn(nList)
+	for j := 0; j <= nList; j++ {
+		if _, ok := l.original.picked[j]; !ok {
+			if i == 0 {
+				l.index = int(j)
+				l.original.picked[j] = struct{}{}
 
-		if _, ok := l.original.picked[c]; !ok {
-			l.index = c
-			l.original.picked[c] = struct{}{}
+				break
+			}
 
-			break
+			i--
 		}
 	}
 }
@@ -222,18 +202,6 @@ func (l *UniqueItem) Clone() token.Token {
 	return n
 }
 
-// Fuzz fuzzes this token using the random generator by choosing one of the possible permutations for this token
-func (l *UniqueItem) Fuzz(r rand.Rand) {
-	if l.index == -1 {
-		l.pick(r)
-	}
-}
-
-// FuzzAll calls Fuzz for this token and then FuzzAll for all children of this token
-func (l *UniqueItem) FuzzAll(r rand.Rand) {
-	l.Fuzz(r)
-}
-
 // Parse tries to parse the token beginning from the current position in the parser data.
 // If the parsing is successful the error argument is nil and the next current position after the token is returned.
 func (l *UniqueItem) Parse(pars *token.InternalParser, cur int) (int, []error) {
@@ -242,6 +210,8 @@ func (l *UniqueItem) Parse(pars *token.InternalParser, cur int) (int, []error) {
 
 // Permutation sets a specific permutation for this token
 func (l *UniqueItem) Permutation(i uint) error {
+	l.Release()
+
 	permutations := l.Permutations()
 
 	if i < 1 || i > permutations {
@@ -250,14 +220,20 @@ func (l *UniqueItem) Permutation(i uint) error {
 		}
 	}
 
-	// do nothing
+	l.pick(i - 1)
 
 	return nil
 }
 
 // Permutations returns the number of permutations for this token
 func (l *UniqueItem) Permutations() uint {
-	return 1
+	p := uint(l.original.list.Len() - len(l.original.picked))
+
+	if l.index != -1 {
+		p++
+	}
+
+	return p
 }
 
 // PermutationsAll returns the number of all possible permutations for this token including its children
@@ -281,16 +257,16 @@ func (l *UniqueItem) String() string {
 // Index returns the index of this token in its parent token
 func (l *UniqueItem) Index() int {
 	if l.index == -1 {
-		l.pick(rand.NewIncrementRand(0))
+		l.pick(0)
 	}
 
 	return l.index
 }
 
-// ResetToken interface methods
+// ReleaseToken interface methods
 
-// Reset resets the (internal) state of this token and its dependences
-func (l *UniqueItem) Reset() {
+// Release gives the token a chance to remove resources
+func (l *UniqueItem) Release() {
 	if l.index != -1 {
 		delete(l.original.picked, l.index)
 

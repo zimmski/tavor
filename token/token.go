@@ -3,8 +3,6 @@ package token
 import (
 	"fmt"
 	"text/scanner"
-
-	"github.com/zimmski/tavor/rand"
 )
 
 // Token defines a general token
@@ -13,11 +11,6 @@ type Token interface {
 
 	// Clone returns a copy of the token and all its children
 	Clone() Token
-
-	// Fuzz fuzzes this token using the random generator by choosing one of the possible permutations for this token
-	Fuzz(r rand.Rand)
-	// FuzzAll calls Fuzz for this token and then FuzzAll for all children of this token
-	FuzzAll(r rand.Rand)
 
 	// Permutation sets a specific permutation for this token
 	Permutation(i uint) error
@@ -163,6 +156,18 @@ type Reduce interface {
 type ReduceToken interface {
 	Token
 	Reduce
+}
+
+// Release defines a release token which provides methods to release resources on removal
+type Release interface {
+	// Release gives the token a chance to remove resources
+	Release()
+}
+
+// ReleaseToken combines the Token and Release interface
+type ReleaseToken interface {
+	Token
+	Release
 }
 
 // Scope defines a scope token which holds a scope
