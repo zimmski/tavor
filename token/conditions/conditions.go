@@ -211,7 +211,7 @@ func (c *If) InternalReplace(oldToken, newToken token.Token) {
 // SetScope sets the scope of the token
 func (c *If) SetScope(variableScope map[string]token.Token) {
 	for _, pair := range c.Pairs {
-		token.SetInternalScope(pair.Head, variableScope)
-		token.SetInternalScope(pair.Body, variableScope)
+		token.SetScope(pair.Head, variableScope)
+		token.SetScope(pair.Body, variableScope)
 	}
 }

@@ -102,7 +102,7 @@ func (s *RandomStrategy) fuzzYADDA(root token.Token, r rand.Rand) {
 		scope map[string]token.Token
 	}
 
-	queue.Push(set{
+	queue.Unshift(set{
 		token: root,
 		scope: scope,
 	})
@@ -137,16 +137,16 @@ func (s *RandomStrategy) fuzzYADDA(root token.Token, r rand.Rand) {
 		switch t := s.token.(type) {
 		case token.ForwardToken:
 			if v := t.Get(); v != nil {
-				queue.Push(set{
+				queue.Unshift(set{
 					token: v,
 					scope: nScope,
 				})
 			}
 		case token.ListToken:
-			for i := 0; i < t.Len(); i++ {
+			for i := t.Len() - 1; i >= 0; i-- {
 				c, _ := t.Get(i)
 
-				queue.Push(set{
+				queue.Unshift(set{
 					token: c,
 					scope: nScope,
 				})
@@ -156,8 +156,8 @@ func (s *RandomStrategy) fuzzYADDA(root token.Token, r rand.Rand) {
 
 	alreadyFuzzed := make(map[token.Token]struct{})
 
-	for _, tok := range fuzzAgain {
-		queue.Push(tok)
+	for i := len(fuzzAgain) - 1; i >= 0; i-- {
+		queue.Unshift(fuzzAgain[i])
 	}
 
 	for !queue.Empty() {
@@ -183,13 +183,13 @@ func (s *RandomStrategy) fuzzYADDA(root token.Token, r rand.Rand) {
 		switch t := tok.(type) {
 		case token.ForwardToken:
 			if v := t.Get(); v != nil {
-				queue.Push(v)
+				queue.Unshift(v)
 			}
 		case token.ListToken:
-			for i := 0; i < t.Len(); i++ {
+			for i := t.Len() - 1; i >= 0; i-- {
 				c, _ := t.Get(i)
 
-				queue.Push(c)
+				queue.Unshift(c)
 			}
 		}
 	}

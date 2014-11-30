@@ -13,7 +13,7 @@ func MinimizeTokens(root Token) Token {
 	parents := make(map[Token]Token)
 	queue := linkedlist.New()
 
-	queue.Push(root)
+	queue.Unshift(root)
 	parents[root] = nil
 
 	for !queue.Empty() {
@@ -31,7 +31,7 @@ func MinimizeTokens(root Token) Token {
 					pTok.InternalReplace(tok, r)
 				}
 
-				queue.Push(r)
+				queue.Unshift(r)
 				parents[r] = p
 
 				continue
@@ -41,14 +41,14 @@ func MinimizeTokens(root Token) Token {
 		switch tok := v.(type) {
 		case ForwardToken:
 			if v := tok.InternalGet(); v != nil {
-				queue.Push(v)
+				queue.Unshift(v)
 				parents[v] = tok
 			}
 		case ListToken:
-			for i := 0; i < tok.InternalLen(); i++ {
+			for i := tok.InternalLen() - 1; i >= 0; i-- {
 				c, _ := tok.InternalGet(i)
 
-				queue.Push(c)
+				queue.Unshift(c)
 				parents[c] = tok
 			}
 		}
@@ -76,7 +76,7 @@ func UnrollPointers(root Token) Token {
 
 	queue := linkedlist.New()
 
-	queue.Push(&unrollToken{
+	queue.Unshift(&unrollToken{
 		tok:    root,
 		parent: nil,
 		counts: make(map[Token]int),
@@ -264,7 +264,7 @@ func UnrollPointers(root Token) Token {
 			}
 		case ForwardToken:
 			if v := t.InternalGet(); v != nil {
-				queue.Push(&unrollToken{
+				queue.Unshift(&unrollToken{
 					tok:    v,
 					parent: iTok,
 					counts: iTok.counts,
@@ -273,10 +273,10 @@ func UnrollPointers(root Token) Token {
 				parents[v] = iTok.tok
 			}
 		case ListToken:
-			for i := 0; i < t.InternalLen(); i++ {
+			for i := t.InternalLen() - 1; i >= 0; i-- {
 				c, _ := t.InternalGet(i)
 
-				queue.Push(&unrollToken{
+				queue.Unshift(&unrollToken{
 					tok:    c,
 					parent: iTok,
 					counts: iTok.counts,

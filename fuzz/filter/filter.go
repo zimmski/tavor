@@ -68,7 +68,7 @@ func ApplyFilters(filters []Filter, root token.Token) (token.Token, error) {
 
 	var queue = linkedlist.New()
 
-	queue.Push(&Pair{
+	queue.Unshift(&Pair{
 		token:  root,
 		parent: nil,
 	})
@@ -125,17 +125,15 @@ func ApplyFilters(filters []Filter, root token.Token) (token.Token, error) {
 		case token.ForwardToken:
 			c := t.InternalGet()
 
-			queue.Push(&Pair{
+			queue.Unshift(&Pair{
 				token:  c,
 				parent: tok,
 			})
 		case token.ListToken:
-			l := t.InternalLen()
-
-			for i := 0; i < l; i++ {
+			for i := t.InternalLen() - 1; i >= 0; i-- {
 				c, _ := t.InternalGet(i)
 
-				queue.Push(&Pair{
+				queue.Unshift(&Pair{
 					token:  c,
 					parent: tok,
 				})

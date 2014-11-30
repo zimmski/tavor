@@ -43,17 +43,16 @@ func (s *BinarySearchStrategy) getTree(root token.Token, fromChildren bool) []bi
 	if fromChildren {
 		switch t := root.(type) {
 		case token.ForwardToken:
-			queue.Push(t.Get())
+			queue.Unshift(t.Get())
 		case token.ListToken:
-			l := t.Len()
-
-			for i := 0; i < l; i++ {
+			for i := t.Len() - 1; i >= 0; i-- {
 				c, _ := t.Get(i)
-				queue.Push(c)
+
+				queue.Unshift(c)
 			}
 		}
 	} else {
-		queue.Push(root)
+		queue.Unshift(root)
 	}
 
 	for !queue.Empty() {
@@ -77,14 +76,12 @@ func (s *BinarySearchStrategy) getTree(root token.Token, fromChildren bool) []bi
 		case token.ForwardToken:
 			c := t.Get()
 
-			queue.Push(c)
+			queue.Unshift(c)
 		case token.ListToken:
-			l := t.Len()
-
-			for i := 0; i < l; i++ {
+			for i := t.Len() - 1; i >= 0; i-- {
 				c, _ := t.Get(i)
 
-				queue.Push(c)
+				queue.Unshift(c)
 			}
 		}
 	}

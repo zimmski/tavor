@@ -10,7 +10,7 @@ import (
 func ResetResetTokens(root Token) {
 	var queue = linkedlist.New()
 
-	queue.Push(root)
+	queue.Unshift(root)
 
 	for !queue.Empty() {
 		v, _ := queue.Shift()
@@ -25,12 +25,13 @@ func ResetResetTokens(root Token) {
 		switch tok := v.(type) {
 		case ForwardToken:
 			if v := tok.Get(); v != nil {
-				queue.Push(v)
+				queue.Unshift(v)
 			}
 		case ListToken:
-			for i := 0; i < tok.Len(); i++ {
+			for i := tok.Len() - 1; i >= 0; i-- {
 				c, _ := tok.Get(i)
-				queue.Push(c)
+
+				queue.Unshift(c)
 			}
 		}
 	}
@@ -50,7 +51,7 @@ func SetScope(root Token, scope map[string]Token) {
 		scope map[string]Token
 	}
 
-	queue.Push(set{
+	queue.Unshift(set{
 		token: root,
 		scope: scope,
 	})
@@ -73,16 +74,16 @@ func SetScope(root Token, scope map[string]Token) {
 		switch t := s.token.(type) {
 		case ForwardToken:
 			if v := t.Get(); v != nil {
-				queue.Push(set{
+				queue.Unshift(set{
 					token: v,
 					scope: nScope,
 				})
 			}
 		case ListToken:
-			for i := 0; i < t.Len(); i++ {
+			for i := t.Len() - 1; i >= 0; i-- {
 				c, _ := t.Get(i)
 
-				queue.Push(set{
+				queue.Unshift(set{
 					token: c,
 					scope: nScope,
 				})
@@ -95,7 +96,7 @@ func SetScope(root Token, scope map[string]Token) {
 func SetInternalScope(root Token, scope map[string]Token) {
 	queue := linkedlist.New()
 
-	queue.Push(root)
+	queue.Unshift(root)
 
 	for !queue.Empty() {
 		tok, _ := queue.Shift()
@@ -109,13 +110,13 @@ func SetInternalScope(root Token, scope map[string]Token) {
 		switch t := tok.(type) {
 		case ForwardToken:
 			if v := t.InternalGet(); v != nil {
-				queue.Push(v)
+				queue.Unshift(v)
 			}
 		case ListToken:
-			for i := 0; i < t.InternalLen(); i++ {
+			for i := t.InternalLen() - 1; i >= 0; i-- {
 				c, _ := t.InternalGet(i)
 
-				queue.Push(c)
+				queue.Unshift(c)
 			}
 		}
 	}

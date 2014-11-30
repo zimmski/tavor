@@ -12,7 +12,7 @@ func LoopExists(root Token) bool {
 	lookup := make(map[Token]struct{})
 	queue := linkedlist.New()
 
-	queue.Push(root)
+	queue.Unshift(root)
 
 	for !queue.Empty() {
 		v, _ := queue.Shift()
@@ -29,17 +29,17 @@ func LoopExists(root Token) bool {
 					return true
 				}
 
-				queue.Push(v)
+				queue.Unshift(v)
 			}
 		case ForwardToken:
 			if v := tok.InternalGet(); v != nil {
-				queue.Push(v)
+				queue.Unshift(v)
 			}
 		case ListToken:
-			for i := 0; i < tok.InternalLen(); i++ {
+			for i := tok.Len() - 1; i >= 0; i-- {
 				c, _ := tok.InternalGet(i)
 
-				queue.Push(c)
+				queue.Unshift(c)
 			}
 		}
 	}

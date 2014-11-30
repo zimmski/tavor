@@ -9,7 +9,7 @@ import (
 func Walk(root Token, walkFunc func(tok Token) error) error {
 	queue := linkedlist.New()
 
-	queue.Push(root)
+	queue.Unshift(root)
 
 	walked := make(map[Token]struct{})
 
@@ -25,15 +25,15 @@ func Walk(root Token, walkFunc func(tok Token) error) error {
 		case ForwardToken:
 			if v := t.Get(); v != nil {
 				if _, ok := walked[v]; !ok {
-					queue.Push(v)
+					queue.Unshift(v)
 				}
 			}
 		case ListToken:
-			for i := 0; i < t.Len(); i++ {
+			for i := t.Len() - 1; i >= 0; i-- {
 				c, _ := t.Get(i)
 
 				if _, ok := walked[c]; !ok {
-					queue.Push(c)
+					queue.Unshift(c)
 				}
 			}
 		}
@@ -47,7 +47,7 @@ func Walk(root Token, walkFunc func(tok Token) error) error {
 func WalkInternal(root Token, walkFunc func(tok Token) error) error {
 	queue := linkedlist.New()
 
-	queue.Push(root)
+	queue.Unshift(root)
 
 	walked := make(map[Token]struct{})
 
@@ -63,15 +63,15 @@ func WalkInternal(root Token, walkFunc func(tok Token) error) error {
 		case ForwardToken:
 			if v := t.InternalGet(); v != nil {
 				if _, ok := walked[v]; !ok {
-					queue.Push(v)
+					queue.Unshift(v)
 				}
 			}
 		case ListToken:
-			for i := 0; i < t.InternalLen(); i++ {
+			for i := t.InternalLen() - 1; i >= 0; i-- {
 				c, _ := t.InternalGet(i)
 
 				if _, ok := walked[c]; !ok {
-					queue.Push(c)
+					queue.Unshift(c)
 				}
 			}
 		}

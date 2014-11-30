@@ -38,17 +38,16 @@ func (s *PermuteOptionalsStrategy) findOptionals(r rand.Rand, root token.Token, 
 	if fromChildren {
 		switch t := root.(type) {
 		case token.ForwardToken:
-			queue.Push(t.Get())
+			queue.Unshift(t.Get())
 		case token.ListToken:
-			l := t.Len()
-
-			for i := 0; i < l; i++ {
+			for i := t.Len() - 1; i >= 0; i-- {
 				c, _ := t.Get(i)
-				queue.Push(c)
+
+				queue.Unshift(c)
 			}
 		}
 	} else {
-		queue.Push(root)
+		queue.Unshift(root)
 	}
 
 	for !queue.Empty() {
@@ -80,12 +79,10 @@ func (s *PermuteOptionalsStrategy) findOptionals(r rand.Rand, root token.Token, 
 					log.Panic(err)
 				}
 
-				queue.Push(c)
+				queue.Unshift(c)
 			}
 		case token.ListToken:
-			l := t.Len()
-
-			for i := 0; i < l; i++ {
+			for i := t.Len() - 1; i >= 0; i-- {
 				c, _ := t.Get(i)
 
 				err := c.Permutation(uint(r.Intn(int(c.Permutations())) + 1))
@@ -93,7 +90,7 @@ func (s *PermuteOptionalsStrategy) findOptionals(r rand.Rand, root token.Token, 
 					log.Panic(err)
 				}
 
-				queue.Push(c)
+				queue.Unshift(c)
 			}
 		}
 	}
