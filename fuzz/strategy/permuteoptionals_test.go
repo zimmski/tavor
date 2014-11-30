@@ -10,6 +10,7 @@ import (
 	"github.com/zimmski/tavor/token/constraints"
 	"github.com/zimmski/tavor/token/lists"
 	"github.com/zimmski/tavor/token/primitives"
+	"github.com/zimmski/tavor/token/sequences"
 )
 
 func TestPermuteOptionalsStrategyToBeStrategy(t *testing.T) {
@@ -225,7 +226,6 @@ func TestPermuteOptionalsStrategy(t *testing.T) {
 			"12",
 		})
 	}
-	/* TODO FIXME this
 	{
 		s := sequences.NewSequence(10, 2)
 
@@ -261,7 +261,6 @@ func TestPermuteOptionalsStrategy(t *testing.T) {
 			"ab1010",
 		})
 	}
-	*/
 }
 
 func TestPermuteOptionalsStrategyLoopDetection(t *testing.T) {

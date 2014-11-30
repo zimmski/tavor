@@ -124,6 +124,8 @@ func (l *Repeat) Parse(pars *token.InternalParser, cur int) (int, []error) {
 func (l *Repeat) permutation(i uint) {
 	toks := make([]token.Token, int(i)+int(l.From()))
 
+	token.ReleaseTokens(l)
+
 	for i := range toks {
 		toks[i] = l.token.Clone()
 	}

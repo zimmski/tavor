@@ -166,11 +166,7 @@ func NewUniqueItem(list token.ListToken) *UniqueItem {
 }
 
 func (l *UniqueItem) pick(i uint) {
-	if l.index != -1 {
-		delete(l.original.picked, l.index)
-
-		l.index = -1
-	}
+	l.Release()
 
 	nList := l.original.list.Len()
 	nPicked := len(l.original.picked)
@@ -265,4 +261,15 @@ func (l *UniqueItem) Index() int {
 	}
 
 	return l.index
+}
+
+// ReleaseToken interface methods
+
+// Release gives the token a chance to remove resources
+func (l *UniqueItem) Release() {
+	if l.index != -1 {
+		delete(l.original.picked, l.index)
+
+		l.index = -1
+	}
 }

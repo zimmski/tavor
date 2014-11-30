@@ -158,6 +158,18 @@ type ReduceToken interface {
 	Reduce
 }
 
+// Release defines a release token which provides methods to release resources on removal
+type Release interface {
+	// Release gives the token a chance to remove resources
+	Release()
+}
+
+// ReleaseToken combines the Token and Release interface
+type ReleaseToken interface {
+	Token
+	Release
+}
+
 // Scope defines a scope token which holds a scope
 type Scope interface {
 	// SetScope sets the scope of the token

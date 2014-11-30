@@ -741,8 +741,7 @@ func TestTavorParserAndCuriousCaseOfFuzzing(t *testing.T) {
 	}
 
 	// Correct sequence behaviour
-	// TODO FIXME this
-	/*{
+	{
 		tok, err = ParseTavor(strings.NewReader(`
 			$Id Sequence = start: 2,
 				step: 2
@@ -760,7 +759,7 @@ func TestTavorParserAndCuriousCaseOfFuzzing(t *testing.T) {
 
 			ch <- i
 		}
-	}*/
+	}
 
 	// Correct list behaviour
 	{

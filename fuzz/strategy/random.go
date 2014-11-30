@@ -6,7 +6,6 @@ import (
 	"github.com/zimmski/tavor/log"
 	"github.com/zimmski/tavor/rand"
 	"github.com/zimmski/tavor/token"
-	"github.com/zimmski/tavor/token/lists"
 	"github.com/zimmski/tavor/token/primitives"
 	"github.com/zimmski/tavor/token/sequences"
 )
@@ -67,6 +66,8 @@ func (s *RandomStrategy) Fuzz(r rand.Rand) (chan struct{}, error) {
 }
 
 func (s *RandomStrategy) fuzz(tok token.Token, r rand.Rand) {
+	log.Debugf("Fuzz (%p)%#v with maxPermutations %d", tok, tok, tok.Permutations())
+
 	err := tok.Permutation(uint(r.Intn(int(tok.Permutations())) + 1))
 	if err != nil {
 		log.Panic(err)
@@ -170,7 +171,7 @@ func (s *RandomStrategy) fuzzYADDA(root token.Token, r rand.Rand) {
 		alreadyFuzzed[tok] = struct{}{}
 
 		switch tok.(type) {
-		case *sequences.SequenceExistingItem, *lists.UniqueItem, *primitives.CharacterClass:
+		case *sequences.SequenceExistingItem, *primitives.CharacterClass:
 			log.Debugf("Fuzz again %p(%#v)", tok, tok)
 
 			err := tok.Permutation(uint(r.Intn(int(tok.Permutations())) + 1))

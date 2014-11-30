@@ -82,39 +82,37 @@ func TestRandomStrategyCases(t *testing.T) {
 	r := test.NewRandTest(1)
 
 	{
-		if 1 == 2 { // TODO FIXME this
-			root, err := parser.ParseTavor(strings.NewReader(`
+		root, err := parser.ParseTavor(strings.NewReader(`
 			Items = "a" "b" "c"
 			Choice = $Items.Unique<=v> $v.Index " " $v.Value
 			START = Items +$Items.Count(Choice)
 		`))
+		Nil(t, err)
+
+		o, err := New("random", root)
+		NotNil(t, o)
+		Nil(t, err)
+
+		// run
+		{
+			r.Seed(0)
+
+			ch, err := o.Fuzz(r)
 			Nil(t, err)
 
-			o, err := New("random", root)
-			NotNil(t, o)
-			Nil(t, err)
+			_, ok := <-ch
+			True(t, ok)
 
-			// run
-			{
-				r.Seed(0)
+			Equal(t, "abc0 a1 b2 c", root.String())
 
-				ch, err := o.Fuzz(r)
-				Nil(t, err)
+			ch <- struct{}{}
 
-				_, ok := <-ch
-				True(t, ok)
-
-				Equal(t, "abc1 b2 c0 a", root.String())
-
-				ch <- struct{}{}
-
-				_, ok = <-ch
-				False(t, ok)
-			}
+			_, ok = <-ch
+			False(t, ok)
 		}
 
 		// rerun
-		/*{ TODO this does currently not work because Unique Items are not put back into the list if they are thrown away
+		{
 			r.Seed(1)
 
 			ch, err := o.Fuzz(r)
@@ -123,14 +121,13 @@ func TestRandomStrategyCases(t *testing.T) {
 			_, ok := <-ch
 			True(t, ok)
 
-			Equal(t, "abc1 b2 c0 a", root.String())
+			Equal(t, "abc0 a1 b2 c", root.String())
 
 			ch <- struct{}{}
 
 			_, ok = <-ch
 			False(t, ok)
 		}
-		*/
 	}
 }
 

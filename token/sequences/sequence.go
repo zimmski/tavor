@@ -170,7 +170,7 @@ func (s *SequenceItem) Permutation(i uint) error {
 		}
 	}
 
-	// s.permutation(i - 1)
+	s.permutation(i - 1)
 
 	return nil
 }

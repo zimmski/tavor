@@ -41,3 +41,14 @@ func Walk(root Token, walkFunc func(tok Token) error) error {
 
 	return nil
 }
+
+// ReleaseTokens traverses the token graph and calls Release for every release token
+func ReleaseTokens(root Token) {
+	_ = Walk(root, func(tok Token) error {
+		if t, ok := tok.(ReleaseToken); ok {
+			t.Release()
+		}
+
+		return nil
+	})
+}
