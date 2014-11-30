@@ -166,6 +166,8 @@ func NewUniqueItem(list token.ListToken) *UniqueItem {
 }
 
 func (l *UniqueItem) pick(i uint) {
+	l.Reset()
+
 	nList := l.original.list.Len()
 	nPicked := len(l.original.picked)
 
@@ -176,8 +178,6 @@ func (l *UniqueItem) pick(i uint) {
 	for j := 0; j <= nList; j++ {
 		if _, ok := l.original.picked[j]; !ok {
 			if i == 0 {
-				l.Reset()
-
 				l.index = int(j)
 				l.original.picked[j] = struct{}{}
 
@@ -227,7 +227,13 @@ func (l *UniqueItem) Permutation(i uint) error {
 
 // Permutations returns the number of permutations for this token
 func (l *UniqueItem) Permutations() uint {
-	return uint(l.original.list.Len() - len(l.original.picked))
+	p := uint(l.original.list.Len() - len(l.original.picked))
+
+	if l.index != -1 {
+		p++
+	}
+
+	return p
 }
 
 // PermutationsAll returns the number of all possible permutations for this token including its children
