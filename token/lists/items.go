@@ -166,7 +166,11 @@ func NewUniqueItem(list token.ListToken) *UniqueItem {
 }
 
 func (l *UniqueItem) pick(i uint) {
-	l.Reset()
+	if l.index != -1 {
+		delete(l.original.picked, l.index)
+
+		l.index = -1
+	}
 
 	nList := l.original.list.Len()
 	nPicked := len(l.original.picked)
@@ -261,15 +265,4 @@ func (l *UniqueItem) Index() int {
 	}
 
 	return l.index
-}
-
-// ResetToken interface methods
-
-// Reset resets the (internal) state of this token and its dependences
-func (l *UniqueItem) Reset() {
-	if l.index != -1 {
-		delete(l.original.picked, l.index)
-
-		l.index = -1
-	}
 }

@@ -53,12 +53,4 @@ func TestUniqueItem(t *testing.T) {
 	Equal(t, "3", b.String())
 	Equal(t, 2, b.Permutations())
 	Equal(t, 2, b.PermutationsAll())
-
-	a.Reset()
-	Equal(t, "1", a.String())
-	Equal(t, "3", b.String())
-
-	b.Reset()
-	Equal(t, "1", a.String())
-	Equal(t, "2", b.String())
 }

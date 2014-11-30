@@ -456,6 +456,32 @@ func TestAlmostAllPermutationsStrategy(t *testing.T) {
 			"243",
 		})
 	}
+	{
+		// correct unqiue behavior
+		o, err := parser.ParseTavor(strings.NewReader(`
+				Items = "a" "b" "c"
+				START = Items " -> " $Items.Unique
+		`))
+		Nil(t, err)
+
+		s := NewAlmostAllPermutationsStrategy(o)
+
+		var got []string
+
+		ch, err := s.Fuzz(r)
+		Nil(t, err)
+		for i := range ch {
+			got = append(got, o.String())
+
+			ch <- i
+		}
+
+		Equal(t, got, []string{
+			"abc -> a",
+			"abc -> b",
+			"abc -> c",
+		})
+	}
 }
 
 func TestAlmostAllPermutationsStrategyLoopDetection(t *testing.T) {

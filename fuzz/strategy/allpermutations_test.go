@@ -504,6 +504,21 @@ func TestAllPermutationsStrategy(t *testing.T) {
 			},
 		)
 	}
+	{
+		// correct unqiue behavior
+		validateTavorAllPermutations(
+			t,
+			`
+				Items = "a" "b" "c"
+				START = Items " -> " $Items.Unique
+			`,
+			[]string{
+				"abc -> a",
+				"abc -> b",
+				"abc -> c",
+			},
+		)
+	}
 }
 
 func validateTavorAllPermutations(t *testing.T, format string, expect []string) {
