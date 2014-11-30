@@ -1629,6 +1629,19 @@ func ParseTavor(src io.Reader) (token.Token, error) {
 
 	start := p.lookup["START"].token
 
+	// TODO this could be done much better especially we could add ALL resets here not just sequences
+	var automaticResets []token.Token
+	for _, usage := range p.lookup {
+		if tok, ok := usage.token.(*sequences.Sequence); ok {
+			automaticResets = append(automaticResets, tok.ResetItem())
+		}
+	}
+	if len(automaticResets) != 0 {
+		automaticResets = append(automaticResets, start)
+
+		start = lists.NewAll(automaticResets...)
+	}
+
 	start = token.UnrollPointers(start)
 	start = token.MinimizeTokens(start)
 

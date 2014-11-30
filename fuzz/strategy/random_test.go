@@ -1,6 +1,7 @@
 package strategy
 
 import (
+	"runtime"
 	"strings"
 	"testing"
 
@@ -79,9 +80,9 @@ func TestRandomStrategy(t *testing.T) {
 }
 
 func TestRandomStrategyCases(t *testing.T) {
-	r := test.NewRandTest(1)
-
 	{
+		r := test.NewRandTest(1)
+
 		root, err := parser.ParseTavor(strings.NewReader(`
 			Items = "a" "b" "c"
 			Choice = $Items.Unique<=v> $v.Index " " $v.Value
@@ -129,6 +130,53 @@ func TestRandomStrategyCases(t *testing.T) {
 			False(t, ok)
 		}
 	}
+	{
+		// sequences should always start reseted
+		validateTavorRandom(
+			t,
+			1,
+			`
+				$Id Sequence = start: 0,
+					step:  2
+
+				START = +1,5($Id.Next " ")
+			`,
+			[]string{
+				"0 2 ",
+			},
+		)
+	}
+}
+
+func validateTavorRandom(t *testing.T, seed int, format string, expect []string) {
+	beforeGoroutineCount := runtime.NumGoroutine()
+
+	root, err := parser.ParseTavor(strings.NewReader(format))
+	Nil(t, err)
+
+	o, err := New("random", root)
+	NotNil(t, o)
+	Nil(t, err)
+
+	r := test.NewRandTest(int64(seed))
+
+	ch, err := o.Fuzz(r)
+	Nil(t, err)
+
+	_, ok := <-ch
+	True(t, ok)
+
+	var got []string
+	got = append(got, root.String())
+
+	ch <- struct{}{}
+
+	_, ok = <-ch
+	False(t, ok)
+
+	Equal(t, got, expect)
+
+	Equal(t, 0, runtime.NumGoroutine()-beforeGoroutineCount, "check for goroutine leaks")
 }
 
 func TestRandomStrategyLoopDetection(t *testing.T) {

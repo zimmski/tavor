@@ -546,6 +546,25 @@ func TestAllPermutationsStrategy(t *testing.T) {
 			},
 		)
 	}
+	{
+		// sequences should always start reseted
+		validateTavorAllPermutations(
+			t,
+			`
+				$Id Sequence = start: 0,
+					step:  2
+
+				START = +1,5($Id.Next " ")
+			`,
+			[]string{
+				"0 ",
+				"0 2 ",
+				"0 2 4 ",
+				"0 2 4 6 ",
+				"0 2 4 6 8 ",
+			},
+		)
+	}
 }
 
 func validateTavorAllPermutations(t *testing.T, format string, expect []string) {

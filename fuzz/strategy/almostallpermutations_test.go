@@ -1,6 +1,7 @@
 package strategy
 
 import (
+	"runtime"
 	"strings"
 	"testing"
 
@@ -523,6 +524,50 @@ func TestAlmostAllPermutationsStrategy(t *testing.T) {
 			"1212",
 		})
 	}
+	{
+		// sequences should always start reseted
+		validateTavorAlmostAllPermutations(
+			t,
+			`
+				$Id Sequence = start: 0,
+					step:  2
+
+				START = +1,5($Id.Next " ")
+			`,
+			[]string{
+				"0 ",
+				"0 2 ",
+				"0 2 4 ",
+				"0 2 4 6 ",
+				"0 2 4 6 8 ",
+			},
+		)
+	}
+}
+
+func validateTavorAlmostAllPermutations(t *testing.T, format string, expect []string) {
+	beforeGoroutineCount := runtime.NumGoroutine()
+
+	r := test.NewRandTest(1)
+
+	o, err := parser.ParseTavor(strings.NewReader(format))
+	Nil(t, err)
+
+	s := NewAlmostAllPermutationsStrategy(o)
+
+	var got []string
+
+	ch, err := s.Fuzz(r)
+	Nil(t, err)
+	for i := range ch {
+		got = append(got, o.String())
+
+		ch <- i
+	}
+
+	Equal(t, got, expect)
+
+	Equal(t, 0, runtime.NumGoroutine()-beforeGoroutineCount, "check for goroutine leaks")
 }
 
 func TestAlmostAllPermutationsStrategyLoopDetection(t *testing.T) {
