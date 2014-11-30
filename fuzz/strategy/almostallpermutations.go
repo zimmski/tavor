@@ -1,16 +1,32 @@
 package strategy
 
 import (
-	"github.com/zimmski/container/list/linkedlist"
-
 	"github.com/zimmski/tavor/log"
 	"github.com/zimmski/tavor/rand"
 	"github.com/zimmski/tavor/token"
 )
 
 type almostAllPermutationsLevel struct {
-	token       token.Token
+	parent      token.Token
+	tokenIndex  int
 	permutation uint
+}
+
+func (l almostAllPermutationsLevel) token() token.Token {
+	if l.tokenIndex == -1 {
+		return l.parent
+	}
+
+	switch t := l.parent.(type) {
+	case token.ForwardToken:
+		return t.Get()
+	case token.ListToken:
+		tt, _ := t.Get(l.tokenIndex)
+
+		return tt
+	}
+
+	return nil
 }
 
 // AlmostAllPermutationsStrategy implements a fuzzing strategy that generates "almost" all possible permutations of a token graph.
@@ -19,6 +35,7 @@ type AlmostAllPermutationsStrategy struct {
 	root token.Token
 
 	resetedLookup map[token.Token]uint
+	overextended  bool
 }
 
 // NewAlmostAllPermutationsStrategy returns a new instance of the Almost All Permutations fuzzing strategy
@@ -27,6 +44,7 @@ func NewAlmostAllPermutationsStrategy(tok token.Token) *AlmostAllPermutationsStr
 		root: tok,
 
 		resetedLookup: make(map[token.Token]uint),
+		overextended:  false,
 	}
 
 	return s
@@ -40,36 +58,38 @@ func init() {
 
 func (s *AlmostAllPermutationsStrategy) getLevel(root token.Token, fromChildren bool) []almostAllPermutationsLevel {
 	var level []almostAllPermutationsLevel
-	var queue = linkedlist.New()
 
 	if fromChildren {
 		switch t := root.(type) {
 		case token.ForwardToken:
 			if v := t.Get(); v != nil {
-				queue.Push(v)
+				level = append(level, almostAllPermutationsLevel{
+					parent:      root,
+					tokenIndex:  0,
+					permutation: 1,
+				})
 			}
 		case token.ListToken:
 			l := t.Len()
 
 			for i := 0; i < l; i++ {
-				c, _ := t.Get(i)
-				queue.Push(c)
+				level = append(level, almostAllPermutationsLevel{
+					parent:      root,
+					tokenIndex:  i,
+					permutation: 1,
+				})
 			}
 		}
 	} else {
-		queue.Push(root)
-	}
-
-	for !queue.Empty() {
-		v, _ := queue.Shift()
-		tok, _ := v.(token.Token)
-
-		s.setTokenPermutation(tok, 1)
-
 		level = append(level, almostAllPermutationsLevel{
-			token:       tok,
+			parent:      root,
+			tokenIndex:  -1,
 			permutation: 1,
 		})
+	}
+
+	for _, l := range level {
+		s.setTokenPermutation(l.token(), 1)
 	}
 
 	return level
@@ -88,6 +108,7 @@ func (s *AlmostAllPermutationsStrategy) Fuzz(r rand.Rand) (chan struct{}, error)
 	continueFuzzing := make(chan struct{})
 
 	s.resetedLookup = make(map[token.Token]uint)
+	s.overextended = false
 
 	go func() {
 		log.Debug("start almost all permutations routine")
@@ -104,6 +125,7 @@ func (s *AlmostAllPermutationsStrategy) Fuzz(r rand.Rand) (chan struct{}, error)
 
 		token.ResetScope(s.root)
 		token.ResetResetTokens(s.root)
+		token.ResetScope(s.root)
 
 		log.Debug("done with fuzzing step")
 
@@ -125,15 +147,17 @@ func (s *AlmostAllPermutationsStrategy) Fuzz(r rand.Rand) (chan struct{}, error)
 func (s *AlmostAllPermutationsStrategy) setTokenPermutation(tok token.Token, permutation uint) {
 	if per, ok := s.resetedLookup[tok]; ok && per == permutation {
 		// Permutation already set in this step
-	} else {
-		log.Debugf("set %#v(%p) to permutation %d", tok, tok, permutation)
 
-		if err := tok.Permutation(permutation); err != nil {
-			panic(err)
-		}
-
-		s.resetedLookup[tok] = permutation
+		return
 	}
+
+	log.Debugf("set %#v(%p) to permutation %d of max permutations %d", tok, tok, permutation, tok.Permutations())
+
+	if err := tok.Permutation(permutation); err != nil {
+		panic(err)
+	}
+
+	s.resetedLookup[tok] = permutation
 }
 
 func (s *AlmostAllPermutationsStrategy) fuzz(continueFuzzing chan struct{}, level []almostAllPermutationsLevel) bool {
@@ -144,21 +168,33 @@ func (s *AlmostAllPermutationsStrategy) fuzz(continueFuzzing chan struct{}, leve
 STEP:
 	for {
 		for i := range level {
-			if level[i].permutation > level[i].token.Permutations() {
-				if i <= last {
+			if level[i].permutation > level[i].token().Permutations() {
+				if i < last {
 					log.Debugf("max reached redo everything <= %d and increment next", i)
 
-					level[i+1].permutation++
-					if level[i+1].permutation <= level[i+1].token.Permutations() {
-						s.setTokenPermutation(level[i+1].token, level[i+1].permutation)
+					if level[i].token().Permutations() != 1 {
+						log.Debug("Let's stay here")
+
+						s.overextended = false
 					}
-					s.getLevel(level[i+1].token, true) // set all children to permutation 1
+
+					level[i+1].permutation++
+					if level[i+1].permutation <= level[i+1].token().Permutations() {
+						s.setTokenPermutation(level[i+1].token(), level[i+1].permutation)
+					}
+					s.getLevel(level[i+1].token(), true) // set all children to permutation 1
+				} else {
+					log.Debug("Overextended our stay, let's get out of here!")
+
+					s.overextended = true
+
+					break STEP
 				}
 
 				for k := 0; k <= i; k++ {
 					level[k].permutation = 1
-					s.setTokenPermutation(level[k].token, 1)
-					s.getLevel(level[k].token, true) // set all children to permutation 1
+					s.setTokenPermutation(level[k].token(), 1)
+					s.getLevel(level[k].token(), true) // set all children to permutation 1
 				}
 
 				continue STEP
@@ -166,10 +202,10 @@ STEP:
 
 			log.Debugf("permute %d->%#v", i, level[i])
 
-			s.setTokenPermutation(level[i].token, level[i].permutation)
+			s.setTokenPermutation(level[i].token(), level[i].permutation)
 
-			if t, ok := level[i].token.(token.OptionalToken); !ok || !t.IsOptional() || level[i].permutation > 1 {
-				children := s.getLevel(level[i].token, true) // set all children to permutation 1
+			if t, ok := level[i].token().(token.OptionalToken); !ok || !t.IsOptional() || level[i].permutation > 1 {
+				children := s.getLevel(level[i].token(), true) // set all children to permutation 1
 
 				if len(children) > 0 {
 					if !s.fuzz(continueFuzzing, children) {
@@ -183,41 +219,44 @@ STEP:
 			}
 		}
 
-		if level[0].permutation > level[0].token.Permutations() {
+		if level[0].permutation > level[0].token().Permutations() {
 			found := false
 			for i := 1; i < len(level); i++ {
-				if level[i].permutation < level[i].token.Permutations() {
+				if level[i].permutation < level[i].token().Permutations() {
 					found = true
 
 					break
 				}
 			}
 			if !found {
-				log.Debug("done with fuzzing this level")
-
 				break STEP
 			}
 		}
 
-		token.ResetScope(s.root)
-		token.ResetResetTokens(s.root)
+		if !s.overextended {
+			token.ResetScope(s.root)
+			token.ResetResetTokens(s.root)
+			token.ResetScope(s.root)
 
-		log.Debug("done with fuzzing step")
+			log.Debug("done with fuzzing step")
 
-		// done with this fuzzing step
-		continueFuzzing <- struct{}{}
+			// done with this fuzzing step
+			continueFuzzing <- struct{}{}
 
-		// wait until we are allowed to continue
-		if _, ok := <-continueFuzzing; !ok {
-			log.Debug("fuzzing channel closed from outside")
+			// wait until we are allowed to continue
+			if _, ok := <-continueFuzzing; !ok {
+				log.Debug("fuzzing channel closed from outside")
 
-			return false
+				return false
+			}
+
+			log.Debug("start fuzzing step")
+
+			s.resetedLookup = make(map[token.Token]uint)
 		}
-
-		log.Debug("start fuzzing step")
-
-		s.resetedLookup = make(map[token.Token]uint)
 	}
+
+	log.Debug("done with fuzzing this level")
 
 	return true
 }

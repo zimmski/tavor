@@ -519,6 +519,33 @@ func TestAllPermutationsStrategy(t *testing.T) {
 			},
 		)
 	}
+	{
+		// check if the strategy really works as expected
+		validateTavorAllPermutations(
+			t,
+			`
+				START = +2(?(1)?(2))
+			`,
+			[]string{
+				"",
+				"1",
+				"2",
+				"12",
+				"1",
+				"11",
+				"21",
+				"121",
+				"2",
+				"12",
+				"22",
+				"122",
+				"12",
+				"112",
+				"212",
+				"1212",
+			},
+		)
+	}
 }
 
 func validateTavorAllPermutations(t *testing.T, format string, expect []string) {

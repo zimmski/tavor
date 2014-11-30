@@ -166,8 +166,6 @@ func NewUniqueItem(list token.ListToken) *UniqueItem {
 }
 
 func (l *UniqueItem) pick(i uint) {
-	l.Release()
-
 	nList := l.original.list.Len()
 	nPicked := len(l.original.picked)
 
@@ -212,6 +210,8 @@ func (l *UniqueItem) Parse(pars *token.InternalParser, cur int) (int, []error) {
 
 // Permutation sets a specific permutation for this token
 func (l *UniqueItem) Permutation(i uint) error {
+	l.Release()
+
 	permutations := l.Permutations()
 
 	if i < 1 || i > permutations {
