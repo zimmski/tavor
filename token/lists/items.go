@@ -165,7 +165,7 @@ func NewUniqueItem(list token.ListToken) *UniqueItem {
 	return l
 }
 
-func (l *UniqueItem) pick(i int) {
+func (l *UniqueItem) pick(i uint) {
 	nList := l.original.list.Len()
 	nPicked := len(l.original.picked)
 
@@ -173,15 +173,18 @@ func (l *UniqueItem) pick(i int) {
 		panic("already picked everything!") // TODO
 	}
 
-	// TODO make this WAYYYYYYYYY more effiecent
-	for {
-		c := i
+	for j := 0; j <= nList; j++ {
+		if _, ok := l.original.picked[j]; !ok {
+			if i == 0 {
+				l.Reset()
 
-		if _, ok := l.original.picked[c]; !ok {
-			l.index = c
-			l.original.picked[c] = struct{}{}
+				l.index = int(j)
+				l.original.picked[j] = struct{}{}
 
-			break
+				break
+			}
+
+			i--
 		}
 	}
 }
@@ -201,15 +204,6 @@ func (l *UniqueItem) Clone() token.Token {
 	return n
 }
 
-/* TODO FIXME this
-// Fuzz fuzzes this token using the random generator by choosing one of the possible permutations for this token
-func (l *UniqueItem) Fuzz(r rand.Rand) {
-	if l.index == -1 {
-		l.pick(r)
-	}
-}
-*/
-
 // Parse tries to parse the token beginning from the current position in the parser data.
 // If the parsing is successful the error argument is nil and the next current position after the token is returned.
 func (l *UniqueItem) Parse(pars *token.InternalParser, cur int) (int, []error) {
@@ -226,14 +220,14 @@ func (l *UniqueItem) Permutation(i uint) error {
 		}
 	}
 
-	// do nothing
+	l.pick(i - 1)
 
 	return nil
 }
 
 // Permutations returns the number of permutations for this token
 func (l *UniqueItem) Permutations() uint {
-	return 1
+	return uint(l.original.list.Len() - len(l.original.picked))
 }
 
 // PermutationsAll returns the number of all possible permutations for this token including its children
