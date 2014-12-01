@@ -473,6 +473,8 @@ OUT:
 
 			var pattern bytes.Buffer
 
+			p.scan.Whitespace ^= 1 << ' '
+
 			c = p.scan.Scan()
 
 			for c != ']' && c != '\n' && c != scanner.EOF {
@@ -482,6 +484,8 @@ OUT:
 
 				c = p.scan.Scan()
 			}
+
+			p.scan.Whitespace |= 1 << ' '
 
 			if c != ']' {
 				_, err := p.expectRune(']', c)

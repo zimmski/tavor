@@ -1273,6 +1273,16 @@ func TestTavorParserCharacterClasses(t *testing.T) {
 
 		Equal(t, "0", tok.String())
 	}
+	{
+		// do not parse spaces between character class brackets
+		tok, err := ParseTavor(strings.NewReader(`
+			START = [ ]
+		`))
+		Nil(t, err)
+		Equal(t, tok, primitives.NewCharacterClass(` `))
+
+		Equal(t, " ", tok.String())
+	}
 }
 
 func TestTavorParserVariables(t *testing.T) {
