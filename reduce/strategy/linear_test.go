@@ -15,17 +15,17 @@ import (
 	"github.com/zimmski/tavor/token/primitives"
 )
 
-func TestBinarySearchStrategyToBeStrategy(t *testing.T) {
+func TestLinearStrategyToBeStrategy(t *testing.T) {
 	var strat *Strategy
 
-	Implements(t, strat, &BinarySearchStrategy{})
+	Implements(t, strat, &LinearStrategy{})
 }
 
-func TestBinarySearchStrategy(t *testing.T) {
+func TestLinearStrategy(t *testing.T) {
 	{
 		root := primitives.NewConstantInt(1)
 
-		o := NewBinarySearch(root)
+		o := NewLinear(root)
 
 		contin, _, err := o.Reduce()
 		Nil(t, err)
@@ -45,7 +45,7 @@ func TestBinarySearchStrategy(t *testing.T) {
 			c,
 		)
 
-		o := NewBinarySearch(root)
+		o := NewLinear(root)
 
 		contin, feedback, err := o.Reduce()
 		Nil(t, err)
@@ -73,7 +73,7 @@ func TestBinarySearchStrategy(t *testing.T) {
 			c,
 		)
 
-		o := NewBinarySearch(root)
+		o := NewLinear(root)
 
 		contin, feedback, err := o.Reduce()
 		Nil(t, err)
@@ -102,7 +102,7 @@ func TestBinarySearchStrategy(t *testing.T) {
 
 		Equal(t, input, root.String())
 
-		o := NewBinarySearch(root)
+		o := NewLinear(root)
 
 		contin, _, err := o.Reduce()
 		Nil(t, err)
@@ -116,7 +116,7 @@ func TestBinarySearchStrategy(t *testing.T) {
 		// Test that reductions grow again
 		tok := lists.NewRepeat(primitives.NewConstantString("a"), 0, 100)
 
-		validateTavorBinarySearch(
+		validateTavorLinear(
 			t,
 			tok,
 			"aaaaaa",
@@ -151,7 +151,7 @@ func TestBinarySearchStrategy(t *testing.T) {
 		`))
 		Nil(t, err)
 
-		validateTavorBinarySearch(
+		validateTavorLinear(
 			t,
 			tok,
 			"abc",
@@ -172,13 +172,13 @@ func TestBinarySearchStrategy(t *testing.T) {
 	}
 }
 
-func validateTavorBinarySearch(t *testing.T, tok token.Token, input string, feedback func(out string) ReduceFeedbackType, expected []string, final string) {
+func validateTavorLinear(t *testing.T, tok token.Token, input string, feedback func(out string) ReduceFeedbackType, expected []string, final string) {
 	errs := parser.ParseInternal(tok, bytes.NewBufferString(input))
 	Nil(t, errs)
 
 	Equal(t, input, tok.String(), "Generation 0")
 
-	strat := NewBinarySearch(tok)
+	strat := NewLinear(tok)
 
 	continueFuzzing, feedbackReducing, err := strat.Reduce()
 	if err != nil {
@@ -205,8 +205,8 @@ func validateTavorBinarySearch(t *testing.T, tok token.Token, input string, feed
 	Equal(t, final, tok.String(), "Final generation")
 }
 
-func TestBinarySearchStrategyLoopDetection(t *testing.T) {
+func TestLinearStrategyLoopDetection(t *testing.T) {
 	testStrategyLoopDetection(t, func(root token.Token) Strategy {
-		return NewBinarySearch(root)
+		return NewLinear(root)
 	})
 }

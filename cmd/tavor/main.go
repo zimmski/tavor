@@ -105,7 +105,7 @@ var opts struct {
 
 		InputFile flags.Filename `long:"input-file" description:"Input file which gets parsed, validated and delta-debugged via the format file" required:"true"`
 
-		Strategy       reduceStrategy `long:"strategy" description:"The reducing strategy" default:"BinarySearch"`
+		Strategy       reduceStrategy `long:"strategy" description:"The reducing strategy" default:"Linear"`
 		ListStrategies bool           `long:"list-strategies" description:"List all available reducing strategies"`
 
 		ResultSeparator string `long:"result-separator" description:"Separates result outputs of each reducing step" default:"\n"`

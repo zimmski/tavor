@@ -7,23 +7,23 @@ import (
 	"github.com/zimmski/tavor/token"
 )
 
-type binarySearchLevel struct {
+type linearLevel struct {
 	token         token.ReduceToken
 	reduction     uint
 	maxReductions uint
 
-	children []binarySearchLevel
+	children []linearLevel
 }
 
-// BinarySearchStrategy implements a reduce strategy that reduces the data through a binary search alike algorithm.
-// Every step of the strategy generates a new valid token graph state. The generation is deterministic. The algorithm starts by deactivating all optional tokens, this includes for example reducing lists to their minimum repetition. Each step uses the feedback to determine which tokens to reactivate next. All steps use a binary search alike algorithm to focus the reactivation only on a portion of the available tokens.
-type BinarySearchStrategy struct {
+// LinearStrategy implements a reduce strategy that reduces the data through a linear search algorithm.
+// Every step of the strategy generates a new valid token graph state. The generation is deterministic. The algorithm starts by deactivating all optional tokens, this includes for example reducing lists to their minimum repetition. Each step uses the feedback to determine which tokens to reactivate next.
+type LinearStrategy struct {
 	root token.Token
 }
 
-// NewBinarySearch returns a new instance of the binary search reduce strategy
-func NewBinarySearch(tok token.Token) *BinarySearchStrategy {
-	s := &BinarySearchStrategy{
+// NewLinear returns a new instance of the linear reduce strategy
+func NewLinear(tok token.Token) *LinearStrategy {
+	s := &LinearStrategy{
 		root: tok,
 	}
 
@@ -31,13 +31,13 @@ func NewBinarySearch(tok token.Token) *BinarySearchStrategy {
 }
 
 func init() {
-	Register("BinarySearch", func(tok token.Token) Strategy {
-		return NewBinarySearch(tok)
+	Register("Linear", func(tok token.Token) Strategy {
+		return NewLinear(tok)
 	})
 }
 
-func (s *BinarySearchStrategy) getTree(root token.Token, fromChildren bool) []binarySearchLevel {
-	var tree []binarySearchLevel
+func (s *LinearStrategy) getTree(root token.Token, fromChildren bool) []linearLevel {
+	var tree []linearLevel
 	var queue = linkedlist.New()
 
 	if fromChildren {
@@ -68,7 +68,7 @@ func (s *BinarySearchStrategy) getTree(root token.Token, fromChildren bool) []bi
 
 			s.setReduction(t, maxReductions)
 
-			tree = append(tree, binarySearchLevel{
+			tree = append(tree, linearLevel{
 				token:         t,
 				reduction:     maxReductions,
 				maxReductions: maxReductions,
@@ -89,7 +89,7 @@ func (s *BinarySearchStrategy) getTree(root token.Token, fromChildren bool) []bi
 	return tree
 }
 
-func (s *BinarySearchStrategy) setReduction(tok token.ReduceToken, reduction uint) {
+func (s *LinearStrategy) setReduction(tok token.ReduceToken, reduction uint) {
 	log.Debugf("set (%p)%#v to reduction %d", tok, tok, reduction)
 
 	if err := tok.Reduce(reduction); err != nil {
@@ -99,7 +99,7 @@ func (s *BinarySearchStrategy) setReduction(tok token.ReduceToken, reduction uin
 
 // Reduce starts the first step of the reduce strategy returning a channel which controls the step flow and a channel for the feedback of the step.
 // The channel returns a value if the step is complete and waits with calculating the next step until a value is put in and feedback is given. The channels are automatically closed when there are no more steps. The error return argument is not nil if an error occurs during the initialization of the reduce strategy.
-func (s *BinarySearchStrategy) Reduce() (chan struct{}, chan<- ReduceFeedbackType, error) {
+func (s *LinearStrategy) Reduce() (chan struct{}, chan<- ReduceFeedbackType, error) {
 	if token.LoopExists(s.root) {
 		return nil, nil, &Error{
 			Message: "found endless loop in graph. Cannot proceed.",
@@ -111,7 +111,7 @@ func (s *BinarySearchStrategy) Reduce() (chan struct{}, chan<- ReduceFeedbackTyp
 	feedbackReducing := make(chan ReduceFeedbackType)
 
 	go func() {
-		log.Debug("start binary search routine")
+		log.Debug("start linear routine")
 
 		tree := s.getTree(s.root, false)
 
@@ -134,18 +134,16 @@ func (s *BinarySearchStrategy) Reduce() (chan struct{}, chan<- ReduceFeedbackTyp
 	return continueReducing, feedbackReducing, nil
 }
 
-func (s *BinarySearchStrategy) reduce(continueReducing chan struct{}, feedbackReducing <-chan ReduceFeedbackType, tree []binarySearchLevel) bool {
+func (s *LinearStrategy) reduce(continueReducing chan struct{}, feedbackReducing <-chan ReduceFeedbackType, tree []linearLevel) bool {
 	log.Debugf("reducing level %d->%#v", len(tree), tree)
 
-	// we always asume that the initial values are bad so we ignore them right away
+	// we always asume that the initial values are good so we ignore them right away
 
-	// TODO do a binary search on the level entries
 	for _, c := range tree {
 		// reduce beginning from the first reduction
 		c.reduction = 0
 
 		for {
-			// TODO do a binary search on the 1..maxReductions for this level entry
 			c.reduction++
 			if err := c.token.Reduce(c.reduction); err != nil {
 				panic(err)
@@ -184,7 +182,7 @@ func (s *BinarySearchStrategy) reduce(continueReducing chan struct{}, feedbackRe
 	return true
 }
 
-func (s *BinarySearchStrategy) nextStep(continueReducing chan struct{}, feedbackReducing <-chan ReduceFeedbackType) (bool, ReduceFeedbackType) {
+func (s *LinearStrategy) nextStep(continueReducing chan struct{}, feedbackReducing <-chan ReduceFeedbackType) (bool, ReduceFeedbackType) {
 	token.ResetScope(s.root)
 	token.ResetResetTokens(s.root)
 	token.ResetScope(s.root)
@@ -197,7 +195,6 @@ func (s *BinarySearchStrategy) nextStep(continueReducing chan struct{}, feedback
 	// wait until we got feedback to the current state
 	feedback, ok := <-feedbackReducing
 	if ok {
-		// TODO implement the usage of the feedback
 		log.Debugf("GOT FEEDBACK -> Looks %s", feedback)
 	} else {
 		log.Debug("reducing feedback channel closed from outside")

@@ -291,7 +291,7 @@ Available commands:
       --list-exec-argument-types        List all available exec argument types
       --script=                         Execute this binary which gets fed with the generation and should return feedback
       --input-file=                     Input file which gets parsed, validated and delta-debugged via the format file
-      --strategy=                       The reducing strategy (BinarySearch)
+      --strategy=                       The reducing strategy (Linear)
       --list-strategies                 List all available reducing strategies
       --result-separator=               Separates result outputs of each reducing step ("\n")
 
@@ -434,7 +434,7 @@ By default the reduction generation is printed to STDOUT and feedback is given t
 tavor --format-file file.tavor reduce --input-file file.input
 ```
 
-By default the `BinarySearch` reduce strategy is used which can be altered using the `--strategy` reduce command option.
+By default the `Linear` reduce strategy is used which can be altered using the `--strategy` reduce command option.
 
 ```bash
 tavor --format-file file.tavor reduce --input-file file.input --strategy random
@@ -685,7 +685,7 @@ More information regarding fuzzing strategies can be found in the [extending sec
 
 ### <a name="develop-reduce-strategies"></a>Reduce Strategies [![GoDoc](https://godoc.org/github.com/zimmski/tavor?status.png)](https://godoc.org/github.com/zimmski/tavor/reduce/strategy)
 
-All officially implemented reduce strategies can be found in the [github.com/zimmski/tavor/reduce/strategy package](https://godoc.org/github.com/zimmski/tavor/reduce/strategy). Each strategy has a `New*` function which can be used to instantiate a new instance of the strategy with sane default values. Additionally all strategies have to implement the [Strategy interface](https://godoc.org/github.com/zimmski/tavor/reduce/strategy#Strategy) which specifies the `Reduce` method that applies the strategy onto a token structure. The following example uses the `binarysearch` strategy to reduce a given token.
+All officially implemented reduce strategies can be found in the [github.com/zimmski/tavor/reduce/strategy package](https://godoc.org/github.com/zimmski/tavor/reduce/strategy). Each strategy has a `New*` function which can be used to instantiate a new instance of the strategy with sane default values. Additionally all strategies have to implement the [Strategy interface](https://godoc.org/github.com/zimmski/tavor/reduce/strategy#Strategy) which specifies the `Reduce` method that applies the strategy onto a token structure. The following example uses the `Linear` strategy to reduce a given token.
 
 ```go
 import (
@@ -702,7 +702,7 @@ func main() {
 
 	fmt.Println(tok.String())
 
-	strat := strategy.NewBinarySearch(tok)
+	strat := strategy.NewLinear(tok)
 
 	continueFuzzing, feedbackReducing, err := strat.Reduce()
 	if err != nil {
