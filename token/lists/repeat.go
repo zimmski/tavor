@@ -278,6 +278,7 @@ func combinations(n int, k int) (<-chan []int, chan<- struct{}) {
 			is[i] = i
 		}
 
+	CYCLE:
 		for {
 			// send the current progress
 			cur := make([]int, k)
@@ -294,7 +295,7 @@ func combinations(n int, k int) (<-chan []int, chan<- struct{}) {
 			if k == 0 {
 				// we reached the end
 
-				break
+				break CYCLE
 			}
 
 			// increase the last element
@@ -326,21 +327,38 @@ func combinations(n int, k int) (<-chan []int, chan<- struct{}) {
 					if j == 0 {
 						// we reached the end
 
-						break
+						break CYCLE
 					} else {
 						j--
 						is[j]++
 					}
 				}
 
-				// reset values
-				for ; j < k-1; j++ {
-					is[j+1] = is[j] + 1
-				}
+				jj := j
 
-				// if after a reset the last value is still to high we are done
-				if is[k-1] == n {
-					// we reached the end
+				for {
+					j = jj
+
+					// reset values
+					for ; j < k-1; j++ {
+						is[j+1] = is[j] + 1
+					}
+
+					// if after a reset the last value is still to high
+					if is[k-1] == n {
+						if jj > 0 {
+							// start from an anterior index
+							jj--
+
+							is[jj]++
+
+							continue
+						} else {
+							// we reached the end
+
+							break CYCLE
+						}
+					}
 
 					break
 				}

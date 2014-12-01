@@ -301,6 +301,10 @@ func TestRepeatReduce(t *testing.T) {
 			},
 		},
 		tt{
+			from: 2, to: 2,
+			expected: nil,
+		},
+		tt{
 			from: 0, to: 3,
 			expected: []string{
 				"",
@@ -338,6 +342,27 @@ func TestRepeatReduce(t *testing.T) {
 			from: 3, to: 3,
 			expected: nil,
 		},
+		tt{
+			from: 3, to: 5,
+			expected: []string{
+				"012",
+				"013",
+				"014",
+				"023",
+				"024",
+				"034",
+				"123",
+				"124",
+				"134",
+				"234",
+				"0123",
+				"0124",
+				"0134",
+				"0234",
+				"1234",
+				"01234",
+			},
+		},
 	}
 
 	beforeGoroutineCount := runtime.NumGoroutine()
@@ -361,7 +386,7 @@ func TestRepeatReduce(t *testing.T) {
 		if reduces > 0 {
 			var actual []string
 
-			for i := uint(1); i <= reduces; i++ {
+			for i := uint(1); i <= o.Reduces(); i++ {
 				err := o.Reduce(i)
 				Nil(t, err)
 
