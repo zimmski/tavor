@@ -90,6 +90,8 @@ START = "The next word is \"quoted\" and here is a new line\n"
 
 Since Tavor is using Go's text parser as foundation of its format parsing, the same rules for `interpreted string literals` apply. These rules can be looked up in [Go's language specification](https://golang.org/ref/spec#String_literals).
 
+> **Note**: Empty strings are forbidden and lead to a format parse error. The reasons are explained in more detail in the [Repeat groups section](#grouping-repeats).
+
 ## <a name="concatenation"></a>Concatenation
 
 Tokens in the definition part are automatically concatenated.

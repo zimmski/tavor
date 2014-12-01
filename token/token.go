@@ -293,6 +293,8 @@ const (
 	ParseErrorEarlyNewLine
 	// ParseErrorEmptyExpressionIsInvalid empty expressions are not allowed
 	ParseErrorEmptyExpressionIsInvalid
+	// ParseErrorEmptyString an empty string was detected which is not allowed
+	ParseErrorEmptyString
 	// ParseErrorEmptyTokenDefinition empty token definitions are not allowed
 	ParseErrorEmptyTokenDefinition
 	// ParseErrorInvalidArgumentValue invalid argument value

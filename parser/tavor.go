@@ -251,6 +251,14 @@ OUT:
 
 			s, _ = strconv.Unquote(s)
 
+			if len(s) == 0 {
+				return zeroRune, nil, &token.ParserError{
+					Message:  "empty strings are not allowed",
+					Type:     token.ParseErrorEmptyString,
+					Position: p.scan.Pos(),
+				}
+			}
+
 			addToken(primitives.NewConstantString(s))
 		case '(':
 			log.Debug("NEW group")

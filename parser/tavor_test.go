@@ -239,6 +239,11 @@ func TestTavorParseErrors(t *testing.T) {
 	tok, err = ParseTavor(strings.NewReader("START = +(1 | 2 | ?(3))\n"))
 	Equal(t, token.ParseErrorRepeatWithOptionalTerm, err.(*token.ParserError).Type)
 	Nil(t, tok)
+
+	// empty strings are not allowed
+	tok, err = ParseTavor(strings.NewReader("START = \"\"\n"))
+	Equal(t, token.ParseErrorEmptyString, err.(*token.ParserError).Type)
+	Nil(t, tok)
 }
 
 func TestTavorParserSimple(t *testing.T) {
