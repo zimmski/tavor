@@ -2,6 +2,7 @@ package strategy
 
 import (
 	"bytes"
+	"fmt"
 	"testing"
 
 	. "github.com/zimmski/tavor/test/assert"
@@ -59,7 +60,7 @@ func TestBinarySearchStrategy(t *testing.T) {
 		_, ok = <-contin
 		False(t, ok)
 
-		Equal(t, "1", root.String())
+		Equal(t, "12", root.String())
 	}
 	{
 		c := constraints.NewOptional(
@@ -87,10 +88,11 @@ func TestBinarySearchStrategy(t *testing.T) {
 		_, ok = <-contin
 		False(t, ok)
 
-		Equal(t, "12", root.String())
+		Equal(t, "1", root.String())
 	}
-	// Test that inputs are never changed if they cannot be reduced
 	{
+		// Test that inputs are never changed if they cannot be reduced
+
 		root := lists.NewRepeat(primitives.NewCharacterClass(`\w`), 10, 10)
 		input := "KrOxDOj4fU"
 
@@ -108,6 +110,55 @@ func TestBinarySearchStrategy(t *testing.T) {
 		False(t, ok)
 
 		Equal(t, input, root.String())
+	}
+	{
+		expected := []string{
+			"aaaaaa",
+			"",
+			"a",
+			"a",
+			"a",
+			"a",
+			"a",
+			"a",
+			"aa",
+		}
+
+		tok := lists.NewRepeat(primitives.NewConstantString("a"), 0, 100)
+		tok.Permutation(7)
+
+		n := 0
+
+		Equal(t, expected[n], tok.String(), fmt.Sprintf("Generation %d", n))
+		n++
+
+		strat := NewBinarySearch(tok)
+
+		continueFuzzing, feedbackReducing, err := strat.Reduce()
+		if err != nil {
+			panic(err)
+		}
+
+		for i := range continueFuzzing {
+			out := tok.String()
+
+			if n == len(expected) {
+				Fail(t, fmt.Sprintf("%q is an unexpected generation at index  %d", out, n))
+			} else {
+				Equal(t, expected[n], out, fmt.Sprintf("Generation %d", n))
+			}
+			n++
+
+			if len(out) == 2 {
+				feedbackReducing <- Good
+			} else {
+				feedbackReducing <- Bad
+			}
+
+			continueFuzzing <- i
+		}
+
+		Equal(t, "aa", tok.String(), "Final generation")
 	}
 }
 

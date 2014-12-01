@@ -154,12 +154,12 @@ func (s *BinarySearchStrategy) reduce(continueReducing chan struct{}, feedbackRe
 			contin, feedback := s.nextStep(continueReducing, feedbackReducing)
 			if !contin {
 				return false
-			} else if feedback == Bad {
+			} else if feedback == Good {
 				break
 			}
 
 			if c.reduction == c.maxReductions-1 {
-				log.Debug("use initial value, nothing to reduce")
+				log.Debugf("use initial value for (%p)%#v, nothing to reduce", c.token, c.token)
 
 				c.reduction = c.maxReductions
 				if err := c.token.Reduce(c.reduction); err != nil {
