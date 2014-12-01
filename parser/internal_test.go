@@ -265,6 +265,29 @@ func TestInternalParse(t *testing.T) {
 	Equal(t, token.ParseErrorExpectedEOF, errs[0].(*token.ParserError).Type)
 	Nil(t, tok)
 
+	o = lists.NewAll(
+		primitives.NewConstantInt(1),
+		lists.NewRepeat(primitives.NewConstantInt(2), 0, 5),
+	)
+
+	checkParse(
+		t,
+		o,
+		"1",
+	)
+
+	checkParse(
+		t,
+		o,
+		"12",
+	)
+
+	checkParse(
+		t,
+		o,
+		"122222",
+	)
+
 	// complex repeat
 	o = lists.NewAll(
 		primitives.NewConstantInt(1),

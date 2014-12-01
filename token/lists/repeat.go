@@ -90,7 +90,9 @@ func (l *Repeat) Clone() token.Token {
 func (l *Repeat) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	var toks []token.Token
 
-	for i := 1; i <= int(l.From()); i++ {
+	i := 1
+
+	for i <= int(l.From()) {
 		tok := l.token.Clone()
 
 		nex, errs := tok.Parse(pars, cur)
@@ -101,9 +103,11 @@ func (l *Repeat) Parse(pars *token.InternalParser, cur int) (int, []error) {
 
 		cur = nex
 		toks = append(toks, tok)
+
+		i++
 	}
 
-	for i := l.From(); i < l.To(); i++ {
+	for i <= int(l.To()) {
 		tok := l.token.Clone()
 
 		nex, errs := tok.Parse(pars, cur)
@@ -114,6 +118,8 @@ func (l *Repeat) Parse(pars *token.InternalParser, cur int) (int, []error) {
 
 		cur = nex
 		toks = append(toks, tok)
+
+		i++
 	}
 
 	l.value = toks
