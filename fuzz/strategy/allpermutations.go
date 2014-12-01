@@ -226,6 +226,7 @@ STEP:
 func (s *AllPermutationsStrategy) nextStep(continueFuzzing chan struct{}) bool {
 	token.ResetScope(s.root)
 	token.ResetResetTokens(s.root)
+	token.ResetScope(s.root)
 
 	log.Debug("done with fuzzing step")
 

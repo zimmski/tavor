@@ -187,6 +187,7 @@ func (s *BinarySearchStrategy) reduce(continueReducing chan struct{}, feedbackRe
 func (s *BinarySearchStrategy) nextStep(continueReducing chan struct{}, feedbackReducing <-chan ReduceFeedbackType) (bool, ReduceFeedbackType) {
 	token.ResetScope(s.root)
 	token.ResetResetTokens(s.root)
+	token.ResetScope(s.root)
 
 	log.Debug("done with reducing step")
 
