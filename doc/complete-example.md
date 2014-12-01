@@ -45,9 +45,9 @@ The key-driven format is defined as followed:
 Putting the given state machine, the defined keys and the rules for the key-driven format together, results in the following Tavor format:
 
 ```tavor
-START = Credit0
+START = Credit0 *( Coin25 Credit25 | Coin50 Credit50 )
 
-Credit0   = "credit" "\t"   0 "\n" ( Coin25 Credit25 | Coin50 Credit50 | )
+Credit0   = "credit" "\t"   0 "\n"
 Credit25  = "credit" "\t"  25 "\n" ( Coin25 Credit50 | Coin50 Credit75 )
 Credit50  = "credit" "\t"  50 "\n" ( Coin25 Credit75 | Coin50 Credit100 )
 Credit75  = "credit" "\t"  75 "\n" Coin25 Credit100

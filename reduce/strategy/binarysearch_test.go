@@ -3,6 +3,7 @@ package strategy
 import (
 	"bytes"
 	"fmt"
+	"strings"
 	"testing"
 
 	. "github.com/zimmski/tavor/test/assert"
@@ -112,54 +113,96 @@ func TestBinarySearchStrategy(t *testing.T) {
 		Equal(t, input, root.String())
 	}
 	{
-		expected := []string{
-			"aaaaaa",
-			"",
-			"a",
-			"a",
-			"a",
-			"a",
-			"a",
-			"a",
-			"aa",
-		}
-
+		// Test that reductions grow again
 		tok := lists.NewRepeat(primitives.NewConstantString("a"), 0, 100)
-		tok.Permutation(7)
 
-		n := 0
+		validateTavorBinarySearch(
+			t,
+			tok,
+			"aaaaaa",
+			func(out string) ReduceFeedbackType {
+				if len(out) == 2 {
+					return Good
+				}
 
-		Equal(t, expected[n], tok.String(), fmt.Sprintf("Generation %d", n))
+				return Bad
+			},
+			[]string{
+				"",
+				"a",
+				"a",
+				"a",
+				"a",
+				"a",
+				"a",
+				"aa",
+			},
+			"aa",
+		)
+	}
+	{
+		// Pathed reduction
+		tok, err := parser.ParseTavor(bytes.NewBufferString(`
+			START = A *(B)
+
+			A = ?("a")
+			B = "b" (C | )
+			C = "c"
+		`))
+		Nil(t, err)
+
+		validateTavorBinarySearch(
+			t,
+			tok,
+			"abc",
+			func(out string) ReduceFeedbackType {
+				if strings.Contains(out, "b") {
+					return Good
+				}
+
+				return Bad
+			},
+			[]string{
+				"bc",
+				"",
+				"b",
+			},
+			"b",
+		)
+	}
+}
+
+func validateTavorBinarySearch(t *testing.T, tok token.Token, input string, feedback func(out string) ReduceFeedbackType, expected []string, final string) {
+	errs := parser.ParseInternal(tok, bytes.NewBufferString(input))
+	Nil(t, errs)
+
+	Equal(t, input, tok.String(), "Generation 0")
+
+	strat := NewBinarySearch(tok)
+
+	continueFuzzing, feedbackReducing, err := strat.Reduce()
+	if err != nil {
+		panic(err)
+	}
+
+	n := 0
+
+	for i := range continueFuzzing {
+		out := tok.String()
+
+		if n == len(expected) {
+			Fail(t, fmt.Sprintf("%q is an unexpected generation at index  %d", out, n))
+		} else {
+			Equal(t, expected[n], out, fmt.Sprintf("Generation %d", n))
+		}
 		n++
 
-		strat := NewBinarySearch(tok)
+		feedbackReducing <- feedback(out)
 
-		continueFuzzing, feedbackReducing, err := strat.Reduce()
-		if err != nil {
-			panic(err)
-		}
-
-		for i := range continueFuzzing {
-			out := tok.String()
-
-			if n == len(expected) {
-				Fail(t, fmt.Sprintf("%q is an unexpected generation at index  %d", out, n))
-			} else {
-				Equal(t, expected[n], out, fmt.Sprintf("Generation %d", n))
-			}
-			n++
-
-			if len(out) == 2 {
-				feedbackReducing <- Good
-			} else {
-				feedbackReducing <- Bad
-			}
-
-			continueFuzzing <- i
-		}
-
-		Equal(t, "aa", tok.String(), "Final generation")
+		continueFuzzing <- i
 	}
+
+	Equal(t, final, tok.String(), "Final generation")
 }
 
 func TestBinarySearchStrategyLoopDetection(t *testing.T) {
