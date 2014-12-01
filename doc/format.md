@@ -600,7 +600,7 @@ The following sections describe the currently implemented operators.
 
 ### <a name="expressions-arithmetic"></a>Arithemtic operators
 
-Arithmetic operators have two operands between the operator sign. Please note that operators currently always embed the right side. This means that `2 * 3 + 4` will result into `2 * (3 + 4)` and not `(2 * 3) + 4`.
+Arithmetic operators have two operands between the operator sign. Note that operators currently always embed the right side. This means that `2 * 3 + 4` will result into `2 * (3 + 4)` and not `(2 * 3) + 4`.
 
 #### Operators
 

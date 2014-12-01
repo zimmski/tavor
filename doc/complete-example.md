@@ -6,7 +6,7 @@ This example provides a complete overview of Tavor. It does not utilize every si
 
 It uses the *Tavor format* to define this state machine and the *Tavor binary* to generate key-driven test files. An *executor* translates keys of a file into actions for the implementation under test. After successfully testing the original implementation, some bugs will be introduced to show the failure of some tests as well as automatically delta-debugging the failed key-driven test files.
 
-**Please note:** The implementation of this example has intentional concurrency and other problems. Future versions of Tavor will help to identify, test and resolve such flaws. As Tavor evolves this example will also evolve. This also concerns the given state machine and Tavor format. Both could be defined much more efficiently with the help of state variables which are common in model-based testing tools but not yet implemented in the Tavor format. However, state variables can be easily implemented via code.
+> **Note:** The implementation of this example has intentional concurrency and other problems. Future versions of Tavor will help to identify, test and resolve such flaws. As Tavor evolves this example will also evolve. This also concerns the given state machine and Tavor format. Both could be defined much more efficiently with the help of state variables which are common in model-based testing tools but not yet implemented in the Tavor format. However, state variables can be easily implemented via code.
 
 The following components will be defined and described in the following sections:
 
@@ -103,7 +103,7 @@ credit  0
 
 The default fuzzing strategy `random` can create all possible permutations of a format but since it is random, it will need enough time to do so. Lots of duplicated results will be generated, since even random events often lead to the same results. To work around this problem the `AllPermutations` strategy can be used which, as its name states, generates all possible permutations of a graph. This strategy should be used wisely since even small graphs can have [an enormous amount of permutations](https://en.wikipedia.org/wiki/Combinatorial_explosion). We can say that there are theoretically an infinite amount of permutations, since the example graph has a loop. To work around this additional problem, the `--max-repeat` argument will be used with a suitable value. It enforces a maximum of loop traversals and repetitions.
 
-**Please note:** There is no easy way to ensure that the `--max-repeat` value is correct. A high value can lead to many repetitive permutations which will often not improve the testing process. A small value can lead to a bad coverage which means that some code branches would not be taken. Future versions of Tavor will aid this process by implementing better fuzzing strategies as well as additional metrics like token and edge coverage.
+> **Note:** There is no easy way to ensure that the `--max-repeat` value is correct. A high value can lead to many repetitive permutations which will often not improve the testing process. A small value can lead to a bad coverage which means that some code branches would not be taken. Future versions of Tavor will aid this process by implementing better fuzzing strategies as well as additional metrics like token and edge coverage.
 
 Since the given state machine is pretty easy to understand we can imply that a loop should be generated at least twice to include the repetition part of each loop. Putting this together we arrive at the following Tavor binary arguments.
 
