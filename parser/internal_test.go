@@ -80,7 +80,7 @@ func checkParse(t *testing.T, root token.Token, data string) {
 }
 
 func TestInternalParse(t *testing.T) {
-	var tok, o token.Token
+	var o token.Token
 	var errs []error
 
 	// constant integer
@@ -136,6 +136,19 @@ func TestInternalParse(t *testing.T) {
 		"abc",
 	)
 
+	// character class
+	o = constraints.NewOptional(
+		primitives.NewCharacterClass(`a`),
+	)
+	checkParse(
+		t,
+		o,
+		"a",
+	)
+
+	errs = ParseInternal(o, strings.NewReader(""))
+	Nil(t, errs)
+
 	// All
 	checkParse(
 		t,
@@ -153,7 +166,6 @@ func TestInternalParse(t *testing.T) {
 	), strings.NewReader("1a"))
 
 	Equal(t, token.ParseErrorUnexpectedEOF, errs[0].(*token.ParserError).Type)
-	Nil(t, tok)
 
 	errs = ParseInternal(lists.NewAll(
 		primitives.NewConstantInt(1),
@@ -161,7 +173,6 @@ func TestInternalParse(t *testing.T) {
 	), strings.NewReader("1a2b"))
 
 	Equal(t, token.ParseErrorExpectedEOF, errs[0].(*token.ParserError).Type)
-	Nil(t, tok)
 
 	// One
 	o = lists.NewOne(
@@ -183,7 +194,6 @@ func TestInternalParse(t *testing.T) {
 
 	errs = ParseInternal(o, strings.NewReader("2"))
 	Equal(t, token.ParseErrorUnexpectedData, errs[0].(*token.ParserError).Type)
-	Nil(t, tok)
 
 	// combine
 	o = lists.NewOne(
@@ -211,7 +221,6 @@ func TestInternalParse(t *testing.T) {
 
 	errs = ParseInternal(o, strings.NewReader("1c"))
 	Equal(t, token.ParseErrorUnexpectedData, errs[0].(*token.ParserError).Type)
-	Nil(t, tok)
 
 	// optional
 	o = lists.NewAll(
@@ -233,11 +242,9 @@ func TestInternalParse(t *testing.T) {
 
 	errs = ParseInternal(o, strings.NewReader("1c"))
 	Equal(t, token.ParseErrorUnexpectedData, errs[0].(*token.ParserError).Type)
-	Nil(t, tok)
 
 	errs = ParseInternal(o, strings.NewReader("21a"))
 	Equal(t, token.ParseErrorUnexpectedData, errs[0].(*token.ParserError).Type)
-	Nil(t, tok)
 
 	// repeat
 	o = lists.NewAll(
@@ -259,11 +266,9 @@ func TestInternalParse(t *testing.T) {
 
 	errs = ParseInternal(o, strings.NewReader("12"))
 	Equal(t, token.ParseErrorUnexpectedEOF, errs[0].(*token.ParserError).Type)
-	Nil(t, tok)
 
 	errs = ParseInternal(o, strings.NewReader("1222222"))
 	Equal(t, token.ParseErrorExpectedEOF, errs[0].(*token.ParserError).Type)
-	Nil(t, tok)
 
 	o = lists.NewAll(
 		primitives.NewConstantInt(1),

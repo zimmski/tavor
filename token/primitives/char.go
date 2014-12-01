@@ -278,6 +278,15 @@ func (c *CharacterClass) Clone() token.Token {
 // Parse tries to parse the token beginning from the current position in the parser data.
 // If the parsing is successful the error argument is nil and the next current position after the token is returned.
 func (c *CharacterClass) Parse(pars *token.InternalParser, cur int) (int, []error) {
+	if cur+1 > pars.DataLen {
+		return cur, []error{&token.ParserError{
+			Message: fmt.Sprintf("expected %q but got early EOF", c.charsLookup),
+			Type:    token.ParseErrorUnexpectedEOF,
+
+			Position: pars.GetPosition(cur),
+		}}
+	}
+
 	// TODO FIXME NOW we can see the need to put pars.Data into a reader... since we cannot do a readRune here!
 	v := rune(pars.Data[cur])
 
