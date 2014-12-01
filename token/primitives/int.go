@@ -5,6 +5,7 @@ import (
 	"math"
 	"strconv"
 
+	"github.com/zimmski/tavor/log"
 	"github.com/zimmski/tavor/token"
 )
 
@@ -64,6 +65,8 @@ func (p *ConstantInt) Parse(pars *token.InternalParser, cur int) (int, []error) 
 			Position: pars.GetPosition(cur),
 		}}
 	}
+
+	log.Debugf("Parsed %q", p.value)
 
 	return nextIndex, nil
 }
@@ -224,6 +227,8 @@ func (p *RangeInt) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	}
 
 	p.value = ci
+
+	log.Debugf("Parsed %q", p.value)
 
 	return i + 1, nil
 }

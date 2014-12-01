@@ -3,6 +3,7 @@ package primitives
 import (
 	"fmt"
 
+	"github.com/zimmski/tavor/log"
 	"github.com/zimmski/tavor/token"
 )
 
@@ -49,6 +50,8 @@ func (p *ConstantString) Parse(pars *token.InternalParser, cur int) (int, []erro
 			Position: pars.GetPosition(cur),
 		}}
 	}
+
+	log.Debugf("Parsed %q", p.value)
 
 	return nextIndex, nil
 }

@@ -8,6 +8,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
+	"github.com/zimmski/tavor/log"
 	"github.com/zimmski/tavor/token"
 )
 
@@ -302,6 +303,8 @@ func (c *CharacterClass) Parse(pars *token.InternalParser, cur int) (int, []erro
 	}
 
 	c.value = v
+
+	log.Debugf("Parsed %q", v)
 
 	return cur + 1, nil
 }
