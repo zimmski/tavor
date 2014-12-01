@@ -394,6 +394,27 @@ OUT:
 			case 0:
 				// ignore
 			case 1:
+				switch t := toks[0].(type) {
+				case *constraints.Optional:
+					return zeroRune, nil, &token.ParserError{
+						Message:  "repeats with an optional are not allowed",
+						Type:     token.ParseErrorRepeatWithOptionalTerm,
+						Position: p.scan.Pos(),
+					}
+				case *lists.One:
+					for i := t.InternalLen() - 1; i >= 0; i-- {
+						v, _ := t.InternalGet(i)
+
+						if _, ok := v.(*constraints.Optional); ok {
+							return zeroRune, nil, &token.ParserError{
+								Message:  "repeats with an optional are not allowed",
+								Type:     token.ParseErrorRepeatWithOptionalTerm,
+								Position: p.scan.Pos(),
+							}
+						}
+					}
+				}
+
 				addToken(lists.NewRepeatWithTokens(toks[0], from, to))
 			default:
 				addToken(lists.NewRepeatWithTokens(lists.NewAll(toks...), from, to))

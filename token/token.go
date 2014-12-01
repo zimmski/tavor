@@ -309,6 +309,8 @@ const (
 	ParseErrorNonTerminatedString
 	// ParseErrorNoTokenForVariable variable is not assigned to a token
 	ParseErrorNoTokenForVariable
+	// ParseErrorRepeatWithOptionalTerm a repeat with an optional term was detected, which is forbidden
+	ParseErrorRepeatWithOptionalTerm
 	// ParseErrorTokenAlreadyDefined token name is already in use
 	ParseErrorTokenAlreadyDefined
 	// ParseErrorTokenNotDefined there is no token with this name

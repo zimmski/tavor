@@ -226,6 +226,19 @@ func TestTavorParseErrors(t *testing.T) {
 	`))
 	Equal(t, token.ParseErrorTokenNotDefined, err.(*token.ParserError).Type)
 	Nil(t, tok)
+
+	// repeats with an optional term are not allowed
+	tok, err = ParseTavor(strings.NewReader("START = +(?(1))\n"))
+	Equal(t, token.ParseErrorRepeatWithOptionalTerm, err.(*token.ParserError).Type)
+	Nil(t, tok)
+
+	tok, err = ParseTavor(strings.NewReader("START = *(1 | )\n"))
+	Equal(t, token.ParseErrorRepeatWithOptionalTerm, err.(*token.ParserError).Type)
+	Nil(t, tok)
+
+	tok, err = ParseTavor(strings.NewReader("START = +(1 | 2 | ?(3))\n"))
+	Equal(t, token.ParseErrorRepeatWithOptionalTerm, err.(*token.ParserError).Type)
+	Nil(t, tok)
 }
 
 func TestTavorParserSimple(t *testing.T) {

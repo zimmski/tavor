@@ -242,9 +242,22 @@ The default modifier for the repeat group is the plus character `+`. The repetit
 START = +("a")
 ```
 
+> **Note:** It is forbidden to repeat an optional group or an alternation group with an optional term. The reason becomes obvious in terms of parsing and delta-debugging data. Since optional groups must not parse anything, they can repeatedly parse nothing and still conform to the defined format. This is a waste of resources and leads to an enormous amount of unneeded reducing steps while delta-debugging.
+>
+> For example the following leads to a format parse error.
+>
+> ```tavor
+> 	START = +(?("a"))
+> ```
+>
+> The following example does lead to an error too, since alternation groups with an optional term are also forbidden.
+>
+> ```tavor
+> 	START = +("a" | )
+
 Although the format definition allows the repetition to go on forever there are bounds since there is only a finite amount of memory available. The Tavor framework does also set a maximum repetition by default which can be altered by the `--max-repeat` option or the `MaxRepeat` variable in the `github.com/zimmski/tavor` package.
 
-By default the repetition modifier repeats from one to infinite which can be altered by arguments to the modifier. The next example repeats the string "a" exactly twice meaning the `START` token does only hold the string "aa".
+If no maximum repetition is set the repetition modifier repeats by default from one to infinite which can be altered by arguments to the modifier. The next example repeats the string "a" exactly twice meaning the `START` token does only hold the string "aa".
 
 ```tavor
 START = +2("a")
@@ -268,7 +281,7 @@ And the next example repeats the string "a" at least twice.
 START = +2,("a")
 ```
 
-Since the repetition zero, once or more is very common the modifier `\*` exists. In the next example the token `START` can either hold the string "a", "ab", "abb" or any amount of "b" characters prepended by an "a" character.
+Since the repetition zero, once or more is very common the modifier `*` exists. In the next example the token `START` can either hold the string "a", "ab", "abb" or any amount of "b" characters prepended by an "a" character.
 
 ```tavor
 START = "a" *("b")
