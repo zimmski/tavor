@@ -175,7 +175,7 @@ func (s *BinarySearchStrategy) reduce(continueReducing chan struct{}, feedbackRe
 		c.children = s.getTree(c.token, true)
 
 		if len(c.children) > 0 {
-			log.Debugf("reduce the children of (%p)%#v", c.token, c.token, c.reduction, c.maxReductions)
+			log.Debugf("reduce the children of (%p)%#v %d/%d", c.token, c.token, c.reduction, c.maxReductions)
 
 			s.reduce(continueReducing, feedbackReducing, c.children)
 		}

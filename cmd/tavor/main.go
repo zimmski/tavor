@@ -1055,11 +1055,11 @@ func main() {
 						if oks == oksNeeded {
 							log.Infof("Same output, continue delta")
 
-							feedback <- tavorReduceStrategy.Bad
+							feedback <- tavorReduceStrategy.Good
 						} else {
 							log.Infof("Not the same output, do another step")
 
-							feedback <- tavorReduceStrategy.Good
+							feedback <- tavorReduceStrategy.Bad
 						}
 					}
 
@@ -1152,11 +1152,11 @@ func main() {
 					case "YES\n":
 						log.Infof("Same output, continue delta")
 
-						feedback <- tavorReduceStrategy.Bad
+						feedback <- tavorReduceStrategy.Good
 					case "NO\n":
 						log.Infof("Not the same output, do another step")
 
-						feedback <- tavorReduceStrategy.Good
+						feedback <- tavorReduceStrategy.Bad
 					default:
 						exitError("Feedback from script to orignal was not YES nor NO: %s", feed)
 					}
@@ -1206,11 +1206,11 @@ func main() {
 						}
 
 						if s := strings.ToUpper(string(line)); s == "YES" {
-							feedback <- tavorReduceStrategy.Bad
+							feedback <- tavorReduceStrategy.Good
 
 							break
 						} else if s == "NO" {
-							feedback <- tavorReduceStrategy.Good
+							feedback <- tavorReduceStrategy.Bad
 
 							break
 						}
