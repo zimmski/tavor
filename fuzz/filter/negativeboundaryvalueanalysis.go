@@ -7,11 +7,11 @@ import (
 	"github.com/zimmski/tavor/token/primitives"
 )
 
-// NegativeBoundaryValueAnalysisFilter implements a fuzzing filter for negative boundary value analysis.
+// NegativeBoundaryValueAnalysisFilter implements a fuzzing filter for negative boundary-value analysis.
 // This filter searches the token graph for integer range tokens which will be transformed to exactly two integers: The lower and higher negative boundary. Using this filter reduces for example the integer range 1-100 to the integers 0 and 101. Which reduces the range away from the model definition and therefore to an invalid data generation, which can be used for example for negative tests.
 type NegativeBoundaryValueAnalysisFilter struct{}
 
-// NewNegativeBoundaryValueAnalysisFilter returns a new instance of the negative boundary value analysis fuzzing filter
+// NewNegativeBoundaryValueAnalysisFilter returns a new instance of the negative boundary-value analysis fuzzing filter
 func NewNegativeBoundaryValueAnalysisFilter() *NegativeBoundaryValueAnalysisFilter {
 	return &NegativeBoundaryValueAnalysisFilter{}
 }

@@ -4,7 +4,7 @@ The [Tavor](/) format is an [EBNF-like notation](https://en.wikipedia.org/wiki/E
 
 The format is Unicode text encoded in UTF-8 and consists of terminal and non-terminal symbols which are called `tokens` throughout the Tavor framework. An explanation of the general meaning can be found in the [What are tokens?](/#token) section.
 
-Every example throughout this page is a complete Tavor format file. The content of each example can be for instance saved into a file called `file.tavor` and then fuzzed with the Tavor binary.
+Every example of this page is a complete and syntactical correct Tavor format file. The content of each example can be for instance saved into a file called `file.tavor` and then fuzzed with the Tavor binary. To get a a better understanding of the format it is advised to do this with every example.
 
 ```bash
 tavor --format-file file.tavor fuzz
@@ -62,11 +62,12 @@ START = "Hello World"
 ```
 
 Token names have the following rules:
-- Token names have to start with a letter.
-- Token names can only consist of letters, digits and the underscore sign "_".
-- Token names have to be unique in the format definition scope.
 
-Additional to these rules it is not allowed to declare a token without any reference in the format definition scope except if it is the `START` token which is used as the entry point of the format. Meaning it defines the beginning of the format and is therefore required for every format definition.
+- Token names have to start with a letter.
+- Token names can only consist of letters, digits and the underscore sign `_`.
+- Token names have to be unique in the [global scope](#attributes-scope).
+
+Additional to these rules it is not allowed to declare a token without any reference. Except if it is the `START` token which is used as the entry point of the format. Meaning it defines the beginning of the format and is therefore required for every format definition.
 
 ## <a name="terminal-tokens"></a>Terminal tokens
 
@@ -94,7 +95,7 @@ Since Tavor is using Go's text parser as foundation of its format parsing, the s
 
 ## <a name="concatenation"></a>Concatenation
 
-Tokens in the definition part are automatically concatenated.
+Sequential tokens in the definition part are automatically concatenated.
 
 ```tavor
 START = "This is a string token and this " 123 " was a number token"
@@ -114,15 +115,16 @@ START = "This",
         "definition"
 ```
 
-The token definition ends at the string "definition" since there is no comma before the new line character. This example also underlines that syntactical white spaces are ignored and can be used to make the format definition more human readable.
+The token definition ends at the constant string "definition" since there is no comma before the new line character. This example also underlines that syntactical white spaces are ignored and can be used to make the format definition more human readable.
 
 ## <a name="comments"></a>Comments
 
 The comments of the Tavor format follow the same rules as Go's comments which are specified in [Go's language specification](https://golang.org/ref/spec#Comments).
 
 There are two types of comments:
-- **Line comment** which starts with the character sequence `//` and ends at the next new line character.
-- **General comment** which starts with the character sequence `/\*` and ends at the character sequence `\*/`. A general comment can contain new line characters.
+
+- **Line comments** start with the character sequence `//` and end at the next new line character.
+- **General comments** start with the character sequence `/*` and end at the character sequence `*/`. A general comment can therefore contain new line characters.
 
 ```tavor
 /*
@@ -147,17 +149,17 @@ it should make it clear how general comments */ "work"
 
 ## <a name="embedding"></a>Token embedding
 
-Non-terminal tokens can be embedded in the definition part by using the name of the referenced token. The following example embeds the token `String` into the `START` token.
+Non-terminal tokens can be embedded in the definition part by using the name of the referenced token. The following example embeds the token `Text` into the `START` token.
 
 ```tavor
-START = String
+START = Text
 
-String = "this is a string"
+Text = "This is some text"
 ```
 
 Token names declared in the global scope of a format definition can be used throughout the format regardless of their declaration position.
 
-Terminal and non-terminal tokens can be mixed.
+Terminal and non-terminal tokens can be also mixed	.
 
 ```tavor
 Dot = "."
@@ -171,7 +173,7 @@ START = First ", " Second " and " Third
 
 ## <a name="alternation"></a>Alternation
 
-Alternations are defined with the pipe character `|`. The following example defines that the token `START` can either hold 1, 2 or 3.
+Alternations are defined by the pipe character `|`. The following example defines that the token `START` can either hold `1`, `2` or `3`.
 
 ```tavor
 START = 1 | 2 | 3
@@ -196,7 +198,7 @@ This example can hold for example the strings "", "a", "b", "ab", "aab" or any a
 
 ## <a name="grouping"></a>Grouping
 
-Tokens can be grouped using parenthesis. A group starts with `(` and ends with `)` and is a token on its own. This means that it can be mixed with other tokens. Additionally, a group starts a new scope between its parenthesis and can therefore hold a sequence of tokens. The tokens between the parenthesis is called the `group body`.
+Tokens can be grouped using parenthesis beginning with the opening parenthesis `(` and ending with the closing parenthesis `)`. A group is a token on its own. This means that it can be mixed with other tokens. Additionally, a group starts a new scope between its parenthesis and can therefore hold a sequence of tokens. The tokens between the parenthesis are called the `group body`.
 
 The following example declares that the token `START` either holds the string "old news" or "new news".
 
@@ -215,7 +217,7 @@ An even more complicated example is the definition of an one to three digits int
 ```tavor
 Digit = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
 
-START = Digit (Digit (Digit | ) | )
+START = Digit | Digit Digit | Digit Digit Digit
 ```
 
 This could be also written with the following format definition.
@@ -223,14 +225,14 @@ This could be also written with the following format definition.
 ```tavor
 Digit = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
 
-START = Digit | Digit Digit | Digit Digit Digit
+START = Digit (Digit (Digit | ) | )
 ```
 
 Group parenthesis can have modifiers which give the group additional abilities. The following sections will introduce these modifiers.
 
 ### <a name="grouping-optional"></a>Optional group
 
-The optional group allows the whole group token to be optional. In the next example the `START` token can hold the string "funny" or "very funny".
+The optional group has the question mark `?` as modifier and allows the whole group token to be optional. In the next example the `START` token can hold the string "funny" or "very funny".
 
 ```tavor
 START = ?("very ") "funny"
@@ -256,22 +258,23 @@ START = +("a")
 >
 > ```tavor
 > 	START = +("a" | )
+> ```
 
-Although the format definition allows the repetition to go on forever there are bounds since there is only a finite amount of memory available. The Tavor framework does also set a maximum repetition by default which can be altered by the `--max-repeat` option or the `MaxRepeat` variable in the `github.com/zimmski/tavor` package.
+Although the format definition allows the repetition to go on forever there are bounds since there is only a finite amount of memory available. The Tavor framework does additionally set a maximum repetition by default which can be altered by the `--max-repeat` option or the `MaxRepeat` variable in the `github.com/zimmski/tavor` package.
 
-If no maximum repetition is set the repetition modifier repeats by default from one to infinite which can be altered by arguments to the modifier. The next example repeats the string "a" exactly twice meaning the `START` token does only hold the string "aa".
+If no maximum repetition is set the repetition modifier repeats by default from one to infinite which can be altered with arguments to the modifier. The next example repeats the string "a" exactly twice meaning the `START` token does only hold the string "aa".
 
 ```tavor
 START = +2("a")
 ```
 
-It is also possible to define a repetition range. The next example repeats the string "a" at least twice but at most 4 times. This means that the `START` token can either hold the string "aa", "aaa" or "aaaa".
+It is also possible to define a repetition range. The next example repeats the string "a" at least twice but at most 4 times. This means that the `START` token can hold the string "aa", "aaa" or "aaaa".
 
 ```tavor
 START = +2,4("a")
 ```
 
-The `from` and `to` arguments can be empty too which sets them to their default values. For example the next definition repeats the string "a" at most 4 times.
+The `from` and `to` arguments can be empty too. They are then set to their default values. For example the next definition repeats the string "a" at least once and at most 4 times.
 
 ```tavor
 START = +,4("a")

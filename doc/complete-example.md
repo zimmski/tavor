@@ -6,7 +6,7 @@ This example provides a complete overview of Tavor. It does not utilize every si
 
 It uses the *Tavor format* to define this state machine and the *Tavor binary* to generate key-driven test files. An *executor* translates keys of a file into actions for the implementation under test. After successfully testing the original implementation, some bugs will be introduced to show the failure of some tests as well as automatically delta-debugging the failed key-driven test files.
 
-> **Note:** The implementation of this example has intentional concurrency and other problems. Future versions of Tavor will help to identify, test and resolve such flaws. As Tavor evolves this example will also evolve. This also concerns the given state machine and Tavor format. Both could be defined much more efficiently with the help of state variables which are common in model-based testing tools but not yet implemented in the Tavor format. However, state variables can be easily implemented via code.
+> **Note:** The implementation of this example has intentional concurrency and other problems. Future versions of Tavor will help to identify, test and resolve such flaws. As Tavor evolves this example will also evolve. This also concerns the given state machine and Tavor format definition. Both could be defined much more efficiently with the help of state variables which are common in model-based testing but not yet fully implemented in the Tavor format. However, this can be easily implemented via code.
 
 The following components will be defined and described in the following sections:
 

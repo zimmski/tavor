@@ -1,6 +1,6 @@
 # Tavor [![GoDoc](https://godoc.org/github.com/zimmski/tavor?status.png)](https://godoc.org/github.com/zimmski/tavor) [![Build Status](https://travis-ci.org/zimmski/tavor.svg?branch=master)](https://travis-ci.org/zimmski/tavor) [![Coverage Status](https://coveralls.io/repos/zimmski/tavor/badge.png?branch=master)](https://coveralls.io/r/zimmski/tavor?branch=master)
 
-Tavor ([Sindarin](https://en.wikipedia.org/wiki/Sindarin) for "woodpecker") is a framework for implementing and doing everyday [fuzzing](#fuzzing) and [delta-debugging](#delta-debugging) as well as doing research on new methods without reimplementing basic algorithms. An [EBNF-like notation](#format) allows the definition of data (e.g. file formats and protocols) without the need of programming. Tavor also relaxes on the definitions of fuzzing and delta-debugging allowing the user to utilize implemented algorithms universally e.g. for key-driven testing, model-based testing, simulating user-behavior and genetic programming.
+Tavor ([Sindarin](https://en.wikipedia.org/wiki/Sindarin) for "woodpecker") is a framework for implementing and doing everyday [fuzzing](#fuzzing) and [delta-debugging](#delta-debugging) as well as doing research on new methods without reimplementing basic algorithms. An [EBNF-like notation](#format) allows the definition of data (e.g. file formats and protocols) without the need of programming. Tavor also relaxes on the definitions of fuzzing and delta-debugging allowing the user to utilize available algorithms universally e.g. for key-driven testing, model-based testing, simulating user-behavior and genetic programming.
 
 ### <a name="quick-example"></a>A quick example
 
@@ -24,7 +24,7 @@ Coin50 = "Coin50" "\n"
 
 Vend = "Vend" "\n"
 ```
-(Please note that the new line escape sequences "\n" are just defined to make the output prettier)
+(Please note that the new line escape sequences `\n` are just defined to make the output prettier)
 
 You can download this file called [`basic.tavor` from here](examples/quick/basic.tavor).
 
@@ -34,7 +34,7 @@ Now we can use Tavor to [fuzz](#fuzzing) the format by issuing the following com
 tavor --format-file basic.tavor fuzz
 ```
 
-On every call this command outputs random paths through the defined graph. Here are some example outputs:
+This command outputs on every call random paths through the defined graph. Here are some example outputs:
 
 ```
 Credit0
@@ -64,7 +64,7 @@ Credit0
 
 Generating data like this is just one example of the capabilities of Tavor. Please have a look at [the complete example](#complete-example) with a complete overview over the basic features or keep reading to find out more about the background and capabilities of Tavor.
 
-Additionally you can find functional Tavor format files and fuzzer applications at [https://github.com/zimmski/fuzzer](https://github.com/zimmski/fuzzer).
+Additionally you can find official Tavor format files and fuzzer applications at [https://github.com/zimmski/fuzzer](https://github.com/zimmski/fuzzer).
 
 ## <a name="table-of-content"></a>Table of content
 
@@ -106,18 +106,18 @@ Additionally you can find functional Tavor format files and fuzzer applications 
 
 ## <a name="fuzzing"></a>What is fuzzing?
 
-> Fuzz testing or fuzzing is a software testing technique, often automated or semi-automated, that involves providing invalid, unexpected, or random data to the inputs of a computer program. The program is then monitored for exceptions such as crashes, or failing built-in code assertions or for finding potential memory leaks. Fuzzing is commonly used to test for security problems in software or computer systems.<br/>
-> -- <cite>[https://en.wikipedia.org/wiki/Fuzz_testing](https://en.wikipedia.org/wiki/Fuzz_testing)</cite>
+> Fuzz testing or fuzzing is a software testing technique, often automated or semi-automated, that involves providing invalid, unexpected, or random data to the inputs of a computer program. The program is then monitored for exceptions such as crashes, or failing built-in code assertions or for finding potential memory leaks. Fuzzing is commonly used to test for security problems in software or computer systems.
+> <br/>-- <cite>[https://en.wikipedia.org/wiki/Fuzz_testing](https://en.wikipedia.org/wiki/Fuzz_testing)</cite>
 
 Although this is the common definition of fuzzing, it is nowadays often just one view on capabilities of fuzzing tools. Fuzzing is in general just the generation of data and it does not matter if it is invalid or valid and what the type of data (e.g. files, protocol data) is. The use case of the data itself is also often broadly defined as it can be used to test algorithms, programs or hardware but it can be practically used everywhere where data is needed.
 
-Fuzzing algorithms can be categorized into two areas:
+Fuzzing algorithms can be categorized into the following two areas:
 
 - **mutation-based**
 
-	Mutation-based fuzzing takes existing data and simply changes it. This often leads to invalid data, as most techniques are not obeying constraints nor rules of the underlying data.
+	Mutation-based fuzzing takes existing data and simply changes it. This often leads to invalid data, as most techniques are not obeying rules nor constraints of the underlying data.
 
-	Some common technique for mutation-based fuzzing are:
+	Some common techniques for mutation-based fuzzing are:
 	- Bit flipping: Random chosen bits of the data are flipped.
 	- Prepending/Appending: New data is prepended/appended to the given data.
 	- Repeating: Random chosen parts of the given data are repeated.
@@ -125,23 +125,23 @@ Fuzzing algorithms can be categorized into two areas:
 
 - **generation-based**
 
-	Generation-based algorithms have one big advantage over mutation-based in that they have to understand and obey the underlying constraints and rules of the data itself. This property can be used to generate valid as well as invalid data. Another property is that generation-based algorithms generate data from scratch which eliminates the need for gathering data and keeping it up to date.
+	Generation-based algorithms have one big advantage over mutation-based in that they have to understand and obey the underlying rules and constraints of the data itself. This property can be used to generate valid as well as invalid data. Another property is that generation-based algorithms can generate data from scratch which eliminates the need for gathering data and keeping it up to date.
 
 	There are no common techniques for generation-based fuzzing but most algorithms choose a graph as underlying representation of the data model. The graph is then traversed and each node outputs a part of the data. The traversal algorithms and the complexity and abilities of the data model like constraints between nodes or adding nodes during the traversal distinguish generation-based fuzzers and contributes in general to their mightiness.
 
 ## <a name="delta-debugging"></a>What is delta-debugging?
 
-> The Delta Debugging algorithm isolates failure causes automatically - by systematically narrowing down failure-inducing circumstances until a minimal set remains.<br/>
-> -- <cite>[https://en.wikipedia.org/wiki/Delta_Debugging](https://en.wikipedia.org/wiki/Delta_Debugging)</cite>
+> The Delta Debugging algorithm isolates failure causes automatically - by systematically narrowing down failure-inducing circumstances until a minimal set remains.
+> <br/>-- <cite>[https://en.wikipedia.org/wiki/Delta_Debugging](https://en.wikipedia.org/wiki/Delta_Debugging)</cite>
 
-E.g. we feed a given data to a program which then fails. By delta-debugging this data we can reduce it to its minimum while still failing the execution. The reduction of the data is handled by software heuristics (semi-)automatically. The obvious advantage of this method, besides being done (semi-)automatically, is that we do not need to then handle uninteresting parts of the data while debugging the problem, we can focus on the important parts which actually lead to the failure.
+E.g. we feed a given data to a program which then fails. By delta-debugging this data we can reduce it to its minimum while still failing the execution. The reduction of the data is handled by software heuristics (semi-)automatically. The obvious advantage of this method, besides being done (semi-)automatically, is that we do not need to handle uninteresting parts of the data while debugging the problem, we can focus on the important parts which actually lead to the failure.
 
 > **Note:** Since delta-debugging reduces data it is also called `reducing`.
 
 Delta-debugging consists of three areas:
 
 - A heuristic has to decide which parts of the data will be reduced next
-- The reduction itself e.g.
+- The reduction e.g.
 	+ Remove repetitions
 	+ Remove optional data
 	+ Replace data with something else e.g. replace an uninteresting complex function with a constant value
@@ -153,7 +153,7 @@ Although delta-debugging is described as method to isolate failure causes, it ca
 
 Tavor combines both fuzzing and delta-debugging by allowing all implemented methods to operate on one internal model-based structure represented by a graph. This structure can be defined and generated via code or by using a format file. Out of the box Tavor comes with its own [format](#format) which covers all functionality of the framework.
 
-Tavor's generic fuzzing implementation is not fixed to one technique. Instead different fuzzing techniques and heuristics can be implemented and executed independently as [Tavor fuzzing strategies](#fuzzing-strategy). The same principle is used for delta-debugging where so called [Tavor reduce strategies](#reduce-strategy) can be implemented and used. Both types of strategies operate on the same internal structure independent of the format. This structure is basically a graph of nodes which are called [tokens](#token) throughout the Tavor framework. The structure itself is not fixed to a static definition but can be changed by so called [fuzzing filters](#fuzzing-filter).
+Tavor's generic fuzzing implementation is not fixed to one technique. Instead different fuzzing techniques and heuristics can be implemented and executed independently as [Tavor fuzzing strategies](#fuzzing-strategy). The same principle is used for delta-debugging where so called [Tavor reduce strategies](#reduce-strategy) can be implemented and used. Both types of strategies operate on the same internal structure independent of the format. This structure is basically a graph of nodes which are called [tokens](#token) throughout the Tavor framework. The structure itself is not fixed to a static definition but can be changed by so called [fuzzing filters](#fuzzing-filter) to perform additional tasks like boundary-value analysis of ranges.
 
 Even tough Tavor provides loads of functionality out of the box, a lot is still missing. A list of missing but planed features can be found in the [missing features section](#missing-features). For feature requests please have a look at the [feature request section](#feature-request).
 
@@ -175,7 +175,7 @@ Please have a look at [the documentation](https://godoc.org/github.com/zimmski/t
 
 Fuzzing filters mutate the internal structure and can be applied after it is ready for fuzzing thus after creating it e.g. after parsing and unrolling. This can be associated to [mutation-based fuzzing](#fuzzing) where not the generating structure but the data itself is mutated.
 
-An example use-case for fuzzing filters is the [boundary-value analysis](https://en.wikipedia.org/wiki/Boundary-value_analysis) software testing technique. Imagine a function which should be tested having one integer which has valid values from 1 to 100. This would lead to 100 possible values which have to be tested just for this one integer and thus to at least 100 permutations of the internal structure. Boundary-value analysis reduces these permutations to e.g. 1, 50 and 100 so just three instead of 100 cases. This is exactly what the [PositiveBoundaryValueAnalysis fuzzing filter](https://godoc.org/github.com/zimmski/tavor/fuzz/filter#PositiveBoundaryValueAnalysisFilter) does. It traverses the whole internal structure and replaces every range token with its boundary values.
+An example use-case for fuzzing filters is the [boundary-value analysis](https://en.wikipedia.org/wiki/Boundary-value_analysis) software testing technique. Imagine a function which should be tested having one integer parameter. The parameter's valid values range from 1 to 100. This would lead to 100 possible values which have to be tested just for this one integer and thus to at least 100 permutations of the internal structure. Boundary-value analysis reduces these permutations to e.g. 1, 50 and 100 so just three instead of 100 cases. This is exactly what the [PositiveBoundaryValueAnalysis fuzzing filter](https://godoc.org/github.com/zimmski/tavor/fuzz/filter#PositiveBoundaryValueAnalysisFilter) does. It traverses the whole internal structure and replaces every range token with at most three boundary values.
 
 Please have a look at [the documentation](https://godoc.org/github.com/zimmski/tavor/fuzz/filter) for an overview of all officially available fuzzing filters of Tavor.
 
@@ -187,13 +187,13 @@ Please have a look at [the documentation](https://godoc.org/github.com/zimmski/t
 
 ### <a name="unrolling"></a>Unrolling loops
 
-Although the internal structure allows loops in its graph, Tavor currently unrolls loops for easier algorithm implementations and usage. A future version will supplement this by allowing loops by default.
+Although the internal structure allows loops in its graph, Tavor currently unrolls loops for easier algorithm implementations and usage. A future version will supplement this by allowing loops.
 
 This graph for example loops between the states `Idle` and `Action`:
 
 ![Looping](/doc/images/README/unroll-loop.png "Looping")
 
-Unrolling the graph results in the following internal graph given a maximum of two repetitions:
+Unrolling this example results in the following graph given a maximum of two repetitions:
 
 ![Unrolled](/doc/images/README/unroll-unrolled.png "Unrolled")
 
@@ -619,7 +619,7 @@ More information regarding tokens can be found in the [extending section](#exten
 
 ### <a name="develop-fuzzing-filters"></a>Fuzzing filters [![GoDoc](https://godoc.org/github.com/zimmski/tavor?status.png)](https://godoc.org/github.com/zimmski/tavor/fuzz/filter)
 
-All officially implemented fuzzing filters can be found in the [github.com/zimmski/tavor/fuzz/filter package](https://godoc.org/github.com/zimmski/tavor/fuzz/filter). Each filter has a `New*` function which can be used to instantiate a new instance of the filter with sane default values. Additionally all filters have to implement the [Filter interface](https://godoc.org/github.com/zimmski/tavor/fuzz/filter#Filter) which specifies the `Apply` method that applies the filter onto one given token. However, the common case is to use the `ApplyFilters` function which applies one or more filters onto a whole token structure. It also handles loops in the structure and the replacement of tokens.
+All officially implemented fuzzing filters can be found in the [github.com/zimmski/tavor/fuzz/filter package](https://godoc.org/github.com/zimmski/tavor/fuzz/filter). Each filter has a `New*` function which can be used to instantiate a new instance of the filter with sane default values. Additionally all filters have to implement the [Filter interface](https://godoc.org/github.com/zimmski/tavor/fuzz/filter#Filter) which specifies an `Apply` method that applies the filter onto one given token. However, the common case is to use the `ApplyFilters` function which applies one or more filters onto a whole token structure. It also handles loops in the structure and the replacement of tokens.
 
 ```go
 var filters = []filter.Filter{
@@ -636,7 +636,7 @@ More information regarding fuzzing filters can be found in the [extending sectio
 
 ### <a name="develop-fuzzing-strategies"></a>Fuzzing strategies [![GoDoc](https://godoc.org/github.com/zimmski/tavor?status.png)](https://godoc.org/github.com/zimmski/tavor/fuzz/strategy)
 
-All officially implemented fuzzing strategies can be found in the [github.com/zimmski/tavor/fuzz/strategy package](https://godoc.org/github.com/zimmski/tavor/fuzz/strategy). Each strategy has a `New*` function which can be used to instantiate a new instance of the strategy with sane default values. Additionally all strategies have to implement the [Strategy interface](https://godoc.org/github.com/zimmski/tavor/fuzz/strategy#Strategy) which specifies the `Fuzz` method that applies the strategy onto a token structure. The following example uses the `AllPermutations` strategy to permutate over the given token.
+All officially implemented fuzzing strategies can be found in the [github.com/zimmski/tavor/fuzz/strategy package](https://godoc.org/github.com/zimmski/tavor/fuzz/strategy). Each strategy has a `New*` function which can be used to instantiate a new instance of the strategy with sane default values. Additionally all strategies have to implement the [Strategy interface](https://godoc.org/github.com/zimmski/tavor/fuzz/strategy#Strategy) which specifies a `Fuzz` method that applies the strategy onto a token structure. The following example uses the `AllPermutations` strategy to permutate over the given token.
 
 ```go
 import (
@@ -685,7 +685,7 @@ More information regarding fuzzing strategies can be found in the [extending sec
 
 ### <a name="develop-reduce-strategies"></a>Reduce Strategies [![GoDoc](https://godoc.org/github.com/zimmski/tavor?status.png)](https://godoc.org/github.com/zimmski/tavor/reduce/strategy)
 
-All officially implemented reduce strategies can be found in the [github.com/zimmski/tavor/reduce/strategy package](https://godoc.org/github.com/zimmski/tavor/reduce/strategy). Each strategy has a `New*` function which can be used to instantiate a new instance of the strategy with sane default values. Additionally all strategies have to implement the [Strategy interface](https://godoc.org/github.com/zimmski/tavor/reduce/strategy#Strategy) which specifies the `Reduce` method that applies the strategy onto a token structure. The following example uses the `Linear` strategy to reduce a given token.
+All officially implemented reduce strategies can be found in the [github.com/zimmski/tavor/reduce/strategy package](https://godoc.org/github.com/zimmski/tavor/reduce/strategy). Each strategy has a `New*` function which can be used to instantiate a new instance of the strategy with sane default values. Additionally all strategies have to implement the [Strategy interface](https://godoc.org/github.com/zimmski/tavor/reduce/strategy#Strategy) which specifies a `Reduce` method that applies the strategy onto a token structure. The following example uses the `Linear` strategy to reduce a given token.
 
 ```go
 import (
@@ -743,11 +743,11 @@ If extending Tavor yourself is not for you, but you still need new features, you
 
 The fuzzing filter code and all officially implemented fuzzing filters can be found in the [github.com/zimmski/tavor/fuzz/filter](/fuzz/filter) package and its sub-packages.
 
-A fuzzing filter has to implement the `Filter` interface which is exported by the [github.com/zimmski/tavor/fuzz/filter](/fuzz/filter) package. The interface defines the `Apply` method that applies the filter onto a token which is passed to the method. The method's concern is therefore only one token at a time. The error return argument is not nil if an error is encountered during the filter execution. On success a replacement for the token is returned. This can be either `nil`, meaning the token should not be replaced, or a slice of tokens which will replace the old token using an alternation group.
+A fuzzing filter has to implement the `Filter` interface which is exported by the [github.com/zimmski/tavor/fuzz/filter](/fuzz/filter) package. The interface defines the `Apply` method that applies the filter onto a token which is passed to the method. Therefore, the method's concern is only one token at a time. If an error is encountered during the filter execution, the error return argument is not nil. On success a replacement for the token is returned. This can be either `nil`, meaning the token should not be replaced, or a slice of tokens which will replace the old token using an alternation group.
 
-Applying a filter can be done manually or using the `ApplyFilters` function exported by the [github.com/zimmski/tavor/fuzz/filter](/fuzz/filter) package. It can apply more than one filter, does correctly traverse the graph, handle errors of filters and does not apply filters onto filter generated tokens. The last property is needed to avoid filter loops.
+Applying a filter can be done manually or using the `ApplyFilters` function exported by the [github.com/zimmski/tavor/fuzz/filter](/fuzz/filter) package. `ApplyFilters` can apply more than one filter, correctly traverse the graph, handle errors of filters and does not apply filters onto filter generated tokens. The last property is needed to avoid filter loops e.g. when two filter generate new tokens which trigger the generation of the other filter.
 
-The `Register` function of the [github.com/zimmski/tavor/fuzz/filter](/fuzz/filter) package allows to register filters based on an identifier which can be then used within the framework. The function `New` of the [github.com/zimmski/tavor/fuzz/filter](/fuzz/filter) package allows to generate a new instance of the registered filter given the identifier. This is for example needed for the Tavor binary, which applies filters defined by CLI arguments.
+The `Register` function of the [github.com/zimmski/tavor/fuzz/filter](/fuzz/filter) package allows to register filters based on an identifier which can be then used within the framework. The function `New` of the [github.com/zimmski/tavor/fuzz/filter](/fuzz/filter) package allows to generate a new instance of the registered filter given the identifier. For example, this is needed for the Tavor binary, which applies filters defined by CLI arguments.
 
 **Examples**
 
@@ -828,9 +828,9 @@ The fuzzing strategy code and all officially implemented fuzzing strategies can 
 
 Each fuzzing strategy instance has to be associated on construction with exactly one token. This allows an instance to hold a dedicated state of the given token graph, which makes optimizations for multiple fuzzing operations possible.
 
-A fuzzing strategy has to implement the `Strategy` interface which is exported by the [github.com/zimmski/tavor/fuzz/strategy](/fuzz/strategy) package. The interface defines the `Fuzz` method which starts the first iteration of the fuzzing strategy in a new goroutine and returns a channel which controls the fuzzing process. The error return argument is not nil if an error is encountered during the initialization. On success a value is returned by the channel which marks the completion of the iteration. A value has to be put back in, to initiate the calculation of the next fuzzing iteration. This passing of values is needed to avoid data races within the token graph. The channel must be closed when there are no more iterations or the strategy caller wants to end the fuzzing process. Note that this can also occur right after receiving the channel. Hence when there are no iterations at all. Since the `Fuzz` method is running in its own goroutine, it can be implemented statefully without using savepoints.
+A fuzzing strategy has to implement the `Strategy` interface which is exported by the [github.com/zimmski/tavor/fuzz/strategy](/fuzz/strategy) package. The interface defines the `Fuzz` method which starts the first iteration of the fuzzing strategy in a new goroutine and returns a channel which controls the fuzzing process. If an error is encountered during the initialization, the error return argument is not nil. On success a value is returned by the channel which marks the completion of the iteration. A value has to be put back in, to initiate the calculation of the next fuzzing iteration. This passing of values is needed to avoid data races within the token graph. The channel must be closed when there are no more iterations or the strategy caller wants to end the fuzzing process. Note that this can also occur right after receiving the channel. Hence when there are no iterations at all. Since the `Fuzz` method is running in its own goroutine, it can be implemented statefully without using savepoints.
 
-The `Register` function of the [github.com/zimmski/tavor/fuzz/strategy](/fuzz/strategy) package allows to register strategies based on an identifier which can be then used within the framework. The function `New` of the [github.com/zimmski/tavor/fuzz/strategy](/fuzz/strategy) package allows to generate a new instance of the registered strategy given the identifier. This is for example needed for the Tavor binary, which can execute a specific strategy defined by a CLI argument.
+The `Register` function of the [github.com/zimmski/tavor/fuzz/strategy](/fuzz/strategy) package allows to register strategies based on an identifier which can be then used within the framework. The function `New` of the [github.com/zimmski/tavor/fuzz/strategy](/fuzz/strategy) package allows to generate a new instance of the registered strategy given the identifier. For example, this is needed for the Tavor binary, which can execute a specific strategy defined by a CLI argument.
 
 **Examples**
 
@@ -966,13 +966,13 @@ The reduce strategy code and all officially implemented reduce strategies can be
 
 Each reduce strategy instance has to be associated on construction with exactly one token. This allows an instance to hold a dedicated state of the given token graph, which makes optimizations for multiple reduce operations possible.
 
-A reduce strategy has to implement the `Strategy` interface which is exported by the [github.com/zimmski/tavor/reduce/strategy](/reduce/strategy) package. The interface defines the `Reduce` method which starts the first step of the reduce strategy in a new goroutine and returns two channels to control the reduce process. The error return argument is not nil if an error is encountered during the initialization. On success a value is returned by the control channel which marks the completion of the iteration. A feedback has to be given through the feedback channel as well as a value to the control channel to initiate the calculation of the next reduce step. This passing of values is needed to avoid data races within the token graph. The channels must be closed when there are no more steps or the strategy caller wants to end the reduce process. Note that this can also occur right after receiving the channels. Hence when there are no steps at all. Since the `Reduce` method is running in its own goroutine, it can be implemented statefully without using savepoints.
+A reduce strategy has to implement the `Strategy` interface which is exported by the [github.com/zimmski/tavor/reduce/strategy](/reduce/strategy) package. The interface defines the `Reduce` method which starts the first step of the reduce strategy in a new goroutine and returns two channels to control the reduce process. If an error is encountered during the initialization, the error return argument is not nil. On success a value is returned by the control channel which marks the completion of the iteration. A feedback has to be given through the feedback channel as well as a value to the control channel to initiate the calculation of the next reduce step. This passing of values is needed to avoid data races within the token graph. The channels must be closed when there are no more steps or the strategy caller wants to end the reduce process. Note that this can also occur right after receiving the channels. Hence when there are no steps at all. Since the `Reduce` method is running in its own goroutine, it can be implemented statefully without using savepoints.
 
 Currently only two different feedback answers can be given. They are defined by the `ReduceFeedbackType` type which is exported by the [github.com/zimmski/tavor/reduce/strategy](/reduce/strategy) package. One feedback answer is `Good` which communicates to the reduce strategy that the current step produced a successful result. This can mean for example that the result has the right syntax or is better than the last good result. The meaning of the feedback and the response of the strategy to the feedback are purely dependent on the application. Responses could be for example to proceed with a given optimization path or to simply end the whole reducing process, since it is often enough to find one solution. The second feedback answer is `Bad` which communicates exactly the opposite of `Good` to the strategy. This answer is often more complicated to handle since it means that in some scenarios a revert of the current step to the last good step has to occur before the reduce process can continue.
 
 > **Note:** All reduce strategies should currently implement algorithms that produce valid generations according to the internal token graph. Hence a constant integer should not for example be replaced by a constant string. This is a convention which is not enforced but highly recommended to avoid problems until it is safely supported by a future version of Tavor.
 
-The `Register` function of the [github.com/zimmski/tavor/reduce/strategy](/reduce/strategy) package allows to register strategies based on an identifier which can be then used within the framework. The function `New` of the [github.com/zimmski/tavor/reduce/strategy](/reduce/strategy) package allows to generate a new instance of the registered strategy given the identifier. This is for example needed for the Tavor binary, which can execute a specific strategy defined by a CLI argument.
+The `Register` function of the [github.com/zimmski/tavor/reduce/strategy](/reduce/strategy) package allows to register strategies based on an identifier which can be then used within the framework. The function `New` of the [github.com/zimmski/tavor/reduce/strategy](/reduce/strategy) package allows to generate a new instance of the registered strategy given the identifier. For example, this is needed for the Tavor binary, which can execute a specific strategy defined by a CLI argument.
 
 **Examples**
 
