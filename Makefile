@@ -23,16 +23,16 @@ install: clean
 	go install -v ./...
 lint: install fmt
 	errcheck github.com/zimmski/tavor/...
-	golint $(ROOT_DIR)/...
+	golint ./...
 	go tool vet -all=true -v=true $(ROOT_DIR)/ 2>&1 | grep --invert-match -P "(Checking file|\%p of wrong type|can't check non-constant format)" || true
 markdown:
 	orange
 test:
 	go test -race ./...
 tools:
-	go get -u code.google.com/p/go.tools/cmd/cover
-	go get -u code.google.com/p/go.tools/cmd/godoc
-	go get -u code.google.com/p/go.tools/cmd/vet
+	go get -u golang.org/x/tools/cmd/cover
+	go get -u golang.org/x/tools/cmd/godoc
+	go get -u golang.org/x/tools/cmd/vet
 	go get -u github.com/golang/lint
 	go install github.com/golang/lint/golint
 	go get -u github.com/kisielk/errcheck

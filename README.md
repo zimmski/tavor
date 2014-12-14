@@ -538,7 +538,7 @@ If you do not want to use the [precompiled binaries](#precompiled) but instead w
 
 1. Install and configure Go.
 
-	At least version 1.3 must be used. Your distribution will most definitely have some packages or you can be brave and just install it yourself. Have a look at [the official documentation](http://golang.org/doc/install). Good luck!
+	At least version 1.4 must be used. Your distribution will most definitely have some packages or you can be brave and just install it yourself. Have a look at [the official documentation](http://golang.org/doc/install). Good luck!
 
 2. Go-get Tavor
 
