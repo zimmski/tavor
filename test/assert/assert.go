@@ -124,17 +124,23 @@ func indentMessageLines(message string, tabs int) string {
 
 	for i, scanner := 0, bufio.NewScanner(strings.NewReader(message)); scanner.Scan(); i++ {
 		if i != 0 {
-			outBuf.WriteRune('\n')
+			if _, err := outBuf.WriteRune('\n'); err != nil {
+				panic(err)
+			}
 		}
 		for ii := 0; ii < tabs; ii++ {
-			outBuf.WriteRune('\t')
+			if _, err := outBuf.WriteRune('\t'); err != nil {
+				panic(err)
+			}
 			// Bizarrely, all lines except the first need one fewer tabs prepended, so deliberately advance the counter
 			// by 1 prematurely.
 			if ii == 0 && i > 0 {
 				ii++
 			}
 		}
-		outBuf.WriteString(scanner.Text())
+		if _, err := outBuf.WriteString(scanner.Text()); err != nil {
+			panic(err)
+		}
 	}
 
 	return outBuf.String()
