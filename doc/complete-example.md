@@ -6,7 +6,7 @@ This example provides a complete overview of Tavor. It does not utilize every si
 
 It uses the *Tavor format* to define this state machine and the *Tavor binary* to generate key-driven test files. An *executor* translates keys of a file into actions for the implementation under test. After successfully testing the original implementation, some bugs will be introduced to show the failure of some tests as well as automatically delta-debugging the failed key-driven test files.
 
-> **Note:** The implementation of this example has intentional concurrency and other problems. Future versions of Tavor will help to identify, test and resolve such flaws. As Tavor evolves this example will also evolve. This also concerns the given state machine and Tavor format definition. Both could be defined much more efficiently with the help of state variables which are common in model-based testing but not yet fully implemented in the Tavor format. However, this can be easily implemented via code.
+> **Note:** The implementation of this example has intentional concurrency and other problems. Future versions of Tavor will help to identify, test and resolve such flaws. As Tavor evolves this example will also evolve. This also concerns the given state machine and Tavor format definition. Both could be defined much more efficiently with the help of state variables which are common in model-based testing but not yet fully implemented in the Tavor format. However, this could be easily implemented via code using the Tavor framework.
 
 The following components will be defined and described in the following sections:
 
@@ -101,17 +101,17 @@ vend
 credit  0
 ```
 
-The default fuzzing strategy `random` can create all possible permutations of a format but since it is random, it will need enough time to do so. Lots of duplicated results will be generated, since even random events often lead to the same results. To work around this problem the `AllPermutations` strategy can be used which, as its name states, generates all possible permutations of a graph. This strategy should be used wisely since even small graphs can have [an enormous amount of permutations](https://en.wikipedia.org/wiki/Combinatorial_explosion). We can say that there are theoretically an infinite amount of permutations, since the example graph has a loop. To work around this additional problem, the `--max-repeat` argument will be used with a suitable value. It enforces a maximum of loop traversals and repetitions.
+The default fuzzing strategy `random` can create all possible permutations of a format but since it is random, it will need enough time to do so. Lots of duplicated results will be generated, since even random events often lead to the same results. To work around this problem the `AllPermutations` strategy can be used which, as its name suggests, generates all possible permutations of a graph. This strategy should be used wisely since even small graphs can have [an enormous amount of permutations](https://en.wikipedia.org/wiki/Combinatorial_explosion). We can say that there are theoretically an infinite amount of permutations, since the example graph has a loop. To work around this additional problem, the `--max-repeat` argument will be used with a suitable value. It enforces a maximum of loop traversals and repetitions.
 
 > **Note:** There is no easy way to ensure that the `--max-repeat` value is correct. A high value can lead to many repetitive permutations which will often not improve the testing process. A small value can lead to a bad coverage which means that some code branches would not be taken. Future versions of Tavor will aid this process by implementing better fuzzing strategies as well as additional metrics like token and edge coverage.
 
-Since the given state machine is pretty easy to understand we can imply that a loop should be generated at least twice to include the repetition part of each loop. Putting this together we arrive at the following Tavor binary arguments.
+Since the given state machine is pretty easy to understand we can imply that a loop should be generated at least twice to include the repetition part of each loop. Putting this together we arrive at the following arguments for the Tavor binary.
 
 ```bash
 tavor --format-file vending.tavor --max-repeat 2 fuzz --strategy AllPermutations
 ```
 
-This command outputs directly to STDOUT which is OK for one generation but since we are using the `AllPermutations` fuzzing strategy we have to deal with many generations of the format. Additionally we want to save every permutation in a file so we can build a regression test suit for our implementation under test. This can be done using the `--result-folder` fuzz command argument which saves each permutation in its own file in the given folder. Each file is named by the MD5 sum of the content and is given the extension `.test` with the `--result-extension` fuzz command argument.
+This command outputs directly to STDOUT which is OK for one generation but since we are using the `AllPermutations` fuzzing strategy we have to deal with many generations of the format. Additionally we want to save every permutation in a file so we can build a regression test suit for our implementation under test. This can be done using the `--result-folder` fuzz command argument which saves each permutation in its own file in the given folder. Each file is named by the MD5 sum of the content and is given the extension `.test` by the `--result-extension` fuzz command argument.
 
 ```bash
 mkdir testset
@@ -199,7 +199,7 @@ func main() {
 }
 ```
 
-This program reads a file given as CLI argument, parses it according to our key-driven format rules and then executes each key with its parameters using the map `actions`. Since we did not fill the map yet, every key-driven file will fail. However, the groundwork of the executor is hereby done and we can move on to define the actions for our keys. Since this example should be kept simple, we will use a package directly as our implementation. It should be noted that the same mechanisms could be used to test implementations of external processes, web APIs or any other implementation.
+This program reads a file given as CLI argument, parses it according to our key-driven format rules and then executes each key with its parameters using the map `actions`. Since we did not fill the map yet, every key-driven file will fail. However, the groundwork of the executor is hereby done and we can move on to define the actions for our keys. Since this example should be kept simple, we will use an additional package as our implementation. It should be noted that the same mechanisms could be used to test implementations of external processes, web APIs or any other implementation as long as an interface can be used.
 
 The following code introduces the implementation of the given state machine which we will declare in its own package.
 
@@ -263,7 +263,7 @@ func (v *VendingMachine) Vend() bool {
 }
 ```
 
-This implementation can be now used in the executor to define actions for the defined keys.
+This implementation can be now used in the executor to define actions for the given keys.
 
 ```go
 var (
@@ -325,9 +325,9 @@ func init() {
 }
 ```
 
-As you can see, each action does exactly what the key suggests. `credit` checks if the current credit of the vending machine is equal to the given argument, `coin` inserts a new coin and validates that the invoked action is successful and `vend` invokes the vending action and also validates that it was successful. Thereby each action to a key is isolated from one another.
+As you can see, each action does exactly what its key suggests. `credit` checks if the current credit of the vending machine is equal to the given argument, `coin` inserts a new coin and validates that the invoked action is successful and `vend` invokes the vending action and also validates that it was successful. Thereby each action to a key is isolated from one another.
 
-Since we have now defined all components for testing the given state machine we can proceed to execute the actual tests.
+Since we have now defined all components for testing the given state machine, we can proceed to execute the actual tests.
 
 ## <a name="test-execution"></a>Test execution
 
@@ -365,7 +365,7 @@ echo $?
 
 Which results in the output `0`, meaning that the test has passed.
 
-`go run` does compile the whole executor with each execution. This is very slow. It is therefore advisable to compile the executor with the following command to the current folder.
+`go run` does compile the whole executor for every execution. This is very slow and it is therefore advisable to compile the executor with the following command to the current folder.
 
 ```bash
 go build executor.go
@@ -400,7 +400,7 @@ Executing this script reveals no errors meaning all tests passed. Since this is 
 
 The following subsections will introduce bugs into the implementation. Each bug will fail at least one test of our generated test set and will be studied isolated from other bugs. Meaning each section starts with a fresh original version of the implementation.
 
-### <a name="bugs-coin"></a>The `Coin` method does to increase the credit
+### <a name="bugs-coin"></a>The `Coin` method does not increase the credit
 
 This bug can be introduced easily with one of the following code replacements for the `Coin` method of our implementation:
 
@@ -446,9 +446,9 @@ Error: Credit should be 50 but was 0
 Error detected, will exit loop
 ```
 
-### <a name="bugs-vend"></a>The `Vend` method does to decrease the credit
+### <a name="bugs-vend"></a>The `Vend` method does not decrease the credit
 
-Similar to the previous example we can modify the code to leave the `credit` member variable untouched with one of the following replacements of the `Vend` replacements:
+Similar to the previous example we can modify the code to leave the `credit` member variable untouched with one of the following replacements of the `Vend` method:
 
 - Remove the subtraction statements.
 
@@ -561,11 +561,11 @@ credit [100]
 Error: Credit should be 100 but was 75
 ```
 
-This is an interesting test case since the first iteration of the vending loop is not relevant to the bug. It shows that actions which trigger a flaw most not be a minimal set of actions but they can be reduced to such a set. This is one of the major operations of Tavor which is called **delta-debugging** or **reducing** in general. The next main section will cover how Tavor can be used to reduce an input to its minimum.
+This is an interesting test case since the first iteration of the vending loop is not relevant to the bug. It shows that actions which trigger a flaw most not be a minimal set of actions but they can be reduced to such a set. This is one of the major operations of Tavor which is called **delta-debugging** or in general **reducing**. The next main section will cover how Tavor can be used to reduce an input to its minimum.
 
 ## <a name="delta-debugging"></a>Delta-debugging of inputs
 
-**Delta-debugging** or in general **reducing** is a method to reduce data to its minimum while still complying to defined constraints. In our example the data is a key-driven test file which fails and the constraint is that the reduced test case should still fail. Therefore the final result of the delta-debugging process should be a minimal test case which still triggers the same bug as the original test case. This can be automatically or semi-automatically done by the `reduce` command of the Tavor binary. The binary uses our Tavor format file to parse and validate the given key-driven file and tries to reduce its data according to rules defined by the format file. For instance optional content like repetitions can be reduced to a minimal repetition. In our example we can reduce the iterations of the vending loop.
+**Delta-debugging** or in general **reducing** is a method to reduce data to ideally its minimum while still complying to defined constraints. In our example the data is a key-driven test file which fails and the constraint is that the reduced test case should still fail. Therefore the final result of the delta-debugging process should be a minimal test case which still triggers the same bug as the original test case. This can be automatically or semi-automatically done by the `reduce` command of the Tavor binary. The binary uses our Tavor format file to parse and validate the given key-driven file and tries to reduce its data according to rules defined by the format file. For instance optional content like repetitions can be reduced to a minimal repetition. In our example we can reduce the iterations of the vending loop.
 
 We will use the bug and the key-driven test file `testset/fba58bb35d28010b61c8004fadcb88a3.test` which were introduced in [one of the subsections of "Introducing bugs"](#bugs-second-25-coin). The file has the following content.
 
@@ -597,6 +597,7 @@ tavor --format-file vending.tavor reduce --input-file testset/fba58bb35d28010b61
 
 This should result in the following output and feedbacks.
 
+```
 credit  0
 
 
@@ -634,7 +635,7 @@ vend
 credit  0
 ```
 
-The last reduction output is the minimum which still triggers the same bug as the original test ccase. Additionally it is shown that the default reduce strategy of the Tavor `reduce` command tries to output the smallest generation first which is simply the `credit  0` command.
+The last reduction output is the minimum which still triggers the same bug as the original test case. Additionally it is shown that the default reduce strategy of the Tavor `reduce` command tries to output the smallest generation first which is simply the `credit  0` command.
 
 This semi-automatic process can be tedious for big data especially because of the manual validation. The Tavor binary does therefore provide several methods to reduce completely automatically. Since we already have a executor which tests key-driven files we can use it in this process. This is additionally aided by the executor which exits with different exit status codes on success or failure. We can therefore conclude that a reduced generation of our original failing key-driven file has to have the same exit status code as the original one. This can be automatically done by the following command. Which uses the executor to validate reduced data which is temporary written to a file. Each exit status code of the executor is compared to the original exit status code. If it is not equal, the reduction process will try an alternative reduction step until a reduction path is found which leads to the minimum.
 

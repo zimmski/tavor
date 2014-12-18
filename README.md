@@ -204,8 +204,9 @@ The Tavor format documentation has its own [page which can be found here](/doc/f
 ## <a name="use"></a>How do I use Tavor?
 
 Tavor can be used in three different ways:
+
 - [Using the binary](#binary) which makes everything officially provided by the Tavor framework available via the command line.
-- [Developing applications with the Tavor framework](#develop) by implementing the internal structure via code and doing everything else like fuzzing and delta-debugging too via code.
+- [Developing applications with the Tavor framework](#develop) by implementing the internal structure via code and doing everything else like fuzzing and delta-debugging via code too.
 - [Extending the Tavor framework](#extend) because of research or missing features.
 
 ## <a name="binary"></a>The Tavor binary
@@ -304,7 +305,7 @@ Available commands:
 The Tavor binary provides different kinds of general options which are informative or apply to all commands. Besides the `--format-file` general format option the following options are noteworthy:
 
 - **--max-repeat** sets the maximum repetition of loops and repeating tokens. If not set, the default value (currently 2) is used. 0, meaning no maximum repetition, is currently now allowed because of the limitation mentioned [here](#unrolling).
-- **--seed** defines the seed for all random generators. If not set, a random value will be chosen. This argument makes the execution of every Tavor command deterministic. Meaning that a result or failure can be replayed with the same `--seed` argument, other arguments and Tavor version.
+- **--seed** defines the seed for all random generators. If not set, a random value will be chosen. This argument makes the execution of every Tavor command deterministic. Meaning that a result or failure can be replayed with the same `--seed` argument and given the same arguments and Tavor version.
 - **--verbose** switches Tavor into verbose mode which prints additional information, like the used seed, to STDERR.
 
 Please have a look at the help for more options and descriptions:
@@ -335,13 +336,15 @@ The following command will apply the `PositiveBoundaryValueAnalysis` fuzzing fil
 tavor --format-file file.tavor fuzz --filter PositiveBoundaryValueAnalysis --filter NegativeBoundaryValueAnalysis
 ```
 
-Alternatively to printing to STDOUT an executable (or script) can be fed with the generated data. You can find examples for executables and scripts [here](/examples/fuzzing). There are two types of arguments to execute commands:
+Alternatively to printing to STDOUT an executable (or script) can be fed with the generated data. You can find examples for executables and scripts [here](/examples/fuzzing).
+
+There are two types of arguments to execute commands:
 
 - #### exec
 
 	Executes a given command for every data generation. The validation of the data can be done via the executable and by using additional `--exec-*` fuzz command options.
 
-	For example the following command will execute a binary called `validate` with the default exec settings which feeds the generation via STDIN to the started process and apply no validation at all.
+	For example the following command will execute a binary called `validate` with the default exec settings which feeds the generation via STDIN to the started process and applies no validation at all.
 
 	```bash
 	tavor --format-file file.tavor fuzz --exec validate
@@ -371,8 +374,8 @@ Alternatively to printing to STDOUT an executable (or script) can be fed with th
 
 	Feedback commands control the fuzzing process and are read by Tavor using STDOUT of the running process. Each command has to end with a new line delimiter and exactly one command has to be given for every generation.
 
-	- **YES** reports a positive outcome for given the generation.
-	- **NO** reports a negative outcome for given the generation. This is an error and will terminate the fuzzing generation if the `--exit-on-error` fuzz command option is used. Otherwise the feedback will be used by the fuzzing strategy to find a different generation.
+	- **YES** reports a positive outcome for the given generation.
+	- **NO** reports a negative outcome for the given generation. This is an error and will terminate the fuzzing generation if the `--exit-on-error` fuzz command option is used. Otherwise the feedback will be used by the fuzzing strategy to find a different generation.
 
 `--result-*` is an additional fuzz command option kind which can be used to influence the fuzzing generation itself. For example the `--result-separator` fuzz command option changes the separator of the generations if they are printed to STDOUT. The following command will use `@@@@` instead of the default `\n` separator to feed the fuzzing generations to the running process:
 
@@ -440,13 +443,15 @@ By default the `Linear` reduce strategy is used which can be altered using the `
 tavor --format-file file.tavor reduce --input-file file.input --strategy random
 ```
 
-Alternatively to printing to STDOUT an executable (or script) can be fed with the generated data. You can find examples for executables and scripts [here](/examples/deltadebugging). There are two types of arguments to execute commands:
+Alternatively to printing to STDOUT an executable (or script) can be fed with the generated data. You can find examples for executables and scripts [here](/examples/deltadebugging).
+
+There are two types of arguments to execute commands:
 
 - #### exec
 
-	Executes a given command for every generation. The validation of the data can be done via the executable and by using additional `--exec-\*` reduce command options. At least one `--exec-\*` matcher must be used to validate the reduced generations.
+	Executes a given command for every generation. The validation of the data can be done via the executable and by using additional `--exec-*` reduce command options. At least one `--exec-*` matcher must be used to validate the reduced generations.
 
-	For example the following command will execute a binary called `validate` with the default exec settings which feeds the generation via STDIN to the started process. The `--exec-exact-exit-code` reduce command option is used to validate that the exit code of the original data matches the exit codes of reduce generations.
+	For example the following command will execute a binary called `validate` with the default exec settings which feeds the generation via STDIN to the started process. The `--exec-exact-exit-code` reduce command option is used to validate that the exit code of the original data matches the exit codes of the reduced generations.
 
 	```bash
 	tavor --format-file file.tavor reduce --input-file file.input --exec validate --exec-exact-exit-code
@@ -476,8 +481,8 @@ Alternatively to printing to STDOUT an executable (or script) can be fed with th
 
 	Feedback commands control the reduce process and are read by Tavor using STDOUT of the running process. Each command has to end with a new line delimiter and exactly one command has to be given for every generation.
 
-	- **YES** reports a positive outcome for given the generation. The reduce strategy will therefore continue reducing this generation.
-	- **NO** reports a negative outcome for given the generation. This is an error and the reduce strategy will therefore produce a different generation.
+	- **YES** reports a positive outcome for the given generation. The reduce strategy will therefore continue reducing this generation.
+	- **NO** reports a negative outcome for the given generation. This is an error and the reduce strategy will therefore produce a different generation.
 
 `--result-*` is an additional reduce command option kind which can be used to influence the reduce generation itself. For example the `--result-separator` reduce command option changes the separator of the generations if they are printed to STDOUT. The following command will use `@@@@` instead of the default `\n` separator to feed the reduce generations to the running process:
 
@@ -493,7 +498,7 @@ tavor --help reduce
 
 ### <a name="binary-validate"></a>Command: `validate`
 
-The `validate` command validates a given input file according to the given format file. This can be helpful since this is for instance needed for the `reduce` command which does apply delta-debugging only on valid inputs or in the general case to validate an input which was not generated through the given format file.
+The `validate` command validates a given input file according to the given format file. This can be helpful since this is for instance needed for the `reduce` command which does apply delta-debugging only on valid inputs or in the general case it can be used to validate an input which was not generated through the given format file.
 
 ```bash
 tavor --format-file file.tavor validate --input-file file.input
@@ -523,7 +528,7 @@ wget -P $HOME/.bash_completion https://raw.githubusercontent.com/zimmski/tavor/m
 . ~/.bashrc
 ```
 
-Bash Completion for Tavor should now be working. If not, one reason could be that your distribution does not include user defined Bash Completion scripts in .bashrc so just add it to your .bashrc:
+Bash Completion for Tavor should now be working. If not, one reason could be that your distribution does not include user defined Bash Completion scripts in .bashrc so just add it to your .bashrc and include the .bashrc in your current bash:
 
 ```bash
 echo ". ~/.bash_completion/tavor-bash_completion.sh" >> ~/.bashrc
@@ -532,11 +537,13 @@ echo ". ~/.bash_completion/tavor-bash_completion.sh" >> ~/.bashrc
 
 ## <a name="build"></a>How do I build Tavor?
 
-Tavor provides [precompiled 64 bit Linux binaries](#precompiled). Other architectures are currently not supported, but might work. Please have a look at the [feature request section](#feature-request) if you need them to work or you want more binaries.
+Tavor provides [precompiled 32 and 64 bit Linux binaries](#precompiled). Other architectures are currently not supported, but might work. Please have a look at the [feature request section](#feature-request) if you need them to work or you want more binaries for different architectures.
 
-If you do not want to use the [precompiled binaries](#precompiled) but instead want to compile Tavor from scratch, just follow the these steps (Note: All steps must execute without any errors):
+If you do not want to use the [precompiled binaries](#precompiled) but instead want to compile Tavor from scratch, just follow the these steps:
 
-1. Install and configure Go.
+> **Note:** All steps must execute without any errors.
+
+1. Install and configure Go
 
 	At least version 1.4 must be used. Your distribution will most definitely have some packages or you can be brave and just install it yourself. Have a look at [the official documentation](http://golang.org/doc/install). Good luck!
 
@@ -567,7 +574,7 @@ If you do not want to use the [precompiled binaries](#precompiled) but instead w
 	make test
 	```
 
-You now have a binary "tavor" in your `$GOPATH/bin` (or if set `$GOBIN` folder) folder which can be used without any further actions.
+You now have a binary `tavor` in your `$GOPATH/bin` folder (or if set `$GOBIN` folder) which can be used without any further actions.
 
 ## <a name="develop"></a>How do I develop applications with the Tavor framework?
 
@@ -741,13 +748,13 @@ If extending Tavor yourself is not for you, but you still need new features, you
 
 ### <a name="extend-fuzzing-filters"></a>Fuzzing filters [![GoDoc](https://godoc.org/github.com/zimmski/tavor?status.png)](https://godoc.org/github.com/zimmski/tavor/fuzz/filter)
 
-The fuzzing filter code and all officially implemented fuzzing filters can be found in the [github.com/zimmski/tavor/fuzz/filter](/fuzz/filter) package and its sub-packages.
+The fuzzing filter code and all officially implemented fuzzing filters can be found in the [github.com/zimmski/tavor/fuzz/filter package](/fuzz/filter) and its sub-packages.
 
-A fuzzing filter has to implement the `Filter` interface which is exported by the [github.com/zimmski/tavor/fuzz/filter](/fuzz/filter) package. The interface defines the `Apply` method that applies the filter onto a token which is passed to the method. Therefore, the method's concern is only one token at a time. If an error is encountered during the filter execution, the error return argument is not nil. On success a replacement for the token is returned. This can be either `nil`, meaning the token should not be replaced, or a slice of tokens which will replace the old token using an alternation group.
+A fuzzing filter has to implement the `Filter` interface which is exported by the [github.com/zimmski/tavor/fuzz/filter package](/fuzz/filter). The interface defines the `Apply` method that applies the filter onto a token which is passed to the method. Therefore, the method's concern is only one token at a time. If an error is encountered during the filter execution, the error return argument is not nil. On success a replacement for the token is returned. This can be either `nil`, meaning the token should not be replaced, or a slice of tokens which will replace the old token using an alternation group.
 
-Applying a filter can be done manually or using the `ApplyFilters` function exported by the [github.com/zimmski/tavor/fuzz/filter](/fuzz/filter) package. `ApplyFilters` can apply more than one filter, correctly traverse the graph, handle errors of filters and does not apply filters onto filter generated tokens. The last property is needed to avoid filter loops e.g. when two filter generate new tokens which trigger the generation of the other filter.
+Applying a filter can be done manually or using the `ApplyFilters` function exported by the [github.com/zimmski/tavor/fuzz/filter package](/fuzz/filter). `ApplyFilters` applies more than one filter, correctly traverses the graph, handles errors of filters and does not apply filters onto filter generated tokens. The last property is needed to avoid filter loops e.g. when two filter generate new tokens which trigger the generation of the other filter.
 
-The `Register` function of the [github.com/zimmski/tavor/fuzz/filter](/fuzz/filter) package allows to register filters based on an identifier which can be then used within the framework. The function `New` of the [github.com/zimmski/tavor/fuzz/filter](/fuzz/filter) package allows to generate a new instance of the registered filter given the identifier. For example, this is needed for the Tavor binary, which applies filters defined by CLI arguments.
+The `Register` function of the [github.com/zimmski/tavor/fuzz/filter package](/fuzz/filter) allows to register filters based on an identifier which can be then used within the framework. The function `New` of the [github.com/zimmski/tavor/fuzz/filter package](/fuzz/filter) allows to generate a new instance of the registered filter given the identifier. For example, this is needed for the Tavor binary, which applies filters defined by CLI arguments.
 
 **Examples**
 
@@ -776,6 +783,7 @@ func (f *SampleFilter) Apply(tok token.Token) ([]token.Token, error) {
 	}, nil
 }
 ```
+
 One way to apply this filter is by using the following code. Which will change the generation from "old string" to "new string" after the filter is applied.
 
 ```go
@@ -824,19 +832,19 @@ func init() {
 
 ### <a name="extend-fuzzing-strategies"></a>Fuzzing strategies [![GoDoc](https://godoc.org/github.com/zimmski/tavor?status.png)](https://godoc.org/github.com/zimmski/tavor/fuzz/strategy)
 
-The fuzzing strategy code and all officially implemented fuzzing strategies can be found in the [github.com/zimmski/tavor/fuzz/strategy](/fuzz/strategy) package and its sub-packages.
+The fuzzing strategy code and all officially implemented fuzzing strategies can be found in the [github.com/zimmski/tavor/fuzz/strategy package](/fuzz/strategy) and its sub-packages.
 
 Each fuzzing strategy instance has to be associated on construction with exactly one token. This allows an instance to hold a dedicated state of the given token graph, which makes optimizations for multiple fuzzing operations possible.
 
-A fuzzing strategy has to implement the `Strategy` interface which is exported by the [github.com/zimmski/tavor/fuzz/strategy](/fuzz/strategy) package. The interface defines the `Fuzz` method which starts the first iteration of the fuzzing strategy in a new goroutine and returns a channel which controls the fuzzing process. If an error is encountered during the initialization, the error return argument is not nil. On success a value is returned by the channel which marks the completion of the iteration. A value has to be put back in, to initiate the calculation of the next fuzzing iteration. This passing of values is needed to avoid data races within the token graph. The channel must be closed when there are no more iterations or the strategy caller wants to end the fuzzing process. Note that this can also occur right after receiving the channel. Hence when there are no iterations at all. Since the `Fuzz` method is running in its own goroutine, it can be implemented statefully without using savepoints.
+A fuzzing strategy has to implement the `Strategy` interface which is exported by the [github.com/zimmski/tavor/fuzz/strategy package](/fuzz/strategy). The interface defines the `Fuzz` method which starts the first iteration of the fuzzing strategy in a new goroutine and returns a channel which controls the fuzzing process. If an error is encountered during the initialization, the error return argument is not nil. On success a value is returned by the channel which marks the completion of the iteration. A value has to be put back in, to initiate the calculation of the next fuzzing iteration. This passing of values is needed to avoid data races within the token graph. The channel must be closed when there are no more iterations or the strategy caller wants to end the fuzzing process. Note that this can also occur right after receiving the channel. Hence when there are no iterations at all. Since the `Fuzz` method is running in its own goroutine, it can be implemented statefully without using savepoints.
 
-The `Register` function of the [github.com/zimmski/tavor/fuzz/strategy](/fuzz/strategy) package allows to register strategies based on an identifier which can be then used within the framework. The function `New` of the [github.com/zimmski/tavor/fuzz/strategy](/fuzz/strategy) package allows to generate a new instance of the registered strategy given the identifier. For example, this is needed for the Tavor binary, which can execute a specific strategy defined by a CLI argument.
+The `Register` function of the [github.com/zimmski/tavor/fuzz/strategy package](/fuzz/strategy) allows to register strategies based on an identifier which can be then used within the framework. The function `New` of the [github.com/zimmski/tavor/fuzz/strategy package](/fuzz/strategy) allows to generate a new instance of the registered strategy given the identifier. For example, this is needed for the Tavor binary, which can execute a specific strategy defined by a CLI argument.
 
 **Examples**
 
 The following fuzzing strategy searches the token graph for constant integer tokens which have a value within 1 and 10 and increments their content by replacing the original value. This strategy falls therefore in the category of mutation-based fuzzing, since it does change the original data. It is also stateless since there is no need to keep track of current events between iterations. The graph is simply searched and changed once per iteration. An additional property is that the defined operation allows the strategy to end, which is strictly not necessary.
 
-> **Note:** The search of tokens could be cached, which would give the fuzzing strategy instance a kind of state. It would strictly speaking still not be a stateful fuzzing strategy, since there is no connection between iterations. That is no iteration depends on a previous iteration. Caching tokens would also imply that changes in the graph, which could be made outside the fuzzing go routing, must be handled or a contract has to be made between the caller and callee of the fuzzing strategy.
+> **Note:** The search of tokens could be cached, which would give the fuzzing strategy instance a kind of state. It would strictly speaking still not be a stateful fuzzing strategy, since there is no connection between iterations. Meaning no iteration depends on a previous iteration. Caching tokens would also imply that changes in the graph, which could be made outside the fuzzing go routing, must be handled or a contract has to be made between the caller and callee of the fuzzing strategy.
 
 ```go
 import (
@@ -962,17 +970,17 @@ func init() {
 
 ### <a name="extend-reduce-strategies"></a>Reduce strategies [![GoDoc](https://godoc.org/github.com/zimmski/tavor?status.png)](https://godoc.org/github.com/zimmski/tavor/reduce/strategy)
 
-The reduce strategy code and all officially implemented reduce strategies can be found in the [github.com/zimmski/tavor/reduce/strategy](/reduce/strategy) package and its sub-packages.
+The reduce strategy code and all officially implemented reduce strategies can be found in the [github.com/zimmski/tavor/reduce/strategy package](/reduce/strategy) and its sub-packages.
 
 Each reduce strategy instance has to be associated on construction with exactly one token. This allows an instance to hold a dedicated state of the given token graph, which makes optimizations for multiple reduce operations possible.
 
-A reduce strategy has to implement the `Strategy` interface which is exported by the [github.com/zimmski/tavor/reduce/strategy](/reduce/strategy) package. The interface defines the `Reduce` method which starts the first step of the reduce strategy in a new goroutine and returns two channels to control the reduce process. If an error is encountered during the initialization, the error return argument is not nil. On success a value is returned by the control channel which marks the completion of the iteration. A feedback has to be given through the feedback channel as well as a value to the control channel to initiate the calculation of the next reduce step. This passing of values is needed to avoid data races within the token graph. The channels must be closed when there are no more steps or the strategy caller wants to end the reduce process. Note that this can also occur right after receiving the channels. Hence when there are no steps at all. Since the `Reduce` method is running in its own goroutine, it can be implemented statefully without using savepoints.
+A reduce strategy has to implement the `Strategy` interface which is exported by the [github.com/zimmski/tavor/reduce/strategy package](/reduce/strategy). The interface defines the `Reduce` method which starts the first step of the reduce strategy in a new goroutine and returns two channels to control the reduce process. If an error is encountered during the initialization, the error return argument is not nil. On success a value is returned by the control channel which marks the completion of the iteration. A feedback has to be given through the feedback channel as well as a value to the control channel to initiate the calculation of the next reduce step. This passing of values is needed to avoid data races within the token graph. The channels must be closed when there are no more steps or the strategy caller wants to end the reduce process. Note that this can also occur right after receiving the channels. Hence when there are no steps at all. Since the `Reduce` method is running in its own goroutine, it can be implemented statefully without using savepoints.
 
-Currently only two different feedback answers can be given. They are defined by the `ReduceFeedbackType` type which is exported by the [github.com/zimmski/tavor/reduce/strategy](/reduce/strategy) package. One feedback answer is `Good` which communicates to the reduce strategy that the current step produced a successful result. This can mean for example that the result has the right syntax or is better than the last good result. The meaning of the feedback and the response of the strategy to the feedback are purely dependent on the application. Responses could be for example to proceed with a given optimization path or to simply end the whole reducing process, since it is often enough to find one solution. The second feedback answer is `Bad` which communicates exactly the opposite of `Good` to the strategy. This answer is often more complicated to handle since it means that in some scenarios a revert of the current step to the last good step has to occur before the reduce process can continue.
+Currently only two different feedback answers can be given. They are defined by the `ReduceFeedbackType` type which is exported by the [github.com/zimmski/tavor/reduce/strategy package](/reduce/strategy). One feedback answer is `Good` which communicates to the reduce strategy that the current step produced a successful result. This can mean for example that the result has the right syntax or is better than the last good result. The meaning of the feedback and the response of the strategy to the feedback are purely dependent on the application. Responses could be for example to proceed with a given optimization path or to simply end the whole reducing process, since it is often enough to find one solution. The second feedback answer is `Bad` which communicates exactly the opposite of `Good` to the strategy. This answer is often more complicated to handle since it means that in some scenarios a revert of the current step to the last good step has to occur before the reduce process can continue.
 
 > **Note:** All reduce strategies should currently implement algorithms that produce valid generations according to the internal token graph. Hence a constant integer should not for example be replaced by a constant string. This is a convention which is not enforced but highly recommended to avoid problems until it is safely supported by a future version of Tavor.
 
-The `Register` function of the [github.com/zimmski/tavor/reduce/strategy](/reduce/strategy) package allows to register strategies based on an identifier which can be then used within the framework. The function `New` of the [github.com/zimmski/tavor/reduce/strategy](/reduce/strategy) package allows to generate a new instance of the registered strategy given the identifier. For example, this is needed for the Tavor binary, which can execute a specific strategy defined by a CLI argument.
+The `Register` function of the [github.com/zimmski/tavor/reduce/strategy package](/reduce/strategy) allows to register strategies based on an identifier which can be then used within the framework. The function `New` of the [github.com/zimmski/tavor/reduce/strategy package](/reduce/strategy) allows to generate a new instance of the registered strategy given the identifier. For example, this is needed for the Tavor binary, which can execute a specific strategy defined by a CLI argument.
 
 **Examples**
 
@@ -1180,7 +1188,11 @@ The [Token documentation](https://godoc.org/github.com/zimmski/tavor/token#Token
 
 **Examples**
 
-The following token defines a smiley which has eyes, a mouth and can have a nose. The token is able to permutate different generations of smileys and even parse them. The code will be described in group of method categories. The example should in general show how easy it is to create new token types. It must be noted that the example could be as well implemented with the available token types or with the following Tavor format `START = [:;] ?("-") [)(D]`.
+The following token defines a smiley which has eyes, a mouth and can have a nose. The token is able to permutate different generations of smileys and even parse them. The code will be described in groups of method categories. The example should in general show how easy it is to create new token types. It must be noted that the example could be easily implemented with the available token types or with the following Tavor format.
+
+```tavor
+START = [:;] ?("-") [)(D]
+```
 
 Since the `Smiley` token has to hold three different information, it is necessary to create a struct. Instead of directly using the runes for the eyes and mouth in the struct, only indexes are used. This is not necessary but is a good convention to separate the data from its source.
 
@@ -1268,7 +1280,7 @@ func (s *Smiley) Permutation(i uint) error {
 func (s *Smiley) permutation(i uint) {
 	p := uint(0)
 
-	// This could be done more efficient but to keep the example simple we traverse over every permutation to find the right one.
+	// This could be done more efficiently but to keep the example simple we traverse over every permutation to find the right one.
 OUT:
 	for eyes := range eyes {
 		for _, nose := range []bool{false, true} {
@@ -1403,17 +1415,17 @@ Parsed: :-D
 
 Every token type and interface can have its own token attributes. Currently it is not possible to define these attributes externally. Instead they must be implemented directly in the format parsers. For example the method `selectTokenAttribute` of the [Tavor format parser](/parser/tavor.go) has to be extended. Since token attributes embed a new token, which is for example executed by fuzzing and reduce operations, a suitable token type, which can be connected to the original token, must be used. The `Reset` token attribute of the `Sequence` typed token uses for example a token of the [SequenceResetItem](https://godoc.org/github.com/zimmski/tavor/token/sequences#SequenceResetItem) type.
 
-The mentioned implementation inconveniences will be addressed in future versions of Tavor.
+> **Note:** The mentioned implementation inconveniences will be addressed in future versions of Tavor.
 
 ### <a name="extend-typed-tokens"></a>Typed tokens
 
 Typed tokens provide additional types for formats. Currently it is not possible to define typed tokens and their arguments externally. Instead they must be implemented directly in the format parsers. For example the method `parseTypedTokenDefinition` of the [Tavor format parser](/parser/tavor.go) has to be extended. To add token attributes to typed tokens, please have a look at the  [token attributes section](#extend-token-attributes). It is only necessary to implement the [Token interface](https://godoc.org/github.com/zimmski/tavor/token#Token), since typed tokens behave like regular tokens. Arguments for the typed tokens have to be currently parsed and validated by hand. They are used as initialization values for the instanced token. It is therefore not possible to lookup argument values after the typed token definition is processed.
 
-The mentioned implementation inconveniences will be addressed in future versions of Tavor.
+> **Note:** The mentioned implementation inconveniences will be addressed in future versions of Tavor.
 
 ## <a name="stability"></a>How stable is Tavor?
 
-Tavor is still in development and fare from a 1.0 release. There are [some bugs](https://github.com/zimmski/tavor/issues?q=is%3Aopen+is%3Aissue+label%3Abug) and a lot of [functionality is still missing](https://github.com/zimmski/tavor/issues?q=is%3Aopen+is%3Aissue+label%3Aenhancement) but basic features are stable enough and are successufully used in production by many projects.
+Tavor is still in development and fare from a 1.0 release. There are [some bugs](https://github.com/zimmski/tavor/issues?q=is%3Aopen+is%3Aissue+label%3Abug) and a lot of [functionality is still missing](https://github.com/zimmski/tavor/issues?q=is%3Aopen+is%3Aissue+label%3Aenhancement) as well as [many features](https://github.com/zimmski/tavor/issues?q=is%3Aopen+is%3Aissue+label%3Afeature). However, basic functionality and features are stable enough and are successufully used in production by many projects.
 
 [Individual package code coverage](https://coveralls.io/r/zimmski/tavor) is currently low but since most tests do cover a lot of Tavor's components this is not a big issue. However 100% coverage using hand written tests is a required feature of the 1.0 release as well as fully fuzzing the Tavor format and the Tavor binary. This means that Tavor will be equipped to test every feature of the binary and the Tavor format itself.
 
@@ -1422,10 +1434,10 @@ Since Tavor is still a moving target, backwards-incompatible changes will happen
 ## <a name="missing-features"></a>Missing features
 
 - Format: Format files for binary data and different character sets (currently only UTF-8 is supported)
-- General: Direct support for protocols (can be currently only done with fuzzing an output and putting this input into an executor)
+- General: Direct support for protocols (can be currently only done with fuzzing data and putting the data into an executor)
 - General: Direct support for source code generation and execution (needs an execution layer as-well)
 - Format: Functions with parameters to reduce clutter
-- General: Remove the need for unrolling and allow real loops
+- General: Allow real loops
 - Format: Includes of external format files
 - Fuzzing: Feedback-driven fuzzing -> transition into completely stateful fuzzing
 - General: Parallel execution of fuzzing, delta-debugging, ...
