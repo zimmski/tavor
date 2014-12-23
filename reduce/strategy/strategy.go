@@ -28,6 +28,7 @@ func (err *Error) Error() string {
 // ReduceFeedbackType the reduce strategy feedback type
 type ReduceFeedbackType int
 
+//go:generate stringer -type=ReduceFeedbackType
 const (
 	// Unknown the feedback is of unknown type, this is always a fatal error
 	Unknown ReduceFeedbackType = iota
@@ -36,17 +37,6 @@ const (
 	// Bad the reduce step produced an unsuccessful result
 	Bad
 )
-
-func (f ReduceFeedbackType) String() string {
-	switch f {
-	case Bad:
-		return "bad"
-	case Good:
-		return "good"
-	default:
-		return "unknown feedback"
-	}
-}
 
 // Strategy defines a reduce strategy
 type Strategy interface {
