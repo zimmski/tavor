@@ -32,9 +32,18 @@ markdown:
 test:
 	go test -race ./...
 tools:
-	go get -u golang.org/x/tools/cmd/cover
+	# generation
 	go get -u golang.org/x/tools/cmd/godoc
+	go get -u golang.org/x/tools/cmd/stringer
+
+	# linting
 	go get -u golang.org/x/tools/cmd/vet
 	go get -u github.com/golang/lint
 	go install github.com/golang/lint/golint
 	go get -u github.com/kisielk/errcheck
+
+	# code coverage
+	go get -u golang.org/x/tools/cmd/cover
+	go get github.com/onsi/ginkgo/ginkgo
+	go get github.com/modocache/gover
+	go get github.com/mattn/goveralls
