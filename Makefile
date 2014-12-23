@@ -1,8 +1,8 @@
-.PHONY: all clean coverage debug-install dependencies fmt install lint test tools
+.PHONY: all clean coverage debug-install dependencies fmt install lint markdown test tools
 
 ROOT_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 
-all: clean install test
+all: tools dependencies install test
 
 clean:
 	go clean -i ./...
@@ -24,13 +24,13 @@ install: clean
 	go generate ./...
 	go install -v ./...
 lint: install fmt
-	errcheck github.com/zimmski/tavor/...
-	golint ./...
+	errcheck github.com/zimmski/tavor/... || true
+	golint ./... | grep --invert-match -P "(_string.go:)" || true
 	go tool vet -all=true -v=true $(ROOT_DIR)/ 2>&1 | grep --invert-match -P "(Checking file|\%p of wrong type|can't check non-constant format)" || true
 markdown:
 	orange
 test:
-	go test -race ./...
+	go test -race -v ./...
 tools:
 	# generation
 	go get -u golang.org/x/tools/cmd/godoc
