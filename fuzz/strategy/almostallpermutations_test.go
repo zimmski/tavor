@@ -1,10 +1,10 @@
 package strategy
 
 import (
-	"runtime"
 	"strings"
 	"testing"
 
+	"github.com/zimmski/go-leak"
 	. "github.com/zimmski/tavor/test/assert"
 
 	"github.com/zimmski/tavor/parser"
@@ -546,7 +546,7 @@ func TestAlmostAllPermutationsStrategy(t *testing.T) {
 }
 
 func validateTavorAlmostAllPermutations(t *testing.T, format string, expect []string) {
-	beforeGoroutineCount := runtime.NumGoroutine()
+	m := leak.MarkGoRoutines()
 
 	r := test.NewRandTest(1)
 
@@ -567,7 +567,7 @@ func validateTavorAlmostAllPermutations(t *testing.T, format string, expect []st
 
 	Equal(t, got, expect)
 
-	Equal(t, 0, runtime.NumGoroutine()-beforeGoroutineCount, "check for goroutine leaks")
+	Equal(t, 0, m.Release(), "check for goroutine leaks")
 }
 
 func TestAlmostAllPermutationsStrategyLoopDetection(t *testing.T) {

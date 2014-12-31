@@ -1,10 +1,10 @@
 package strategy
 
 import (
-	"runtime"
 	"strings"
 	"testing"
 
+	"github.com/zimmski/go-leak"
 	. "github.com/zimmski/tavor/test/assert"
 
 	"github.com/zimmski/tavor/parser"
@@ -149,7 +149,7 @@ func TestRandomStrategyCases(t *testing.T) {
 }
 
 func validateTavorRandom(t *testing.T, seed int, format string, expect []string) {
-	beforeGoroutineCount := runtime.NumGoroutine()
+	m := leak.MarkGoRoutines()
 
 	root, err := parser.ParseTavor(strings.NewReader(format))
 	Nil(t, err)
@@ -176,7 +176,7 @@ func validateTavorRandom(t *testing.T, seed int, format string, expect []string)
 
 	Equal(t, got, expect)
 
-	Equal(t, 0, runtime.NumGoroutine()-beforeGoroutineCount, "check for goroutine leaks")
+	Equal(t, 0, m.Release(), "check for goroutine leaks")
 }
 
 func TestRandomStrategyLoopDetection(t *testing.T) {
