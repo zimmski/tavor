@@ -12,8 +12,8 @@ install:
   - make install
 
 script:
-  # project
-  - make testverbose
+  # build all test imports
+  - go test -i ./...
 
   # linting
   - export GOFMT=$(gofmt -l .)
@@ -28,6 +28,9 @@ script:
   - export GOLINT=$(golint ./... | grep --invert-match -P "(_string.go:)")
   - echo "$GOLINT"
   - $(exit $(echo -n "$GOLINT" | wc -l))
+
+  # project
+  - make testverbose
 
   # code coverage
   - ginkgo -r -cover -skipPackage="testdata"
