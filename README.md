@@ -1,10 +1,10 @@
 # Tavor [![GoDoc](https://godoc.org/github.com/zimmski/tavor?status.png)](https://godoc.org/github.com/zimmski/tavor) [![Build Status](https://travis-ci.org/zimmski/tavor.svg?branch=master)](https://travis-ci.org/zimmski/tavor) [![Coverage Status](https://coveralls.io/repos/zimmski/tavor/badge.png?branch=master)](https://coveralls.io/r/zimmski/tavor?branch=master)
 
-Tavor ([Sindarin](https://en.wikipedia.org/wiki/Sindarin) for "woodpecker") is a framework for implementing and doing everyday [fuzzing](#fuzzing) and [delta-debugging](#delta-debugging) as well as doing research on new methods without reimplementing basic algorithms. An [EBNF-like notation](#format) allows the definition of data (e.g. file formats and protocols) without the need of programming. Tavor also relaxes on the definitions of fuzzing and delta-debugging allowing the user to utilize available algorithms universally e.g. for key-driven testing, model-based testing, simulating user-behavior and genetic programming.
+Tavor ([Sindarin](https://en.wikipedia.org/wiki/Sindarin) for "woodpecker") is a framework for implementing and doing everyday [fuzzing](#fuzzing) and [delta-debugging](#delta-debugging). As well as doing research on new methods without reimplementing basic algorithms. An [EBNF-like notation](#format) allows the definition of data (e.g. file formats and protocols) without the need of programming. Furthermore, Tavor relaxes on the definitions of fuzzing and delta-debugging allowing the user to utilize available algorithms universally e.g. for key-driven testing, model-based testing, simulating user-behavior and genetic programming.
 
 ### <a name="quick-example"></a>A quick example
 
-Imagine that you want to test a vending machine which ejects a product after receiving 100 worth of credits. It is possible to input 25 and 50 credit coins into the machine. After receiving enough credits the machine ejects a product and resets the credit counter to zero. To keep it simple, we specify that the machine does not handle credit overflows. A representation of the states and actions of the machine could look like this:
+Imagine that you want to test a vending machine which ejects a product after receiving 100 credits. It is possible to input 25 and 50 credit coins into the machine. After receiving enough credits the machine ejects a product and resets the credit counter to zero. To simplify the example the machine does not handle credit overflows. A representation of the states and actions of the machine could look like this:
 
 ![Basic states and actions](examples/quick/basic.png "Basic states and actions")
 
@@ -28,7 +28,7 @@ Vend = "Vend" "\n"
 
 You can download this file called [`basic.tavor` from here](examples/quick/basic.tavor).
 
-Now we can use Tavor to [fuzz](#fuzzing) the format by issuing the following command:
+Tavor can then be used to [fuzz](#fuzzing) the format by issuing the following command:
 
 ```bash
 tavor --format-file basic.tavor fuzz
@@ -75,7 +75,7 @@ Additionally you can find official Tavor format files and fuzzer applications at
   + [What are fuzzing strategies?](#fuzzing-strategy)
   + [What are fuzzing filters?](#fuzzing-filter)
   + [What are reduce strategies?](#reduce-strategy)
-  + [Unrolling loops](#unrolling)
+  + [Why are loops unrolled?](#unrolling)
 - [The Tavor format](#format)
 - [How do I use Tavor?](#use)
 - [The Tavor binary](#binary)
@@ -109,57 +109,68 @@ Additionally you can find official Tavor format files and fuzzer applications at
 > Fuzz testing or fuzzing is a software testing technique, often automated or semi-automated, that involves providing invalid, unexpected, or random data to the inputs of a computer program. The program is then monitored for exceptions such as crashes, or failing built-in code assertions or for finding potential memory leaks. Fuzzing is commonly used to test for security problems in software or computer systems.
 > <br/>-- <cite>[https://en.wikipedia.org/wiki/Fuzz_testing](https://en.wikipedia.org/wiki/Fuzz_testing)</cite>
 
-Although this is the common definition of fuzzing, it is nowadays often just one view on capabilities of fuzzing tools. Fuzzing is in general just the generation of data and it does not matter if it is invalid or valid and what the type of data (e.g. files, protocol data) is. The use case of the data itself is also often broadly defined as it can be used to test algorithms, programs or hardware but it can be practically used everywhere where data is needed.
+Although this is the common definition of fuzzing, it is nowadays often just one view on capabilities of fuzzing tools. In general, fuzzing is just the generation of data and it does not matter if it is invalid or valid and what the type of data (e.g. files, protocol data) is. The use case of the data itself is also often broadly defined as it can be used to test algorithms, programs or hardware but it can be practically used everywhere where data is needed.
 
-Fuzzing algorithms can be categorized into the following two areas:
+Fuzzing algorithms can be categorized into the following two main categories:
 
-- **mutation-based**
+**Mutation-based fuzzing**
 
-	Mutation-based fuzzing takes existing data and simply changes it. This often leads to invalid data, as most techniques are not obeying rules nor constraints of the underlying data.
+Mutation-based fuzzing takes existing data and simply changes it. This often leads to invalid data, as most techniques are not obeying rules nor constraints of the underlying data.
 
-	Some common techniques for mutation-based fuzzing are:
-	- Bit flipping: Random chosen bits of the data are flipped.
-	- Prepending/Appending: New data is prepended/appended to the given data.
-	- Repeating: Random chosen parts of the given data are repeated.
-	- Removal: Random chosen parts of the given data are removed.
+Some common techniques for mutation-based fuzzing are:
 
-- **generation-based**
+- Bit flipping: Random chosen bits of the data are flipped.
+- Prepending/Appending: New data is prepended/appended to the given data.
+- Repeating: Random chosen parts of the given data are repeated.
+- Removal: Random chosen parts of the given data are removed.
 
-	Generation-based algorithms have one big advantage over mutation-based in that they have to understand and obey the underlying rules and constraints of the data itself. This property can be used to generate valid as well as invalid data. Another property is that generation-based algorithms can generate data from scratch which eliminates the need for gathering data and keeping it up to date.
+**Generation-based fuzzing**
 
-	There are no common techniques for generation-based fuzzing but most algorithms choose a graph as underlying representation of the data model. The graph is then traversed and each node outputs a part of the data. The traversal algorithms and the complexity and abilities of the data model like constraints between nodes or adding nodes during the traversal distinguish generation-based fuzzers and contributes in general to their mightiness.
+Generation-based algorithms have one big advantage over mutation-based algorithms in that they have to understand and obey the underlying rules and constraints of the data itself. This property can be used to generate valid as well as invalid data. Another property is that generation-based algorithms can generate data from scratch which eliminates the need for gathering data and keeping it up to date.
+
+There are no common techniques for generation-based fuzzing but most algorithms choose a graph as underlying representation of the data model. The graph is then traversed and each node outputs a part of the data. Traversal algorithms and the complexity and abilities of the data model such as constraints between nodes or adding nodes during the traversal distinguish generation-based fuzzers and contributes in general to their mightiness.
 
 ## <a name="delta-debugging"></a>What is delta-debugging?
 
 > The Delta Debugging algorithm isolates failure causes automatically - by systematically narrowing down failure-inducing circumstances until a minimal set remains.
 > <br/>-- <cite>[https://en.wikipedia.org/wiki/Delta_Debugging](https://en.wikipedia.org/wiki/Delta_Debugging)</cite>
 
-E.g. we feed a given data to a program which then fails. By delta-debugging this data we can reduce it to its minimum while still failing the execution. The reduction of the data is handled by software heuristics (semi-)automatically. The obvious advantage of this method, besides being done (semi-)automatically, is that we do not need to handle uninteresting parts of the data while debugging the problem, we can focus on the important parts which actually lead to the failure.
+Data which fails the execution of a program can be reduced by using delta-debugging. The reduction of the data is handled by software heuristics (semi-)automatically. The obvious advantage of this method, besides being done (semi-)automatically, is that it is not necessary to handle unrelated parts of the data while debugging the problem. This makes it possible to focus on the important parts which actually lead to the failure.
 
-> **Note:** Since delta-debugging reduces data it is also called `reducing`.
+> **Note:** Literature and the computer science community do not agree on one common name for delta-debugging.
+>
+> Besides `delta-debugging` the following names are fairly common for the same technique:
+>
+> - Since data is reduced it is also called `reducing`.
+> - Since data is shrinking it is also called `shrinking`.
 
 Delta-debugging consists of three areas:
 
-- A heuristic has to decide which parts of the data will be reduced next
-- The reduction e.g.
-	+ Remove repetitions
-	+ Remove optional data
-	+ Replace data with something else e.g. replace an uninteresting complex function with a constant value
-- Testing the new resulting data concerning the failure
+- **Search**
 
-Although delta-debugging is described as method to isolate failure causes, it can be also used to isolate anything given isolating constraints. For example we could reduce a solution to its optimum e.g. smallest formula.
+	Decide which part of the data will be reduced next.
+
+- **Reduction**
+
+	Remove repetitions and optional data or replace data with something else e.g. replace an uninteresting complex function with a constant value.
+
+- **Testing**
+
+	Test if the reduced data still provokes the original failure.
+
+Although delta-debugging is described as method to isolate failure causes, it can be also used to isolate anything given isolating constraints. For instance a solution may be reduced to its optimum e.g. smallest formula.
 
 ## <a name="tavor-provides"></a>What does Tavor provide and how does it work?
 
-Tavor combines both fuzzing and delta-debugging by allowing all implemented methods to operate on one internal model-based structure represented by a graph. This structure can be defined and generated via code or by using a format file. Out of the box Tavor comes with its own [format](#format) which covers all functionality of the framework.
+Tavor combines both fuzzing and delta-debugging by allowing all implemented methods to operate on one internal model-based structure represented by a graph. This structure can be defined and generated by programming or by using a format file. Out of the box Tavor comes with its own [format](#format) which covers all functionality of the framework.
 
 Tavor's generic fuzzing implementation is not fixed to one technique. Instead different fuzzing techniques and heuristics can be implemented and executed independently as [Tavor fuzzing strategies](#fuzzing-strategy). The same principle is used for delta-debugging where so called [Tavor reduce strategies](#reduce-strategy) can be implemented and used. Both types of strategies operate on the same internal structure independent of the format. This structure is basically a graph of nodes which are called [tokens](#token) throughout the Tavor framework. The structure itself is not fixed to a static definition but can be changed by so called [fuzzing filters](#fuzzing-filter) to perform additional tasks like boundary-value analysis of ranges.
 
-Even tough Tavor provides loads of functionality out of the box, a lot is still missing. A list of missing but planed features can be found in the [missing features section](#missing-features). For feature requests please have a look at the [feature request section](#feature-request).
+Even though Tavor provides a lot of functionality out of the box, it is not considered as complete. A list of missing but planed features can be found in the [missing features section](#missing-features). For feature requests please have a look at the [feature request section](#feature-request).
 
 ### <a name="token"></a>What are tokens?
 
-Tavor's tokens differ from *lexical analysis tokens* in that they represent not just a group of characters but different kind of data with additional properties and abilities. Tokens can be constant integers and strings of all kind but also dynamic data like integer ranges, sequences and character classes. Furthermore tokens can encapsulate other tokens to not only group them together but to create building blocks that can be reused to, for example, repeat a group of tokens. Tokens can have states, conditions and logic. They can create new tokens dynamically and can depend on other tokens to generate data. Tavor's tokens are basically the foundation of the whole framework and every algorithm for fuzzing, parsing and delta-debugging uses them.
+Tavor's tokens differ from *lexical analysis tokens* in the following way. They represent not just a group of characters but different kinds of data with additional properties and abilities. Tokens can be constant integers and strings of all kind but also dynamic data like integer ranges, sequences and character classes. Furthermore, tokens can encapsulate other tokens to not only group them together but to create building blocks that can be reused to, for example, repeat a group of tokens. Tokens can have states, conditions and logic. They can create new tokens dynamically and can depend on other tokens to generate data. Tavor's tokens are basically the foundation of the framework and every algorithm for fuzzing, parsing and delta-debugging is using them.
 
 If you want to know more about Tavor's tokens you can read through [Tavor's format definition](#format) or you can read about them in depth in the [developing](#develop) and [extending](#extend) sections.
 
@@ -167,15 +178,15 @@ If you want to know more about Tavor's tokens you can read through [Tavor's form
 
 Each fuzzing strategy represents one fuzzing technique. This can be a heuristic for walking through the internal structure, how tokens of the structure are fuzzed or even both. Tavor currently distinguishes between two techniques of token fuzzing. One is to deterministically choose one possible permutation of the token the other is choosing randomly out of all permutations of a token.
 
-An example for a fuzzing strategy is the [random fuzzing strategy](https://godoc.org/github.com/zimmski/tavor/fuzz/strategy#RandomStrategy) which is Tavor's default. It traverses through the whole internal structure and randomly permutates each token.
+An example for a fuzzing strategy is the [random fuzzing strategy](https://godoc.org/github.com/zimmski/tavor/fuzz/strategy#RandomStrategy) which is Tavor's default. This fuzzing strategy traverses through the whole internal structure and randomly permutates each token.
 
 Please have a look at [the documentation](https://godoc.org/github.com/zimmski/tavor/fuzz/strategy) for an overview of all officially available fuzzing strategies of Tavor.
 
 ### <a name="fuzzing-filter"></a>What are fuzzing filters?
 
-Fuzzing filters mutate the internal structure and can be applied after it is ready for fuzzing thus after creating it e.g. after parsing and unrolling. This can be associated to [mutation-based fuzzing](#fuzzing) where not the generating structure but the data itself is mutated.
+Fuzzing filters mutate the internal structure and can be applied after the structure is ready for fuzzing thus after creating it e.g. after parsing and unrolling. This can be associated to [mutation-based fuzzing](#fuzzing) where not the generating structure but the data itself is mutated.
 
-An example use-case for fuzzing filters is the [boundary-value analysis](https://en.wikipedia.org/wiki/Boundary-value_analysis) software testing technique. Imagine a function which should be tested having one integer parameter. The parameter's valid values range from 1 to 100. This would lead to 100 possible values which have to be tested just for this one integer and thus to at least 100 permutations of the internal structure. Boundary-value analysis reduces these permutations to e.g. 1, 50 and 100 so just three instead of 100 cases. This is exactly what the [PositiveBoundaryValueAnalysis fuzzing filter](https://godoc.org/github.com/zimmski/tavor/fuzz/filter#PositiveBoundaryValueAnalysisFilter) does. It traverses the whole internal structure and replaces every range token with at most three boundary values.
+An example use-case for fuzzing filters is the [boundary-value analysis](https://en.wikipedia.org/wiki/Boundary-value_analysis) software testing technique. Imagine a function which should be tested having one integer parameter. The parameter's valid values range from 1 to 100. This would lead to 100 possible values which have to be tested just for this one integer and thus to at least 100 permutations of the internal structure. Boundary-value analysis reduces these permutations to e.g. 1, 50 and 100 so just three instead of 100 cases. This is exactly what the [PositiveBoundaryValueAnalysis fuzzing filter](https://godoc.org/github.com/zimmski/tavor/fuzz/filter#PositiveBoundaryValueAnalysisFilter) does. This fuzzing filter traverses the whole internal structure and replaces every range token with at most three boundary values.
 
 Please have a look at [the documentation](https://godoc.org/github.com/zimmski/tavor/fuzz/filter) for an overview of all officially available fuzzing filters of Tavor.
 
@@ -185,7 +196,7 @@ Reduce strategies are strongly comparable to fuzzing strategies. Each reduce str
 
 Please have a look at [the documentation](https://godoc.org/github.com/zimmski/tavor/reduce/strategy) for an overview of all officially available reduce strategies of Tavor.
 
-### <a name="unrolling"></a>Unrolling loops
+### <a name="unrolling"></a>Why are loops unrolled?
 
 Although the internal structure allows loops in its graph, Tavor currently unrolls loops for easier algorithm implementations and usage. A future version will supplement this by allowing loops.
 
@@ -302,10 +313,10 @@ Available commands:
 
 ### <a name="binary-general"></a>General options
 
-The Tavor binary provides different kinds of general options which are informative or apply to all commands. Besides the `--format-file` general format option the following options are noteworthy:
+The Tavor binary provides different kinds of general options. These are informative or may be applied to other commands. Besides the `--format-file` general format option the following are noteworthy:
 
-- **--max-repeat** sets the maximum repetition of loops and repeating tokens. If not set, the default value (currently 2) is used. 0, meaning no maximum repetition, is currently now allowed because of the limitation mentioned [here](#unrolling).
-- **--seed** defines the seed for all random generators. If not set, a random value will be chosen. This argument makes the execution of every Tavor command deterministic. Meaning that a result or failure can be replayed with the same `--seed` argument and given the same arguments and Tavor version.
+- **--max-repeat** sets the maximum repetition of loops and repeating tokens. If not set, the default value (currently 2) is used. 0, meaning no maximum repetition, is currently not allowed because of the limitation mentioned in the [unrolling section](#unrolling).
+- **--seed** defines the seed for all random generators. If not set, a random value will be chosen. This argument makes the execution of every command deterministic. Meaning that a result or failure can be reproduced with the same `--seed` argument, the same arguments and Tavor version.
 - **--verbose** switches Tavor into verbose mode which prints additional information, like the used seed, to STDERR.
 
 Please have a look at the help for more options and descriptions:
@@ -328,7 +339,7 @@ By default the `random` fuzzing strategy is used which can be altered using the 
 tavor --format-file file.tavor fuzz --strategy AllPermutations
 ```
 
-Fuzzing filters can be applied before the fuzzing generation using the `--filter` fuzz command option. Filters are applied in the same order as they are defined, meaning from left to right.
+Fuzzing filters can be applied before the fuzzing generation by using the `--filter` fuzz command option. Filters are applied in the same order as they are defined, meaning from left to right.
 
 The following command will apply the `PositiveBoundaryValueAnalysis` fuzzing filter and then the `NegativeBoundaryValueAnalysis`:
 
@@ -405,7 +416,7 @@ To save the graph to a file the output of the command can be simply redirected:
 tavor --format-file file.tavor graph > file.dot
 ```
 
-The output can also be piped directly into the `dot` command of [Graphviz](http://graphviz.org/):
+The output may be piped directly into the `dot` command of [Graphviz](http://graphviz.org/):
 
 ```
 tavor --format-file file.tavor graph | dot -Tsvg -o outfile.svg
@@ -740,7 +751,7 @@ If the [Tavor format](#format) and the [implemented functionality of the framewo
 
 Since implementing new extensions and doing changes is trickier than using the existing framework, it is advisable to read the code documentation, which can be found in a nice representation on [https://godoc.org/github.com/zimmski/tavor/](https://godoc.org/github.com/zimmski/tavor/), and of course the actual code.
 
-Code for the Tavor framework has to be deterministic. This means that no functionality is allowed to have its own source or seed of randomness. Methods of interfaces that define a random generator have to be implemented deterministically so that the same random seed will always result in the same result. This also applies to hand written tests and code who is concurrent.
+Code for the Tavor framework has to be deterministic. This means that no functionality is allowed to have its own source or seed of randomness. Methods of interfaces that define a random generator have to be implemented deterministically so that the same random seed will always result in the same result. This also applies to manually written tests and code who is concurrent.
 
 If you are aiming to get your extensions and changes offically incorporated into the Tavor framework, please **first** [create an issue](https://github.com/zimmski/tavor/issues/new) in the issue tracker and discuss your implementation goals and plans with an outline. Note that every feature and change has to be tested with handwritten tests, so please include a test plan in your outline too.
 
@@ -1280,7 +1291,7 @@ func (s *Smiley) Permutation(i uint) error {
 func (s *Smiley) permutation(i uint) {
 	p := uint(0)
 
-	// This could be done more efficiently but to keep the example simple we traverse over every permutation to find the right one.
+	// This could be done more efficiently but to keep the example simple it traverses over every permutation to find the right one.
 OUT:
 	for eyes := range eyes {
 		for _, nose := range []bool{false, true} {
@@ -1370,7 +1381,7 @@ func (s *Smiley) Parse(pars *token.InternalParser, cur int) (int, []error) {
 }
 ```
 
-The `Smiley` token can then be used to create structures like with any other token of the framework. However to give an easier example, it will be used alone. The next program will create a new `Smiley` token, permutate over all permutations and parses a string. Each step is printed to STDOUT.
+The `Smiley` token can then be used to create structures like with any other token of the framework. However. to give an easier example, it will be used alone. The next program will create a new `Smiley` token, permutate over all permutations and parses a string. Each step is printed to STDOUT.
 
 ```go
 import (
@@ -1425,9 +1436,9 @@ Typed tokens provide additional types for formats. Currently it is not possible 
 
 ## <a name="stability"></a>How stable is Tavor?
 
-Tavor is still in development and fare from a 1.0 release. There are [some bugs](https://github.com/zimmski/tavor/issues?q=is%3Aopen+is%3Aissue+label%3Abug) and a lot of [functionality is still missing](https://github.com/zimmski/tavor/issues?q=is%3Aopen+is%3Aissue+label%3Aenhancement) as well as [many features](https://github.com/zimmski/tavor/issues?q=is%3Aopen+is%3Aissue+label%3Afeature). However, basic functionality and features are stable enough and are successufully used in production by many projects.
+There are [some bugs](https://github.com/zimmski/tavor/issues?q=is%3Aopen+is%3Aissue+label%3Abug) and a lot of [functionality is still missing](https://github.com/zimmski/tavor/issues?q=is%3Aopen+is%3Aissue+label%3Aenhancement) as well as [many features](https://github.com/zimmski/tavor/issues?q=is%3Aopen+is%3Aissue+label%3Afeature). However, basic functionality and features are stable enough and are successfully used in production by many projects.
 
-[Individual package code coverage](https://coveralls.io/r/zimmski/tavor) is currently low but since most tests do cover a lot of Tavor's components this is not a big issue. However 100% coverage using hand written tests is a required feature of the 1.0 release as well as fully fuzzing the Tavor format and the Tavor binary. This means that Tavor will be equipped to test every feature of the binary and the Tavor format itself.
+[Individual package code coverage](https://coveralls.io/r/zimmski/tavor) is currently low but since most tests do cover a lot of Tavor's components this is not a big issue. However, 100% coverage using manually written tests is a required feature of the 1.0 release as well as fully fuzzing the Tavor format and the Tavor binary. This means that Tavor will be equipped to test every feature of the binary and the Tavor format itself.
 
 Since Tavor is still a moving target, backwards-incompatible changes will happen but are documented for every release. This is necessary to make working with Tavor as easy as possible while still providing loads of functionality.
 

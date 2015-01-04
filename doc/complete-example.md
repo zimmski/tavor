@@ -4,7 +4,7 @@ This example provides a complete overview of Tavor. It does not utilize every si
 
 ![Basic states and actions](/examples/quick/basic.png "Basic states and actions")
 
-It uses the *Tavor format* to define this state machine and the *Tavor binary* to generate key-driven test files. An *executor* translates keys of a file into actions for the implementation under test. After successfully testing the original implementation, some bugs will be introduced to show the failure of some tests as well as automatically delta-debugging the failed key-driven test files.
+The example uses the *Tavor format* to define this state machine and the *Tavor binary* to generate key-driven test files. An *executor* translates keys of a file into actions for the implementation under test. After successfully testing the original implementation, some bugs will be introduced to show the failure of some tests as well as automatically delta-debugging the failed key-driven test files.
 
 > **Note:** The implementation of this example has intentional concurrency and other problems. Future versions of Tavor will help to identify, test and resolve such flaws. As Tavor evolves this example will also evolve. This also concerns the given state machine and Tavor format definition. Both could be defined much more efficiently with the help of state variables which are common in model-based testing but not yet fully implemented in the Tavor format. However, this could be easily implemented via code using the Tavor framework.
 
@@ -101,17 +101,17 @@ vend
 credit  0
 ```
 
-The default fuzzing strategy `random` can create all possible permutations of a format but since it is random, it will need enough time to do so. Lots of duplicated results will be generated, since even random events often lead to the same results. To work around this problem the `AllPermutations` strategy can be used which, as its name suggests, generates all possible permutations of a graph. This strategy should be used wisely since even small graphs can have [an enormous amount of permutations](https://en.wikipedia.org/wiki/Combinatorial_explosion). We can say that there are theoretically an infinite amount of permutations, since the example graph has a loop. To work around this additional problem, the `--max-repeat` argument will be used with a suitable value. It enforces a maximum of loop traversals and repetitions.
+The default fuzzing strategy `random` can create all possible permutations of a format but since it is random, it will need enough time to do so. Lots of duplicated results will be generated, since even random events often lead to the same results. To work around this problem the `AllPermutations` strategy can be used which, as its name suggests, generates all possible permutations of a graph. This strategy should be used wisely since even small graphs can have [an enormous amount of permutations](https://en.wikipedia.org/wiki/Combinatorial_explosion). Since the example graph has a loop, we can state that there are an infinite amount of permutations. To work around this additional problem, the `--max-repeat` argument will be used with a suitable value. It enforces a maximum of loop traversals and repetitions.
 
 > **Note:** There is no easy way to ensure that the `--max-repeat` value is correct. A high value can lead to many repetitive permutations which will often not improve the testing process. A small value can lead to a bad coverage which means that some code branches would not be taken. Future versions of Tavor will aid this process by implementing better fuzzing strategies as well as additional metrics like token and edge coverage.
 
-Since the given state machine is pretty easy to understand we can imply that a loop should be generated at least twice to include the repetition part of each loop. Putting this together we arrive at the following arguments for the Tavor binary.
+Since the given state machine is pretty easy to understand one may imply that a loop should be generated at least twice to include the repetition part of each loop. In conclusion, this leads to the following arguments for the Tavor binary.
 
 ```bash
 tavor --format-file vending.tavor --max-repeat 2 fuzz --strategy AllPermutations
 ```
 
-This command outputs directly to STDOUT which is OK for one generation but since we are using the `AllPermutations` fuzzing strategy we have to deal with many generations of the format. Additionally we want to save every permutation in a file so we can build a regression test suit for our implementation under test. This can be done using the `--result-folder` fuzz command argument which saves each permutation in its own file in the given folder. Each file is named by the MD5 sum of the content and is given the extension `.test` by the `--result-extension` fuzz command argument.
+This command outputs directly to STDOUT which is OK for one generation but since we are using the `AllPermutations` fuzzing strategy we have to deal with many generations of the format. Additionally we want to save every permutation in a file so we can build a regression test suite for our implementation under test. This can be done using the `--result-folder` fuzz command argument which saves each permutation in its own file in the given folder. Each file is named by the MD5 sum of the content and is given the extension `.test` by the `--result-extension` fuzz command argument.
 
 ```bash
 mkdir testset
@@ -122,7 +122,7 @@ This command results into exactly **31** files created in the folder `testset` a
 
 ## <a name="executor"></a>Implementing an executor
 
-The executor connects the key-driven test files with the implementation under test. It reads, parses and validates one key-driven file, executes sequentially each key with its arguments by invoking actions of the implementation and validates these actions. A test passes if each key executes without any problem. We will first define the groundwork of the executor since it is not yet defined how the implementation can be contacted.
+The executor connects the key-driven test files with the implementation under test. It reads, parses and validates one key-driven file, executes sequentially each key with its arguments by invoking actions of the implementation and validates these actions. A test passes if each key executes without any problem. We will first define the groundwork of the executor since it is not yet defined how the implementation can be contacted. The executor will be written in Go, since all Tavor examples are written in Go. However, the generated key-driven test files are independent of the programming language which means that the executor could be implemented in any language too.
 
 ```go
 import (
