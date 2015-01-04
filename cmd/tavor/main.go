@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"github.com/jessevdk/go-flags"
+	"github.com/zimmski/osutil"
 
 	"github.com/zimmski/tavor"
 	tavorFuzzFilter "github.com/zimmski/tavor/fuzz/filter"
@@ -263,7 +264,7 @@ func checkArguments() string {
 	}
 
 	if opts.Fuzz.ResultFolder != "" {
-		if err := folderExists(string(opts.Fuzz.ResultFolder)); err != nil {
+		if err := osutil.DirExists(string(opts.Fuzz.ResultFolder)); err != nil {
 			exitError("result-folder invalid: %v", err)
 		}
 	}
@@ -309,29 +310,6 @@ func exitError(format string, args ...interface{}) {
 	fmt.Fprintf(os.Stderr, format+"\n", args...)
 
 	os.Exit(returnError)
-}
-
-func folderExists(folder string) error {
-	f, err := os.Open(folder)
-	if err != nil {
-		return fmt.Errorf("%q does not exist", folder)
-	}
-	defer func() {
-		if err := f.Close(); err != nil {
-			panic(err)
-		}
-	}()
-
-	fi, err := f.Stat()
-	if err != nil {
-		return fmt.Errorf("could not stat %q", folder)
-	}
-
-	if !fi.Mode().IsDir() {
-		return fmt.Errorf("%q is not a folder", folder)
-	}
-
-	return nil
 }
 
 func applyFilters(filterNames []fuzzFilter, doc token.Token) token.Token {
