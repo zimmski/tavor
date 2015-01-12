@@ -77,6 +77,9 @@ Additionally you can find official Tavor format files and fuzzer applications at
   + [What are reduce strategies?](#reduce-strategy)
   + [Why are loops unrolled?](#unrolling)
 - [The Tavor format](#format)
+- [A complete example for fuzzing, executing and delta-debugging](#complete-example)
+- [Where are the precompiled binaries?](#precompiled)
+- [How do I build Tavor?](#build)
 - [How do I use Tavor?](#use)
 - [The Tavor binary](#binary)
   + [General options](#binary-general)
@@ -84,10 +87,7 @@ Additionally you can find official Tavor format files and fuzzer applications at
   + [Command: `graph`](#binary-graph)
   + [Command: `reduce`](#binary-reduce)
   + [Command: `validate`](#binary-validate)
-- [A complete example for fuzzing, executing and delta-debugging](#complete-example)
-- [Where are the precompiled binaries?](#precompiled)
   + [Bash Completion](#bash-completion)
-- [How do I build Tavor?](#build)
 - [How do I develop applications with the Tavor framework?](#develop)
   + [Token structures](#develop-token-structures)
   + [Fuzzing filters](#develop-fuzzing-filters)
@@ -211,6 +211,55 @@ Unrolling this example results in the following graph given a maximum of two rep
 ## <a name="format"></a>The Tavor format
 
 The Tavor format documentation has its own [page which can be found here](/doc/format.md).
+
+## <a name="complete-example"></a>A complete example for fuzzing, executing and delta-debugging
+
+The complete example has its own [page which can be found here](/doc/complete-example.md).
+
+## <a name="precompiled"></a>Where are the precompiled binaries?
+
+You can find all precompiled binaries on the [release page](https://github.com/zimmski/tavor/releases). The binaries are packed into archives that currently only hold the Tavor binary itself. Have a look at the [How do I build Tavor?](#build) section if you like to compile Tavor yourself.
+
+## <a name="build"></a>How do I build Tavor?
+
+Tavor provides [precompiled 32 and 64 bit Linux binaries](#precompiled). Other architectures are currently not supported, but might work. Please have a look at the [feature request section](#feature-request) if you need them to work or you want more binaries for different architectures.
+
+If you do not want to use the [precompiled binaries](#precompiled) but instead want to compile Tavor from scratch, just follow the these steps:
+
+> **Note:** All steps must execute without any errors.
+
+1. Install and configure Go
+
+  At least version 1.4 must be used. Your distribution will most definitely have some packages or you can be brave and just install it yourself. Have a look at [the official documentation](http://golang.org/doc/install). Good luck!
+
+2. Go-get Tavor
+
+  ```bash
+  go get -t -v github.com/zimmski/tavor
+  ```
+
+3. Install dependencies
+
+  ```bash
+  cd $GOPATH/src/github.com/zimmski/tavor
+  make dependencies
+  ```
+
+3. Compile
+
+  ```bash
+  cd $GOPATH/src/github.com/zimmski/tavor
+  make install
+  ```
+
+4. Run tests
+
+  ```bash
+  cd $GOPATH/src/github.com/zimmski/tavor
+  make test
+  ```
+
+You now have a binary `tavor` in your `$GOPATH/bin` folder (or if set `$GOBIN` folder) which can be used without any further actions.
 
 ## <a name="use"></a>How do I use Tavor?
 
@@ -521,14 +570,6 @@ Please have a look at the validate command help for more options and description
 tavor --help validate
 ```
 
-## <a name="complete-example"></a>A complete example for fuzzing, executing and delta-debugging
-
-The complete example has its own [page which can be found here](/doc/complete-example.md).
-
-## <a name="precompiled"></a>Where are the precompiled binaries?
-
-You can find all precompiled binaries on the [release page](https://github.com/zimmski/tavor/releases). The binaries are packed into archives that currently only hold the Tavor binary itself. Have a look at the [How do I build Tavor?](#build) section if you like to compile Tavor yourself.
-
 ### <a name="bash-completion"></a>Bash Completion
 
 If you like Bash Completion for Tavor make sure that you have Bash Completion installed and then copy the [bash completion Tavor script](https://raw.githubusercontent.com/zimmski/tavor/master/cmd/tavor-bash_completion.sh) into your Bash Completion folder.
@@ -545,47 +586,6 @@ Bash Completion for Tavor should now be working. If not, one reason could be tha
 echo ". ~/.bash_completion/tavor-bash_completion.sh" >> ~/.bashrc
 . ~/.bashrc
 ```
-
-## <a name="build"></a>How do I build Tavor?
-
-Tavor provides [precompiled 32 and 64 bit Linux binaries](#precompiled). Other architectures are currently not supported, but might work. Please have a look at the [feature request section](#feature-request) if you need them to work or you want more binaries for different architectures.
-
-If you do not want to use the [precompiled binaries](#precompiled) but instead want to compile Tavor from scratch, just follow the these steps:
-
-> **Note:** All steps must execute without any errors.
-
-1. Install and configure Go
-
-	At least version 1.4 must be used. Your distribution will most definitely have some packages or you can be brave and just install it yourself. Have a look at [the official documentation](http://golang.org/doc/install). Good luck!
-
-2. Go-get Tavor
-
-	```bash
-	go get -t -v github.com/zimmski/tavor
-	```
-
-3. Install dependencies
-
-	```bash
-	cd $GOPATH/src/github.com/zimmski/tavor
-	make dependencies
-	```
-
-3. Compile
-
-	```bash
-	cd $GOPATH/src/github.com/zimmski/tavor
-	make install
-	```
-
-4. Run tests
-
-	```bash
-	cd $GOPATH/src/github.com/zimmski/tavor
-	make test
-	```
-
-You now have a binary `tavor` in your `$GOPATH/bin` folder (or if set `$GOBIN` folder) which can be used without any further actions.
 
 ## <a name="develop"></a>How do I develop applications with the Tavor framework?
 
