@@ -29,15 +29,17 @@ import (
 	"github.com/zimmski/tavor/token"
 )
 
+type exitCodeType int
+
 const (
-	returnOk = iota
-	returnHelp
-	returnBashCompletion
-	returnInvalidInputFile
-	returnError
+	exitCodeOk exitCodeType = iota
+	exitCodeHelp
+	exitCodeBashCompletion
+	exitCodeInvalidInputFile
+	exitCodeError
 )
 
-var opts struct {
+type options struct {
 	General struct {
 		Debug   bool `long:"debug" description:"Debug log output"`
 		Help    bool `long:"help" description:"Show this help message"`
@@ -193,58 +195,58 @@ func (s *reduceStrategy) Complete(match string) []flags.Completion {
 	return items
 }
 
-func checkArguments() string {
+func checkArguments(args []string, opts *options) (string, exitCodeType) {
 	p := flags.NewNamedParser("tavor", flags.None)
 
 	p.ShortDescription = "A generic fuzzing and delta-debugging framework."
 
-	if _, err := p.AddGroup("Tavor", "Tavor arguments", &opts); err != nil {
-		exitError(err.Error())
+	if _, err := p.AddGroup("Tavor", "Tavor arguments", opts); err != nil {
+		return "", exitError(err.Error())
 	}
 
 	completion := len(os.Getenv("GO_FLAGS_COMPLETION")) > 0
 
-	_, err := p.Parse()
-	if (opts.General.Help || len(os.Args) == 1) && !completion {
+	_, err := p.ParseArgs(args)
+	if (opts.General.Help || len(args) == 0) && !completion {
 		p.WriteHelp(os.Stdout)
 
-		os.Exit(returnHelp)
+		return "", exitCodeHelp
 	} else if opts.General.Version {
 		fmt.Printf("Tavor v%s\n", tavor.Version)
 
-		os.Exit(returnOk)
+		return "", exitCodeOk
 	} else if opts.Fuzz.Filter.ListFilters || opts.Graph.Filter.ListFilters {
 		for _, name := range tavorFuzzFilter.List() {
 			fmt.Println(name)
 		}
 
-		os.Exit(returnOk)
+		return "", exitCodeOk
 	} else if opts.Fuzz.ListStrategies {
 		for _, name := range tavorFuzzStrategy.List() {
 			fmt.Println(name)
 		}
 
-		os.Exit(returnOk)
+		return "", exitCodeOk
 	} else if opts.Reduce.Exec.ListExecArgumentTypes {
 		for _, name := range execArgumentTypes {
 			fmt.Println(name)
 		}
 
-		os.Exit(returnOk)
+		return "", exitCodeOk
 	} else if opts.Reduce.ListStrategies {
 		for _, name := range tavorReduceStrategy.List() {
 			fmt.Println(name)
 		}
 
-		os.Exit(returnOk)
+		return "", exitCodeOk
 	}
 
 	if err != nil {
-		exitError(err.Error())
+		return "", exitError(err.Error())
 	}
 
 	if completion {
-		os.Exit(returnBashCompletion)
+		return "", exitCodeBashCompletion
 	}
 
 	if opts.General.Debug {
@@ -260,12 +262,12 @@ func checkArguments() string {
 	}
 
 	if opts.Global.MaxRepeat < 1 {
-		exitError("max repeats has to be at least 1")
+		return "", exitError("max repeats has to be at least 1")
 	}
 
 	if opts.Fuzz.ResultFolder != "" {
 		if err := osutil.DirExists(string(opts.Fuzz.ResultFolder)); err != nil {
-			exitError("result-folder invalid: %v", err)
+			return "", exitError("result-folder invalid: %v", err)
 		}
 	}
 	if opts.Fuzz.ResultSeparator != "" {
@@ -286,12 +288,12 @@ func checkArguments() string {
 		}
 
 		if !found {
-			exitError(fmt.Sprintf("%q is an unknown exec argument type", opts.Reduce.Exec.ExecArgumentType))
+			return "", exitError(fmt.Sprintf("%q is an unknown exec argument type", opts.Reduce.Exec.ExecArgumentType))
 		}
 	}
 	if opts.Reduce.Exec.Exec != "" {
 		if !opts.Reduce.Exec.ExecExactExitCode && !opts.Reduce.Exec.ExecExactStderr && !opts.Reduce.Exec.ExecExactStdout && opts.Reduce.Exec.ExecMatchStderr == "" && opts.Reduce.Exec.ExecMatchStdout == "" {
-			exitError("At least one exec-exact or exec-match argument has to be given")
+			return "", exitError("At least one exec-exact or exec-match argument has to be given")
 		}
 	}
 	if opts.Reduce.ResultSeparator != "" {
@@ -303,16 +305,16 @@ func checkArguments() string {
 	log.Infof("using seed %d", opts.Global.Seed)
 	log.Infof("using max repeat %d", opts.Global.MaxRepeat)
 
-	return p.Active.Name
+	return p.Active.Name, exitCodeOk
 }
 
-func exitError(format string, args ...interface{}) {
+func exitError(format string, args ...interface{}) exitCodeType {
 	fmt.Fprintf(os.Stderr, format+"\n", args...)
 
-	os.Exit(returnError)
+	return exitCodeError
 }
 
-func applyFilters(filterNames []fuzzFilter, doc token.Token) token.Token {
+func applyFilters(opts *options, filterNames []fuzzFilter, doc token.Token) (token.Token, error) {
 	if len(filterNames) > 0 {
 		var err error
 		var filters []tavorFuzzFilter.Filter
@@ -320,7 +322,7 @@ func applyFilters(filterNames []fuzzFilter, doc token.Token) token.Token {
 		for _, name := range filterNames {
 			filt, err := tavorFuzzFilter.New(string(name))
 			if err != nil {
-				exitError(err.Error())
+				return nil, err
 			}
 
 			filters = append(filters, filt)
@@ -330,7 +332,7 @@ func applyFilters(filterNames []fuzzFilter, doc token.Token) token.Token {
 
 		doc, err = tavorFuzzFilter.ApplyFilters(filters, doc)
 		if err != nil {
-			exitError(err.Error())
+			return nil, err
 		}
 
 		if opts.Format.PrintInternal {
@@ -346,11 +348,16 @@ func applyFilters(filterNames []fuzzFilter, doc token.Token) token.Token {
 		}
 	}
 
-	return doc
+	return doc, nil
 }
 
-func main() {
-	command := checkArguments()
+func mainCmd(args []string) exitCodeType {
+	var opts = new(options)
+
+	command, exitCode := checkArguments(args, opts)
+	if command == "" {
+		return exitCode
+	}
 
 	tavor.MaxRepeat = opts.Global.MaxRepeat
 
@@ -358,7 +365,7 @@ func main() {
 
 	file, err := os.Open(string(opts.Format.FormatFile))
 	if err != nil {
-		exitError("cannot open tavor file %s: %v", opts.Format.FormatFile, err)
+		return exitError("cannot open tavor file %s: %v", opts.Format.FormatFile, err)
 	}
 	defer func() {
 		if err := file.Close(); err != nil {
@@ -368,7 +375,7 @@ func main() {
 
 	doc, err := parser.ParseTavor(file)
 	if err != nil {
-		exitError("cannot parse tavor file: %v", err)
+		return exitError("cannot parse tavor file: %v", err)
 	}
 
 	log.Info("format file is valid")
@@ -386,20 +393,23 @@ func main() {
 	}
 
 	if opts.Format.Check {
-		os.Exit(returnOk)
+		return exitCodeOk
 	}
 
 	r := rand.New(rand.NewSource(opts.Global.Seed))
 
 	switch command {
 	case "fuzz":
-		doc = applyFilters(opts.Fuzz.Filter.Filters, doc)
+		doc, err = applyFilters(opts, opts.Fuzz.Filter.Filters, doc)
+		if err != nil {
+			return exitError("cannot apply filters: %v", err)
+		}
 
 		log.Infof("counted %d overall permutations", doc.PermutationsAll())
 
 		strat, err := tavorFuzzStrategy.New(string(opts.Fuzz.Strategy), doc)
 		if err != nil {
-			exitError(err.Error())
+			return exitError(err.Error())
 		}
 
 		log.Infof("using %s fuzzing strategy", opts.Fuzz.Strategy)
@@ -411,7 +421,7 @@ func main() {
 
 		ch, err := strat.Fuzz(r)
 		if err != nil {
-			exitError(err.Error())
+			return exitError(err.Error())
 		}
 
 		if opts.Fuzz.Exec.Exec != "" {
@@ -435,17 +445,17 @@ func main() {
 
 			stepID := 1
 
-			writeTmpFile := func(docOut string) *os.File {
+			writeTmpFile := func(docOut string) (*os.File, error) {
 				tmp, err := ioutil.TempFile(string(folder), fmt.Sprintf("fuzz-%d-", stepID))
 				if err != nil {
-					exitError("Cannot create tmp file: %s", err)
+					return nil, fmt.Errorf("Cannot create tmp file: %v", err)
 				}
 				_, err = tmp.WriteString(docOut)
 				if err != nil {
-					exitError("Cannot write to tmp file: %s", err)
+					return nil, fmt.Errorf("Cannot write to tmp file: %v", err)
 				}
 
-				return tmp
+				return tmp, nil
 			}
 
 		GENERATION:
@@ -469,7 +479,10 @@ func main() {
 				execCommand := exec.Command(execs[0], execs[1:]...)
 
 				if string(opts.Fuzz.Exec.ExecArgumentType) == "environment" {
-					tmp = writeTmpFile(docOut)
+					tmp, err = writeTmpFile(docOut)
+					if err != nil {
+						return exitError(err.Error())
+					}
 
 					execCommand.Env = []string{fmt.Sprintf("TAVOR_FUZZ_FILE=%s", tmp.Name())}
 				}
@@ -484,18 +497,18 @@ func main() {
 
 				stdin, err := execCommand.StdinPipe()
 				if err != nil {
-					exitError("Could not get stdin pipe: %s", err)
+					return exitError("Could not get stdin pipe: %s", err)
 				}
 
 				err = execCommand.Start()
 				if err != nil {
-					exitError("Could not start exce: %s", err)
+					return exitError("Could not start exce: %s", err)
 				}
 
 				if string(opts.Fuzz.Exec.ExecArgumentType) == "stdin" {
 					_, err := stdin.Write([]byte(docOut))
 					if err != nil {
-						exitError("Could not write stdin to exec: %s", err)
+						return exitError("Could not write stdin to exec: %s", err)
 					}
 
 					if err := stdin.Close(); err != nil {
@@ -510,7 +523,7 @@ func main() {
 				} else if e, ok := err.(*exec.ExitError); ok {
 					cmdExitCode = e.Sys().(syscall.WaitStatus).ExitStatus()
 				} else {
-					exitError("Could not execute exec successfully: %s", err)
+					return exitError("Could not execute exec successfully: %s", err)
 				}
 
 				log.Infof("Exit status was %d", cmdExitCode)
@@ -589,7 +602,10 @@ func main() {
 
 							if opts.Fuzz.Exec.ExecDoNotRemoveTmpFilesOnError {
 								if tmp == nil {
-									tmp = writeTmpFile(docOut)
+									tmp, err = writeTmpFile(docOut)
+									if err != nil {
+										return exitError(err.Error())
+									}
 								}
 
 								log.Infof("Written to %q", tmp.Name())
@@ -620,7 +636,7 @@ func main() {
 
 			stdin, err := execCommand.StdinPipe()
 			if err != nil {
-				exitError("Could not get stdin pipe: %s", err)
+				return exitError("Could not get stdin pipe: %s", err)
 			}
 			defer func() {
 				if err := stdin.Close(); err != nil {
@@ -630,7 +646,7 @@ func main() {
 
 			stdout, err := execCommand.StdoutPipe()
 			if err != nil {
-				exitError("Could not get stdout pipe: %s", err)
+				return exitError("Could not get stdout pipe: %s", err)
 			}
 			defer func() {
 				if err := stdout.Close(); err != nil {
@@ -646,27 +662,27 @@ func main() {
 
 			err = execCommand.Start()
 			if err != nil {
-				exitError("Could not start script: %s", err)
+				return exitError("Could not start script: %s", err)
 			}
 
 		GENERATIONSC:
 			for i := range ch {
 				_, err = stdin.Write([]byte("Generation\n"))
 				if err != nil {
-					exitError("Could not write stdin to script: %s", err)
+					return exitError("Could not write stdin to script: %s", err)
 				}
 				_, err = stdin.Write([]byte(doc.String()))
 				if err != nil {
-					exitError("Could not write stdin to script: %s", err)
+					return exitError("Could not write stdin to script: %s", err)
 				}
 				_, err = stdin.Write([]byte(opts.Fuzz.ResultSeparator))
 				if err != nil {
-					exitError("Could not write stdin to script: %s", err)
+					return exitError("Could not write stdin to script: %s", err)
 				}
 
 				feed, err := stdoutReader.ReadString('\n')
 				if err != nil {
-					exitError("Could not read stdout from script: %s", err)
+					return exitError("Could not read stdout from script: %s", err)
 				}
 
 				switch feed {
@@ -679,7 +695,7 @@ func main() {
 						break GENERATIONSC
 					}
 				default:
-					exitError("Feedback from script was not YES nor NO: %s", feed)
+					return exitError("Feedback from script was not YES nor NO: %s", feed)
 				}
 
 				ch <- i
@@ -687,7 +703,7 @@ func main() {
 
 			_, err = stdin.Write([]byte("Exit\n"))
 			if err != nil {
-				exitError("Could not write stdin to script: %s", err)
+				return exitError("Could not write stdin to script: %s", err)
 			}
 
 			if err := stdin.Close(); err != nil {
@@ -706,7 +722,7 @@ func main() {
 			} else if e, ok := err.(*exec.ExitError); ok {
 				execExitCode = e.Sys().(syscall.WaitStatus).ExitStatus()
 			} else {
-				exitError("Could not execute exec successfully: %s", err)
+				return exitError("Could not execute exec successfully: %s", err)
 			}
 
 			log.Infof("Exit status was %d", execExitCode)
@@ -715,7 +731,7 @@ func main() {
 
 			for i := range ch {
 				if folder == "" {
-					if !opts.General.Debug {
+					if opts.General.Debug {
 						if another {
 							fmt.Println()
 						} else {
@@ -735,7 +751,7 @@ func main() {
 					log.Infof("write result to %s", file)
 
 					if err := ioutil.WriteFile(file, []byte(out), 0644); err != nil {
-						exitError("error writing to %s: %v", file, err)
+						return exitError("error writing to %s: %v", file, err)
 					}
 				}
 
@@ -743,7 +759,10 @@ func main() {
 			}
 		}
 	case "graph":
-		doc = applyFilters(opts.Graph.Filter.Filters, doc)
+		doc, err = applyFilters(opts, opts.Graph.Filter.Filters, doc)
+		if err != nil {
+			return exitError("cannot apply filters: %v", err)
+		}
 
 		graph.WriteDot(doc, os.Stdout)
 	case "reduce", "validate":
@@ -755,7 +774,7 @@ func main() {
 
 		input, err := os.Open(string(inputFile))
 		if err != nil {
-			exitError("cannot open input file %s: %v", inputFile, err)
+			return exitError("cannot open input file %s: %v", inputFile, err)
 		}
 		defer func() {
 			if err := input.Close(); err != nil {
@@ -774,13 +793,13 @@ func main() {
 				log.Error(err)
 			}
 
-			os.Exit(returnInvalidInputFile)
+			return exitCodeInvalidInputFile
 		}
 
 		if command == "reduce" {
 			strat, err := tavorReduceStrategy.New(string(opts.Reduce.Strategy), doc)
 			if err != nil {
-				exitError(err.Error())
+				return exitError(err.Error())
 			}
 
 			log.Infof("using %s reducing strategy", opts.Reduce.Strategy)
@@ -800,11 +819,11 @@ func main() {
 
 				tmp, err := ioutil.TempFile("", fmt.Sprintf("dd-%d-", stepID))
 				if err != nil {
-					exitError("Cannot create tmp file: %s", err)
+					return exitError("Cannot create tmp file: %s", err)
 				}
 				_, err = tmp.WriteString(docOut)
 				if err != nil {
-					exitError("Cannot write to tmp file: %s", err)
+					return exitError("Cannot write to tmp file: %s", err)
 				}
 
 				log.Infof("Execute %q to get original outputs with %q", opts.Reduce.Exec.Exec, tmp.Name())
@@ -845,18 +864,18 @@ func main() {
 
 				stdin, err := execCommand.StdinPipe()
 				if err != nil {
-					exitError("Could not get stdin pipe: %s", err)
+					return exitError("Could not get stdin pipe: %s", err)
 				}
 
 				err = execCommand.Start()
 				if err != nil {
-					exitError("Could not start exce: %s", err)
+					return exitError("Could not start exce: %s", err)
 				}
 
 				if string(opts.Reduce.Exec.ExecArgumentType) == "stdin" {
 					_, err := stdin.Write([]byte(docOut))
 					if err != nil {
-						exitError("Could not write stdin to exec: %s", err)
+						return exitError("Could not write stdin to exec: %s", err)
 					}
 
 					if err := stdin.Close(); err != nil {
@@ -871,16 +890,16 @@ func main() {
 				} else if e, ok := err.(*exec.ExitError); ok {
 					execExitCode = e.Sys().(syscall.WaitStatus).ExitStatus()
 				} else {
-					exitError("Could not execute exec successfully: %s", err)
+					return exitError("Could not execute exec successfully: %s", err)
 				}
 
 				log.Infof("Exit status was %d", execExitCode)
 
 				if matchStderr != nil && !matchStderr.Match(execStderr.Bytes()) {
-					exitError("Original output does not match stderr match pattern")
+					return exitError("Original output does not match stderr match pattern")
 				}
 				if matchStdout != nil && !matchStdout.Match(execStdout.Bytes()) {
-					exitError("Original output does not match stdout match pattern")
+					return exitError("Original output does not match stdout match pattern")
 				}
 
 				if !opts.Reduce.Exec.ExecDoNotRemoveTmpFiles {
@@ -892,7 +911,7 @@ func main() {
 
 				contin, feedback, err := strat.Reduce()
 				if err != nil {
-					exitError(err.Error())
+					return exitError(err.Error())
 				}
 
 				for i := range contin {
@@ -902,11 +921,11 @@ func main() {
 
 					tmp, err := ioutil.TempFile("", fmt.Sprintf("dd-%d-", stepID))
 					if err != nil {
-						exitError("Cannot create tmp file: %s", err)
+						return exitError("Cannot create tmp file: %s", err)
 					}
 					_, err = tmp.WriteString(docOut)
 					if err != nil {
-						exitError("Cannot write to tmp file: %s", err)
+						return exitError("Cannot write to tmp file: %s", err)
 					}
 
 					log.Infof("Test %q", tmp.Name())
@@ -937,18 +956,18 @@ func main() {
 
 					stdin, err := execCommand.StdinPipe()
 					if err != nil {
-						exitError("Could not get stdin pipe: %s", err)
+						return exitError("Could not get stdin pipe: %s", err)
 					}
 
 					err = execCommand.Start()
 					if err != nil {
-						exitError("Could not start exce: %s", err)
+						return exitError("Could not start exce: %s", err)
 					}
 
 					if string(opts.Reduce.Exec.ExecArgumentType) == "stdin" {
 						_, err := stdin.Write([]byte(docOut))
 						if err != nil {
-							exitError("Could not write stdin to exec: %s", err)
+							return exitError("Could not write stdin to exec: %s", err)
 						}
 
 						if err := stdin.Close(); err != nil {
@@ -963,7 +982,7 @@ func main() {
 					} else if e, ok := err.(*exec.ExitError); ok {
 						cmdExitCode = e.Sys().(syscall.WaitStatus).ExitStatus()
 					} else {
-						exitError("Could not execute exec successfully: %s", err)
+						return exitError("Could not execute exec successfully: %s", err)
 					}
 
 					log.Infof("Exit status was %d", cmdExitCode)
@@ -1057,7 +1076,7 @@ func main() {
 
 				stdin, err := execCommand.StdinPipe()
 				if err != nil {
-					exitError("Could not get stdin pipe: %s", err)
+					return exitError("Could not get stdin pipe: %s", err)
 				}
 				defer func() {
 					if err := stdin.Close(); err != nil {
@@ -1067,7 +1086,7 @@ func main() {
 
 				stdout, err := execCommand.StdoutPipe()
 				if err != nil {
-					exitError("Could not get stdout pipe: %s", err)
+					return exitError("Could not get stdout pipe: %s", err)
 				}
 				defer func() {
 					if err := stdout.Close(); err != nil {
@@ -1083,47 +1102,47 @@ func main() {
 
 				err = execCommand.Start()
 				if err != nil {
-					exitError("Could not start script: %s", err)
+					return exitError("Could not start script: %s", err)
 				}
 
 				log.Infof("Send original output to script")
 
 				_, err = stdin.Write([]byte(doc.String()))
 				if err != nil {
-					exitError("Could not write stdin to script: %s", err)
+					return exitError("Could not write stdin to script: %s", err)
 				}
 				_, err = stdin.Write([]byte(opts.Reduce.ResultSeparator))
 				if err != nil {
-					exitError("Could not write stdin to script: %s", err)
+					return exitError("Could not write stdin to script: %s", err)
 				}
 
 				feed, err := stdoutReader.ReadString('\n')
 				if err != nil {
-					exitError("Could not read stdout from script: %s", err)
+					return exitError("Could not read stdout from script: %s", err)
 				}
 
 				if feed != "OK\n" {
-					exitError("Feedback from script to orignal was not OK: %s", feed)
+					return exitError("Feedback from script to orignal was not OK: %s", feed)
 				}
 
 				contin, feedback, err := strat.Reduce()
 				if err != nil {
-					exitError(err.Error())
+					return exitError(err.Error())
 				}
 
 				for i := range contin {
 					_, err = stdin.Write([]byte(doc.String()))
 					if err != nil {
-						exitError("Could not write stdin to script: %s", err)
+						return exitError("Could not write stdin to script: %s", err)
 					}
 					_, err = stdin.Write([]byte(opts.Reduce.ResultSeparator))
 					if err != nil {
-						exitError("Could not write stdin to script: %s", err)
+						return exitError("Could not write stdin to script: %s", err)
 					}
 
 					feed, err := stdoutReader.ReadString('\n')
 					if err != nil {
-						exitError("Could not read stdout from script: %s", err)
+						return exitError("Could not read stdout from script: %s", err)
 					}
 
 					switch feed {
@@ -1136,7 +1155,7 @@ func main() {
 
 						feedback <- tavorReduceStrategy.Bad
 					default:
-						exitError("Feedback from script to orignal was not YES nor NO: %s", feed)
+						return exitError("Feedback from script to orignal was not YES nor NO: %s", feed)
 					}
 
 					contin <- i
@@ -1158,7 +1177,7 @@ func main() {
 				} else if e, ok := err.(*exec.ExitError); ok {
 					execExitCode = e.Sys().(syscall.WaitStatus).ExitStatus()
 				} else {
-					exitError("Could not execute exec successfully: %s", err)
+					return exitError("Could not execute exec successfully: %s", err)
 				}
 
 				log.Infof("Exit status was %d", execExitCode)
@@ -1167,7 +1186,7 @@ func main() {
 
 				contin, feedback, err := strat.Reduce()
 				if err != nil {
-					exitError(err.Error())
+					return exitError(err.Error())
 				}
 
 				for i := range contin {
@@ -1180,7 +1199,7 @@ func main() {
 
 						line, _, err := readCLI.ReadLine()
 						if err != nil {
-							exitError("reading from CLI failed: %v", err)
+							return exitError("reading from CLI failed: %v", err)
 						}
 
 						if s := strings.ToUpper(string(line)); s == "YES" {
@@ -1205,8 +1224,14 @@ func main() {
 			fmt.Print(opts.Reduce.ResultSeparator)
 		}
 	default:
-		exitError("unknown command %q", command)
+		return exitError("unknown command %q", command)
 	}
 
-	os.Exit(returnOk)
+	return exitCodeOk
+}
+
+func main() {
+	exitCode := int(mainCmd(os.Args[1:]))
+
+	os.Exit(exitCode)
 }
