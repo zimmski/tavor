@@ -46,6 +46,6 @@ tools:
 
 	# code coverage
 	go get -u golang.org/x/tools/cmd/cover
-	go get github.com/onsi/ginkgo/ginkgo
-	go get github.com/modocache/gover
-	go get github.com/mattn/goveralls
+	go get -u github.com/onsi/ginkgo/ginkgo
+	go get -u github.com/modocache/gover
+	go get -u github.com/mattn/goveralls
