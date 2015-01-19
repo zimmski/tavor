@@ -39,7 +39,11 @@ func ResetResetTokens(root Token) {
 
 // ResetScope resets all scopes of tokens in the token graph that fullfill the ScopeToken interface
 func ResetScope(root Token) {
+	log.Debug("start reseting scope")
+
 	SetScope(root, make(map[string]Token))
+
+	log.Debug("finished reseting scope")
 }
 
 // SetScope sets all scopes of tokens in the token graph that fullfill the ScopeToken interface

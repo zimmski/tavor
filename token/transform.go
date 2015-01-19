@@ -10,6 +10,8 @@ import (
 // MinimizeTokens traverses the token graph and replaces unnecessary complicated constructs with their simpler form
 // One good example is an All list token with one token which can be replaced by this one token. The minimize checks and operation is done by the token itself which has to implement the MinimizeToken interface, since it is not always predictable if a token with one child is doing something special,
 func MinimizeTokens(root Token) Token {
+	log.Debug("start minimizing")
+
 	parents := make(map[Token]Token)
 	queue := linkedlist.New()
 
@@ -53,6 +55,8 @@ func MinimizeTokens(root Token) Token {
 			}
 		}
 	}
+
+	log.Debug("finished minimizing")
 
 	return root
 }
