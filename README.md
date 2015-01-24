@@ -218,11 +218,9 @@ The complete example has its own [page which can be found here](/doc/complete-ex
 
 ## <a name="precompiled"></a>Where are the precompiled binaries?
 
-You can find all precompiled binaries on the [release page](https://github.com/zimmski/tavor/releases). The binaries are packed into archives that currently only hold the Tavor binary itself. Have a look at the [How do I build Tavor?](#build) section if you like to compile Tavor yourself.
+You can find all precompiled binaries on the [release page](https://github.com/zimmski/tavor/releases). Currently only 32 and 64 bit Linux binaries are provided. Other architectures are currently not supported, but might work. Please have a look at the [feature request section](#feature-request) if you need them to work or you want more binaries for different architectures.
 
 ## <a name="build"></a>How do I build Tavor?
-
-Tavor provides [precompiled 32 and 64 bit Linux binaries](#precompiled). Other architectures are currently not supported, but might work. Please have a look at the [feature request section](#feature-request) if you need them to work or you want more binaries for different architectures.
 
 If you do not want to use the [precompiled binaries](#precompiled) but instead want to compile Tavor from scratch, just follow the these steps:
 
