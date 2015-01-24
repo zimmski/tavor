@@ -73,7 +73,6 @@ func UnrollPointers(root Token) Token {
 	log.Debug("start unrolling pointers by cloning them")
 
 	parents := make(map[Token]Token)
-	changed := make(map[Token]struct{})
 
 	originals := make(map[Token]Token)
 	originalClones := make(map[Token]Token)
@@ -178,8 +177,6 @@ func UnrollPointers(root Token) Token {
 				if iTok.parent != nil {
 					log.Debugf("replace in (%p)%#v", iTok.parent.tok, iTok.parent.tok)
 
-					changed[iTok.parent.tok] = struct{}{}
-
 					switch tt := iTok.parent.tok.(type) {
 					case ForwardToken:
 						tt.InternalReplace(t, c)
@@ -230,7 +227,6 @@ func UnrollPointers(root Token) Token {
 			REMOVE:
 				for tt != nil {
 					delete(parents, tt.tok)
-					delete(changed, tt.tok)
 
 					switch l := tt.tok.(type) {
 					case ForwardToken:
@@ -291,23 +287,21 @@ func UnrollPointers(root Token) Token {
 		}
 	}
 
-	// we need to update some tokens with the same child to regenerate clones
-	for child := range changed {
-		parent := parents[child]
-
-		if parent == nil {
-			continue
-		}
-
-		log.Debugf("update (%p)%#v with child (%p)%#v", parent, parent, child, child)
-
-		switch tt := parent.(type) {
+	// force regeneration of possible cloned tokens
+	WalkInternalTail(root, func(tok Token) error {
+		switch t := tok.(type) {
 		case ForwardToken:
-			tt.InternalReplace(child, child)
+			c := t.InternalGet()
+			t.InternalReplace(c, c)
 		case ListToken:
-			tt.InternalReplace(child, child)
+			for i := 0; i < t.InternalLen(); i++ {
+				c, _ := t.InternalGet(i)
+				t.InternalReplace(c, c)
+			}
 		}
-	}
+
+		return nil
+	})
 
 	log.Debug("finished unrolling")
 
