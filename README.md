@@ -4,29 +4,21 @@ Tavor ([Sindarin](https://en.wikipedia.org/wiki/Sindarin) for woodpecker) is a f
 
 ### <a name="quick-example"></a>A quick example
 
-Imagine that you want to test a vending machine which ejects a product after receiving 100 credits. It is possible to input 25 and 50 credit coins into the machine. After receiving enough credits the machine ejects a product and resets the credit counter to zero. To simplify the example the machine does not handle credit overflows. A representation of the states and actions of the machine could look like this:
+We want to test a service which processes an XML structure. The structure can contain groups and items. A group contains other groups or items. An Item consists of an attribute `name` with an alphanumeric value. The item's value contains a number. This structure sounds simple but allows an enormous variety of possible outcomes. It is therefore hard to test since a tester has to think about every important possibility if the generation of the test data is done manually. Doing this manually is cumbersome and error-prone. Tavor can be used to automate the generation.
 
-![Basic states and actions](examples/quick/basic.png "Basic states and actions")
-
-This state machine can be defined using the following [Tavor format](#format):
+The described structure can be defined using the following [Tavor format](#format):
 
 ```tavor
-START = Credit0
+START = Entity |
 
-Credit0   = "Credit0"   "\n" ( Coin25 Credit25 | Coin50 Credit50 | )
-Credit25  = "Credit25"  "\n" ( Coin25 Credit50 | Coin50 Credit75 )
-Credit50  = "Credit50"  "\n" ( Coin25 Credit75 | Coin50 Credit100 )
-Credit75  = "Credit75"  "\n" Coin25 Credit100
-Credit100 = "Credit100" "\n" Vend Credit0
+Entity = Group | Item
 
-Coin25 = "Coin25" "\n"
-Coin50 = "Coin50" "\n"
+Group = "<group>" +(Entity) "</group>"
 
-Vend = "Vend" "\n"
+Item = "<item name=\"" +([\w]) "\">" +([0-9]) "</item>"
 ```
-(Please note that the new line escape sequences `\n` are just defined to make the output prettier)
 
-You can download this file called [`basic.tavor` from here](examples/quick/basic.tavor).
+This file called `basic.tavor` can be downloaded [from here](examples/quick/basic.tavor).
 
 Tavor can then be used to [fuzz](#fuzzing) the format by issuing the following command:
 
@@ -34,32 +26,18 @@ Tavor can then be used to [fuzz](#fuzzing) the format by issuing the following c
 tavor --format-file basic.tavor fuzz
 ```
 
-This command outputs on every call random paths through the defined graph. Here are some example outputs:
+This command prints on every call a random generation of the given structure. Here are some example generations:
 
-```
-Credit0
-```
-
-```
-Credit0
-Coin50
-Credit50
-Coin50
-Credit100
-Vend
-Credit0
+```xml
+<item name="k">2</item>
 ```
 
+```xml
+<group><item name="kO">37</item></group>
 ```
-Credit0
-Coin25
-Credit25
-Coin50
-Credit75
-Coin25
-Credit100
-Vend
-Credit0
+
+```xml
+<group><item name="V">37</item><group><item name="S">88</item></group></group>
 ```
 
 Generating data like this is just one example of the capabilities of Tavor. Please have a look at [the complete example](#complete-example) with a complete overview over the basic features or keep reading to find out more about the background and capabilities of Tavor.
@@ -218,7 +196,7 @@ The complete example has its own [page which can be found here](/doc/complete-ex
 
 ## <a name="precompiled"></a>Where are the precompiled binaries?
 
-You can find all precompiled binaries on the [release page](https://github.com/zimmski/tavor/releases). Currently only 32 and 64 bit Linux binaries are provided. Other architectures are currently not supported, but might work. Please have a look at the [feature request section](#feature-request) if you need them to work or you want more binaries for different architectures.
+You can find all precompiled binaries on the [release page](https://github.com/zimmski/tavor/releases). Currently only 32 and 64 bit Linux binaries are provided. Other architectures are currently not supported, but might work. Please have a look at the [feature request section](#feature-request) if you need them to work or if you want more binaries for different architectures.
 
 ## <a name="build"></a>How do I build Tavor?
 

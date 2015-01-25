@@ -2,7 +2,7 @@
 
 This example provides a complete overview of Tavor. It does not utilize every single feature but every component which should give you an idea on how Tavor can be used in your own projects. The example tests an implementation of the following state machine.
 
-![Basic states and actions](/examples/quick/basic.png "Basic states and actions")
+![Basic states and actions](/examples/complete/fsm.png "Basic states and actions")
 
 The example uses the *Tavor format* to define this state machine and the *Tavor binary* to generate key-driven test files. An *executor* translates keys of a file into actions for the implementation under test. After successfully testing the original implementation, some bugs will be introduced to show the failure of some tests as well as automatically delta-debugging the failed key-driven test files.
 
