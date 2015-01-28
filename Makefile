@@ -1,4 +1,4 @@
-.PHONY: all clean coverage debug-install dependencies fmt install lint markdown test testverbose tools
+.PHONY: all clean coverage debug-install dependencies fmt generate install lint markdown test testverbose tools
 
 ROOT_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 
@@ -19,9 +19,9 @@ dependencies:
 	go build -v ./...
 fmt:
 	gofmt -l -w $(ROOT_DIR)/
-install: clean
-	go install -v ./...
+generate:
 	go generate ./...
+install: clean
 	go install -v ./...
 lint: install fmt
 	errcheck github.com/zimmski/tavor/... || true
