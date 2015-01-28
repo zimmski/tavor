@@ -211,28 +211,14 @@ If you do not want to use the [precompiled binaries](#precompiled) but instead w
 2. Go-get Tavor
 
   ```bash
-  go get -t -u -v github.com/zimmski/tavor/...
+  go get github.com/zimmski/tavor/
   ```
 
-3. Install dependencies
+3. Make Tavor
 
   ```bash
   cd $GOPATH/src/github.com/zimmski/tavor
-  make dependencies
-  ```
-
-3. Compile
-
-  ```bash
-  cd $GOPATH/src/github.com/zimmski/tavor
-  make install
-  ```
-
-4. Run tests
-
-  ```bash
-  cd $GOPATH/src/github.com/zimmski/tavor
-  make test
+  make
   ```
 
 You now have a binary `tavor` in your `$GOPATH/bin` folder (or if set `$GOBIN` folder) which can be used without any further actions.

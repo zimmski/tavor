@@ -2,7 +2,7 @@
 
 ROOT_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 
-all: tools dependencies install test
+all: dependencies install test
 
 clean:
 	go clean -i ./...
