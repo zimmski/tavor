@@ -288,7 +288,7 @@ func UnrollPointers(root Token) Token {
 	}
 
 	// force regeneration of possible cloned tokens
-	WalkInternalTail(root, func(tok Token) error {
+	err := WalkInternalTail(root, func(tok Token) error {
 		switch t := tok.(type) {
 		case ForwardToken:
 			c := t.InternalGet()
@@ -302,6 +302,9 @@ func UnrollPointers(root Token) Token {
 
 		return nil
 	})
+	if err != nil {
+		panic(err)
+	}
 
 	log.Debug("finished unrolling")
 
