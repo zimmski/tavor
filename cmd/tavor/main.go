@@ -227,7 +227,7 @@ func checkArguments(args []string, opts *options) (string, exitCodeType) {
 		}
 
 		return "", exitCodeOk
-	} else if opts.Reduce.Exec.ListExecArgumentTypes {
+	} else if opts.Fuzz.Exec.ListExecArgumentTypes || opts.Reduce.Exec.ListExecArgumentTypes {
 		for _, name := range execArgumentTypes {
 			fmt.Println(name)
 		}

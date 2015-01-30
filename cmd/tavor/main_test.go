@@ -5,6 +5,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -25,6 +26,21 @@ func TestMain(t *testing.T) {
 		assert.Nil(t, err)
 	}()
 
+	exitCode, out := execMain(t, []string{"--format-file", f.Name(), "fuzz", "--strategy", "AllPermutations"})
+
+	assert.Equal(t, exitCodeOk, exitCode)
+	assert.Contains(t, out, "1\n2\n3\n")
+}
+
+func TestMainCommandListingOptions(t *testing.T) {
+
+	exitCode, out := execMain(t, []string{"fuzz", "--list-exec-argument-types"})
+
+	assert.Equal(t, exitCodeOk, exitCode)
+	assert.Contains(t, out, strings.Join(execArgumentTypes, "\n"))
+}
+
+func execMain(t *testing.T, args []string) (exitCodeType, string) {
 	saveStderr := os.Stderr
 	saveStdout := os.Stdout
 	saveCwd, err := os.Getwd()
@@ -47,7 +63,7 @@ func TestMain(t *testing.T) {
 		bufChannel <- buf.String()
 	}()
 
-	exitCode := mainCmd([]string{"--format-file", f.Name(), "fuzz", "--strategy", "AllPermutations"})
+	exitCode := mainCmd(args)
 
 	w.Close()
 
@@ -57,6 +73,5 @@ func TestMain(t *testing.T) {
 
 	out := <-bufChannel
 
-	assert.Equal(t, exitCodeOk, exitCode)
-	assert.Contains(t, out, "1\n2\n3\n")
+	return exitCode, out
 }
