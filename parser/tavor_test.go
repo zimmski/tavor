@@ -1270,6 +1270,18 @@ func TestTavorParserCornerCases(t *testing.T) {
 
 		Equal(t, "121212", tok.String())
 	}
+	{
+		tok, err := ParseTavor(strings.NewReader(`
+			START = V
+
+			$V Int = from: 1,
+				to: 1
+		`))
+		Nil(t, err)
+		Equal(t, tok, primitives.NewRangeInt(1, 1))
+
+		Equal(t, "1", tok.String())
+	}
 }
 
 func TestTavorParserCharacterClasses(t *testing.T) {

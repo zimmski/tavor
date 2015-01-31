@@ -94,7 +94,7 @@ func (p *tavorParser) parseGlobalScope(variableScope map[string]token.Token) err
 
 			continue
 		case '$':
-			c, err = p.parseTypedTokenDefinition()
+			c, err = p.parseTypedTokenDefinition(variableScope)
 			if err != nil {
 				return err
 			}
@@ -1261,6 +1261,18 @@ func (p *tavorParser) parseTokenDefinition(variableScope map[string]token.Token)
 		tok = lists.NewAll(tokens...)
 	}
 
+	err = p.registerNamedToken(name, tok, tokenPosition, variableScope)
+	if err != nil {
+		return zeroRune, err
+	}
+
+	c = p.scan.Scan()
+	log.Debugf("parseTokenDefinition after newline %d:%v -> %v", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
+
+	return c, nil
+}
+
+func (p *tavorParser) registerNamedToken(name string, tok token.Token, tokenPosition scanner.Position, variableScope map[string]token.Token) error {
 	// self loop?
 	if uses, ok := p.earlyUse[name]; ok {
 		log.Debugf("parseTokenDefinition fill empty pointer for %s", name)
@@ -1268,9 +1280,9 @@ func (p *tavorParser) parseTokenDefinition(variableScope map[string]token.Token)
 		for _, use := range uses {
 			log.Debugf("use (%p)%#v for pointer (%p)%#v", tok, tok, use.token, use.token)
 
-			err = use.token.(*primitives.Pointer).Set(tok)
+			err := use.token.(*primitives.Pointer).Set(tok)
 			if err != nil {
-				return zeroRune, &token.ParserError{
+				return &token.ParserError{
 					Message:  fmt.Sprintf("wrong token type for %s because of earlier usage: %s", name, err),
 					Type:     token.ParseErrorInvalidTokenType,
 					Position: p.scan.Pos(),
@@ -1289,13 +1301,10 @@ func (p *tavorParser) parseTokenDefinition(variableScope map[string]token.Token)
 
 	log.Debugf("added (%p)%#v as token %s", tok, tok, name)
 
-	c = p.scan.Scan()
-	log.Debugf("parseTokenDefinition after newline %d:%v -> %v", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
-
-	return c, nil
+	return nil
 }
 
-func (p *tavorParser) parseTypedTokenDefinition() (rune, error) {
+func (p *tavorParser) parseTypedTokenDefinition(variableScope map[string]token.Token) (rune, error) {
 	var c rune
 	var err error
 
@@ -1305,11 +1314,14 @@ func (p *tavorParser) parseTypedTokenDefinition() (rune, error) {
 	log.Debugf("parseTypedTokenDefinition after $ %d:%v -> %v", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
 
 	name := p.scan.TokenText()
-	if _, ok := p.lookup[name]; ok {
-		return zeroRune, &token.ParserError{
-			Message:  "token already defined",
-			Type:     token.ParseErrorTokenAlreadyDefined,
-			Position: p.scan.Pos(),
+	if use, ok := p.lookup[name]; ok {
+		// if there is a pointer in the lookup hash we can say that it was just used before
+		if _, ok := use.token.(*primitives.Pointer); !ok {
+			return zeroRune, &token.ParserError{
+				Message:  "token already defined",
+				Type:     token.ParseErrorTokenAlreadyDefined,
+				Position: p.scan.Pos(),
+			}
 		}
 	}
 
@@ -1487,12 +1499,10 @@ func (p *tavorParser) parseTypedTokenDefinition() (rune, error) {
 		}
 	}
 
-	p.lookup[name] = tokenUsage{
-		token:    tok,
-		position: tokenPosition,
+	err = p.registerNamedToken(name, tok, tokenPosition, variableScope)
+	if err != nil {
+		return zeroRune, err
 	}
-
-	log.Debugf("added (%p)%#v as token %s", tok, tok, name)
 
 	c = p.scan.Scan()
 	log.Debugf("parseTypedTokenDefinition after newline %d:%v -> %v", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
