@@ -6,6 +6,7 @@ import (
 	. "github.com/zimmski/tavor/test/assert"
 
 	"github.com/zimmski/tavor/token"
+	"github.com/zimmski/tavor/token/primitives"
 )
 
 func TestSequenceTokensToBeTokens(t *testing.T) {
@@ -69,6 +70,17 @@ func TestExistingSequenceItem(t *testing.T) {
 	Nil(t, o.Permutation(3))
 	Equal(t, "14", o.String())
 
+	Nil(t, o.Permutation(1))
+	Equal(t, "10", o.String())
+
+	// Except
+	o = s.ExistingItem([]token.Token{primitives.NewConstantInt(10)})
+	Equal(t, "10", o.String())
+	Nil(t, o.Permutation(1))
+	Equal(t, "12", o.String())
+
+	o = s.ExistingItem([]token.Token{primitives.NewConstantInt(14)})
+	Equal(t, "10", o.String())
 	Nil(t, o.Permutation(1))
 	Equal(t, "10", o.String())
 }

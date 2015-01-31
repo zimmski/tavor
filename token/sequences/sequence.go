@@ -25,11 +25,14 @@ func NewSequence(start, step int) *Sequence {
 	}
 }
 
+// TODO this must be handled without panics
+var errNoSequenceValue = fmt.Sprintf("There is no sequence value to choose from")
+
 func (s *Sequence) existing(r uint, except []token.Token) int {
 	n := s.value - s.start
 
 	if n == 0 {
-		panic(fmt.Sprintf("There is no sequence value to choose from")) // TODO
+		panic(errNoSequenceValue)
 	}
 
 	n /= s.step
@@ -51,9 +54,11 @@ func (s *Sequence) existing(r uint, except []token.Token) int {
 	}
 
 	for n != len(checked) {
-		i := int(r)*s.step + s.start
+		i := (int(r)%n)*s.step + s.start
 
 		if _, ok := checked[i]; ok {
+			r++
+
 			continue
 		}
 
@@ -64,7 +69,7 @@ func (s *Sequence) existing(r uint, except []token.Token) int {
 		}
 	}
 
-	panic(fmt.Sprintf("There is no sequence value to choose from")) // TODO
+	panic(errNoSequenceValue)
 }
 
 // ExistingItem returns a new instance of a SequenceExistingItem token referencing the sequence and holding the starting value of the sequence as its current value
@@ -208,7 +213,7 @@ type SequenceExistingItem struct {
 func (s *SequenceExistingItem) Clone() token.Token {
 	c := SequenceExistingItem{
 		sequence: s.sequence,
-		value:    s.value,
+		value:    s.value, // TODO FIXME apply except
 		except:   make([]token.Token, len(s.except)),
 	}
 
@@ -251,6 +256,7 @@ func (s *SequenceExistingItem) Permutation(i uint) error {
 
 // Permutations returns the number of permutations for this token
 func (s *SequenceExistingItem) Permutations() uint {
+	// TODO FIXME we need to include the except-tokens here too, as well as in Permutation()
 	return uint((s.sequence.value - s.sequence.start) / s.sequence.step)
 }
 
