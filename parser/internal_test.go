@@ -64,6 +64,11 @@ func TestInternalParseErrors(t *testing.T) {
 	errs = ParseInternal(primitives.NewConstantString("a"), strings.NewReader("b"))
 	Equal(t, len(errs), 1)
 	Equal(t, token.ParseErrorUnexpectedData, errs[0].(*token.ParserError).Type)
+
+	// too much data left
+	errs = ParseInternal(primitives.NewConstantString("123456"), strings.NewReader("123456abcdefgh"))
+	Equal(t, len(errs), 1)
+	Equal(t, token.ParseErrorExpectedEOF, errs[0].(*token.ParserError).Type)
 }
 
 func checkParse(t *testing.T, root token.Token, data string) {

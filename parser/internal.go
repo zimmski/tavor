@@ -41,7 +41,7 @@ func ParseInternal(root token.Token, src io.Reader) []error {
 		msg := ""
 
 		if i > 5 {
-			msg = fmt.Sprintf("Expected EOF but still %q and more left", p.Data[nex:5])
+			msg = fmt.Sprintf("Expected EOF but still %q and more left", p.Data[nex:nex+5])
 		} else {
 			msg = fmt.Sprintf("Expected EOF but still %q left", p.Data[nex:nex+i])
 		}
