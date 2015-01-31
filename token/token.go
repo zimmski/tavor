@@ -284,6 +284,7 @@ func (p InternalParser) GetPosition(i int) scanner.Position {
 // ParserErrorType the parser error type
 type ParserErrorType int
 
+//go:generate stringer -type=ParserErrorType
 const (
 	// ParseErrorNoStart no Start token was defined
 	ParseErrorNoStart ParserErrorType = iota
