@@ -471,6 +471,11 @@ func mainCmd(args []string) exitCodeType {
 				var cmdStdout bytes.Buffer
 
 				if string(opts.Fuzz.Exec.ExecArgumentType) == "argument" {
+					tmp, err = writeTmpFile(docOut)
+					if err != nil {
+						return exitError(err.Error())
+					}
+
 					for _, v := range execFileArguments {
 						execs[v] = tmp.Name()
 					}
@@ -498,6 +503,10 @@ func mainCmd(args []string) exitCodeType {
 				stdin, err := execCommand.StdinPipe()
 				if err != nil {
 					return exitError("Could not get stdin pipe: %s", err)
+				}
+
+				if tmp != nil {
+					log.Infof("Test %q", tmp.Name())
 				}
 
 				err = execCommand.Start()
