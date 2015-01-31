@@ -606,26 +606,26 @@ func mainCmd(args []string) exitCodeType {
 					} else {
 						log.Infof("Not the same output")
 
-						if opts.Fuzz.Exec.ExitOnError {
-							gotError = true
+						gotError = true
 
-							if opts.Fuzz.Exec.ExecDoNotRemoveTmpFilesOnError {
-								if tmp == nil {
-									tmp, err = writeTmpFile(docOut)
-									if err != nil {
-										return exitError(err.Error())
-									}
+						if opts.Fuzz.Exec.ExecDoNotRemoveTmpFilesOnError || string(folder) != "" {
+							if tmp == nil {
+								tmp, err = writeTmpFile(docOut)
+								if err != nil {
+									return exitError(err.Error())
 								}
-
-								log.Infof("Written to %q", tmp.Name())
 							}
 
+							log.Infof("Written to %q", tmp.Name())
+						}
+
+						if opts.Fuzz.Exec.ExitOnError {
 							break GENERATION
 						}
 					}
 				}
 
-				if !opts.Fuzz.Exec.ExecDoNotRemoveTmpFiles && (!opts.Fuzz.Exec.ExecDoNotRemoveTmpFilesOnError || !gotError) {
+				if !opts.Fuzz.Exec.ExecDoNotRemoveTmpFiles && (!gotError || (!opts.Fuzz.Exec.ExecDoNotRemoveTmpFilesOnError && string(folder) == "")) {
 					if tmp != nil {
 						err = os.Remove(tmp.Name())
 						if err != nil {
