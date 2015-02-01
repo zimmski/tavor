@@ -737,6 +737,17 @@ func TestTavorParserExpressions(t *testing.T) {
 		primitives.NewConstantInt(2),
 	))
 
+	tok, err = ParseTavor(strings.NewReader(`
+		START = ${A + B}
+		A = 1
+		B = 2
+	`))
+	Nil(t, err)
+	Equal(t, tok, expressions.NewAddArithmetic(
+		primitives.NewConstantInt(1),
+		primitives.NewConstantInt(2),
+	))
+
 	// sub operator
 	tok, err = ParseTavor(strings.NewReader(
 		"START = ${1 - 2}\n",
@@ -945,12 +956,12 @@ func TestTavorParserAndCuriousCaseOfFuzzing(t *testing.T) {
 	// Save variable scope and variable usage in expression
 	{
 		tok, err = ParseTavor(strings.NewReader(`
-			$Number Int = from: 1,
-			              to:   2
-
 			START = Number<=a> Number<=b>,
 			a " + " b " = " ${a.Value + b.Value} "\n",
 			a " * " b " = " ${a.Value * b.Value} "\n"
+
+			$Number Int = from: 1,
+			              to:   2
 		`))
 		Nil(t, err)
 

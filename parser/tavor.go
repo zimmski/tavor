@@ -807,6 +807,9 @@ func (p *tavorParser) parseExpressionTerm(definitionName string, c rune, variabl
 		switch op := p.scan.TokenText(); op {
 		case "path":
 			c, tok, err = p.parseExpressionOperatorPath(tok, definitionName, c, variableScope)
+			if err != nil {
+				return zeroRune, nil, err
+			}
 		default:
 			return zeroRune, nil, &token.ParserError{
 				Message:  fmt.Sprintf("Operator %q is unknown", op),
