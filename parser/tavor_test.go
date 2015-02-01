@@ -813,13 +813,13 @@ func TestTavorParserExpressions(t *testing.T) {
 		tok, err = ParseTavor(strings.NewReader(`
 			START = Pairs "->" Path
 
+			Path = ${Pairs path from (2) over (e.Item(0)) connect by (e.Item(1)) without (0)}
+
 			Pairs = (,
 				(1 0),
 				(3 1),
 				(2 3),
 			)
-
-			Path = ${Pairs path from (2) over (e.Item(0)) connect by (e.Item(1)) without (0)}
 		`))
 		Nil(t, err)
 		Equal(t, "103123->231", tok.String())

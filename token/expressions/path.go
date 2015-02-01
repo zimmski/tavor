@@ -14,7 +14,7 @@ import (
 
 // Path implements a path query
 type Path struct {
-	list      token.ListToken
+	list      token.Token
 	from      token.Token
 	over      token.Token
 	connectBy []token.Token
@@ -24,7 +24,7 @@ type Path struct {
 }
 
 // NewPath returns a new instance of a Path token given the set of tokens
-func NewPath(list token.ListToken, from token.Token, over token.Token, connectBy []token.Token, without []token.Token) *Path {
+func NewPath(list token.Token, from token.Token, over token.Token, connectBy []token.Token, without []token.Token) *Path {
 	return &Path{
 		list:      list,
 		from:      from,
@@ -42,10 +42,15 @@ func (e *Path) path() []string {
 		}
 	}
 
+	l, ok := e.list.(token.ListToken)
+	if !ok {
+		panic("TODO must be a ListToken")
+	}
+
 	connects := make(map[string][]string, 0)
 
-	for i := 0; i < e.list.Len(); i++ {
-		el, _ := e.list.Get(i)
+	for i := 0; i < l.Len(); i++ {
+		el, _ := l.Get(i)
 		variableScope["e"] = variables.NewVariable("e", el)
 
 		if t, ok := e.over.(token.ScopeToken); ok {
@@ -182,14 +187,28 @@ func (e *Path) Len() int {
 
 // InternalGet returns the current referenced internal token at the given index. The error return argument is not nil, if the index is out of bound.
 func (e *Path) InternalGet(i int) (token.Token, error) {
-	panic("TODO")
+	il := e.InternalLen()
+
+	if i < 0 || i >= il {
+		return nil, &lists.ListError{
+			Type: lists.ListErrorOutOfBound,
+		}
+	}
+
+	if i == 0 {
+		return e.list, nil
+	} else if i == 1 {
+		return e.over, nil
+	} else if i < 2+len(e.connectBy) {
+		return e.connectBy[i-2], nil
+	}
+
+	return e.without[i-2-len(e.connectBy)], nil
 }
 
 // InternalLen returns the number of referenced internal tokens
 func (e *Path) InternalLen() int {
-	// TODO
-
-	return 0
+	return 2 + len(e.connectBy) + len(e.without)
 }
 
 // InternalLogicalRemove removes the referenced internal token and returns the replacement for the current token or nil if the current token should be removed.
@@ -201,7 +220,25 @@ func (e *Path) InternalLogicalRemove(tok token.Token) token.Token {
 
 // InternalReplace replaces an old with a new internal token if it is referenced by this token
 func (e *Path) InternalReplace(oldToken, newToken token.Token) {
-	// TODO
+	if e.list == oldToken {
+		e.list = newToken
+	}
+
+	if e.over == oldToken {
+		e.over = newToken
+	}
+
+	for i := 0; i < len(e.connectBy); i++ {
+		if e.connectBy[i] == oldToken {
+			e.connectBy[i] = newToken
+		}
+	}
+
+	for i := 0; i < len(e.without); i++ {
+		if e.without[i] == oldToken {
+			e.without[i] = newToken
+		}
+	}
 }
 
 // ScopeToken interface methods

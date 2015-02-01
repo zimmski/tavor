@@ -823,14 +823,17 @@ func (p *tavorParser) parseExpressionTerm(definitionName string, c rune, variabl
 }
 
 func (p *tavorParser) parseExpressionOperatorPath(tok token.Token, definitionName string, c rune, variableScope map[string]token.Token) (rune, token.Token, error) {
-	l, ok := tok.(token.ListToken)
+	log.Debug("Start path operator")
+	defer log.Debug("End path operator")
+
+	/*l, ok := tok.(token.ListToken)
 	if !ok {
 		return zeroRune, nil, &token.ParserError{
 			Message:  "expected list token",
 			Type:     token.ParseErrorInvalidTokenType,
 			Position: p.scan.Pos(),
 		}
-	}
+	}*/
 
 	_, err := p.expectScanText("from")
 	if err != nil {
@@ -854,6 +857,8 @@ func (p *tavorParser) parseExpressionOperatorPath(tok token.Token, definitionNam
 			Position: p.scan.Pos(),
 		}
 	}
+
+	log.Debugf("path operator from %p(%#v)", from, from)
 
 	_, err = p.expectRune(')', c)
 	if err != nil {
@@ -984,7 +989,7 @@ func (p *tavorParser) parseExpressionOperatorPath(tok token.Token, definitionNam
 
 	c = p.scan.Scan()
 
-	tok = expressions.NewPath(l, from, over, connects, withouts)
+	tok = expressions.NewPath(tok, from, over, connects, withouts)
 
 	return c, tok, nil
 }
