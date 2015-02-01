@@ -605,7 +605,7 @@ A simple example for an expression is an addition.
 START = ${1 + 2}
 ```
 
-Every operand of an operator can currently either be a number or a token attribute. The usual dollar sign for a token attribute can be omitted.
+Every operand of an operator can be a token. The usual dollar sign for a token attribute can be omitted.
 
 ```tavor
 $Number Int

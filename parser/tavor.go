@@ -115,6 +115,114 @@ func (p *tavorParser) parseGlobalScope(variableScope map[string]token.Token) err
 	return nil
 }
 
+func (p *tavorParser) getToken(name string, variableScope map[string]token.Token) token.Token {
+	nVariableScope := make(map[string]token.Token, len(variableScope))
+	for k, v := range variableScope {
+		nVariableScope[k] = v
+	}
+
+	_, ok := p.lookup[name]
+	if !ok {
+		log.Debugf("parseTerm use empty pointer for %s", name)
+
+		var tokenInterface *token.Token
+		b := primitives.NewEmptyPointer(tokenInterface)
+		n := primitives.NewPointer(b)
+
+		p.lookup[name] = tokenUsage{
+			token:    n,
+			position: p.scan.Position,
+		}
+		p.earlyUse[name] = append(p.earlyUse[name], tokenUsage{
+			token:         b,
+			position:      p.scan.Position,
+			variableScope: nVariableScope,
+		})
+	}
+
+	p.used[name] = append(p.used[name], tokenUsage{
+		token:         nil,
+		position:      p.scan.Position,
+		variableScope: nVariableScope,
+	})
+
+	/*
+
+		THIS IS A TERRIBLE HACK THIS SHOULD BE -REMOVED- fixed ASAP
+
+		but let me explain
+
+		B = 1 | 2
+		A = B B
+
+		This should result in 4 permutations 11 21 12 and 22
+		but without this condition this would result in only
+		11s and 22s. The clone alone would be fine but this
+		leads to more problems if the clone is not saved back
+		into the lookup.
+
+		For example
+
+		Bs = +(1)
+		A = $Bs.Count Bs
+
+		would not work without saving back.
+
+		But what if somebody writes
+
+		Cs = +(1)
+		B = $Cs.Count Cs
+		A = +(B)
+
+		or even
+
+		Cs = +(1)
+		B = $Cs.Count Cs
+		A = $Cs.Count +(B)
+
+		So TODO and FIXME all over this
+
+	*/
+	tok := p.lookup[name].token
+
+	if _, ok := p.lookupUsage[tok]; ok {
+		if t, ok := tok.(*primitives.Pointer); ok && t.Get() == nil {
+			// FIXME if tok is directly given to NewPointer we get a panic: reflect: non-interface type passed to Type.Implements
+			var tokInterface *token.Token
+			ntok := primitives.NewEmptyPointer(tokInterface)
+			_ = ntok.Set(tok)
+
+			log.Debugf("token %s (%p)%#v is an empty pointer, better just forward to it (%p)%#v", name, tok, tok, ntok, ntok)
+
+			tok = ntok
+		} else {
+			ntok := tok.Clone()
+
+			log.Debugf("token %s (%p)%#v was already used once. Cloned as (%p)%#v", name, tok, tok, ntok, ntok)
+
+			p.lookup[name] = tokenUsage{
+				token:    ntok,
+				position: p.scan.Position,
+			}
+			if t, ok := tok.(*primitives.Pointer); ok && t.Get() == nil {
+				p.earlyUse[name] = append(p.earlyUse[name], tokenUsage{
+					token:         ntok,
+					position:      p.scan.Position,
+					variableScope: nVariableScope,
+				})
+			}
+
+			tok = ntok
+		}
+	} else {
+		log.Debugf("use token (%p)%#v", tok, tok)
+	}
+
+	p.lookupUsage[tok] = struct{}{}
+
+	return tok
+}
+
 func (p *tavorParser) parseTerm(definitionName string, c rune, variableScope map[string]token.Token) (rune, []token.Token, error) {
 	var err error
 	var tokens []token.Token
@@ -129,109 +237,7 @@ OUT:
 		case scanner.Ident:
 			name := p.scan.TokenText()
 
-			nVariableScope := make(map[string]token.Token, len(variableScope))
-			for k, v := range variableScope {
-				nVariableScope[k] = v
-			}
-
-			_, ok := p.lookup[name]
-			if !ok {
-				log.Debugf("parseTerm use empty pointer for %s", name)
-
-				var tokenInterface *token.Token
-				b := primitives.NewEmptyPointer(tokenInterface)
-				n := primitives.NewPointer(b)
-
-				p.lookup[name] = tokenUsage{
-					token:    n,
-					position: p.scan.Position,
-				}
-				p.earlyUse[name] = append(p.earlyUse[name], tokenUsage{
-					token:         b,
-					position:      p.scan.Position,
-					variableScope: nVariableScope,
-				})
-			}
-
-			p.used[name] = append(p.used[name], tokenUsage{
-				token:         nil,
-				position:      p.scan.Position,
-				variableScope: nVariableScope,
-			})
-
-			/*
-
-				THIS IS A TERRIBLE HACK THIS SHOULD BE -REMOVED- fixed ASAP
-
-				but let me explain
-
-				B = 1 | 2
-				A = B B
-
-				This should result in 4 permutations 11 21 12 and 22
-				but without this condition this would result in only
-				11s and 22s. The clone alone would be fine but this
-				leads to more problems if the clone is not saved back
-				into the lookup.
-
-				For example
-
-				Bs = +(1)
-				A = $Bs.Count Bs
-
-				would not work without saving back.
-
-				But what if somebody writes
-
-				Cs = +(1)
-				B = $Cs.Count Cs
-				A = +(B)
-
-				or even
-
-				Cs = +(1)
-				B = $Cs.Count Cs
-				A = $Cs.Count +(B)
-
-				So TODO and FIXME all over this
-
-			*/
-			tok := p.lookup[name].token
-
-			if _, ok := p.lookupUsage[tok]; ok {
-				if t, ok := tok.(*primitives.Pointer); ok && t.Get() == nil {
-					// FIXME if tok is directly given to NewPointer we get a panic: reflect: non-interface type passed to Type.Implements
-					var tokInterface *token.Token
-					ntok := primitives.NewEmptyPointer(tokInterface)
-					_ = ntok.Set(tok)
-
-					log.Debugf("token %s (%p)%#v is an empty pointer, better just forward to it (%p)%#v", name, tok, tok, ntok, ntok)
-
-					tok = ntok
-				} else {
-					ntok := tok.Clone()
-
-					log.Debugf("token %s (%p)%#v was already used once. Cloned as (%p)%#v", name, tok, tok, ntok, ntok)
-
-					p.lookup[name] = tokenUsage{
-						token:    ntok,
-						position: p.scan.Position,
-					}
-					if t, ok := tok.(*primitives.Pointer); ok && t.Get() == nil {
-						p.earlyUse[name] = append(p.earlyUse[name], tokenUsage{
-							token:         ntok,
-							position:      p.scan.Position,
-							variableScope: nVariableScope,
-						})
-					}
-
-					tok = ntok
-				}
-			} else {
-				log.Debugf("use token (%p)%#v", tok, tok)
-			}
-
-			p.lookupUsage[tok] = struct{}{}
+			tok := p.getToken(name, variableScope)
 
 			addToken(tok)
 		case scanner.Int:
@@ -693,9 +699,17 @@ func (p *tavorParser) parseExpressionTerm(definitionName string, c rune, variabl
 
 			return c, conditions.NewExpressionPointer(tok), nil
 		default:
-			c, tok, err = p.parseTokenAttribute(definitionName, c, variableScope)
-			if err != nil {
-				return zeroRune, nil, err
+			if p.scan.Peek() == '.' {
+				c, tok, err = p.parseTokenAttribute(definitionName, c, variableScope)
+				if err != nil {
+					return zeroRune, nil, err
+				}
+			} else {
+				name := p.scan.TokenText()
+
+				tok = p.getToken(name, variableScope)
+
+				c = p.scan.Scan()
 			}
 		}
 	case scanner.Int:

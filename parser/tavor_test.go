@@ -678,6 +678,16 @@ func TestTavorParserExpressions(t *testing.T) {
 	var tok token.Token
 	var err error
 
+	// token use in expression
+	{
+		tok, err = ParseTavor(strings.NewReader(`
+			START = ${A}
+			A = "a"
+		`))
+		Nil(t, err)
+		Equal(t, tok, primitives.NewConstantString("a"))
+	}
+
 	// simple expression
 	{
 		s := sequences.NewSequence(1, 1)
