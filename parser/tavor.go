@@ -76,6 +76,40 @@ func (p *tavorParser) expectScanRune(expect rune) (rune, error) {
 	return p.expectRune(expect, got)
 }
 
+func (p *tavorParser) expectText(expect string, got rune) (rune, error) {
+	got, err := p.expectRune(scanner.Ident, got)
+	if err != nil {
+		return zeroRune, err
+	}
+
+	if g := p.scan.TokenText(); g != "in" {
+		return zeroRune, &token.ParserError{
+			Message:  fmt.Sprintf("expected %q got %q", expect, g),
+			Type:     token.ParseErrorExpectOperator,
+			Position: p.scan.Pos(),
+		}
+	}
+
+	return got, nil
+}
+
+func (p *tavorParser) expectScanText(expect string) (rune, error) {
+	got, err := p.expectScanRune(scanner.Ident)
+	if err != nil {
+		return zeroRune, err
+	}
+
+	if g := p.scan.TokenText(); g != expect {
+		return zeroRune, &token.ParserError{
+			Message:  fmt.Sprintf("expected %q got %q", expect, g),
+			Type:     token.ParseErrorExpectOperator,
+			Position: p.scan.Pos(),
+		}
+	}
+
+	return got, nil
+}
+
 func (p *tavorParser) parseGlobalScope(variableScope map[string]token.Token) error {
 	var err error
 
@@ -772,211 +806,7 @@ func (p *tavorParser) parseExpressionTerm(definitionName string, c rune, variabl
 	case scanner.Ident:
 		switch op := p.scan.TokenText(); op {
 		case "path":
-			l, ok := tok.(token.ListToken)
-			if !ok {
-				return zeroRune, nil, &token.ParserError{
-					Message:  "expected list token",
-					Type:     token.ParseErrorInvalidTokenType,
-					Position: p.scan.Pos(),
-				}
-			}
-
-			_, err := p.expectScanRune(scanner.Ident)
-			if err != nil {
-				return zeroRune, nil, err
-			}
-
-			if p.scan.TokenText() != "from" {
-				return zeroRune, nil, &token.ParserError{
-					Message:  fmt.Sprintf("expected operator %q not %q", "from", p.scan.TokenText()),
-					Type:     token.ParseErrorExpectOperator,
-					Position: p.scan.Pos(),
-				}
-			}
-
-			_, err = p.expectScanRune('(')
-			if err != nil {
-				return zeroRune, nil, err
-			}
-
-			c = p.scan.Scan()
-
-			c, from, err := p.parseExpressionTerm(definitionName, c, variableScope)
-			if err != nil {
-				return zeroRune, nil, err
-			} else if from == nil {
-				return zeroRune, nil, &token.ParserError{
-					Message:  "expected a expression",
-					Type:     token.ParseErrorExpectedExpressionTerm,
-					Position: p.scan.Pos(),
-				}
-			}
-
-			_, err = p.expectRune(')', c)
-			if err != nil {
-				return zeroRune, nil, err
-			}
-
-			nVariableScope := make(map[string]token.Token, len(variableScope))
-			for k, v := range variableScope {
-				nVariableScope[k] = v
-			}
-
-			nVariableScope["e"] = variables.NewVariable("e", nil)
-
-			_, err = p.expectScanRune(scanner.Ident)
-			if err != nil {
-				return zeroRune, nil, err
-			}
-
-			if p.scan.TokenText() != "over" {
-				return zeroRune, nil, &token.ParserError{
-					Message:  fmt.Sprintf("expected operator %q not %q", "over", p.scan.TokenText()),
-					Type:     token.ParseErrorExpectOperator,
-					Position: p.scan.Pos(),
-				}
-			}
-
-			_, err = p.expectScanRune('(')
-			if err != nil {
-				return zeroRune, nil, err
-			}
-
-			c = p.scan.Scan()
-
-			c, over, err := p.parseExpressionTerm(definitionName, c, nVariableScope) // TODO
-			if err != nil {
-				return zeroRune, nil, err
-			} else if over == nil {
-				return zeroRune, nil, &token.ParserError{
-					Message:  "expected a expression",
-					Type:     token.ParseErrorExpectedExpressionTerm,
-					Position: p.scan.Pos(),
-				}
-			}
-
-			_, err = p.expectRune(')', c)
-			if err != nil {
-				return zeroRune, nil, err
-			}
-
-			_, err = p.expectScanRune(scanner.Ident)
-			if err != nil {
-				return zeroRune, nil, err
-			}
-
-			if p.scan.TokenText() != "connect" {
-				return zeroRune, nil, &token.ParserError{
-					Message:  fmt.Sprintf("expected operator %q not %q", "connected", p.scan.TokenText()),
-					Type:     token.ParseErrorExpectOperator,
-					Position: p.scan.Pos(),
-				}
-			}
-
-			_, err = p.expectScanRune(scanner.Ident)
-			if err != nil {
-				return zeroRune, nil, err
-			}
-
-			if p.scan.TokenText() != "by" {
-				return zeroRune, nil, &token.ParserError{
-					Message:  fmt.Sprintf("expected operator %q not %q", "by", p.scan.TokenText()),
-					Type:     token.ParseErrorExpectOperator,
-					Position: p.scan.Pos(),
-				}
-			}
-
-			_, err = p.expectScanRune('(')
-			if err != nil {
-				return zeroRune, nil, err
-			}
-
-			c = p.scan.Scan()
-
-			var connect token.Token
-			var connects []token.Token
-
-			for {
-				c, connect, err = p.parseExpressionTerm(definitionName, c, nVariableScope) // TODO
-				if err != nil {
-					return zeroRune, nil, err
-				} else if connect == nil {
-					return zeroRune, nil, &token.ParserError{
-						Message:  "expected a expression",
-						Type:     token.ParseErrorExpectedExpressionTerm,
-						Position: p.scan.Pos(),
-					}
-				}
-
-				connects = append(connects, connect)
-
-				if c != ',' {
-					break
-				}
-
-				c = p.scan.Scan()
-			}
-
-			_, err = p.expectRune(')', c)
-			if err != nil {
-				return zeroRune, nil, err
-			}
-
-			_, err = p.expectScanRune(scanner.Ident)
-			if err != nil {
-				return zeroRune, nil, err
-			}
-
-			if p.scan.TokenText() != "without" {
-				return zeroRune, nil, &token.ParserError{
-					Message:  fmt.Sprintf("expected operator %q not %q", "without", p.scan.TokenText()),
-					Type:     token.ParseErrorExpectOperator,
-					Position: p.scan.Pos(),
-				}
-			}
-
-			_, err = p.expectScanRune('(')
-			if err != nil {
-				return zeroRune, nil, err
-			}
-
-			c = p.scan.Scan()
-
-			var without token.Token
-			var withouts []token.Token
-
-			for {
-				c, without, err = p.parseExpressionTerm(definitionName, c, nVariableScope) // TODO
-				if err != nil {
-					return zeroRune, nil, err
-				} else if without == nil {
-					return zeroRune, nil, &token.ParserError{
-						Message:  "expected a expression",
-						Type:     token.ParseErrorExpectedExpressionTerm,
-						Position: p.scan.Pos(),
-					}
-				}
-
-				withouts = append(withouts, without)
-
-				if c != ',' {
-					break
-				}
-
-				c = p.scan.Scan()
-			}
-
-			_, err = p.expectRune(')', c)
-			if err != nil {
-				return zeroRune, nil, err
-			}
-
-			c = p.scan.Scan()
-
-			// TODO
-			_ = l
-
-			tok = nil // TODO
+			c, tok, err = p.parseExpressionOperatorPath(tok, definitionName, c, variableScope)
 		default:
 			return zeroRune, nil, &token.ParserError{
 				Message:  fmt.Sprintf("Operator %q is unknown", op),
@@ -985,6 +815,173 @@ func (p *tavorParser) parseExpressionTerm(definitionName string, c rune, variabl
 			}
 		}
 	}
+
+	return c, tok, nil
+}
+
+func (p *tavorParser) parseExpressionOperatorPath(tok token.Token, definitionName string, c rune, variableScope map[string]token.Token) (rune, token.Token, error) {
+	l, ok := tok.(token.ListToken)
+	if !ok {
+		return zeroRune, nil, &token.ParserError{
+			Message:  "expected list token",
+			Type:     token.ParseErrorInvalidTokenType,
+			Position: p.scan.Pos(),
+		}
+	}
+
+	_, err := p.expectScanText("from")
+	if err != nil {
+		return zeroRune, nil, err
+	}
+
+	_, err = p.expectScanRune('(')
+	if err != nil {
+		return zeroRune, nil, err
+	}
+
+	c = p.scan.Scan()
+
+	c, from, err := p.parseExpressionTerm(definitionName, c, variableScope)
+	if err != nil {
+		return zeroRune, nil, err
+	} else if from == nil {
+		return zeroRune, nil, &token.ParserError{
+			Message:  "expected a expression",
+			Type:     token.ParseErrorExpectedExpressionTerm,
+			Position: p.scan.Pos(),
+		}
+	}
+
+	_, err = p.expectRune(')', c)
+	if err != nil {
+		return zeroRune, nil, err
+	}
+
+	nVariableScope := make(map[string]token.Token, len(variableScope))
+	for k, v := range variableScope {
+		nVariableScope[k] = v
+	}
+
+	nVariableScope["e"] = variables.NewVariable("e", nil)
+
+	_, err = p.expectScanText("over")
+	if err != nil {
+		return zeroRune, nil, err
+	}
+
+	_, err = p.expectScanRune('(')
+	if err != nil {
+		return zeroRune, nil, err
+	}
+
+	c = p.scan.Scan()
+
+	c, over, err := p.parseExpressionTerm(definitionName, c, nVariableScope) // TODO
+	if err != nil {
+		return zeroRune, nil, err
+	} else if over == nil {
+		return zeroRune, nil, &token.ParserError{
+			Message:  "expected a expression",
+			Type:     token.ParseErrorExpectedExpressionTerm,
+			Position: p.scan.Pos(),
+		}
+	}
+
+	_, err = p.expectRune(')', c)
+	if err != nil {
+		return zeroRune, nil, err
+	}
+
+	_, err = p.expectScanText("connect")
+	if err != nil {
+		return zeroRune, nil, err
+	}
+
+	_, err = p.expectScanText("by")
+	if err != nil {
+		return zeroRune, nil, err
+	}
+
+	_, err = p.expectScanRune('(')
+	if err != nil {
+		return zeroRune, nil, err
+	}
+
+	c = p.scan.Scan()
+
+	var connect token.Token
+	var connects []token.Token
+
+	for {
+		c, connect, err = p.parseExpressionTerm(definitionName, c, nVariableScope) // TODO
+		if err != nil {
+			return zeroRune, nil, err
+		} else if connect == nil {
+			return zeroRune, nil, &token.ParserError{
+				Message:  "expected a expression",
+				Type:     token.ParseErrorExpectedExpressionTerm,
+				Position: p.scan.Pos(),
+			}
+		}
+
+		connects = append(connects, connect)
+
+		if c != ',' {
+			break
+		}
+
+		c = p.scan.Scan()
+	}
+
+	_, err = p.expectRune(')', c)
+	if err != nil {
+		return zeroRune, nil, err
+	}
+
+	_, err = p.expectScanText("without")
+	if err != nil {
+		return zeroRune, nil, err
+	}
+
+	_, err = p.expectScanRune('(')
+	if err != nil {
+		return zeroRune, nil, err
+	}
+
+	c = p.scan.Scan()
+
+	var without token.Token
+	var withouts []token.Token
+
+	for {
+		c, without, err = p.parseExpressionTerm(definitionName, c, nVariableScope) // TODO
+		if err != nil {
+			return zeroRune, nil, err
+		} else if without == nil {
+			return zeroRune, nil, &token.ParserError{
+				Message:  "expected a expression",
+				Type:     token.ParseErrorExpectedExpressionTerm,
+				Position: p.scan.Pos(),
+			}
+		}
+
+		withouts = append(withouts, without)
+
+		if c != ',' {
+			break
+		}
+
+		c = p.scan.Scan()
+	}
+
+	_, err = p.expectRune(')', c)
+	if err != nil {
+		return zeroRune, nil, err
+	}
+
+	c = p.scan.Scan()
+
+	tok = expressions.NewPath(l, from, over, connects, withouts)
 
 	return c, tok, nil
 }
@@ -1020,17 +1017,9 @@ func (p *tavorParser) parseTokenAttribute(definitionName string, c rune, variabl
 	c = p.scan.Scan()
 
 	if c == scanner.Ident && p.scan.TokenText() == "not" {
-		_, err := p.expectScanRune(scanner.Ident)
+		_, err = p.expectScanText("in")
 		if err != nil {
 			return zeroRune, nil, err
-		}
-
-		if p.scan.TokenText() != "in" {
-			return zeroRune, nil, &token.ParserError{
-				Message:  fmt.Sprintf("expected operator %q not %q", "in", p.scan.TokenText()),
-				Type:     token.ParseErrorExpectOperator,
-				Position: p.scan.Pos(),
-			}
 		}
 
 		log.Debug("operator: not in")

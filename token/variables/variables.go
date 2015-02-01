@@ -175,7 +175,7 @@ func (v *VariableItem) PermutationsAll() uint {
 func (v *VariableItem) String() string {
 	i := v.Index()
 
-	tok, err := v.variable.(token.ListToken).Get(i)
+	tok, err := v.variable.Get().(token.ListToken).Get(i)
 	if err != nil {
 		panic(err) // TODO
 	}
