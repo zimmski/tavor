@@ -772,8 +772,6 @@ func (p *tavorParser) parseExpressionTerm(definitionName string, c rune, variabl
 	case scanner.Ident:
 		switch op := p.scan.TokenText(); op {
 		case "path":
-			// TODO Pairs.Ref path from 2 over e.Item(0) connected by (e.Item(1)) without (0)
-
 			l, ok := tok.(token.ListToken)
 			if !ok {
 				return zeroRune, nil, &token.ParserError{
@@ -824,6 +822,8 @@ func (p *tavorParser) parseExpressionTerm(definitionName string, c rune, variabl
 				nVariableScope[k] = v
 			}
 
+			nVariableScope["e"] = variables.NewVariable("e", nil)
+
 			_, err = p.expectScanRune(scanner.Ident)
 			if err != nil {
 				return zeroRune, nil, err
@@ -860,14 +860,12 @@ func (p *tavorParser) parseExpressionTerm(definitionName string, c rune, variabl
 				return zeroRune, nil, err
 			}
 
-			c = p.scan.Scan()
-
 			_, err = p.expectScanRune(scanner.Ident)
 			if err != nil {
 				return zeroRune, nil, err
 			}
 
-			if p.scan.TokenText() != "connected" {
+			if p.scan.TokenText() != "connect" {
 				return zeroRune, nil, &token.ParserError{
 					Message:  fmt.Sprintf("expected operator %q not %q", "connected", p.scan.TokenText()),
 					Type:     token.ParseErrorExpectOperator,
@@ -919,7 +917,7 @@ func (p *tavorParser) parseExpressionTerm(definitionName string, c rune, variabl
 				c = p.scan.Scan()
 			}
 
-			_, err = p.expectScanRune(')')
+			_, err = p.expectRune(')', c)
 			if err != nil {
 				return zeroRune, nil, err
 			}
@@ -936,8 +934,6 @@ func (p *tavorParser) parseExpressionTerm(definitionName string, c rune, variabl
 					Position: p.scan.Pos(),
 				}
 			}
-
-			c = p.scan.Scan()
 
 			_, err = p.expectScanRune('(')
 			if err != nil {
@@ -970,7 +966,7 @@ func (p *tavorParser) parseExpressionTerm(definitionName string, c rune, variabl
 				c = p.scan.Scan()
 			}
 
-			_, err = p.expectScanRune(')')
+			_, err = p.expectRune(')', c)
 			if err != nil {
 				return zeroRune, nil, err
 			}
@@ -1232,6 +1228,27 @@ func (p *tavorParser) selectTokenAttribute(definitionName string, tok token.Toke
 			return c, conditions.NewVariableDefined(tokenName, variableScope), nil
 		case "Index":
 			return c, lists.NewIndexItem(variables.NewVariableValue(i)), nil
+		case "Item":
+			_, err := p.expectRune('(', c)
+			if err != nil {
+				return zeroRune, nil, err
+			}
+
+			c = p.scan.Scan()
+
+			c, index, err := p.parseExpressionTerm("???", c, variableScope) // TODO
+			if err != nil {
+				return zeroRune, nil, err
+			}
+
+			_, err = p.expectRune(')', c)
+			if err != nil {
+				return zeroRune, nil, err
+			}
+
+			c = p.scan.Scan()
+
+			return c, variables.NewVariableItem(index, i), nil
 		case "Value":
 			v := variables.NewVariableValue(i)
 
