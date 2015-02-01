@@ -116,14 +116,23 @@ func (p *tavorParser) parseGlobalScope(variableScope map[string]token.Token) err
 }
 
 func (p *tavorParser) getToken(name string, variableScope map[string]token.Token) token.Token {
-	nVariableScope := make(map[string]token.Token, len(variableScope))
-	for k, v := range variableScope {
-		nVariableScope[k] = v
+	if tok, ok := variableScope[name]; ok {
+		if v, ok := tok.(token.VariableToken); ok {
+			tok = variables.NewVariableValue(v)
+
+			p.variableUsages = append(p.variableUsages, v)
+
+			log.Debugf("use variable value (%p)%#v", tok, tok)
+		} else {
+			log.Debugf("use token (%p)%#v", tok, tok)
+		}
+
+		return tok
 	}
 
 	_, ok := p.lookup[name]
 	if !ok {
-		log.Debugf("parseTerm use empty pointer for %s", name)
+		log.Debugf("getToken use empty pointer for %s", name)
 
 		var tokenInterface *token.Token
 		b := primitives.NewEmptyPointer(tokenInterface)
@@ -136,14 +145,14 @@ func (p *tavorParser) getToken(name string, variableScope map[string]token.Token
 		p.earlyUse[name] = append(p.earlyUse[name], tokenUsage{
 			token:         b,
 			position:      p.scan.Position,
-			variableScope: nVariableScope,
+			variableScope: variableScope,
 		})
 	}
 
 	p.used[name] = append(p.used[name], tokenUsage{
 		token:         nil,
 		position:      p.scan.Position,
-		variableScope: nVariableScope,
+		variableScope: variableScope,
 	})
 
 	/*
@@ -208,7 +217,7 @@ func (p *tavorParser) getToken(name string, variableScope map[string]token.Token
 				p.earlyUse[name] = append(p.earlyUse[name], tokenUsage{
 					token:         ntok,
 					position:      p.scan.Position,
-					variableScope: nVariableScope,
+					variableScope: variableScope,
 				})
 			}
 
@@ -570,8 +579,12 @@ OUT:
 
 			if justSave {
 				variable = variables.NewVariableSave(variableName, tokens[len(tokens)-1])
+
+				log.Debugf("just-save variable %q as (%p)%#v", variableName, variable, variable)
 			} else {
 				variable = variables.NewVariable(variableName, tokens[len(tokens)-1])
+
+				log.Debugf("variable %q as (%p)%#v", variableName, variable, variable)
 			}
 
 			tokens[len(tokens)-1] = variable

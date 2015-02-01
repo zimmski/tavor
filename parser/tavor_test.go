@@ -688,6 +688,32 @@ func TestTavorParserExpressions(t *testing.T) {
 		Equal(t, tok, primitives.NewConstantString("a"))
 	}
 
+	// variable use in expression
+	{
+		tok, err = ParseTavor(strings.NewReader(`
+			START = "a"<A> ${A}
+		`))
+		Nil(t, err)
+		v := variables.NewVariable("A", primitives.NewConstantString("a"))
+		Equal(t, tok, lists.NewAll(
+			v,
+			variables.NewVariableValue(v),
+		))
+	}
+
+	// token attribute use in expression
+	{
+		tok, err = ParseTavor(strings.NewReader(`
+			START = "a"<A> ${A.Value}
+		`))
+		Nil(t, err)
+		v := variables.NewVariable("A", primitives.NewConstantString("a"))
+		Equal(t, tok, lists.NewAll(
+			v,
+			variables.NewVariableValue(v),
+		))
+	}
+
 	// simple expression
 	{
 		s := sequences.NewSequence(1, 1)
@@ -899,6 +925,22 @@ func TestTavorParserAndCuriousCaseOfFuzzing(t *testing.T) {
 
 		Equal(t, "abc", tok.String())
 	}
+
+	// Save variable scope and variable usage in expression
+	{
+		tok, err = ParseTavor(strings.NewReader(`
+			$Number Int = from: 1,
+			              to:   2
+
+			START = Number<=a> Number<=b>,
+			a " + " b " = " ${a.Value + b.Value} "\n",
+			a " * " b " = " ${a.Value * b.Value} "\n"
+		`))
+		Nil(t, err)
+
+		Equal(t, "1 + 1 = 2\n1 * 1 = 1\n", tok.String())
+	}
+
 }
 
 func TestTavorParserLoops(t *testing.T) {
