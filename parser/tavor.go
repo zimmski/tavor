@@ -1186,8 +1186,6 @@ func (p *tavorParser) selectTokenAttribute(definitionName string, tok token.Toke
 			c = p.scan.Scan()
 
 			return c, lists.NewListItem(index, i), nil
-		case "Ref":
-			return c, i, nil
 		case "Unique":
 			return c, lists.NewUniqueItem(i), nil
 		}

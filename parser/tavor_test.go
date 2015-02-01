@@ -808,7 +808,7 @@ func TestTavorParserExpressions(t *testing.T) {
 				(2 3),
 			)
 
-			Path = ${Pairs.Ref path from (2) over (e.Item(0)) connect by (e.Item(1)) without (0)}
+			Path = ${Pairs path from (2) over (e.Item(0)) connect by (e.Item(1)) without (0)}
 		`))
 		Nil(t, err)
 		Equal(t, "103123->231", tok.String())

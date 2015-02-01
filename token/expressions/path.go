@@ -84,7 +84,7 @@ func (e *Path) path() []string {
 
 		n, ok := connects[c]
 		if !ok {
-			panic("TODO")
+			panic("TODO entry not found for path")
 		}
 
 		for i := len(n) - 1; i >= 0; i-- {
