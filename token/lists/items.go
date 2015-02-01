@@ -8,12 +8,12 @@ import (
 
 // ListItem implements a list item token which references a List token and holds one index of the list to reference a list item
 type ListItem struct {
-	index int
+	index token.Token
 	list  token.ListToken
 }
 
 // NewListItem returns a new instance of a ListItem token referencing the given list and the given index
-func NewListItem(index int, list token.ListToken) *ListItem {
+func NewListItem(index token.Token, list token.ListToken) *ListItem {
 	return &ListItem{
 		index: index,
 		list:  list,
@@ -25,7 +25,7 @@ func NewListItem(index int, list token.ListToken) *ListItem {
 // Clone returns a copy of the token and all its children
 func (l *ListItem) Clone() token.Token {
 	return &ListItem{
-		index: l.index,
+		index: l.index.Clone(),
 		list:  l.list,
 	}
 }
@@ -62,7 +62,9 @@ func (l *ListItem) PermutationsAll() uint {
 }
 
 func (l *ListItem) String() string {
-	tok, err := l.list.Get(l.index)
+	i := l.Index()
+
+	tok, err := l.list.Get(i)
 	if err != nil {
 		panic(err) // TODO
 	}
@@ -74,7 +76,21 @@ func (l *ListItem) String() string {
 
 // Index returns the index of this token in its parent token
 func (l *ListItem) Index() int {
-	return l.index
+	i, err := strconv.Atoi(l.index.String())
+	if err != nil {
+		panic(err) // TODO
+	}
+
+	return i
+}
+
+// ScopeToken interface methods
+
+// SetScope sets the scope of the token
+func (l *ListItem) SetScope(variableScope map[string]token.Token) {
+	if tok, ok := l.index.(token.ScopeToken); ok {
+		tok.SetScope(variableScope)
+	}
 }
 
 // IndexItem implements a list item which references an Index token to represent the index itself of this token

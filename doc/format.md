@@ -407,6 +407,17 @@ START = "The number " Number " has " $Number.Count " digits"
 
 When fuzzed this example will generate for example the string "The number 56 has 2 digits".
 
+Some attributes can have arguments. An argument list begins with the opening parenthesis `(` and ends with the closing parenthesis `)`. Each argument is an [expression](#expressions) without the expression frame `${...}`. Attributes are separated by a comma.
+
+All list tokens have for example the `Item` attribute which holds a child entry of the token. `Item` has one argument which is the index to the child entry.
+
+```tavor
+Letters = "a" "b" "c"
+START = "The letter with the index 1 is " $Letters.Item(1)
+```
+
+When fuzzed this example will generate the string "The letter with the index 1 is b".
+
 ### <a name="attributes-general"></a>General attributes
 
 The following enumeration defines and describes currently implemented general token attributes.
@@ -415,10 +426,11 @@ The following enumeration defines and describes currently implemented general to
 
 A list token is a token which has in its definition either only a sequence of tokens or exactly one repeat group token.
 
-| Attribute           | Description                                                                                                         |
-| :------------------ | :------------------------------------------------------------------------------------------------------------------ |
-| `Count`             | Holds the count of the token's direct child entries                                                                 |
-| `Unique`            | Chooses at random a direct child of the token and embeds it. The choice is unique for every reference of the token. |
+| Attribute           | Arguments | Description                                                                                                         |
+| :------------------ | :-------- | :------------------------------------------------------------------------------------------------------------------ |
+| `Count`             | \-        | Holds the count of the token's direct child entries.                                                                |
+| `Item`              | `i`       | Holds a child entry of the token with the index `i`.                                                                |
+| `Unique`            | \-        | Chooses at random a direct child of the token and embeds it. The choice is unique for every reference of the token. |
 
 ### <a name="attributes-scope"></a>Scope of attributes
 
@@ -532,9 +544,9 @@ The `Int` type implements a random integer.
 
 #### Token attributes
 
-| Attribute | Description                            |
-| :-------- | :------------------------------------- |
-| `Value`   | Embeds a new token based on its parent |
+| Attribute | Arguments | Description                            |
+| :-------- | :-------- | :------------------------------------- |
+| `Value`   | \-        | Embeds a new token based on its parent |
 
 ### <a name="typed-tokens-Sequence"></a>Type `Sequence`
 
@@ -549,11 +561,11 @@ The `Sequence` type implements a generator for integers.
 
 #### Token attributes
 
-| Attribute  | Description                                                 |
-| :--------- | :---------------------------------------------------------- |
-| `Existing` | Embeds a new token holding one existing value of the parent |
-| `Next`     | Embeds a new token holding the next value of the parent     |
-| `Reset`    | Embeds a new token which on execution resets the parent     |
+| Attribute  | Arguments | Description                                                 |
+| :--------- | :-------- | :---------------------------------------------------------- |
+| `Existing` | \-        | Embeds a new token holding one existing value of the parent |
+| `Next`     | \-        | Embeds a new token holding the next value of the parent     |
+| `Reset`    | \-        | Embeds a new token which on execution resets the parent     |
 
 #### Example usages
 
@@ -664,11 +676,11 @@ This generates the string "text->text"
 
 Variables have the following token attributes:
 
-| Attribute | Description                                                       |
-| :-------- | :---------------------------------------------------------------- |
-| `Count`   | Holds the count of the referenced token's direct child entries    |
-| `Index`   | Holds the index of the referenced token in relation to its parent |
-| `Value`   | Embeds a new token based on the referenced token                  |
+| Attribute | Arguments | Description                                                       |
+| :-------- | :-------- | :---------------------------------------------------------------- |
+| `Count`   | \-        | Holds the count of the referenced token's direct child entries    |
+| `Index`   | \-        | Holds the index of the referenced token in relation to its parent |
+| `Value`   | \-        | Embeds a new token based on the referenced token                  |
 
 ### <a name="variables-just-save"></a>Just-save operator
 

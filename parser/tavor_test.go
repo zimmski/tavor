@@ -533,17 +533,15 @@ func TestTavorParserAlternationsAndGroupings(t *testing.T) {
 }
 
 func TestTavorParserTokenAttributes(t *testing.T) {
-	var tok token.Token
-	var err error
-
 	// token attribute List.Count
-	tok, err = ParseTavor(strings.NewReader(`
-		Digit = 1 | 2 | 3
-		Digits = *(Digit)
-		START = Digits "->" $Digits.Count
-	`))
-	Nil(t, err)
 	{
+		tok, err := ParseTavor(strings.NewReader(`
+			Digit = 1 | 2 | 3
+			Digits = *(Digit)
+			START = Digits "->" $Digits.Count
+		`))
+		Nil(t, err)
+
 		v, _ := tok.(*lists.All).Get(0)
 		list := v.(*lists.Repeat)
 
@@ -563,6 +561,24 @@ func TestTavorParserTokenAttributes(t *testing.T) {
 
 		for i := range ch {
 			Equal(t, "3->1", tok.String())
+
+			ch <- i
+		}
+	}
+	// token attribute List.Item
+	{
+		tok, err := ParseTavor(strings.NewReader(`
+			Digits = 1 2 3
+			START = Digits "->" $Digits.Item(2) $Digits.Item(1) $Digits.Item(0)
+		`))
+		Nil(t, err)
+
+		strat := strategy.NewRandomStrategy(tok)
+		ch, err := strat.Fuzz(test.NewRandTest(1))
+		Nil(t, err)
+
+		for i := range ch {
+			Equal(t, "123->321", tok.String())
 
 			ch <- i
 		}

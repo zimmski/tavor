@@ -680,7 +680,7 @@ func (p *tavorParser) parseExpressionTerm(definitionName string, c rune, variabl
 
 				tok = nPointer
 			} else {
-				tok, err = p.selectTokenAttribute(tok, name, attribute, attributePosition, "", nil, nVariableScope)
+				c, tok, err = p.selectTokenAttribute(tok, name, attribute, attributePosition, "", nil, c, nVariableScope)
 				if err != nil {
 					return zeroRune, nil, err
 				}
@@ -845,7 +845,7 @@ func (p *tavorParser) parseTokenAttribute(definitionName string, c rune, variabl
 
 			expectTok = nPointer
 		} else {
-			expectTok, err = p.selectTokenAttribute(expectTok, name, attribute, expectNamePosition, "", nil, variableScope)
+			c, expectTok, err = p.selectTokenAttribute(expectTok, name, attribute, expectNamePosition, "", nil, c, variableScope)
 			if err != nil {
 				return zeroRune, nil, err
 			}
@@ -915,7 +915,7 @@ func (p *tavorParser) parseTokenAttribute(definitionName string, c rune, variabl
 		variableScope: variableScope,
 	})
 
-	rtok, err := p.selectTokenAttribute(tok, name, attribute, attributePosition, op, opToken, variableScope)
+	c, rtok, err := p.selectTokenAttribute(tok, name, attribute, attributePosition, op, opToken, c, variableScope)
 
 	if err == nil {
 		log.Debugf("Insert token attribute %p(%#v)", rtok, rtok)
@@ -924,7 +924,7 @@ func (p *tavorParser) parseTokenAttribute(definitionName string, c rune, variabl
 	return c, rtok, err
 }
 
-func (p *tavorParser) selectTokenAttribute(tok token.Token, tokenName string, attribute string, attributePosition scanner.Position, operator string, operatorToken token.Token, variableScope map[string]token.Token) (token.Token, error) {
+func (p *tavorParser) selectTokenAttribute(tok token.Token, tokenName string, attribute string, attributePosition scanner.Position, operator string, operatorToken token.Token, c rune, variableScope map[string]token.Token) (rune, token.Token, error) {
 	log.Debugf("use (%p)%#v as token", tok, tok)
 
 	log.Debug("finished token attribute (or will be unknown token attribute)")
@@ -933,46 +933,67 @@ func (p *tavorParser) selectTokenAttribute(tok token.Token, tokenName string, at
 	case token.ListToken:
 		switch attribute {
 		case "Count":
-			return aggregates.NewLen(i), nil
+			return c, aggregates.NewLen(i), nil
+		case "Item":
+			_, err := p.expectRune('(', c)
+			if err != nil {
+				return zeroRune, nil, err
+			}
+
+			c = p.scan.Scan()
+
+			c, index, err := p.parseExpressionTerm("???", c, variableScope) // TODO
+			if err != nil {
+				return zeroRune, nil, err
+			}
+
+			_, err = p.expectRune(')', c)
+			if err != nil {
+				return zeroRune, nil, err
+			}
+
+			c = p.scan.Scan()
+
+			return c, lists.NewListItem(index, i), nil
 		case "Unique":
-			return lists.NewUniqueItem(i), nil
+			return c, lists.NewUniqueItem(i), nil
 		}
 	case *sequences.Sequence:
 		switch attribute {
 		case "Existing":
 			if operator == "not in" {
-				return i.ExistingItem([]token.Token{operatorToken}), nil
+				return c, i.ExistingItem([]token.Token{operatorToken}), nil
 			}
 
-			return i.ExistingItem(nil), nil
+			return c, i.ExistingItem(nil), nil
 		case "Next":
-			return i.Item(), nil
+			return c, i.Item(), nil
 		case "Reset":
-			return i.ResetItem(), nil
+			return c, i.ResetItem(), nil
 		}
 	case *primitives.RangeInt:
 		switch attribute {
 		case "Value":
-			return i.Clone(), nil
+			return c, i.Clone(), nil
 		}
 	case token.VariableToken:
 		switch attribute {
 		case "Count":
-			return aggregates.NewLen(i), nil
+			return c, aggregates.NewLen(i), nil
 		case "defined":
-			return conditions.NewVariableDefined(tokenName, variableScope), nil
+			return c, conditions.NewVariableDefined(tokenName, variableScope), nil
 		case "Index":
-			return lists.NewIndexItem(variables.NewVariableValue(i)), nil
+			return c, lists.NewIndexItem(variables.NewVariableValue(i)), nil
 		case "Value":
 			v := variables.NewVariableValue(i)
 
 			p.variableUsages = append(p.variableUsages, i)
 
-			return v, nil
+			return c, v, nil
 		}
 	}
 
-	return nil, &token.ParserError{
+	return zeroRune, nil, &token.ParserError{
 		Message:  fmt.Sprintf("unknown token attribute %q for token type %q", attribute, reflect.TypeOf(tok)),
 		Type:     token.ParseErrorUnknownTokenAttribute,
 		Position: attributePosition,
@@ -1622,7 +1643,8 @@ func ParseTavor(src io.Reader) (token.Token, error) {
 			}
 		}
 
-		rtok, err := p.selectTokenAttribute(tok, forwardUse.tokenName, forwardUse.attribute, forwardUse.attributePosition, forwardUse.operator, forwardUse.operatorToken, variableScope)
+		// TODO zeroRune must be replaced with "c" we cannot scan in this selectTokenAttribute call
+		_, rtok, err := p.selectTokenAttribute(tok, forwardUse.tokenName, forwardUse.attribute, forwardUse.attributePosition, forwardUse.operator, forwardUse.operatorToken, zeroRune, variableScope)
 		if err != nil {
 			return nil, err
 		}
