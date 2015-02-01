@@ -4,7 +4,6 @@ import (
 	"github.com/zimmski/container/list/linkedlist"
 
 	"github.com/zimmski/tavor/log"
-	//"github.com/zimmski/tavor/token/primitives"
 )
 
 // LoopExists determines if a cycle exists in the internal token graph
@@ -36,7 +35,7 @@ func LoopExists(root Token) bool {
 				queue.Unshift(v)
 			}
 		case ListToken:
-			for i := tok.Len() - 1; i >= 0; i-- {
+			for i := tok.InternalLen() - 1; i >= 0; i-- {
 				c, _ := tok.InternalGet(i)
 
 				queue.Unshift(c)
