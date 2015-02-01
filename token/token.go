@@ -328,6 +328,8 @@ const (
 	ParseErrorUnknownBooleanOperator
 	// ParseErrorUnknownCondition the condition is unknown
 	ParseErrorUnknownCondition
+	// ParseErrorUnkownOperator the operator is unknown
+	ParseErrorUnkownOperator
 	// ParseErrorUnknownTypedTokenArgument the typed token argument is unknown
 	ParseErrorUnknownTypedTokenArgument
 	// ParseErrorUnknownTypedTokenType the typed token type is unknown

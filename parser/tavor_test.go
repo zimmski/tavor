@@ -782,7 +782,6 @@ func TestTavorParserExpressions(t *testing.T) {
 
 	// mixed operator
 	{
-
 		s := sequences.NewSequence(1, 1)
 		tok, err = ParseTavor(strings.NewReader(
 			"$Spec Sequence\nSTART = ${Spec.Next + 1}\n",
@@ -796,6 +795,23 @@ func TestTavorParserExpressions(t *testing.T) {
 			),
 		))
 		Equal(t, "2", tok.String())
+	}
+
+	// path operator
+	{
+		tok, err = ParseTavor(strings.NewReader(`
+			START = Pairs "->" Path
+
+			Pairs = (,
+				(1 0),
+				(3 1),
+				(2 3),
+			)
+
+			Path = ${Pairs.Ref path from (2) over (e.Item(0)) connected by (e.Item(1)) without (0)}
+		`))
+		Nil(t, err)
+		Equal(t, "103123->231", tok.String())
 	}
 }
 
