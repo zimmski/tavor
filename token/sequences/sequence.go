@@ -45,12 +45,28 @@ func (s *Sequence) existing(r uint, except []token.Token) int {
 	exceptLookup := make(map[int]struct{})
 
 	for i := 0; i < len(except); i++ {
-		ex, err := strconv.Atoi(except[i].String())
-		if err != nil {
-			panic(err) // TODO
-		}
+		switch t := except[i].(type) {
+		case token.ListToken:
+			for j := 0; j < t.Len(); j++ {
+				tj, err := t.Get(j)
+				if err != nil {
+					panic(err) // TODO
+				}
+				ex, err := strconv.Atoi(tj.String())
+				if err != nil {
+					panic(err) // TODO
+				}
 
-		exceptLookup[ex] = struct{}{}
+				exceptLookup[ex] = struct{}{}
+			}
+		default:
+			ex, err := strconv.Atoi(except[i].String())
+			if err != nil {
+				panic(err) // TODO
+			}
+
+			exceptLookup[ex] = struct{}{}
+		}
 	}
 
 	for n != len(checked) {
