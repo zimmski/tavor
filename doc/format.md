@@ -639,7 +639,7 @@ START = ${9 + 8 + 7} "\n",
 
 ### <a name="expressions-set"></a>Set operators (experimental)
 
-Set operators are currently experimental since only a specific case has been implemented. The `not in` operator queries the `Existing` token attribute of a sequence to not include the given argument. The argument is between parenthesis for backwards-compatible reasons, since future versions of this feature will be able to use more than one argument.
+Set operators are currently experimental since only a specific case has been implemented. The `not in` operator queries the `Existing` token attribute of a sequence to not include the given expression list. An expression list begins with the opening parenthesis `(` and ends with the closing parenthesis `)`. Each [expression](#expressions) is defined without the expression frame `${...}`. Expressions are separated by a comma.
 
 ```tavor
 $Id Sequence
@@ -656,7 +656,7 @@ This will generate:
 2 1
 ```
 
-The `Existing` token attribute can choose only between the values `1` and `2`, since the sequence generates only two values in this format definition. The `not in` operator excludes the given argument which is the variable `id` that holds the current sequence value. Hence if the current value is `1` only `2` can be used by `Existing` and if the value is `2` only `1` can be used.
+The `Existing` token attribute can choose only between the values `1` and `2`, since the sequence generates only two values in this format definition. The `not in` operator excludes the given expression which is the variable `id` that holds the current sequence value. Hence if the current value is `1` only `2` can be used by `Existing` and if the value is `2` only `1` can be used.
 
 ## <a name="variables"></a>Variables
 
