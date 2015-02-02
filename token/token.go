@@ -312,6 +312,8 @@ const (
 	ParseErrorNonTerminatedString
 	// ParseErrorNoTokenForVariable variable is not assigned to a token
 	ParseErrorNoTokenForVariable
+	// ParseErrorNotAlwaysUsedAsAVariable token is not always used as a variable but at least sometimes in a variable context
+	ParseErrorNotAlwaysUsedAsAVariable
 	// ParseErrorRepeatWithOptionalTerm a repeat with an optional term was detected, which is forbidden
 	ParseErrorRepeatWithOptionalTerm
 	// ParseErrorTokenAlreadyDefined token name is already in use

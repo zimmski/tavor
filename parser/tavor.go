@@ -25,9 +25,10 @@ import (
 const zeroRune = 0
 
 type tokenUsage struct {
-	token         token.Token
-	position      scanner.Position
-	variableScope map[string]token.Token
+	token          token.Token
+	position       scanner.Position
+	variableScope  map[string]token.Token
+	definitionName string
 }
 
 type attributeForwardUsage struct {
@@ -42,6 +43,11 @@ type attributeForwardUsage struct {
 	variableScope     map[string]token.Token
 }
 
+type call struct {
+	from          string
+	variableScope map[string]token.Token
+}
+
 type tavorParser struct {
 	scan scanner.Scanner
 
@@ -53,7 +59,18 @@ type tavorParser struct {
 	used           map[string][]tokenUsage
 	variableUsages []token.Token
 
+	called map[string][]call
+
 	forwardAttributeUsage []attributeForwardUsage
+}
+
+func copyVariableScope(s map[string]token.Token) map[string]token.Token {
+	n := make(map[string]token.Token, len(s))
+	for k, v := range s {
+		n[k] = v
+	}
+
+	return n
 }
 
 func (p *tavorParser) expectRune(expect rune, got rune) (rune, error) {
@@ -149,7 +166,7 @@ func (p *tavorParser) parseGlobalScope(variableScope map[string]token.Token) err
 	return nil
 }
 
-func (p *tavorParser) getToken(name string, variableScope map[string]token.Token) token.Token {
+func (p *tavorParser) getToken(definitionName string, name string, variableScope map[string]token.Token) token.Token {
 	if tok, ok := variableScope[name]; ok {
 		if v, ok := tok.(token.VariableToken); ok {
 			tok = variables.NewVariableValue(v)
@@ -177,9 +194,10 @@ func (p *tavorParser) getToken(name string, variableScope map[string]token.Token
 			position: p.scan.Position,
 		}
 		p.earlyUse[name] = append(p.earlyUse[name], tokenUsage{
-			token:         b,
-			position:      p.scan.Position,
-			variableScope: variableScope,
+			token:          b,
+			position:       p.scan.Position,
+			variableScope:  variableScope,
+			definitionName: definitionName,
 		})
 	}
 
@@ -249,9 +267,10 @@ func (p *tavorParser) getToken(name string, variableScope map[string]token.Token
 			}
 			if t, ok := tok.(*primitives.Pointer); ok && t.Get() == nil {
 				p.earlyUse[name] = append(p.earlyUse[name], tokenUsage{
-					token:         ntok,
-					position:      p.scan.Position,
-					variableScope: variableScope,
+					token:          ntok,
+					position:       p.scan.Position,
+					variableScope:  variableScope,
+					definitionName: definitionName,
 				})
 			}
 
@@ -262,6 +281,14 @@ func (p *tavorParser) getToken(name string, variableScope map[string]token.Token
 	}
 
 	p.lookupUsage[tok] = struct{}{}
+
+	if _, ok := p.called[name]; !ok {
+		p.called[name] = make([]call, 0, 1)
+	}
+	p.called[name] = append(p.called[name], call{
+		from:          definitionName,
+		variableScope: copyVariableScope(variableScope),
+	})
 
 	return tok
 }
@@ -280,7 +307,7 @@ OUT:
 		case scanner.Ident:
 			name := p.scan.TokenText()
 
-			tok := p.getToken(name, variableScope)
+			tok := p.getToken(definitionName, name, variableScope)
 
 			addToken(tok)
 		case scanner.Int:
@@ -708,10 +735,7 @@ func (p *tavorParser) parseExpressionTerm(definitionName string, c rune, variabl
 				}
 			}
 
-			nVariableScope := make(map[string]token.Token, len(variableScope))
-			for k, v := range variableScope {
-				nVariableScope[k] = v
-			}
+			nVariableScope := copyVariableScope(variableScope)
 
 			if !ok || isPointer {
 				log.Debugf("parseTokenAttribute use empty pointer for %s.%s", name, attribute)
@@ -754,7 +778,7 @@ func (p *tavorParser) parseExpressionTerm(definitionName string, c rune, variabl
 			} else {
 				name := p.scan.TokenText()
 
-				tok = p.getToken(name, variableScope)
+				tok = p.getToken(definitionName, name, variableScope)
 
 				c = p.scan.Scan()
 			}
@@ -912,11 +936,7 @@ func (p *tavorParser) parseExpressionOperatorPath(tok token.Token, definitionNam
 
 	log.Debugf("path operator from %p(%#v)", from, from)
 
-	nVariableScope := make(map[string]token.Token, len(variableScope))
-	for k, v := range variableScope {
-		nVariableScope[k] = v
-	}
-
+	nVariableScope := copyVariableScope(variableScope)
 	nVariableScope["e"] = variables.NewVariable("e", nil)
 
 	_, err = p.expectScanText("over")
@@ -1018,10 +1038,7 @@ func (p *tavorParser) parseTokenAttribute(definitionName string, c rune, variabl
 
 			variableScope[name] = nPointer
 
-			nVariableScope := make(map[string]token.Token, len(variableScope))
-			for k, v := range variableScope {
-				nVariableScope[k] = v
-			}
+			nVariableScope := copyVariableScope(variableScope)
 
 			p.forwardAttributeUsage = append(p.forwardAttributeUsage, attributeForwardUsage{
 				definitionName:    definitionName,
@@ -1040,9 +1057,10 @@ func (p *tavorParser) parseTokenAttribute(definitionName string, c rune, variabl
 	}
 
 	p.used[name] = append(p.earlyUse[name], tokenUsage{
-		token:         nil,
-		position:      tokenPosition,
-		variableScope: variableScope,
+		token:          nil,
+		position:       tokenPosition,
+		variableScope:  variableScope,
+		definitionName: definitionName,
 	})
 
 	c, rtok, err := p.selectTokenAttribute(definitionName, tok, name, attribute, attributePosition, op, opToken, c, variableScope)
@@ -1388,11 +1406,7 @@ func (p *tavorParser) parseTokenDefinition(variableScope map[string]token.Token)
 	}
 
 	// each definition start its own scope
-	nVariableScope := make(map[string]token.Token, len(variableScope))
-	for k, v := range variableScope {
-		nVariableScope[k] = v
-	}
-	variableScope = nVariableScope
+	variableScope = copyVariableScope(variableScope)
 
 	// start reading definition
 	c = p.scan.Scan()
@@ -1444,10 +1458,10 @@ func (p *tavorParser) parseTokenDefinition(variableScope map[string]token.Token)
 	return c, nil
 }
 
-func (p *tavorParser) registerNamedToken(name string, tok token.Token, tokenPosition scanner.Position, variableScope map[string]token.Token) error {
+func (p *tavorParser) setEarlyUsage(name string, tok token.Token) error {
 	// self loop?
 	if uses, ok := p.earlyUse[name]; ok {
-		log.Debugf("parseTokenDefinition fill empty pointer for %s", name)
+		log.Debugf("setEarlyUsage fill empty pointer for %s", name)
 
 		for _, use := range uses {
 			log.Debugf("use (%p)%#v for pointer (%p)%#v", tok, tok, use.token, use.token)
@@ -1463,6 +1477,15 @@ func (p *tavorParser) registerNamedToken(name string, tok token.Token, tokenPosi
 		}
 
 		delete(p.earlyUse, name)
+	}
+
+	return nil
+}
+
+func (p *tavorParser) registerNamedToken(name string, tok token.Token, tokenPosition scanner.Position, variableScope map[string]token.Token) error {
+	err := p.setEarlyUsage(name, tok)
+	if err != nil {
+		return err
 	}
 
 	p.lookup[name] = tokenUsage{
@@ -1692,6 +1715,8 @@ func ParseTavor(src io.Reader) (token.Token, error) {
 		lookup:      make(map[string]tokenUsage),
 		lookupUsage: make(map[token.Token]struct{}),
 		used:        make(map[string][]tokenUsage),
+
+		called: make(map[string][]call),
 	}
 
 	log.Debug("start parsing tavor file")
@@ -1724,8 +1749,38 @@ func ParseTavor(src io.Reader) (token.Token, error) {
 	})
 
 	for name, uses := range p.earlyUse {
+	USE:
 		for _, use := range uses {
 			if use.token.(*primitives.Pointer).Get() == nil {
+				// last chance that this token is a variable but it must be ALWAYS a variable
+				if calls, ok := p.called[use.definitionName]; ok {
+					n := 0
+					var v token.VariableToken
+
+					for _, c := range calls {
+						if vv, ok := c.variableScope[name]; ok {
+							if i, ok := vv.(token.VariableToken); ok {
+								v = i
+								n++
+							}
+						}
+					}
+
+					if n != 0 {
+						if len(calls) == n {
+							p.setEarlyUsage(name, variables.NewVariableValue(v))
+
+							break USE
+						} else {
+							return nil, &token.ParserError{
+								Message:  fmt.Sprintf("variable token %q is not always used as a variable", name),
+								Type:     token.ParseErrorNotAlwaysUsedAsAVariable,
+								Position: use.position,
+							}
+						}
+					}
+				}
+
 				return nil, &token.ParserError{
 					Message:  fmt.Sprintf("token %q is not defined", name),
 					Type:     token.ParseErrorTokenNotDefined,
