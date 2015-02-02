@@ -82,7 +82,7 @@ func (p *tavorParser) expectText(expect string, got rune) (rune, error) {
 		return zeroRune, err
 	}
 
-	if g := p.scan.TokenText(); g != "in" {
+	if g := p.scan.TokenText(); g != expect {
 		return zeroRune, &token.ParserError{
 			Message:  fmt.Sprintf("expected %q got %q", expect, g),
 			Type:     token.ParseErrorExpectOperator,
@@ -862,6 +862,30 @@ func (p *tavorParser) parseExpressionGroup(definitionName string, variableScope 
 	return toks, err
 }
 
+func (p *tavorParser) parseExpressionOperatorNotIn(tok *sequences.Sequence, definitionName string, c rune, variableScope map[string]token.Token) (rune, token.Token, error) {
+	log.Debugf("Start not in operator")
+	defer log.Debugf("End not in operator")
+
+	_, err := p.expectText("not", c)
+	if err != nil {
+		return zeroRune, nil, err
+	}
+
+	_, err = p.expectScanText("in")
+	if err != nil {
+		return zeroRune, nil, err
+	}
+
+	expectToks, err := p.parseExpressionGroup(definitionName, variableScope, -1)
+	if err != nil {
+		return zeroRune, nil, err
+	}
+
+	c = p.scan.Scan()
+
+	return c, tok.ExistingItem(expectToks), nil
+}
+
 func (p *tavorParser) parseExpressionOperatorPath(tok token.Token, definitionName string, c rune, variableScope map[string]token.Token) (rune, token.Token, error) {
 	log.Debug("Start path operator")
 	defer log.Debug("End path operator")
@@ -968,83 +992,6 @@ func (p *tavorParser) parseTokenAttribute(definitionName string, c rune, variabl
 
 	c = p.scan.Scan()
 
-	if c == scanner.Ident && p.scan.TokenText() == "not" {
-		_, err = p.expectScanText("in")
-		if err != nil {
-			return zeroRune, nil, err
-		}
-
-		log.Debug("operator: not in")
-
-		_, err = p.expectScanRune('(')
-		if err != nil {
-			return zeroRune, nil, err
-		}
-
-		_, err = p.expectScanRune(scanner.Ident)
-		if err != nil {
-			return zeroRune, nil, err
-		}
-
-		expectName := p.scan.TokenText()
-		expectNamePosition := p.scan.Position
-
-		expectTok, ok := variableScope[expectName]
-
-		isPointer := false
-
-		if ok {
-			if _, pp := expectTok.(*primitives.Pointer); pp {
-				isPointer = true
-			}
-		}
-
-		attribute := "Value"
-
-		if !ok || isPointer {
-			log.Debugf("parseTokenAttribute use empty pointer for %s.%s", expectName, attribute)
-
-			var tokenInterface *token.Token
-
-			pointer := primitives.NewEmptyPointer(tokenInterface)
-			nPointer := primitives.NewPointer(pointer)
-
-			variableScope[expectName] = nPointer
-
-			nVariableScope := make(map[string]token.Token, len(variableScope))
-			for k, v := range variableScope {
-				nVariableScope[k] = v
-			}
-
-			p.forwardAttributeUsage = append(p.forwardAttributeUsage, attributeForwardUsage{
-				definitionName:    definitionName,
-				tokenName:         expectName,
-				tokenPosition:     expectNamePosition,
-				attribute:         attribute,
-				attributePosition: expectNamePosition,
-				pointer:           pointer,
-				variableScope:     nVariableScope,
-			})
-
-			expectTok = nPointer
-		} else {
-			c, expectTok, err = p.selectTokenAttribute(definitionName, expectTok, name, attribute, expectNamePosition, "", nil, c, variableScope)
-			if err != nil {
-				return zeroRune, nil, err
-			}
-		}
-
-		_, err = p.expectScanRune(')')
-		if err != nil {
-			return zeroRune, nil, err
-		}
-
-		op = "not in"
-		opToken = expectTok
-
-		c = p.scan.Scan()
-	}
-
 	var tok token.Token
 
 	use, ok := p.lookup[name]
@@ -1144,8 +1091,8 @@ func (p *tavorParser) selectTokenAttribute(definitionName string, tok token.Toke
 	case *sequences.Sequence:
 		switch attribute {
 		case "Existing":
-			if operator == "not in" {
-				return c, i.ExistingItem([]token.Token{operatorToken}), nil
+			if c == scanner.Ident && p.scan.TokenText() == "not" {
+				return p.parseExpressionOperatorNotIn(i, definitionName, c, variableScope)
 			}
 
 			return c, i.ExistingItem(nil), nil
