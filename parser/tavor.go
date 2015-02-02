@@ -699,7 +699,7 @@ func (p *tavorParser) parseExpressionTerm(definitionName string, c rune, variabl
 
 				tok = nPointer
 			} else {
-				c, tok, err = p.selectTokenAttribute(tok, name, attribute, attributePosition, "", nil, c, nVariableScope)
+				c, tok, err = p.selectTokenAttribute(definitionName, tok, name, attribute, attributePosition, "", nil, c, nVariableScope)
 				if err != nil {
 					return zeroRune, nil, err
 				}
@@ -872,7 +872,7 @@ func (p *tavorParser) parseTokenAttribute(definitionName string, c rune, variabl
 
 			expectTok = nPointer
 		} else {
-			c, expectTok, err = p.selectTokenAttribute(expectTok, name, attribute, expectNamePosition, "", nil, c, variableScope)
+			c, expectTok, err = p.selectTokenAttribute(definitionName, expectTok, name, attribute, expectNamePosition, "", nil, c, variableScope)
 			if err != nil {
 				return zeroRune, nil, err
 			}
@@ -942,7 +942,7 @@ func (p *tavorParser) parseTokenAttribute(definitionName string, c rune, variabl
 		variableScope: variableScope,
 	})
 
-	c, rtok, err := p.selectTokenAttribute(tok, name, attribute, attributePosition, op, opToken, c, variableScope)
+	c, rtok, err := p.selectTokenAttribute(definitionName, tok, name, attribute, attributePosition, op, opToken, c, variableScope)
 
 	if err == nil {
 		log.Debugf("Insert token attribute %p(%#v)", rtok, rtok)
@@ -951,7 +951,7 @@ func (p *tavorParser) parseTokenAttribute(definitionName string, c rune, variabl
 	return c, rtok, err
 }
 
-func (p *tavorParser) selectTokenAttribute(tok token.Token, tokenName string, attribute string, attributePosition scanner.Position, operator string, operatorToken token.Token, c rune, variableScope map[string]token.Token) (rune, token.Token, error) {
+func (p *tavorParser) selectTokenAttribute(definitionName string, tok token.Token, tokenName string, attribute string, attributePosition scanner.Position, operator string, operatorToken token.Token, c rune, variableScope map[string]token.Token) (rune, token.Token, error) {
 	log.Debugf("use (%p)%#v as token", tok, tok)
 
 	log.Debug("finished token attribute (or will be unknown token attribute)")
@@ -969,7 +969,7 @@ func (p *tavorParser) selectTokenAttribute(tok token.Token, tokenName string, at
 
 			c = p.scan.Scan()
 
-			c, index, err := p.parseExpressionTerm("???", c, variableScope) // TODO
+			c, index, err := p.parseExpressionTerm(definitionName, c, variableScope)
 			if err != nil {
 				return zeroRune, nil, err
 			}
@@ -1671,7 +1671,7 @@ func ParseTavor(src io.Reader) (token.Token, error) {
 		}
 
 		// TODO zeroRune must be replaced with "c" we cannot scan in this selectTokenAttribute call
-		_, rtok, err := p.selectTokenAttribute(tok, forwardUse.tokenName, forwardUse.attribute, forwardUse.attributePosition, forwardUse.operator, forwardUse.operatorToken, zeroRune, variableScope)
+		_, rtok, err := p.selectTokenAttribute(forwardUse.definitionName, tok, forwardUse.tokenName, forwardUse.attribute, forwardUse.attributePosition, forwardUse.operator, forwardUse.operatorToken, zeroRune, variableScope)
 		if err != nil {
 			return nil, err
 		}
