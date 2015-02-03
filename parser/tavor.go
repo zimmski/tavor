@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"text/scanner"
 
+	"github.com/zimmski/container/list/linkedlist"
+
 	"github.com/zimmski/tavor"
 	"github.com/zimmski/tavor/log"
 	"github.com/zimmski/tavor/token"
@@ -1707,6 +1709,50 @@ func (p *tavorParser) parseTypedTokenDefinition(variableScope map[string]token.T
 	return c, nil
 }
 
+func (p *tavorParser) getVariable(fromDefinition string, name string, pos scanner.Position) (token.VariableToken, error) {
+	queue := linkedlist.New()
+	checked := make(map[string]struct{})
+
+	var v token.VariableToken
+
+	if calls, ok := p.called[fromDefinition]; ok {
+		checked[fromDefinition] = struct{}{}
+
+		for _, c := range calls {
+			queue.Unshift(c)
+		}
+	}
+
+	for !queue.Empty() {
+		i, _ := queue.Shift()
+		c := i.(call)
+
+		if vv, ok := c.variableScope[name]; ok {
+			if i, ok := vv.(token.VariableToken); ok {
+				v = i
+			} else {
+				return nil, &token.ParserError{
+					Message:  fmt.Sprintf("variable token %q is not always used as a variable", name),
+					Type:     token.ParseErrorNotAlwaysUsedAsAVariable,
+					Position: pos,
+				}
+			}
+		}
+
+		if calls, ok := p.called[c.from]; ok {
+			checked[c.from] = struct{}{}
+
+			for _, c := range calls {
+				if _, ok := checked[c.from]; !ok {
+					queue.Unshift(c)
+				}
+			}
+		}
+	}
+
+	return v, nil
+}
+
 // ParseTavor reads and parses a Tavor formatted input and returns its token graph representation beginning with the START token.
 // The error return argument is not nil if an error is encountered during reading or parsing the file e.g. a syntax or semantic error.
 func ParseTavor(src io.Reader) (token.Token, error) {
@@ -1753,32 +1799,16 @@ func ParseTavor(src io.Reader) (token.Token, error) {
 		for _, use := range uses {
 			if use.token.(*primitives.Pointer).Get() == nil {
 				// last chance that this token is a variable but it must be ALWAYS a variable
-				if calls, ok := p.called[use.definitionName]; ok {
-					n := 0
-					var v token.VariableToken
-
-					for _, c := range calls {
-						if vv, ok := c.variableScope[name]; ok {
-							if i, ok := vv.(token.VariableToken); ok {
-								v = i
-								n++
-							}
-						}
+				v, err := p.getVariable(use.definitionName, name, use.position)
+				if err != nil {
+					return nil, err
+				} else if v != nil {
+					err := p.setEarlyUsage(name, variables.NewVariableValue(v))
+					if err != nil {
+						return nil, err
 					}
 
-					if n != 0 {
-						if len(calls) == n {
-							p.setEarlyUsage(name, variables.NewVariableValue(v))
-
-							break USE
-						} else {
-							return nil, &token.ParserError{
-								Message:  fmt.Sprintf("variable token %q is not always used as a variable", name),
-								Type:     token.ParseErrorNotAlwaysUsedAsAVariable,
-								Position: use.position,
-							}
-						}
-					}
+					break USE
 				}
 
 				return nil, &token.ParserError{

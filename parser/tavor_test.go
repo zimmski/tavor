@@ -1448,7 +1448,7 @@ func TestTavorParserVariables(t *testing.T) {
 
 		Equal(t, "1122", tok.String())
 	}
-	// foward variable declaration
+	// forward variable declaration
 	{
 		tok, err := ParseTavor(strings.NewReader(`
 			A = b
@@ -1458,6 +1458,18 @@ func TestTavorParserVariables(t *testing.T) {
 		Nil(t, err)
 
 		Equal(t, "bb", tok.String())
+	}
+	// forward variable declaration over path
+	{
+		tok, err := ParseTavor(strings.NewReader(`
+			A = c
+			B = A
+
+			START = "c"<c> B
+		`))
+		Nil(t, err)
+
+		Equal(t, "cc", tok.String())
 	}
 	// not in with variables
 	{
