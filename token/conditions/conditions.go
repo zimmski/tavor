@@ -88,8 +88,8 @@ func (c *IfPair) InternalLogicalRemove(tok token.Token) token.Token {
 	panic("This should never happen")
 }
 
-// InternalReplace replaces an old with a new internal token if it is referenced by this token
-func (c *IfPair) InternalReplace(oldToken, newToken token.Token) {
+// InternalReplace replaces an old with a new internal token if it is referenced by this token. The error return argument is not nil, if the replacement is not suitable.
+func (c *IfPair) InternalReplace(oldToken, newToken token.Token) error {
 	panic("This should never happen")
 }
 
@@ -200,8 +200,8 @@ func (c *If) InternalLogicalRemove(tok token.Token) token.Token {
 	panic("TODO")
 }
 
-// InternalReplace replaces an old with a new internal token if it is referenced by this token
-func (c *If) InternalReplace(oldToken, newToken token.Token) {
+// InternalReplace replaces an old with a new internal token if it is referenced by this token. The error return argument is not nil, if the replacement is not suitable.
+func (c *If) InternalReplace(oldToken, newToken token.Token) error {
 	panic("TODO")
 }
 */

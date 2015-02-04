@@ -218,8 +218,8 @@ func (e *Path) InternalLogicalRemove(tok token.Token) token.Token {
 	return nil
 }
 
-// InternalReplace replaces an old with a new internal token if it is referenced by this token
-func (e *Path) InternalReplace(oldToken, newToken token.Token) {
+// InternalReplace replaces an old with a new internal token if it is referenced by this token. The error return argument is not nil, if the replacement is not suitable.
+func (e *Path) InternalReplace(oldToken, newToken token.Token) error {
 	if e.list == oldToken {
 		e.list = newToken
 	}
@@ -239,6 +239,8 @@ func (e *Path) InternalReplace(oldToken, newToken token.Token) {
 			e.without[i] = newToken
 		}
 	}
+
+	return nil
 }
 
 // ScopeToken interface methods

@@ -37,8 +37,8 @@ type List interface {
 	InternalLen() int
 	// InternalLogicalRemove removes the referenced internal token and returns the replacement for the current token or nil if the current token should be removed.
 	InternalLogicalRemove(tok Token) Token
-	// InternalReplace replaces an old with a new internal token if it is referenced by this token
-	InternalReplace(oldToken, newToken Token)
+	// InternalReplace replaces an old with a new internal token if it is referenced by this token. The error return argument is not nil, if the replacement is not suitable.. The error return argument is not nil, if the replacement is not suitable.
+	InternalReplace(oldToken, newToken Token) error
 }
 
 // ListToken combines the Token and List interface
@@ -56,8 +56,8 @@ type Forward interface {
 	InternalGet() Token
 	// InternalLogicalRemove removes the referenced internal token and returns the replacement for the current token or nil if the current token should be removed.
 	InternalLogicalRemove(tok Token) Token
-	// InternalReplace replaces an old with a new internal token if it is referenced by this token
-	InternalReplace(oldToken, newToken Token)
+	// InternalReplace replaces an old with a new internal token if it is referenced by this token. The error return argument is not nil, if the replacement is not suitable.
+	InternalReplace(oldToken, newToken Token) error
 }
 
 // ForwardToken combines the Token and Forward interface

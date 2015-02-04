@@ -112,9 +112,15 @@ func ApplyFilters(filters []Filter, root token.Token) (token.Token, error) {
 				} else {
 					switch t := pair.parent.(type) {
 					case token.ForwardToken:
-						t.InternalReplace(pair.token, tok)
+						err := t.InternalReplace(pair.token, tok)
+						if err != nil {
+							return nil, err
+						}
 					case token.ListToken:
-						t.InternalReplace(pair.token, tok)
+						err := t.InternalReplace(pair.token, tok)
+						if err != nil {
+							return nil, err
+						}
 					}
 				}
 			}

@@ -1920,7 +1920,10 @@ func ParseTavor(src io.Reader) (token.Token, error) {
 				if !ok {
 					log.Debugf("Replaced pointer %p(%#v) with %p(%#v)", tok, tok, c, c)
 
-					variable.(token.ForwardToken).InternalReplace(tok, c)
+					err := variable.(token.ForwardToken).InternalReplace(tok, c)
+					if err != nil {
+						return nil, err
+					}
 
 					break
 				}
@@ -1943,8 +1946,15 @@ func ParseTavor(src io.Reader) (token.Token, error) {
 		start = lists.NewAll(automaticResets...)
 	}
 
-	start = token.UnrollPointers(start)
-	start = token.MinimizeTokens(start)
+	start, err := token.UnrollPointers(start)
+	if err != nil {
+		return nil, err
+	}
+
+	start, err = token.MinimizeTokens(start)
+	if err != nil {
+		return nil, err
+	}
 
 	token.ResetScope(start)
 

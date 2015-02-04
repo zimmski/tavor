@@ -95,8 +95,8 @@ func (c *BooleanTrue) InternalLogicalRemove(tok token.Token) token.Token {
 	panic("This should never happen")
 }
 
-// InternalReplace replaces an old with a new internal token if it is referenced by this token
-func (c *BooleanTrue) InternalReplace(oldToken, newToken token.Token) {
+// InternalReplace replaces an old with a new internal token if it is referenced by this token. The error return argument is not nil, if the replacement is not suitable.
+func (c *BooleanTrue) InternalReplace(oldToken, newToken token.Token) error {
 	panic("This should never happen")
 }
 
@@ -197,14 +197,16 @@ func (c *BooleanEqual) InternalLogicalRemove(tok token.Token) token.Token {
 	return c
 }
 
-// InternalReplace replaces an old with a new internal token if it is referenced by this token
-func (c *BooleanEqual) InternalReplace(oldToken, newToken token.Token) {
+// InternalReplace replaces an old with a new internal token if it is referenced by this token. The error return argument is not nil, if the replacement is not suitable.
+func (c *BooleanEqual) InternalReplace(oldToken, newToken token.Token) error {
 	if oldToken == c.a {
 		c.a = newToken
 	}
 	if oldToken == c.b {
 		c.b = newToken
 	}
+
+	return nil
 }
 
 // VariableDefined implements a boolean expression which evaluates if a variable is defined in a given scope
@@ -376,11 +378,13 @@ func (c *ExpressionPointer) InternalLogicalRemove(tok token.Token) token.Token {
 	return c
 }
 
-// InternalReplace replaces an old with a new internal token if it is referenced by this token
-func (c *ExpressionPointer) InternalReplace(oldToken, newToken token.Token) {
+// InternalReplace replaces an old with a new internal token if it is referenced by this token. The error return argument is not nil, if the replacement is not suitable.
+func (c *ExpressionPointer) InternalReplace(oldToken, newToken token.Token) error {
 	if c.token == oldToken {
 		c.token = newToken
 	}
+
+	return nil
 }
 
 // ScopeToken interface methods

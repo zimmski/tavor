@@ -100,11 +100,13 @@ func (v *Variable) InternalLogicalRemove(tok token.Token) token.Token {
 	return v
 }
 
-// InternalReplace replaces an old with a new internal token if it is referenced by this token
-func (v *Variable) InternalReplace(oldToken, newToken token.Token) {
+// InternalReplace replaces an old with a new internal token if it is referenced by this token. The error return argument is not nil, if the replacement is not suitable.
+func (v *Variable) InternalReplace(oldToken, newToken token.Token) error {
 	if v.token == oldToken {
 		v.token = newToken
 	}
+
+	return nil
 }
 
 // IndexToken interface methods
@@ -204,11 +206,13 @@ func (v *VariableItem) InternalLogicalRemove(tok token.Token) token.Token {
 	return v
 }
 
-// InternalReplace replaces an old with a new internal token if it is referenced by this token
-func (v *VariableItem) InternalReplace(oldToken, newToken token.Token) {
+// InternalReplace replaces an old with a new internal token if it is referenced by this token. The error return argument is not nil, if the replacement is not suitable.
+func (v *VariableItem) InternalReplace(oldToken, newToken token.Token) error {
 	if v.variable == oldToken {
 		v.variable = newToken.(token.VariableToken)
 	}
+
+	return nil
 }
 
 // IndexToken interface methods
@@ -357,11 +361,13 @@ func (v *VariableValue) InternalLogicalRemove(tok token.Token) token.Token {
 	return v
 }
 
-// InternalReplace replaces an old with a new internal token if it is referenced by this token
-func (v *VariableValue) InternalReplace(oldToken, newToken token.Token) {
+// InternalReplace replaces an old with a new internal token if it is referenced by this token. The error return argument is not nil, if the replacement is not suitable.
+func (v *VariableValue) InternalReplace(oldToken, newToken token.Token) error {
 	if v.variable == oldToken {
 		v.variable = newToken.(token.VariableToken)
 	}
+
+	return nil
 }
 
 // IndexToken interface methods

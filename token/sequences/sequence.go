@@ -332,13 +332,15 @@ func (s *SequenceExistingItem) InternalLogicalRemove(tok token.Token) token.Toke
 	return s
 }
 
-// InternalReplace replaces an old with a new internal token if it is referenced by this token
-func (s *SequenceExistingItem) InternalReplace(oldToken, newToken token.Token) {
+// InternalReplace replaces an old with a new internal token if it is referenced by this token. The error return argument is not nil, if the replacement is not suitable.
+func (s *SequenceExistingItem) InternalReplace(oldToken, newToken token.Token) error {
 	for i := 0; i < len(s.except); i++ {
 		if s.except[i] == oldToken {
 			s.except[i] = newToken
 		}
 	}
+
+	return nil
 }
 
 // ResetToken interface methods

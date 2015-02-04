@@ -9,7 +9,7 @@ import (
 
 // MinimizeTokens traverses the token graph and replaces unnecessary complicated constructs with their simpler form
 // One good example is an All list token with one token which can be replaced by this one token. The minimize checks and operation is done by the token itself which has to implement the MinimizeToken interface, since it is not always predictable if a token with one child is doing something special,
-func MinimizeTokens(root Token) Token {
+func MinimizeTokens(root Token) (Token, error) {
 	log.Debug("start minimizing")
 
 	parents := make(map[Token]Token)
@@ -28,9 +28,15 @@ func MinimizeTokens(root Token) Token {
 
 				switch pTok := p.(type) {
 				case ForwardToken:
-					pTok.InternalReplace(tok, r)
+					err := pTok.InternalReplace(tok, r)
+					if err != nil {
+						return nil, err
+					}
 				case ListToken:
-					pTok.InternalReplace(tok, r)
+					err := pTok.InternalReplace(tok, r)
+					if err != nil {
+						return nil, err
+					}
 				}
 
 				queue.Unshift(r)
@@ -58,12 +64,12 @@ func MinimizeTokens(root Token) Token {
 
 	log.Debug("finished minimizing")
 
-	return root
+	return root, nil
 }
 
 // UnrollPointers unrolls pointer tokens by copying their referenced graphs.
 // Pointers that lead to themselves are unrolled at maximum tavor.MaxRepeat times.
-func UnrollPointers(root Token) Token {
+func UnrollPointers(root Token) (Token, error) {
 	type unrollToken struct {
 		tok    Token
 		parent *unrollToken
@@ -179,9 +185,15 @@ func UnrollPointers(root Token) Token {
 
 					switch tt := iTok.parent.tok.(type) {
 					case ForwardToken:
-						tt.InternalReplace(t, c)
+						err := tt.InternalReplace(t, c)
+						if err != nil {
+							return nil, err
+						}
 					case ListToken:
-						tt.InternalReplace(t, c)
+						err := tt.InternalReplace(t, c)
+						if err != nil {
+							return nil, err
+						}
 					}
 				} else {
 					log.Debugf("replace as root")
@@ -213,9 +225,15 @@ func UnrollPointers(root Token) Token {
 
 						switch tt := parent.(type) {
 						case ForwardToken:
-							tt.InternalReplace(this, that)
+							err := tt.InternalReplace(this, that)
+							if err != nil {
+								return nil, err
+							}
 						case ListToken:
-							tt.InternalReplace(this, that)
+							err := tt.InternalReplace(this, that)
+							if err != nil {
+								return nil, err
+							}
 						}
 					} else {
 						log.Debugf("replace as root")
@@ -292,11 +310,17 @@ func UnrollPointers(root Token) Token {
 		switch t := tok.(type) {
 		case ForwardToken:
 			c := t.InternalGet()
-			t.InternalReplace(c, c)
+			err := t.InternalReplace(c, c)
+			if err != nil {
+				return err
+			}
 		case ListToken:
 			for i := 0; i < t.InternalLen(); i++ {
 				c, _ := t.InternalGet(i)
-				t.InternalReplace(c, c)
+				err := t.InternalReplace(c, c)
+				if err != nil {
+					return err
+				}
 			}
 		}
 
@@ -308,5 +332,5 @@ func UnrollPointers(root Token) Token {
 
 	log.Debug("finished unrolling")
 
-	return root
+	return root, nil
 }
