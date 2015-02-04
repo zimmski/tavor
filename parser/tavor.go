@@ -916,6 +916,7 @@ func (p *tavorParser) parseExpressionOperatorPath(tok token.Token, definitionNam
 	log.Debug("Start path operator")
 	defer log.Debug("End path operator")
 
+	listPosition := p.scan.Pos()
 	/*l, ok := tok.(token.ListToken)
 	if !ok {
 		return zeroRune, nil, &token.ParserError{
@@ -979,7 +980,10 @@ func (p *tavorParser) parseExpressionOperatorPath(tok token.Token, definitionNam
 
 	c = p.scan.Scan()
 
-	tok = expressions.NewPath(tok, from, over, connects, withouts)
+	tok, err = expressions.NewPath(tok, from, over, connects, withouts)
+	if err != nil {
+		err.(*token.ParserError).Position = listPosition
+	}
 
 	return c, tok, nil
 }

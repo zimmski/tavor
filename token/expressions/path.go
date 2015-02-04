@@ -24,14 +24,29 @@ type Path struct {
 }
 
 // NewPath returns a new instance of a Path token given the set of tokens
-func NewPath(list token.Token, from token.Token, over token.Token, connectBy []token.Token, without []token.Token) *Path {
+func NewPath(list token.Token, from token.Token, over token.Token, connectBy []token.Token, without []token.Token) (*Path, error) {
+	if err := checkListToken(list); err != nil {
+		return nil, err
+	}
+
 	return &Path{
 		list:      list,
 		from:      from,
 		over:      over,
 		connectBy: connectBy,
 		without:   without,
+	}, nil
+}
+
+func checkListToken(list token.Token) error {
+	if token.LoopExists(list) {
+		return &token.ParserError{
+			Message: "There is an endless loop in the list argument. Use a variable to avoid this.",
+			Type:    token.ParseErrorEndlessLoopDetected,
+		}
 	}
+
+	return nil
 }
 
 func (e *Path) path() []string {
@@ -221,6 +236,10 @@ func (e *Path) InternalLogicalRemove(tok token.Token) token.Token {
 // InternalReplace replaces an old with a new internal token if it is referenced by this token. The error return argument is not nil, if the replacement is not suitable.
 func (e *Path) InternalReplace(oldToken, newToken token.Token) error {
 	if e.list == oldToken {
+		if err := checkListToken(newToken); err != nil {
+			return err
+		}
+
 		e.list = newToken
 	}
 
