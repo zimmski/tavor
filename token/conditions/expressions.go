@@ -216,10 +216,10 @@ type VariableDefined struct {
 }
 
 // NewVariableDefined returns a new instance of a VariableDefined token initialzed with the given name and scope
-func NewVariableDefined(name string, variableScope map[string]token.Token) *VariableDefined {
+func NewVariableDefined(name string, variableScope *token.VariableScope) *VariableDefined {
 	return &VariableDefined{
 		name:          name,
-		variableScope: variableScope,
+		variableScope: variableScope.Variables,
 	}
 }
 

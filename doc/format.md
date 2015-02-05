@@ -660,7 +660,7 @@ The `Existing` token attribute can choose only between the values `1` and `2`, s
 
 ## <a name="variables"></a>Variables
 
-Every token of a token definition can be saved into a variable which consists of a name and a reference to a token usage. Variables follow the [same scope rules](#attributes-scope) as token attributes. It is therefore possible to for example define the same variable name more than once in one token sequence. They also do not overwrite variables definitions of parent scopes. Variables can be defined by using the `<` character after the token which should be saved, then defining the name of the variable and closing with the `>` character. They have a range of token attributes like `Value` which embeds a new token based on the current state of the referenced token.
+Every token of a token definition can be saved into a variable which consists of a name and a reference to a token usage. Variables follow the [same scope rules](#attributes-scope) as token attributes. It is therefore possible to for example define the same variable name more than once in one token sequence. They also do not overwrite variables definitions of parent scopes. Variables can be defined by using the `<` character after the token which should be saved, then defining the name of the variable and closing with the `>` character. They have a range of token attributes such as `Value`, which embeds a new token based on the current state of the referenced token.
 
 In the following example the string token "text" will be saved into the variable `var`. The `Print` token uses this variable by embedding the referenced token.
 

@@ -2,6 +2,7 @@ package token
 
 import (
 	"fmt"
+	"github.com/zimmski/tavor/log"
 	"text/scanner"
 )
 
@@ -247,6 +248,48 @@ func (err *ReduceError) Error() string {
 	default:
 		return fmt.Sprintf("unknown reduce error type %#v", err.Type)
 	}
+}
+
+////////////////////////
+
+type VariableScope struct {
+	Parent    *VariableScope
+	Variables map[string]Token
+}
+
+func NewVariableScope() *VariableScope {
+	vv := &VariableScope{
+		Parent:    nil,
+		Variables: make(map[string]Token),
+	}
+
+	log.Errorf("new scope %#v", vv)
+	return vv
+}
+
+func (p *VariableScope) Get(name string) (Token, bool) {
+	s := p
+
+	for s != nil {
+		log.Errorf("Look in %#v", s)
+		if v, ok := s.Variables[name]; ok {
+			log.Errorf("Found %q %#v", name, v)
+			return v, true
+		}
+
+		s = s.Parent
+	}
+
+	return nil, false
+}
+
+func (s *VariableScope) Push() *VariableScope {
+	vv := &VariableScope{
+		Parent:    s,
+		Variables: make(map[string]Token),
+	}
+	log.Errorf("push scope %#v", vv)
+	return vv
 }
 
 ////////////////////////

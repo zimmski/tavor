@@ -983,6 +983,27 @@ func TestTavorParserAndCuriousCaseOfFuzzing(t *testing.T) {
 		Equal(t, "1 + 1 = 2\n1 * 1 = 1\n", tok.String())
 	}
 
+	// Special path, with a loop which needs a variable to work
+	{
+		tok, err = ParseTavor(strings.NewReader(`
+			$Literal Sequence = start: 2,
+					step: 2
+
+			ExistingLiteralAnd = 0,
+				| 1,
+				| ${Literal.Existing not in (AndCycle)}
+
+			AndCycle = ${andList path from (andLiteral) over (e.Item(0)) connect by (e.Item(1), e.Item(2)) without (0, 1)}
+
+			Ands = *(And)
+			And = $Literal.Next<andLiteral> " " ExistingLiteralAnd " " ExistingLiteralAnd "\n"
+
+			START = Ands<andList>
+		`))
+		Nil(t, err)
+
+		Equal(t, "1 + 1 = 2\n1 * 1 = 1\n", tok.String())
+	}
 }
 
 func TestTavorParserLoops(t *testing.T) {
@@ -1486,6 +1507,18 @@ func TestTavorParserVariables(t *testing.T) {
 
 		Equal(t, "cc", tok.String())
 	}
+	// forward embedded variable declaration over path
+	{
+		tok, err := ParseTavor(strings.NewReader(`
+			B = $var.Count
+			A = B
+
+			START = A<var>
+		`))
+		Nil(t, err)
+
+		Equal(t, "1", tok.String())
+	}
 	// not in with variables
 	{
 		tok, err := ParseTavor(strings.NewReader(`
@@ -1603,7 +1636,7 @@ func TestTavorParserIfElseIfElsedd(t *testing.T) {
 				nVariable,
 				conditions.NewIf(
 					conditions.IfPair{
-						Head: conditions.NewExpressionPointer(primitives.NewPointer(primitives.NewTokenPointer(conditions.NewVariableDefined("var", map[string]token.Token{"var": nVariable})))),
+						Head: conditions.NewExpressionPointer(primitives.NewPointer(primitives.NewTokenPointer(conditions.NewVariableDefined("var", &token.VariableScope{Variables: map[string]token.Token{"var": nVariable}})))),
 						Body: primitives.NewConstantString("var is defined"),
 					},
 					conditions.IfPair{
@@ -1614,7 +1647,7 @@ func TestTavorParserIfElseIfElsedd(t *testing.T) {
 			),
 			conditions.NewIf(
 				conditions.IfPair{
-					Head: conditions.NewExpressionPointer(primitives.NewPointer(primitives.NewTokenPointer(conditions.NewVariableDefined("var", map[string]token.Token{})))),
+					Head: conditions.NewExpressionPointer(primitives.NewPointer(primitives.NewTokenPointer(conditions.NewVariableDefined("var", &token.VariableScope{Variables: map[string]token.Token{}})))),
 					Body: primitives.NewConstantString("var is defined"),
 				},
 				conditions.IfPair{
