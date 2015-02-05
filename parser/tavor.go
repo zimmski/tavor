@@ -257,7 +257,8 @@ func (p *tavorParser) getToken(definitionName string, name string, variableScope
 				token:    ntok,
 				position: p.scan.Position,
 			}
-			if t, ok := tok.(*primitives.Pointer); ok && t.Get() == nil {
+
+			if t, ok := tok.(*primitives.Pointer); ok && t.Resolve() == nil {
 				p.earlyUse[name] = append(p.earlyUse[name], tokenUsage{
 					token:          ntok,
 					position:       p.scan.Position,

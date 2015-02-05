@@ -59,7 +59,7 @@ func (e *Path) path() []string {
 
 	l, ok := e.list.(token.ListToken)
 	if !ok {
-		panic("TODO must be a ListToken")
+		log.Panicf("TODO must be a ListToken but is %#v", e.list)
 	}
 
 	connects := make(map[string][]string, 0)

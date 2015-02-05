@@ -252,11 +252,13 @@ func (err *ReduceError) Error() string {
 
 ////////////////////////
 
+// VariableScope holds a variable scope and a reference to its parent scope
 type VariableScope struct {
 	Parent    *VariableScope
 	Variables map[string]Token
 }
 
+// NewVariableScope returns a new instance of a variable scope
 func NewVariableScope() *VariableScope {
 	vv := &VariableScope{
 		Parent:    nil,
@@ -267,8 +269,11 @@ func NewVariableScope() *VariableScope {
 	return vv
 }
 
+// Get searches the variable scope for a variable with the given name and returns the token and true if it exists, otherwhise nil and false
 func (p *VariableScope) Get(name string) (Token, bool) {
 	s := p
+
+	log.Errorf("Search for variable %q", name)
 
 	for s != nil {
 		log.Errorf("Look in %#v", s)
@@ -283,6 +288,7 @@ func (p *VariableScope) Get(name string) (Token, bool) {
 	return nil, false
 }
 
+// Push creates a new child variable scope and returns it
 func (s *VariableScope) Push() *VariableScope {
 	vv := &VariableScope{
 		Parent:    s,

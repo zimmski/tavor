@@ -59,6 +59,24 @@ func (p *Pointer) Set(o token.Token) error {
 	return nil
 }
 
+// Resolve returns the token which is referenced by the pointer, or a path of pointers
+func (p *Pointer) Resolve() token.Token {
+	var ok bool
+
+	po := p
+
+	for {
+		c := po.InternalGet()
+
+		po, ok = c.(*Pointer)
+		if !ok {
+			break
+		}
+	}
+
+	return po
+}
+
 // Token interface methods
 
 // Clone returns a copy of the token and all its children
