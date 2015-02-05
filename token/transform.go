@@ -21,6 +21,10 @@ func MinimizeTokens(root Token) (Token, error) {
 	for !queue.Empty() {
 		v, _ := queue.Shift()
 
+		if t, ok := v.(Follow); ok && !t.Follow() {
+			continue
+		}
+
 		if tok, ok := v.(MinimizeToken); ok {
 			r := tok.Minimize()
 			if r != nil {
@@ -94,7 +98,12 @@ func UnrollPointers(root Token) (Token, error) {
 
 	for !queue.Empty() {
 		v, _ := queue.Shift()
+
 		iTok, _ := v.(*unrollToken)
+
+		if t, ok := iTok.tok.(Follow); ok && !t.Follow() {
+			continue
+		}
 
 		switch t := iTok.tok.(type) {
 		case PointerToken:

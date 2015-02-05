@@ -22,6 +22,10 @@ func ResetResetTokens(root Token) {
 			tok.Reset()
 		}
 
+		if t, ok := v.(Follow); ok && !t.Follow() {
+			continue
+		}
+
 		switch tok := v.(type) {
 		case ForwardToken:
 			if v := tok.Get(); v != nil {
@@ -65,9 +69,13 @@ func SetScope(root Token, scope map[string]Token) {
 		s := v.(set)
 
 		if t, ok := s.token.(ScopeToken); ok {
-			log.Debugf("setScope %#v(%p)", t, t)
+			log.Debugf("setScope %#v(%p) with %#v", t, t, s.scope)
 
 			t.SetScope(s.scope)
+		}
+
+		if t, ok := s.token.(Follow); ok && !t.Follow() {
+			continue
 		}
 
 		nScope := make(map[string]Token, len(s.scope))
@@ -96,31 +104,64 @@ func SetScope(root Token, scope map[string]Token) {
 	}
 }
 
+// ResetInternalScope resets all scopes of interal tokens in the token graph that fullfill the ScopeToken interface
+func ResetInternalScope(root Token) {
+	log.Debug("start reseting scope")
+
+	SetInternalScope(root, make(map[string]Token))
+
+	log.Debug("finished reseting scope")
+}
+
 // SetInternalScope sets all scopes of internal tokens in the token graph that fullfill the ScopeToken interface
 func SetInternalScope(root Token, scope map[string]Token) {
 	queue := linkedlist.New()
 
-	queue.Unshift(root)
+	type set struct {
+		token Token
+		scope map[string]Token
+	}
+
+	queue.Unshift(set{
+		token: root,
+		scope: scope,
+	})
 
 	for !queue.Empty() {
-		tok, _ := queue.Shift()
+		v, _ := queue.Shift()
+		s := v.(set)
 
-		if t, ok := tok.(ScopeToken); ok {
-			log.Debugf("setScope %#v(%p)", t, t)
+		if t, ok := s.token.(ScopeToken); ok {
+			log.Debugf("setScope %#v(%p) with %#v", t, t, s.scope)
 
-			t.SetScope(scope)
+			t.SetScope(s.scope)
 		}
 
-		switch t := tok.(type) {
+		if t, ok := s.token.(Follow); ok && !t.Follow() {
+			continue
+		}
+
+		nScope := make(map[string]Token, len(s.scope))
+		for k, v := range s.scope {
+			nScope[k] = v
+		}
+
+		switch t := s.token.(type) {
 		case ForwardToken:
 			if v := t.InternalGet(); v != nil {
-				queue.Unshift(v)
+				queue.Unshift(set{
+					token: v,
+					scope: nScope,
+				})
 			}
 		case ListToken:
 			for i := t.InternalLen() - 1; i >= 0; i-- {
 				c, _ := t.InternalGet(i)
 
-				queue.Unshift(c)
+				queue.Unshift(set{
+					token: c,
+					scope: nScope,
+				})
 			}
 		}
 	}

@@ -2,7 +2,6 @@ package token
 
 import (
 	"fmt"
-	"github.com/zimmski/tavor/log"
 	"text/scanner"
 )
 
@@ -46,6 +45,10 @@ type List interface {
 type ListToken interface {
 	Token
 	List
+}
+
+type Follow interface {
+	Follow() bool
 }
 
 // Forward defines a forward token which can reference another token
@@ -260,25 +263,18 @@ type VariableScope struct {
 
 // NewVariableScope returns a new instance of a variable scope
 func NewVariableScope() *VariableScope {
-	vv := &VariableScope{
+	return &VariableScope{
 		Parent:    nil,
 		Variables: make(map[string]Token),
 	}
-
-	log.Errorf("new scope %#v", vv)
-	return vv
 }
 
 // Get searches the variable scope for a variable with the given name and returns the token and true if it exists, otherwhise nil and false
 func (p *VariableScope) Get(name string) (Token, bool) {
 	s := p
 
-	log.Errorf("Search for variable %q", name)
-
 	for s != nil {
-		log.Errorf("Look in %#v", s)
 		if v, ok := s.Variables[name]; ok {
-			log.Errorf("Found %q %#v", name, v)
 			return v, true
 		}
 
@@ -290,12 +286,10 @@ func (p *VariableScope) Get(name string) (Token, bool) {
 
 // Push creates a new child variable scope and returns it
 func (s *VariableScope) Push() *VariableScope {
-	vv := &VariableScope{
+	return &VariableScope{
 		Parent:    s,
 		Variables: make(map[string]Token),
 	}
-	log.Errorf("push scope %#v", vv)
-	return vv
 }
 
 ////////////////////////

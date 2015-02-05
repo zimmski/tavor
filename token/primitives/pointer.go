@@ -70,11 +70,9 @@ func (p *Pointer) Resolve() token.Token {
 
 		po, ok = c.(*Pointer)
 		if !ok {
-			break
+			return c
 		}
 	}
-
-	return po
 }
 
 // Token interface methods

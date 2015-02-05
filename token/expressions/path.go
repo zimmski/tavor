@@ -41,7 +41,7 @@ func NewPath(list token.Token, from token.Token, over token.Token, connectBy []t
 func checkListToken(list token.Token) error {
 	if token.LoopExists(list) {
 		return &token.ParserError{
-			Message: "There is an endless loop in the list argument. Use a variable value to avoid this.",
+			Message: "There is an endless loop in the list argument. Use a variable reference to avoid this.",
 			Type:    token.ParseErrorEndlessLoopDetected,
 		}
 	}
@@ -57,9 +57,23 @@ func (e *Path) path() []string {
 		}
 	}
 
-	l, ok := e.list.(token.ListToken)
+	if p, ok := e.list.(*primitives.Pointer); ok {
+		e.list = p.Resolve()
+	}
+
+	tl := e.list
+	if t, ok := tl.(token.ScopeToken); ok {
+		t.SetScope(variableScope)
+	}
+
+	if v, ok := tl.(*variables.VariableReference); ok {
+		tl = v.Reference()
+		log.Errorf("WTHAT %#v", tl)
+	}
+
+	l, ok := tl.(token.ListToken)
 	if !ok {
-		log.Panicf("TODO must be a ListToken but is %#v", e.list)
+		log.Panicf("TODO must be a ListToken but is %#v", tl)
 	}
 
 	connects := make(map[string][]string, 0)
@@ -128,13 +142,14 @@ func (e *Path) path() []string {
 
 // Clone returns a copy of the token and all its children
 func (e *Path) Clone() token.Token {
-	return &Path{
+	return e
+	/*return &Path{
 		list:      e.list,
 		from:      e.from,
 		over:      e.over,
 		connectBy: e.connectBy,
 		without:   e.without,
-	}
+	}*/
 }
 
 // Parse tries to parse the token beginning from the current position in the parser data.

@@ -249,7 +249,7 @@ func (v *VariableItem) SetScope(variableScope map[string]token.Token) {
 	}
 
 	if tok == nil { // TODO
-		log.Debugf("TODO this should not happen")
+		log.Debugf("TODO VariableItem: this should not happen")
 
 		return
 	}
@@ -289,6 +289,95 @@ func NewVariableSave(name string, token token.Token) *VariableSave {
 			name:  name,
 			token: token,
 		},
+	}
+}
+
+// VariableReference implements a token which references a Variable token to output its referenced token
+type VariableReference struct {
+	variable token.VariableToken
+}
+
+// NewVariableReference returns a new instance of a VariableReference token
+func NewVariableReference(variable token.VariableToken) *VariableReference {
+	return &VariableReference{
+		variable: variable,
+	}
+}
+
+func (v *VariableReference) Reference() token.Token {
+	return v.variable.Get()
+}
+
+// Token interface methods
+
+// Clone returns a copy of the token and all its children
+func (v *VariableReference) Clone() token.Token {
+	return &VariableReference{
+		variable: v.variable,
+	}
+}
+
+// Parse tries to parse the token beginning from the current position in the parser data.
+// If the parsing is successful the error argument is nil and the next current position after the token is returned.
+func (v *VariableReference) Parse(pars *token.InternalParser, cur int) (int, []error) {
+	panic("TODO implement")
+}
+
+// Permutation sets a specific permutation for this token
+func (v *VariableReference) Permutation(i uint) error {
+	// do nothing
+
+	return nil
+}
+
+// Permutations returns the number of permutations for this token
+func (v *VariableReference) Permutations() uint {
+	return 1
+}
+
+// PermutationsAll returns the number of all possible permutations for this token including its children
+func (v *VariableReference) PermutationsAll() uint {
+	return 1
+}
+
+func (v *VariableReference) String() string {
+	return ""
+}
+
+// IndexToken interface methods
+
+// Index returns the index of this token in its parent token
+func (v *VariableReference) Index() int {
+	return v.variable.Index()
+}
+
+// ScopeToken interface methods
+
+// SetScope sets the scope of the token
+func (v *VariableReference) SetScope(variableScope map[string]token.Token) {
+	tok := variableScope[v.variable.Name()]
+
+	if p, ok := tok.(*primitives.Pointer); ok {
+		for {
+			tok = p.InternalGet()
+
+			p, ok = tok.(*primitives.Pointer)
+			if !ok {
+				break
+			}
+		}
+	}
+
+	if tok == nil { // TODO
+		log.Debugf("TODO VariableReference: this should not happen")
+
+		return
+	}
+
+	if t, ok := tok.(*VariableReference); ok {
+		v.variable = t.variable
+	} else {
+		v.variable = tok.(token.VariableToken)
 	}
 }
 
@@ -395,7 +484,7 @@ func (v *VariableValue) SetScope(variableScope map[string]token.Token) {
 	}
 
 	if tok == nil { // TODO
-		log.Debugf("TODO this should not happen")
+		log.Debugf("TODO VariableValue: this should not happen")
 
 		return
 	}

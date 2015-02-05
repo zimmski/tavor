@@ -1,12 +1,9 @@
 package strategy
 
 import (
-	"github.com/zimmski/container/list/linkedlist"
-
 	"github.com/zimmski/tavor/log"
 	"github.com/zimmski/tavor/rand"
 	"github.com/zimmski/tavor/token"
-	"github.com/zimmski/tavor/token/sequences"
 )
 
 // RandomStrategy implements a fuzzing strategy that generates a random permutation of a token graph.
@@ -93,7 +90,10 @@ func (s *RandomStrategy) fuzzYADDA(root token.Token, r rand.Rand) {
 	// since this doesn't work in other heuristics...
 	// especially the fuzz again part is tricky. the whole reason is because of dynamic repeats that clone during a reset. so the "reset" or regenerating of new child tokens has to be done better
 
-	scope := make(map[string]token.Token)
+	token.ResetResetTokens(root)
+	token.ResetScope(root)
+
+	/*scope := make(map[string]token.Token)
 	queue := linkedlist.New()
 
 	type set struct {
@@ -191,5 +191,5 @@ func (s *RandomStrategy) fuzzYADDA(root token.Token, r rand.Rand) {
 				queue.Unshift(c)
 			}
 		}
-	}
+	}*/
 }

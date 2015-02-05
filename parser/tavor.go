@@ -275,15 +275,22 @@ func (p *tavorParser) getToken(definitionName string, name string, variableScope
 
 	p.lookupUsage[tok] = struct{}{}
 
+	p.addCall(definitionName, variableScope, name)
+
+	return tok
+}
+
+func (p *tavorParser) addCall(definitionName string, variableScope *token.VariableScope, name string) {
 	if _, ok := p.called[name]; !ok {
 		p.called[name] = make([]call, 0, 1)
 	}
-	p.called[name] = append(p.called[name], call{
+
+	c := call{
 		from:          definitionName,
 		variableScope: variableScope,
-	})
+	}
 
-	return tok
+	p.called[name] = append(p.called[name], c)
 }
 
 func (p *tavorParser) parseTerm(definitionName string, c rune, variableScope *token.VariableScope) (rune, []token.Token, error) {
@@ -707,7 +714,6 @@ func (p *tavorParser) parseExpressionTerm(definitionName string, c rune, variabl
 	switch c {
 	case scanner.Ident:
 		attribute := p.scan.TokenText()
-		attributePosition := p.scan.Position
 
 		switch attribute {
 		case "defined":
@@ -717,52 +723,10 @@ func (p *tavorParser) parseExpressionTerm(definitionName string, c rune, variabl
 			}
 
 			name := p.scan.TokenText()
-			namePosition := p.scan.Position
-
-			tok, ok := variableScope.Get(name)
-
-			isPointer := false
-
-			if ok {
-				if _, pp := tok.(*primitives.Pointer); pp {
-					isPointer = true
-				}
-			}
-
-			nVariableScope := variableScope.Push()
-
-			if !ok || isPointer {
-				log.Debugf("parseTokenAttribute use empty pointer for %s.%s", name, attribute)
-
-				var tokenInterface *token.Token
-
-				pointer := primitives.NewEmptyPointer(tokenInterface)
-				nPointer := primitives.NewPointer(pointer)
-
-				p.forwardAttributeUsage = append(p.forwardAttributeUsage, attributeForwardUsage{
-					definitionName:    definitionName,
-					tokenName:         name,
-					tokenPosition:     namePosition,
-					attribute:         attribute,
-					attributePosition: attributePosition,
-					pointer:           pointer,
-					variableScope:     nVariableScope,
-				})
-
-				tok = nPointer
-			} else {
-				c, tok, err = p.selectTokenAttribute(definitionName, tok, name, attribute, attributePosition, "", nil, c, nVariableScope)
-				if err != nil {
-					return zeroRune, nil, err
-				}
-			}
-
-			variableScope.Variables[name] = tok
-			nVariableScope.Variables[name] = tok
 
 			c = p.scan.Scan()
 
-			return c, conditions.NewExpressionPointer(tok), nil
+			return c, conditions.NewVariableDefined(name, variableScope), nil
 		default:
 			if p.scan.Peek() == '.' {
 				c, tok, err = p.parseTokenAttribute(definitionName, c, variableScope)
@@ -1127,8 +1091,6 @@ func (p *tavorParser) selectTokenAttribute(definitionName string, tok token.Toke
 		switch attribute {
 		case "Count":
 			return c, aggregates.NewLen(i), nil
-		case "defined":
-			return c, conditions.NewVariableDefined(tokenName, variableScope), nil
 		case "Index":
 			return c, lists.NewIndexItem(variables.NewVariableValue(i)), nil
 		case "Item":
@@ -1152,6 +1114,8 @@ func (p *tavorParser) selectTokenAttribute(definitionName string, tok token.Toke
 			c = p.scan.Scan()
 
 			return c, variables.NewVariableItem(index, i), nil
+		case "Reference":
+			return c, variables.NewVariableReference(variables.NewVariable(tokenName, nil)), nil
 		case "Value":
 			v := variables.NewVariableValue(i)
 
@@ -1707,44 +1671,61 @@ func (p *tavorParser) parseTypedTokenDefinition(variableScope *token.VariableSco
 }
 
 func (p *tavorParser) getVariable(fromDefinition string, name string, pos scanner.Position) (token.VariableToken, error) {
-	queue := linkedlist.New()
-	checked := make(map[string]struct{})
+	calls, ok := p.called[fromDefinition]
+	if !ok {
+		return nil, nil
+	}
 
 	var v token.VariableToken
 
-	if calls, ok := p.called[fromDefinition]; ok {
+	for _, c := range calls {
+		queue := linkedlist.New()
+		checked := make(map[string]struct{})
 		checked[fromDefinition] = struct{}{}
 
-		for _, c := range calls {
-			queue.Unshift(c)
-		}
-	}
+		queue.Unshift(c)
 
-	for !queue.Empty() {
-		i, _ := queue.Shift()
-		c := i.(call)
+		var cv token.VariableToken
 
-		if vv, ok := c.variableScope.Get(name); ok {
-			if i, ok := vv.(token.VariableToken); ok {
-				v = i
-			} else {
-				return nil, &token.ParserError{
-					Message:  fmt.Sprintf("variable token %q is not always used as a variable", name),
-					Type:     token.ParseErrorNotAlwaysUsedAsAVariable,
-					Position: pos,
+		for !queue.Empty() {
+			i, _ := queue.Shift()
+			c := i.(call)
+
+			if vv, ok := c.variableScope.Get(name); ok {
+				if i, ok := vv.(token.VariableToken); ok {
+					cv = i
+				} else {
+					return nil, &token.ParserError{
+						Message:  fmt.Sprintf("variable token %q is not always used as a variable", name),
+						Type:     token.ParseErrorNotAlwaysUsedAsAVariable,
+						Position: pos,
+					}
+				}
+			}
+
+			if calls, ok := p.called[c.from]; ok {
+				checked[c.from] = struct{}{}
+
+				for _, c := range calls {
+					if _, ok := checked[c.from]; !ok {
+						queue.Unshift(c)
+					}
 				}
 			}
 		}
 
-		if calls, ok := p.called[c.from]; ok {
-			checked[c.from] = struct{}{}
+		if cv == nil {
+			log.Debugf("Variable %q is not always defined", name)
+			/*return nil, &token.ParserError{
+				Message:  fmt.Sprintf("Variable %q is not always defined", name),
+				Type:     token.ParseErrorTokenNotDefined,
+				Position: pos,
+			}*/
 
-			for _, c := range calls {
-				if _, ok := checked[c.from]; !ok {
-					queue.Unshift(c)
-				}
-			}
+			return nil, nil
 		}
+
+		v = cv
 	}
 
 	return v, nil
@@ -1836,64 +1817,34 @@ func ParseTavor(src io.Reader) (token.Token, error) {
 	for _, forwardUse := range p.forwardAttributeUsage {
 		var tok token.Token
 
+		// look for the token in the global table
 		use, ok := p.lookup[forwardUse.tokenName]
 		if ok {
 			tok = use.token
-		} else {
-			var typ reflect.Type
-
-			for _, usage := range p.used[forwardUse.definitionName] {
-				if t, ok := forwardUse.variableScope.Get(forwardUse.tokenName); ok {
-					if typ == nil {
-						tok = t
-						typ = reflect.TypeOf(t)
-					} else {
-						tType := reflect.TypeOf(t)
-
-						if typ != tType {
-							panic(fmt.Errorf("TODO handle this better: different types %v vs %v", typ, tType))
-						}
-					}
-				} else if v, err := p.getVariable(forwardUse.definitionName, forwardUse.tokenName, usage.position); err != nil {
-					return nil, err
-				} else if v != nil {
-					if typ == nil {
-						tok = v
-						typ = reflect.TypeOf(v)
-					} else {
-						tType := reflect.TypeOf(v)
-
-						if typ != tType {
-							panic(fmt.Errorf("TODO handle this better: different types %v vs %v", typ, tType))
-						}
-					}
-				} else if forwardUse.attribute != "defined" {
-					return nil, &token.ParserError{
-						Message:  fmt.Sprintf("token or variable %q is not defined", forwardUse.tokenName),
-						Type:     token.ParseErrorTokenNotDefined,
-						Position: usage.position,
-					}
+			if t, ok := tok.(*primitives.Pointer); ok {
+				tok = t.Resolve()
+			}
+		}
+		// look for the token in the forward scope
+		if tok == nil {
+			tok, _ = forwardUse.variableScope.Get(forwardUse.tokenName)
+			if t, ok := tok.(*primitives.Pointer); ok {
+				tok = t.Resolve()
+			}
+		}
+		// look for the token in the call scope
+		if tok == nil {
+			if v, err := p.getVariable(forwardUse.definitionName, forwardUse.tokenName, forwardUse.tokenPosition); err != nil {
+				return nil, err
+			} else if v != nil {
+				tok = v
+				if t, ok := tok.(*primitives.Pointer); ok {
+					tok = t.Resolve()
 				}
 			}
 		}
 
-		if po, ok := tok.(*primitives.Pointer); ok {
-			log.Debugf("Found pointer in forwardAttributeUsage %#v", forwardUse)
-
-			for {
-				c := po.InternalGet()
-
-				po, ok = c.(*primitives.Pointer)
-				if !ok {
-					log.Debugf("Replaced pointer %p(%#v) with %p(%#v)", tok, tok, c, c)
-
-					tok = c
-
-					break
-				}
-			}
-		}
-
+		// give up, there is no token we can use
 		if tok == nil {
 			return nil, &token.ParserError{
 				Message:  fmt.Sprintf("token or variable %q is not defined", forwardUse.tokenName),
