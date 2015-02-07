@@ -20,7 +20,7 @@ type Path struct {
 	connectBy []token.Token
 	without   []token.Token
 
-	variableScope map[string]token.Token
+	variableScope *token.VariableScope
 }
 
 // NewPath returns a new instance of a Path token given the set of tokens
@@ -50,44 +50,58 @@ func checkListToken(list token.Token) error {
 }
 
 func (e *Path) path() []string {
-	variableScope := make(map[string]token.Token, 0)
-	if e.variableScope != nil {
-		for k, v := range e.variableScope {
-			variableScope[k] = v
-		}
-	}
+	variableScope := e.variableScope.Push()
+
+	log.Errorf("Check path")
+	log.Errorf("scope is %#v", variableScope.Combine())
 
 	if p, ok := e.list.(*primitives.Pointer); ok {
 		e.list = p.Resolve()
 	}
 
 	tl := e.list
+
+	if v, ok := tl.(*primitives.Scope); ok {
+		tl = v.Get()
+	}
+
 	if t, ok := tl.(token.ScopeToken); ok {
 		t.SetScope(variableScope)
 	}
 
 	if v, ok := tl.(*variables.VariableReference); ok {
 		tl = v.Reference()
-		log.Errorf("WTHAT %#v", tl)
+	}
+
+	if v, ok := tl.(*primitives.Scope); ok {
+		tl = v.Get()
 	}
 
 	l, ok := tl.(token.ListToken)
 	if !ok {
-		log.Panicf("TODO must be a ListToken but is %#v", tl)
+		log.Errorf("TODO must be a ListToken but is %#v", tl)
+
+		return nil
 	}
+
+	//log.Errorf("scopy START %#v", variableScope.Get("andLiteral").String())
 
 	connects := make(map[string][]string, 0)
 
 	for i := 0; i < l.Len(); i++ {
 		el, _ := l.Get(i)
-		variableScope["e"] = variables.NewVariable("e", el)
+		if v, ok := el.(*primitives.Scope); ok {
+			el = v.Get()
+		}
+
+		variableScope.Set("e", variables.NewVariable("e", el))
 
 		if t, ok := e.over.(token.ScopeToken); ok {
-			t.SetScope(variableScope)
+			token.SetScope(t, variableScope)
 		}
 		for j := 0; j < len(e.connectBy); j++ {
 			if t, ok := e.connectBy[j].(token.ScopeToken); ok {
-				t.SetScope(variableScope)
+				token.SetScope(t, variableScope)
 			}
 		}
 
@@ -99,6 +113,10 @@ func (e *Path) path() []string {
 		connects[e.over.String()] = cs
 	}
 
+	//		log.Errorf("scopy %#v", variableScope.Get("andLiteral").String())
+	//log.Errorf("->@@ %#v", e.from.(*primitives.Pointer).Resolve().(*variables.VariableValue).InternalGet())
+
+	token.SetScope(e.from, variableScope)
 	from := e.from.String()
 
 	path := []string{from}
@@ -108,6 +126,10 @@ func (e *Path) path() []string {
 	for i := 0; i < len(e.without); i++ {
 		checked[e.without[i].String()] = struct{}{}
 	}
+
+	log.Errorf("from %#v", from)
+	log.Errorf("connects %#v", connects)
+	log.Errorf("checked %#v", checked)
 
 	stack := linkedlist.New()
 	stack.Unshift(from)
@@ -142,14 +164,15 @@ func (e *Path) path() []string {
 
 // Clone returns a copy of the token and all its children
 func (e *Path) Clone() token.Token {
-	return e
-	/*return &Path{
+	return &Path{
 		list:      e.list,
 		from:      e.from,
 		over:      e.over,
 		connectBy: e.connectBy,
 		without:   e.without,
-	}*/
+
+		variableScope: e.variableScope,
+	}
 }
 
 // Parse tries to parse the token beginning from the current position in the parser data.
@@ -279,7 +302,10 @@ func (e *Path) InternalReplace(oldToken, newToken token.Token) error {
 
 // ScopeToken interface methods
 
+var _ token.ScopeToken = (*Path)(nil)
+
 // SetScope sets the scope of the token
-func (e *Path) SetScope(variableScope map[string]token.Token) {
+func (e *Path) SetScope(variableScope *token.VariableScope) {
+	log.Errorf("PONG for (%p)%#v set %#v", e, e, variableScope.Combine())
 	e.variableScope = variableScope
 }

@@ -123,8 +123,8 @@ func (v *Variable) Index() int {
 // ScopeToken interface methods
 
 // SetScope sets the scope of the token
-func (v *Variable) SetScope(variableScope map[string]token.Token) {
-	variableScope[v.name] = v
+func (v *Variable) SetScope(variableScope *token.VariableScope) {
+	variableScope.Set(v.name, v)
 }
 
 // VariableItem implements a token which references a Variable token to output its referenced token
@@ -215,6 +215,10 @@ func (v *VariableItem) InternalReplace(oldToken, newToken token.Token) error {
 	return nil
 }
 
+func (v *VariableItem) Follow() bool {
+	return false
+}
+
 // IndexToken interface methods
 
 // Index returns the index of this token in its parent token
@@ -230,22 +234,15 @@ func (v *VariableItem) Index() int {
 // ScopeToken interface methods
 
 // SetScope sets the scope of the token
-func (v *VariableItem) SetScope(variableScope map[string]token.Token) {
+func (v *VariableItem) SetScope(variableScope *token.VariableScope) {
 	if tok, ok := v.index.(token.ScopeToken); ok {
 		tok.SetScope(variableScope)
 	}
 
-	tok := variableScope[v.variable.Name()]
+	tok := variableScope.Get(v.variable.Name())
 
 	if p, ok := tok.(*primitives.Pointer); ok {
-		for {
-			tok = p.InternalGet()
-
-			p, ok = tok.(*primitives.Pointer)
-			if !ok {
-				break
-			}
-		}
+		tok = p.Resolve()
 	}
 
 	if tok == nil { // TODO
@@ -344,6 +341,10 @@ func (v *VariableReference) String() string {
 	return ""
 }
 
+func (v *VariableReference) Follow() bool {
+	return false
+}
+
 // IndexToken interface methods
 
 // Index returns the index of this token in its parent token
@@ -354,18 +355,11 @@ func (v *VariableReference) Index() int {
 // ScopeToken interface methods
 
 // SetScope sets the scope of the token
-func (v *VariableReference) SetScope(variableScope map[string]token.Token) {
-	tok := variableScope[v.variable.Name()]
+func (v *VariableReference) SetScope(variableScope *token.VariableScope) {
+	tok := variableScope.Get(v.variable.Name())
 
 	if p, ok := tok.(*primitives.Pointer); ok {
-		for {
-			tok = p.InternalGet()
-
-			p, ok = tok.(*primitives.Pointer)
-			if !ok {
-				break
-			}
-		}
+		tok = p.Resolve()
 	}
 
 	if tok == nil { // TODO
@@ -469,18 +463,11 @@ func (v *VariableValue) Index() int {
 // ScopeToken interface methods
 
 // SetScope sets the scope of the token
-func (v *VariableValue) SetScope(variableScope map[string]token.Token) {
-	tok := variableScope[v.variable.Name()]
+func (v *VariableValue) SetScope(variableScope *token.VariableScope) {
+	tok := variableScope.Get(v.variable.Name())
 
 	if p, ok := tok.(*primitives.Pointer); ok {
-		for {
-			tok = p.InternalGet()
-
-			p, ok = tok.(*primitives.Pointer)
-			if !ok {
-				break
-			}
-		}
+		tok = p.Resolve()
 	}
 
 	if tok == nil { // TODO

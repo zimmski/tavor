@@ -159,7 +159,7 @@ func (p *tavorParser) parseGlobalScope(variableScope *token.VariableScope) error
 }
 
 func (p *tavorParser) getToken(definitionName string, name string, variableScope *token.VariableScope) token.Token {
-	if tok, ok := variableScope.Get(name); ok {
+	if tok := variableScope.Get(name); tok != nil {
 		if v, ok := tok.(token.VariableToken); ok {
 			tok = variables.NewVariableValue(v)
 
@@ -650,7 +650,7 @@ OUT:
 			}
 
 			tokens[len(tokens)-1] = variable
-			variableScope.Variables[variableName] = variable
+			variableScope.Set(variableName, variable)
 
 			p.variableUsages = append(p.variableUsages, variable)
 
@@ -897,7 +897,7 @@ func (p *tavorParser) parseExpressionOperatorPath(tok token.Token, definitionNam
 	log.Debugf("path operator from %p(%#v)", from, from)
 
 	nVariableScope := variableScope.Push()
-	nVariableScope.Variables["e"] = variables.NewVariable("e", nil)
+	nVariableScope.Set("e", variables.NewVariable("e", nil))
 
 	_, err = p.expectScanText("over")
 	if err != nil {
@@ -981,17 +981,17 @@ func (p *tavorParser) parseTokenAttribute(definitionName string, c rune, variabl
 	if ok {
 		tok = use.token
 	} else {
-		tok, ok = variableScope.Get(name)
+		tok = variableScope.Get(name)
 
 		isPointer := false
 
-		if ok {
+		if tok != nil {
 			if _, pp := tok.(*primitives.Pointer); pp {
 				isPointer = true
 			}
 		}
 
-		if !ok || isPointer {
+		if tok == nil || isPointer {
 			log.Debugf("parseTokenAttribute use empty pointer for %s.%s", name, attribute)
 
 			var tokenInterface *token.Token
@@ -999,7 +999,7 @@ func (p *tavorParser) parseTokenAttribute(definitionName string, c rune, variabl
 			pointer := primitives.NewEmptyPointer(tokenInterface)
 			nPointer := primitives.NewPointer(pointer)
 
-			variableScope.Variables[name] = nPointer
+			variableScope.Set(name, nPointer)
 
 			nVariableScope := variableScope.Push()
 
@@ -1036,6 +1036,10 @@ func (p *tavorParser) parseTokenAttribute(definitionName string, c rune, variabl
 }
 
 func (p *tavorParser) selectTokenAttribute(definitionName string, tok token.Token, tokenName string, attribute string, attributePosition scanner.Position, operator string, operatorToken token.Token, c rune, variableScope *token.VariableScope) (rune, token.Token, error) {
+	if t, ok := tok.(*primitives.Scope); ok {
+		tok = t.InternalGet()
+	}
+
 	log.Debugf("use (%p)%#v as token", tok, tok)
 
 	log.Debug("finished token attribute (or will be unknown token attribute)")
@@ -1446,13 +1450,15 @@ func (p *tavorParser) setEarlyUsage(name string, tok token.Token) error {
 }
 
 func (p *tavorParser) registerNamedToken(name string, tok token.Token, tokenPosition scanner.Position, variableScope *token.VariableScope) error {
-	err := p.setEarlyUsage(name, tok)
+	sTok := primitives.NewScope(tok)
+
+	err := p.setEarlyUsage(name, sTok)
 	if err != nil {
 		return err
 	}
 
 	p.lookup[name] = tokenUsage{
-		token:         tok,
+		token:         sTok,
 		position:      tokenPosition,
 		variableScope: variableScope,
 	}
@@ -1691,7 +1697,7 @@ func (p *tavorParser) getVariable(fromDefinition string, name string, pos scanne
 			i, _ := queue.Shift()
 			c := i.(call)
 
-			if vv, ok := c.variableScope.Get(name); ok {
+			if vv := c.variableScope.Get(name); vv != nil {
 				if i, ok := vv.(token.VariableToken); ok {
 					cv = i
 				} else {
@@ -1776,7 +1782,7 @@ func ParseTavor(src io.Reader) (token.Token, error) {
 	USE:
 		for _, use := range uses {
 			if use.token.(*primitives.Pointer).Get() == nil {
-				if v, ok := use.variableScope.Get(name); ok {
+				if v := use.variableScope.Get(name); v != nil {
 					if vv, ok := v.(token.VariableToken); ok {
 						err := p.setEarlyUsage(name, variables.NewVariableValue(vv))
 						if err != nil {
@@ -1827,7 +1833,7 @@ func ParseTavor(src io.Reader) (token.Token, error) {
 		}
 		// look for the token in the forward scope
 		if tok == nil {
-			tok, _ = forwardUse.variableScope.Get(forwardUse.tokenName)
+			tok = forwardUse.variableScope.Get(forwardUse.tokenName)
 			if t, ok := tok.(*primitives.Pointer); ok {
 				tok = t.Resolve()
 			}

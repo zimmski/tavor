@@ -2,6 +2,8 @@ package sequences
 
 import (
 	"fmt"
+	"github.com/zimmski/tavor/log"
+	"github.com/zimmski/tavor/token/primitives"
 	"strconv"
 
 	"github.com/zimmski/tavor/token"
@@ -45,7 +47,12 @@ func (s *Sequence) existing(r uint, except []token.Token) int {
 	exceptLookup := make(map[int]struct{})
 
 	for i := 0; i < len(except); i++ {
-		switch t := except[i].(type) {
+		tok := except[i]
+		if v, ok := tok.(*primitives.Scope); ok {
+			tok = v.Get()
+		}
+
+		switch t := tok.(type) {
 		case token.ListToken:
 			for j := 0; j < t.Len(); j++ {
 				tj, err := t.Get(j)
@@ -54,7 +61,9 @@ func (s *Sequence) existing(r uint, except []token.Token) int {
 				}
 				ex, err := strconv.Atoi(tj.String())
 				if err != nil {
-					panic(err) // TODO
+					log.Errorf("%#v", err) // TODO
+
+					continue
 				}
 
 				exceptLookup[ex] = struct{}{}
@@ -62,12 +71,16 @@ func (s *Sequence) existing(r uint, except []token.Token) int {
 		default:
 			ex, err := strconv.Atoi(except[i].String())
 			if err != nil {
-				panic(err) // TODO
+				log.Errorf("%#v", err) // TODO
+
+				continue
 			}
 
 			exceptLookup[ex] = struct{}{}
 		}
 	}
+
+	log.Errorf("Except: %#v", exceptLookup)
 
 	for n != len(checked) {
 		i := (int(r)%n)*s.step + s.start
@@ -81,6 +94,7 @@ func (s *Sequence) existing(r uint, except []token.Token) int {
 		checked[i] = struct{}{}
 
 		if _, ok := exceptLookup[i]; !ok {
+			log.Errorf("choosen %d with checked: %#v", i, checked)
 			return i
 		}
 	}
@@ -247,7 +261,9 @@ func (s *SequenceExistingItem) Parse(pars *token.InternalParser, cur int) (int, 
 }
 
 func (s *SequenceExistingItem) permutation(i uint) {
+	s.value = -1
 	s.value = s.sequence.existing(i, s.except)
+	log.Errorf("HEI %v", s.value)
 }
 
 // Permutation sets a specific permutation for this token
@@ -282,6 +298,7 @@ func (s *SequenceExistingItem) PermutationsAll() uint {
 }
 
 func (s *SequenceExistingItem) String() string {
+	log.Errorf("OUTA %v", s.value)
 	return strconv.Itoa(s.value)
 }
 
@@ -353,7 +370,7 @@ func (s *SequenceExistingItem) Reset() {
 // ScopeToken interface methods
 
 // SetScope sets the scope of the token
-func (s *SequenceExistingItem) SetScope(variableScope map[string]token.Token) {
+func (s *SequenceExistingItem) SetScope(variableScope *token.VariableScope) {
 	if len(s.except) != 0 {
 		for i := 0; i < len(s.except); i++ {
 			if tok, ok := s.except[i].(token.ScopeToken); ok {

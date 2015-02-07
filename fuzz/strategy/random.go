@@ -4,6 +4,8 @@ import (
 	"github.com/zimmski/tavor/log"
 	"github.com/zimmski/tavor/rand"
 	"github.com/zimmski/tavor/token"
+	"github.com/zimmski/tavor/token/sequences"
+	"os"
 )
 
 // RandomStrategy implements a fuzzing strategy that generates a random permutation of a token graph.
@@ -40,7 +42,7 @@ func (s *RandomStrategy) Fuzz(r rand.Rand) (chan struct{}, error) {
 	go func() {
 		log.Debug("start random fuzzing routine")
 
-		s.fuzz(s.root, r)
+		s.fuzz(s.root, r, token.NewVariableScope())
 
 		s.fuzzYADDA(s.root, r)
 
@@ -61,37 +63,68 @@ func (s *RandomStrategy) Fuzz(r rand.Rand) (chan struct{}, error) {
 	return continueFuzzing, nil
 }
 
-func (s *RandomStrategy) fuzz(tok token.Token, r rand.Rand) {
+func (s *RandomStrategy) fuzz(tok token.Token, r rand.Rand, variableScope *token.VariableScope) {
 	log.Debugf("Fuzz (%p)%#v with maxPermutations %d", tok, tok, tok.Permutations())
+
+	if t, ok := tok.(token.Scoping); ok && t.Scoping() {
+		variableScope = variableScope.Push()
+	}
+
+	//token.SetInternalScope(tok, variableScope)
+	//token.SetScope(tok, variableScope)
 
 	err := tok.Permutation(uint(r.Int63n(int64(tok.Permutations())) + 1))
 	if err != nil {
 		log.Panic(err)
 	}
 
-	switch t := tok.(type) {
-	case token.ForwardToken:
-		if v := t.Get(); v != nil {
-			s.fuzz(v, r)
-		}
-	case token.ListToken:
-		l := t.Len()
+	//token.SetInternalScope(tok, variableScope)
+	//token.SetScope(tok, variableScope)
 
-		for i := 0; i < l; i++ {
-			c, _ := t.Get(i)
-			s.fuzz(c, r)
+	if t, ok := tok.(token.Follow); !ok || t.Follow() {
+		switch t := tok.(type) {
+		case token.ForwardToken:
+			if v := t.Get(); v != nil {
+				s.fuzz(v, r, variableScope)
+			}
+		case token.ListToken:
+			l := t.Len()
+
+			for i := 0; i < l; i++ {
+				c, _ := t.Get(i)
+				s.fuzz(c, r, variableScope)
+			}
 		}
+	}
+
+	if t, ok := tok.(token.Scoping); ok && t.Scoping() {
+		variableScope = variableScope.Pop()
 	}
 }
 
 func (s *RandomStrategy) fuzzYADDA(root token.Token, r rand.Rand) {
+	token.PrettyPrintTree(os.Stdout, root)
 
 	// TODO FIXME AND FIXME FIXME FIXME this should be done automatically somehow
 	// since this doesn't work in other heuristics...
 	// especially the fuzz again part is tricky. the whole reason is because of dynamic repeats that clone during a reset. so the "reset" or regenerating of new child tokens has to be done better
 
 	token.ResetResetTokens(root)
-	token.ResetScope(root)
+	token.ResetCombinedScope(root)
+
+	token.Walk(root, func(tok token.Token) error {
+		switch tok.(type) {
+		case *sequences.SequenceExistingItem:
+			log.Debugf("Fuzz again %p(%#v)", tok, tok)
+
+			err := tok.Permutation(uint(r.Int63n(int64(tok.Permutations())) + 1))
+			if err != nil {
+				log.Panic(err)
+			}
+		}
+
+		return nil
+	})
 
 	/*scope := make(map[string]token.Token)
 	queue := linkedlist.New()

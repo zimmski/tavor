@@ -45,18 +45,18 @@ func ResetResetTokens(root Token) {
 func ResetScope(root Token) {
 	log.Debug("start reseting scope")
 
-	SetScope(root, make(map[string]Token))
+	SetScope(root, NewVariableScope())
 
 	log.Debug("finished reseting scope")
 }
 
 // SetScope sets all scopes of tokens in the token graph that fullfill the ScopeToken interface
-func SetScope(root Token, scope map[string]Token) {
+func SetScope(root Token, scope *VariableScope) {
 	queue := linkedlist.New()
 
 	type set struct {
 		token Token
-		scope map[string]Token
+		scope *VariableScope
 	}
 
 	queue.Unshift(set{
@@ -68,27 +68,31 @@ func SetScope(root Token, scope map[string]Token) {
 		v, _ := queue.Shift()
 		s := v.(set)
 
-		if t, ok := s.token.(ScopeToken); ok {
-			log.Debugf("setScope %#v(%p) with %#v", t, t, s.scope)
+		tok := s.token
+		scope := s.scope
 
-			t.SetScope(s.scope)
+		if _, ok := tok.(Scoping); ok {
+			scope = scope.Push()
 		}
 
-		if t, ok := s.token.(Follow); ok && !t.Follow() {
+		log.Errorf("LOOK %#v", tok)
+
+		if t, ok := tok.(ScopeToken); ok {
+			log.Debugf("setScope %#v(%p) with %#v", t, t, scope)
+
+			t.SetScope(scope)
+		}
+
+		if t, ok := tok.(Follow); ok && !t.Follow() {
 			continue
 		}
 
-		nScope := make(map[string]Token, len(s.scope))
-		for k, v := range s.scope {
-			nScope[k] = v
-		}
-
-		switch t := s.token.(type) {
+		switch t := tok.(type) {
 		case ForwardToken:
 			if v := t.Get(); v != nil {
 				queue.Unshift(set{
 					token: v,
-					scope: nScope,
+					scope: scope,
 				})
 			}
 		case ListToken:
@@ -97,7 +101,7 @@ func SetScope(root Token, scope map[string]Token) {
 
 				queue.Unshift(set{
 					token: c,
-					scope: nScope,
+					scope: scope,
 				})
 			}
 		}
@@ -106,20 +110,20 @@ func SetScope(root Token, scope map[string]Token) {
 
 // ResetInternalScope resets all scopes of interal tokens in the token graph that fullfill the ScopeToken interface
 func ResetInternalScope(root Token) {
-	log.Debug("start reseting scope")
+	log.Debug("start reseting internal scope")
 
-	SetInternalScope(root, make(map[string]Token))
+	SetInternalScope(root, NewVariableScope())
 
-	log.Debug("finished reseting scope")
+	log.Debug("finished reseting internal scope")
 }
 
 // SetInternalScope sets all scopes of internal tokens in the token graph that fullfill the ScopeToken interface
-func SetInternalScope(root Token, scope map[string]Token) {
+func SetInternalScope(root Token, scope *VariableScope) {
 	queue := linkedlist.New()
 
 	type set struct {
 		token Token
-		scope map[string]Token
+		scope *VariableScope
 	}
 
 	queue.Unshift(set{
@@ -131,27 +135,29 @@ func SetInternalScope(root Token, scope map[string]Token) {
 		v, _ := queue.Shift()
 		s := v.(set)
 
-		if t, ok := s.token.(ScopeToken); ok {
-			log.Debugf("setScope %#v(%p) with %#v", t, t, s.scope)
+		tok := s.token
+		scope := s.scope
 
-			t.SetScope(s.scope)
+		if _, ok := tok.(Scoping); ok {
+			scope = scope.Push()
 		}
 
-		if t, ok := s.token.(Follow); ok && !t.Follow() {
+		if t, ok := tok.(ScopeToken); ok {
+			log.Debugf("setScope %#v(%p) with %#v", t, t, scope)
+
+			t.SetScope(scope)
+		}
+
+		if t, ok := tok.(Follow); ok && !t.Follow() {
 			continue
 		}
 
-		nScope := make(map[string]Token, len(s.scope))
-		for k, v := range s.scope {
-			nScope[k] = v
-		}
-
-		switch t := s.token.(type) {
+		switch t := tok.(type) {
 		case ForwardToken:
 			if v := t.InternalGet(); v != nil {
 				queue.Unshift(set{
 					token: v,
-					scope: nScope,
+					scope: scope,
 				})
 			}
 		case ListToken:
@@ -160,8 +166,101 @@ func SetInternalScope(root Token, scope map[string]Token) {
 
 				queue.Unshift(set{
 					token: c,
-					scope: nScope,
+					scope: scope,
 				})
+			}
+		}
+	}
+}
+
+// ResetCombinedScope resets all scopes of external and interal tokens in the token graph that fullfill the ScopeToken interface
+func ResetCombinedScope(root Token) {
+	log.Debug("start reseting internal scope")
+
+	SetCombinedScope(root, NewVariableScope())
+
+	log.Debug("finished reseting internal scope")
+}
+
+// SetCombinedScope sets all scopes of external and internal tokens in the token graph that fullfill the ScopeToken interface
+func SetCombinedScope(root Token, scope *VariableScope) {
+	queue := linkedlist.New()
+	checked := make(map[Token]struct{})
+
+	type set struct {
+		token Token
+		scope *VariableScope
+	}
+
+	queue.Unshift(set{
+		token: root,
+		scope: scope,
+	})
+	checked[root] = struct{}{}
+
+	for !queue.Empty() {
+		v, _ := queue.Shift()
+		s := v.(set)
+
+		tok := s.token
+		scope := s.scope
+
+		if _, ok := tok.(Scoping); ok {
+			scope = scope.Push()
+		}
+
+		if t, ok := tok.(ScopeToken); ok {
+			log.Debugf("setScope %#v(%p) with %#v", t, t, scope)
+
+			t.SetScope(scope)
+		}
+
+		if t, ok := tok.(Follow); ok && !t.Follow() {
+			continue
+		}
+
+		switch t := tok.(type) {
+		case ForwardToken:
+			if v := t.InternalGet(); v != nil {
+				if _, ok := checked[v]; !ok {
+					queue.Unshift(set{
+						token: v,
+						scope: scope,
+					})
+					checked[v] = struct{}{}
+				}
+			}
+			if v := t.Get(); v != nil {
+				if _, ok := checked[v]; !ok {
+					queue.Unshift(set{
+						token: v,
+						scope: scope,
+					})
+					checked[v] = struct{}{}
+				}
+			}
+		case ListToken:
+			for i := t.InternalLen() - 1; i >= 0; i-- {
+				c, _ := t.InternalGet(i)
+
+				if _, ok := checked[c]; !ok {
+					queue.Unshift(set{
+						token: c,
+						scope: scope,
+					})
+					checked[c] = struct{}{}
+				}
+			}
+			for i := t.Len() - 1; i >= 0; i-- {
+				c, _ := t.Get(i)
+
+				if _, ok := checked[c]; !ok {
+					queue.Unshift(set{
+						token: c,
+						scope: scope,
+					})
+					checked[c] = struct{}{}
+				}
 			}
 		}
 	}

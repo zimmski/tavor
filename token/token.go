@@ -177,13 +177,19 @@ type ReleaseToken interface {
 // Scope defines a scope token which holds a scope
 type Scope interface {
 	// SetScope sets the scope of the token
-	SetScope(variableScope map[string]Token)
+	SetScope(variableScope *VariableScope)
 }
 
 // ScopeToken combines the Token and Scope interface
 type ScopeToken interface {
 	Token
 	Scope
+}
+
+// Scoping defines a scoping token which holds a new scope
+type Scoping interface {
+	// Scoping returns if the token holds a new scope
+	Scoping() bool
 }
 
 // Variable defines a variable token which holds a variable
@@ -257,38 +263,80 @@ func (err *ReduceError) Error() string {
 
 // VariableScope holds a variable scope and a reference to its parent scope
 type VariableScope struct {
-	Parent    *VariableScope
-	Variables map[string]Token
+	parent    *VariableScope
+	variables map[string]Token
 }
 
 // NewVariableScope returns a new instance of a variable scope
 func NewVariableScope() *VariableScope {
 	return &VariableScope{
-		Parent:    nil,
-		Variables: make(map[string]Token),
+		parent:    nil,
+		variables: make(map[string]Token),
 	}
 }
 
-// Get searches the variable scope for a variable with the given name and returns the token and true if it exists, otherwhise nil and false
-func (p *VariableScope) Get(name string) (Token, bool) {
-	s := p
+// NewVariableScopeFrom returns a new instance of a variable scope initializing the scope with the given map
+func NewVariableScopeFrom(s map[string]Token) *VariableScope {
+	return &VariableScope{
+		parent:    nil,
+		variables: s,
+	}
+}
 
-	for s != nil {
-		if v, ok := s.Variables[name]; ok {
-			return v, true
+func (s *VariableScope) Combine() map[string]Token {
+	vs := make(map[string]Token)
+
+	c := s
+
+	for c != nil {
+		for k, v := range c.variables {
+			if _, ok := vs[k]; !ok {
+				vs[k] = v
+			}
 		}
 
-		s = s.Parent
+		c = c.parent
 	}
 
-	return nil, false
+	return vs
 }
 
-// Push creates a new child variable scope and returns it
+// Get searches the variable scope for a variable with the given name and returns the token, or nil if there is no variable with the given name
+func (s *VariableScope) Get(name string) Token {
+	c := s
+
+	for c != nil {
+		if v, ok := c.variables[name]; ok {
+			return v
+		}
+
+		c = c.parent
+	}
+
+	return nil
+}
+
+// Set sets a variable with the given name
+func (s *VariableScope) Set(name string, tok Token) {
+	s.variables[name] = tok
+}
+
+// Pop returns the parent scope, or panics if there is no parent scope
+func (s *VariableScope) Pop() *VariableScope {
+	p := s.parent
+
+	if p == nil {
+		panic("Cannot pop last scope")
+	}
+
+	return p
+}
+
+// Push creates a new variable scope and returns it
 func (s *VariableScope) Push() *VariableScope {
 	return &VariableScope{
-		Parent:    s,
-		Variables: make(map[string]Token),
+		parent:    s,
+		variables: make(map[string]Token),
 	}
 }
 

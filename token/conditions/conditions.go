@@ -209,7 +209,7 @@ func (c *If) InternalReplace(oldToken, newToken token.Token) error {
 // ScopeToken interface methods
 
 // SetScope sets the scope of the token
-func (c *If) SetScope(variableScope map[string]token.Token) {
+func (c *If) SetScope(variableScope *token.VariableScope) {
 	for _, pair := range c.Pairs {
 		token.SetScope(pair.Head, variableScope)
 		token.SetScope(pair.Body, variableScope)

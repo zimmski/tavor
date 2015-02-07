@@ -212,22 +212,20 @@ func (c *BooleanEqual) InternalReplace(oldToken, newToken token.Token) error {
 // VariableDefined implements a boolean expression which evaluates if a variable is defined in a given scope
 type VariableDefined struct {
 	name          string
-	variableScope map[string]token.Token
+	variableScope *token.VariableScope
 }
 
 // NewVariableDefined returns a new instance of a VariableDefined token initialzed with the given name and scope
 func NewVariableDefined(name string, variableScope *token.VariableScope) *VariableDefined {
 	return &VariableDefined{
 		name:          name,
-		variableScope: variableScope.Variables,
+		variableScope: variableScope,
 	}
 }
 
 // Evaluate evaluates the boolean expression and returns its result
 func (c *VariableDefined) Evaluate() bool {
-	_, ok := c.variableScope[c.name]
-
-	return ok
+	return c.variableScope.Get(c.name) != nil
 }
 
 // Token interface methods
@@ -270,13 +268,8 @@ func (c *VariableDefined) String() string {
 // ScopeToken interface methods
 
 // SetScope sets the scope of the token
-func (c *VariableDefined) SetScope(variableScope map[string]token.Token) {
-	nScope := make(map[string]token.Token, len(variableScope))
-	for k, v := range variableScope {
-		nScope[k] = v
-	}
-
-	c.variableScope = nScope
+func (c *VariableDefined) SetScope(variableScope *token.VariableScope) {
+	c.variableScope = variableScope
 }
 
 // ExpressionPointer implements a token pointer to an expression token
@@ -390,7 +383,7 @@ func (c *ExpressionPointer) InternalReplace(oldToken, newToken token.Token) erro
 // ScopeToken interface methods
 
 // SetScope sets the scope of the token
-func (c *ExpressionPointer) SetScope(variableScope map[string]token.Token) {
+func (c *ExpressionPointer) SetScope(variableScope *token.VariableScope) {
 	tok := c.token
 
 	if po, ok := tok.(*primitives.Pointer); ok {

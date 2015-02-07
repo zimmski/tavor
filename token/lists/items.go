@@ -87,7 +87,7 @@ func (l *ListItem) Index() int {
 // ScopeToken interface methods
 
 // SetScope sets the scope of the token
-func (l *ListItem) SetScope(variableScope map[string]token.Token) {
+func (l *ListItem) SetScope(variableScope *token.VariableScope) {
 	if tok, ok := l.index.(token.ScopeToken); ok {
 		tok.SetScope(variableScope)
 	}
@@ -152,7 +152,7 @@ func (l *IndexItem) String() string {
 // ScopeToken interface methods
 
 // SetScope sets the scope of the token
-func (l *IndexItem) SetScope(variableScope map[string]token.Token) {
+func (l *IndexItem) SetScope(variableScope *token.VariableScope) {
 	if tok, ok := l.token.(token.ScopeToken); ok {
 		tok.SetScope(variableScope)
 	}

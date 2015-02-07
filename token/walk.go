@@ -2,6 +2,7 @@ package token
 
 import (
 	"github.com/zimmski/container/list/linkedlist"
+	"github.com/zimmski/tavor/log"
 )
 
 // Walk traverses a token graph beginning from the given token and calls for every newly visited token the given function.
@@ -16,6 +17,8 @@ func Walk(root Token, walkFunc func(tok Token) error) error {
 	for !queue.Empty() {
 		v, _ := queue.Shift()
 		tok := v.(Token)
+
+		log.Errorf("@@@@@exDo %#v", tok)
 
 		if err := walkFunc(tok); err != nil {
 			continue
@@ -54,6 +57,8 @@ func WalkInternal(root Token, walkFunc func(tok Token) error) error {
 	for !queue.Empty() {
 		v, _ := queue.Shift()
 		tok := v.(Token)
+
+		log.Errorf("@@@@@inDo %#v", tok)
 
 		if err := walkFunc(tok); err != nil {
 			return err
