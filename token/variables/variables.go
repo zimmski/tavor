@@ -222,6 +222,7 @@ func (v *VariableItem) InternalReplace(oldToken, newToken token.Token) error {
 	return nil
 }
 
+// Follow returns if the children of the token should be traversed
 func (v *VariableItem) Follow() bool {
 	return false
 }
@@ -308,6 +309,7 @@ func NewVariableReference(variable token.VariableToken) *VariableReference {
 	}
 }
 
+// Reference returns the referenced token
 func (v *VariableReference) Reference() token.Token {
 	return v.variable.Get()
 }
@@ -348,6 +350,7 @@ func (v *VariableReference) String() string {
 	return ""
 }
 
+// Follow returns if the children of the token should be traversed
 func (v *VariableReference) Follow() bool {
 	return false
 }

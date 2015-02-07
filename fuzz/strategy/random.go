@@ -69,16 +69,10 @@ func (s *RandomStrategy) fuzz(tok token.Token, r rand.Rand, variableScope *token
 		variableScope = variableScope.Push()
 	}
 
-	//token.SetInternalScope(tok, variableScope)
-	//token.SetScope(tok, variableScope)
-
 	err := tok.Permutation(uint(r.Int63n(int64(tok.Permutations())) + 1))
 	if err != nil {
 		log.Panic(err)
 	}
-
-	//token.SetInternalScope(tok, variableScope)
-	//token.SetScope(tok, variableScope)
 
 	if t, ok := tok.(token.Follow); !ok || t.Follow() {
 		switch t := tok.(type) {
@@ -110,7 +104,7 @@ func (s *RandomStrategy) fuzzYADDA(root token.Token, r rand.Rand) {
 	token.ResetResetTokens(root)
 	token.ResetCombinedScope(root)
 
-	token.Walk(root, func(tok token.Token) error {
+	err := token.Walk(root, func(tok token.Token) error {
 		switch tok.(type) {
 		case *sequences.SequenceExistingItem:
 			log.Debugf("Fuzz again %p(%#v)", tok, tok)
@@ -123,104 +117,7 @@ func (s *RandomStrategy) fuzzYADDA(root token.Token, r rand.Rand) {
 
 		return nil
 	})
-
-	/*scope := make(map[string]token.Token)
-	queue := linkedlist.New()
-
-	type set struct {
-		token token.Token
-		scope map[string]token.Token
+	if err != nil {
+		panic(err)
 	}
-
-	queue.Unshift(set{
-		token: root,
-		scope: scope,
-	})
-
-	var fuzzAgain []token.Token
-
-	for !queue.Empty() {
-		v, _ := queue.Shift()
-		s := v.(set)
-
-		if tok, ok := s.token.(token.ResetToken); ok {
-			log.Debugf("reset %#v(%p)", tok, tok)
-
-			tok.Reset()
-
-			fuzzAgain = append(fuzzAgain, tok)
-		}
-
-		if tok, ok := s.token.(token.ScopeToken); ok {
-			log.Debugf("setScope %#v(%p)", tok, tok)
-
-			tok.SetScope(s.scope)
-
-			fuzzAgain = append(fuzzAgain, tok)
-		}
-
-		nScope := make(map[string]token.Token, len(s.scope))
-		for k, v := range s.scope {
-			nScope[k] = v
-		}
-
-		switch t := s.token.(type) {
-		case token.ForwardToken:
-			if v := t.Get(); v != nil {
-				queue.Unshift(set{
-					token: v,
-					scope: nScope,
-				})
-			}
-		case token.ListToken:
-			for i := t.Len() - 1; i >= 0; i-- {
-				c, _ := t.Get(i)
-
-				queue.Unshift(set{
-					token: c,
-					scope: nScope,
-				})
-			}
-		}
-	}
-
-	alreadyFuzzed := make(map[token.Token]struct{})
-
-	for i := len(fuzzAgain) - 1; i >= 0; i-- {
-		queue.Unshift(fuzzAgain[i])
-	}
-
-	for !queue.Empty() {
-		v, _ := queue.Shift()
-		tok := v.(token.Token)
-
-		if _, ok := alreadyFuzzed[tok]; ok {
-			continue
-		}
-
-		alreadyFuzzed[tok] = struct{}{}
-
-		switch tok.(type) {
-		case *sequences.SequenceExistingItem:
-			log.Debugf("Fuzz again %p(%#v)", tok, tok)
-
-			err := tok.Permutation(uint(r.Int63n(int64(tok.Permutations())) + 1))
-			if err != nil {
-				log.Panic(err)
-			}
-		}
-
-		switch t := tok.(type) {
-		case token.ForwardToken:
-			if v := t.Get(); v != nil {
-				queue.Unshift(v)
-			}
-		case token.ListToken:
-			for i := t.Len() - 1; i >= 0; i-- {
-				c, _ := t.Get(i)
-
-				queue.Unshift(c)
-			}
-		}
-	}*/
 }

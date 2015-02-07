@@ -46,7 +46,9 @@ type ListToken interface {
 	ReplaceInternal
 }
 
+// Follow defines if the children of a token should be traversed
 type Follow interface {
+	// Follow returns if the children of the token should be traversed
 	Follow() bool
 }
 
@@ -293,6 +295,7 @@ func NewVariableScopeFrom(s map[string]Token) *VariableScope {
 	}
 }
 
+// Combine returns a map which holds the combination of all variable scopes
 func (s *VariableScope) Combine() map[string]Token {
 	vs := make(map[string]Token)
 
