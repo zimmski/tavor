@@ -175,6 +175,9 @@ func TestLinearStrategy(t *testing.T) {
 func validateTavorLinear(t *testing.T, tok token.Token, input string, feedback func(out string) ReduceFeedbackType, expected []string, final string) {
 	errs := parser.ParseInternal(tok, bytes.NewBufferString(input))
 	Nil(t, errs)
+	if errs != nil {
+		panic(errs)
+	}
 
 	Equal(t, input, tok.String(), "Generation 0")
 

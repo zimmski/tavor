@@ -101,9 +101,11 @@ func (f *FuncFilter) InternalLogicalRemove(tok token.Token) token.Token {
 	return f
 }
 
-// InternalReplace replaces an old with a new internal token if it is referenced by this token
-func (f *FuncFilter) InternalReplace(oldToken, newToken token.Token) {
+// InternalReplace replaces an old with a new internal token if it is referenced by this token. The error return argument is not nil, if the replacement is not suitable.
+func (f *FuncFilter) InternalReplace(oldToken, newToken token.Token) error {
 	if f.token == oldToken {
 		f.token = newToken
 	}
+
+	return nil
 }

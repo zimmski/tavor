@@ -6,6 +6,7 @@ import (
 
 	"github.com/zimmski/tavor/token"
 	"github.com/zimmski/tavor/token/lists"
+	"github.com/zimmski/tavor/token/primitives"
 )
 
 // Sequence implements a general sequence token which can generate Item tokens to use the internal sequence
@@ -45,7 +46,12 @@ func (s *Sequence) existing(r uint, except []token.Token) int {
 	exceptLookup := make(map[int]struct{})
 
 	for i := 0; i < len(except); i++ {
-		switch t := except[i].(type) {
+		tok := except[i]
+		if v, ok := tok.(*primitives.Scope); ok {
+			tok = v.Get()
+		}
+
+		switch t := tok.(type) {
 		case token.ListToken:
 			for j := 0; j < t.Len(); j++ {
 				tj, err := t.Get(j)
@@ -54,7 +60,9 @@ func (s *Sequence) existing(r uint, except []token.Token) int {
 				}
 				ex, err := strconv.Atoi(tj.String())
 				if err != nil {
-					panic(err) // TODO
+					// TODO
+
+					continue
 				}
 
 				exceptLookup[ex] = struct{}{}
@@ -62,7 +70,9 @@ func (s *Sequence) existing(r uint, except []token.Token) int {
 		default:
 			ex, err := strconv.Atoi(except[i].String())
 			if err != nil {
-				panic(err) // TODO
+				// TODO
+
+				continue
 			}
 
 			exceptLookup[ex] = struct{}{}
@@ -247,6 +257,7 @@ func (s *SequenceExistingItem) Parse(pars *token.InternalParser, cur int) (int, 
 }
 
 func (s *SequenceExistingItem) permutation(i uint) {
+	s.value = -1 // TODO set this token to a default value so we do not get confused when it is looked up
 	s.value = s.sequence.existing(i, s.except)
 }
 
@@ -332,13 +343,15 @@ func (s *SequenceExistingItem) InternalLogicalRemove(tok token.Token) token.Toke
 	return s
 }
 
-// InternalReplace replaces an old with a new internal token if it is referenced by this token
-func (s *SequenceExistingItem) InternalReplace(oldToken, newToken token.Token) {
+// InternalReplace replaces an old with a new internal token if it is referenced by this token. The error return argument is not nil, if the replacement is not suitable.
+func (s *SequenceExistingItem) InternalReplace(oldToken, newToken token.Token) error {
 	for i := 0; i < len(s.except); i++ {
 		if s.except[i] == oldToken {
 			s.except[i] = newToken
 		}
 	}
+
+	return nil
 }
 
 // ResetToken interface methods
@@ -351,7 +364,7 @@ func (s *SequenceExistingItem) Reset() {
 // ScopeToken interface methods
 
 // SetScope sets the scope of the token
-func (s *SequenceExistingItem) SetScope(variableScope map[string]token.Token) {
+func (s *SequenceExistingItem) SetScope(variableScope *token.VariableScope) {
 	if len(s.except) != 0 {
 		for i := 0; i < len(s.except); i++ {
 			if tok, ok := s.except[i].(token.ScopeToken); ok {

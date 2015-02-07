@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"text/scanner"
 
+	"github.com/zimmski/container/list/linkedlist"
+
 	"github.com/zimmski/tavor"
 	"github.com/zimmski/tavor/log"
 	"github.com/zimmski/tavor/token"
@@ -25,9 +27,10 @@ import (
 const zeroRune = 0
 
 type tokenUsage struct {
-	token         token.Token
-	position      scanner.Position
-	variableScope map[string]token.Token
+	token          token.Token
+	position       scanner.Position
+	variableScope  *token.VariableScope
+	definitionName string
 }
 
 type attributeForwardUsage struct {
@@ -39,7 +42,12 @@ type attributeForwardUsage struct {
 	operator          string
 	operatorToken     token.Token
 	pointer           *primitives.Pointer
-	variableScope     map[string]token.Token
+	variableScope     *token.VariableScope
+}
+
+type call struct {
+	from          string
+	variableScope *token.VariableScope
 }
 
 type tavorParser struct {
@@ -52,6 +60,8 @@ type tavorParser struct {
 	lookupUsage    map[token.Token]struct{}
 	used           map[string][]tokenUsage
 	variableUsages []token.Token
+
+	called map[string][]call
 
 	forwardAttributeUsage []attributeForwardUsage
 }
@@ -76,7 +86,41 @@ func (p *tavorParser) expectScanRune(expect rune) (rune, error) {
 	return p.expectRune(expect, got)
 }
 
-func (p *tavorParser) parseGlobalScope(variableScope map[string]token.Token) error {
+func (p *tavorParser) expectText(expect string, got rune) (rune, error) {
+	got, err := p.expectRune(scanner.Ident, got)
+	if err != nil {
+		return zeroRune, err
+	}
+
+	if g := p.scan.TokenText(); g != expect {
+		return zeroRune, &token.ParserError{
+			Message:  fmt.Sprintf("expected %q got %q", expect, g),
+			Type:     token.ParseErrorExpectOperator,
+			Position: p.scan.Pos(),
+		}
+	}
+
+	return got, nil
+}
+
+func (p *tavorParser) expectScanText(expect string) (rune, error) {
+	got, err := p.expectScanRune(scanner.Ident)
+	if err != nil {
+		return zeroRune, err
+	}
+
+	if g := p.scan.TokenText(); g != expect {
+		return zeroRune, &token.ParserError{
+			Message:  fmt.Sprintf("expected %q got %q", expect, g),
+			Type:     token.ParseErrorExpectOperator,
+			Position: p.scan.Pos(),
+		}
+	}
+
+	return got, nil
+}
+
+func (p *tavorParser) parseGlobalScope(variableScope *token.VariableScope) error {
 	var err error
 
 	c := p.scan.Scan()
@@ -115,8 +159,8 @@ func (p *tavorParser) parseGlobalScope(variableScope map[string]token.Token) err
 	return nil
 }
 
-func (p *tavorParser) getToken(name string, variableScope map[string]token.Token) token.Token {
-	if tok, ok := variableScope[name]; ok {
+func (p *tavorParser) getToken(definitionName string, name string, variableScope *token.VariableScope) token.Token {
+	if tok := variableScope.Get(name); tok != nil {
 		if v, ok := tok.(token.VariableToken); ok {
 			tok = variables.NewVariableValue(v)
 
@@ -143,9 +187,10 @@ func (p *tavorParser) getToken(name string, variableScope map[string]token.Token
 			position: p.scan.Position,
 		}
 		p.earlyUse[name] = append(p.earlyUse[name], tokenUsage{
-			token:         b,
-			position:      p.scan.Position,
-			variableScope: variableScope,
+			token:          b,
+			position:       p.scan.Position,
+			variableScope:  variableScope,
+			definitionName: definitionName,
 		})
 	}
 
@@ -213,11 +258,13 @@ func (p *tavorParser) getToken(name string, variableScope map[string]token.Token
 				token:    ntok,
 				position: p.scan.Position,
 			}
-			if t, ok := tok.(*primitives.Pointer); ok && t.Get() == nil {
+
+			if t, ok := tok.(*primitives.Pointer); ok && t.Resolve() == nil {
 				p.earlyUse[name] = append(p.earlyUse[name], tokenUsage{
-					token:         ntok,
-					position:      p.scan.Position,
-					variableScope: variableScope,
+					token:          ntok,
+					position:       p.scan.Position,
+					variableScope:  variableScope,
+					definitionName: definitionName,
 				})
 			}
 
@@ -229,10 +276,25 @@ func (p *tavorParser) getToken(name string, variableScope map[string]token.Token
 
 	p.lookupUsage[tok] = struct{}{}
 
+	p.addCall(definitionName, variableScope, name)
+
 	return tok
 }
 
-func (p *tavorParser) parseTerm(definitionName string, c rune, variableScope map[string]token.Token) (rune, []token.Token, error) {
+func (p *tavorParser) addCall(definitionName string, variableScope *token.VariableScope, name string) {
+	if _, ok := p.called[name]; !ok {
+		p.called[name] = make([]call, 0, 1)
+	}
+
+	c := call{
+		from:          definitionName,
+		variableScope: variableScope,
+	}
+
+	p.called[name] = append(p.called[name], c)
+}
+
+func (p *tavorParser) parseTerm(definitionName string, c rune, variableScope *token.VariableScope) (rune, []token.Token, error) {
 	var err error
 	var tokens []token.Token
 
@@ -246,7 +308,8 @@ OUT:
 		case scanner.Ident:
 			name := p.scan.TokenText()
 
-			tok := p.getToken(name, variableScope)
+			variableScope = variableScope.Push()
+			tok := p.getToken(definitionName, name, variableScope)
 
 			addToken(tok)
 		case scanner.Int:
@@ -588,7 +651,7 @@ OUT:
 			}
 
 			tokens[len(tokens)-1] = variable
-			variableScope[variableName] = variable
+			variableScope.Set(variableName, variable)
 
 			p.variableUsages = append(p.variableUsages, variable)
 
@@ -622,7 +685,7 @@ OUT:
 	return c, tokens, nil
 }
 
-func (p *tavorParser) parseExpression(definitionName string, variableScope map[string]token.Token) (rune, token.Token, error) {
+func (p *tavorParser) parseExpression(definitionName string, variableScope *token.VariableScope) (rune, token.Token, error) {
 	log.Debug("START expression")
 
 	c := p.scan.Scan()
@@ -644,7 +707,7 @@ func (p *tavorParser) parseExpression(definitionName string, variableScope map[s
 	return c, tok, nil
 }
 
-func (p *tavorParser) parseExpressionTerm(definitionName string, c rune, variableScope map[string]token.Token) (rune, token.Token, error) {
+func (p *tavorParser) parseExpressionTerm(definitionName string, c rune, variableScope *token.VariableScope) (rune, token.Token, error) {
 	var tok token.Token
 	var err error
 
@@ -652,7 +715,6 @@ func (p *tavorParser) parseExpressionTerm(definitionName string, c rune, variabl
 	switch c {
 	case scanner.Ident:
 		attribute := p.scan.TokenText()
-		attributePosition := p.scan.Position
 
 		switch attribute {
 		case "defined":
@@ -662,55 +724,10 @@ func (p *tavorParser) parseExpressionTerm(definitionName string, c rune, variabl
 			}
 
 			name := p.scan.TokenText()
-			namePosition := p.scan.Position
-
-			tok, ok := variableScope[name]
-
-			isPointer := false
-
-			if ok {
-				if _, pp := tok.(*primitives.Pointer); pp {
-					isPointer = true
-				}
-			}
-
-			nVariableScope := make(map[string]token.Token, len(variableScope))
-			for k, v := range variableScope {
-				nVariableScope[k] = v
-			}
-
-			if !ok || isPointer {
-				log.Debugf("parseTokenAttribute use empty pointer for %s.%s", name, attribute)
-
-				var tokenInterface *token.Token
-
-				pointer := primitives.NewEmptyPointer(tokenInterface)
-				nPointer := primitives.NewPointer(pointer)
-
-				p.forwardAttributeUsage = append(p.forwardAttributeUsage, attributeForwardUsage{
-					definitionName:    definitionName,
-					tokenName:         name,
-					tokenPosition:     namePosition,
-					attribute:         attribute,
-					attributePosition: attributePosition,
-					pointer:           pointer,
-					variableScope:     nVariableScope,
-				})
-
-				tok = nPointer
-			} else {
-				c, tok, err = p.selectTokenAttribute(definitionName, tok, name, attribute, attributePosition, "", nil, c, nVariableScope)
-				if err != nil {
-					return zeroRune, nil, err
-				}
-			}
-
-			variableScope[name] = tok
-			nVariableScope[name] = tok
 
 			c = p.scan.Scan()
 
-			return c, conditions.NewExpressionPointer(tok), nil
+			return c, conditions.NewVariableDefined(name, variableScope), nil
 		default:
 			if p.scan.Peek() == '.' {
 				c, tok, err = p.parseTokenAttribute(definitionName, c, variableScope)
@@ -720,7 +737,8 @@ func (p *tavorParser) parseExpressionTerm(definitionName string, c rune, variabl
 			} else {
 				name := p.scan.TokenText()
 
-				tok = p.getToken(name, variableScope)
+				variableScope = variableScope.Push()
+				tok = p.getToken(definitionName, name, variableScope)
 
 				c = p.scan.Scan()
 			}
@@ -769,12 +787,166 @@ func (p *tavorParser) parseExpressionTerm(definitionName string, c rune, variabl
 		case '/':
 			tok = expressions.NewDivArithmetic(tok, t)
 		}
+	case scanner.Ident:
+		switch op := p.scan.TokenText(); op {
+		case "path":
+			c, tok, err = p.parseExpressionOperatorPath(tok, definitionName, c, variableScope)
+			if err != nil {
+				return zeroRune, nil, err
+			}
+		default:
+			return zeroRune, nil, &token.ParserError{
+				Message:  fmt.Sprintf("Operator %q is unknown", op),
+				Type:     token.ParseErrorUnkownOperator,
+				Position: p.scan.Pos(),
+			}
+		}
 	}
 
 	return c, tok, nil
 }
 
-func (p *tavorParser) parseTokenAttribute(definitionName string, c rune, variableScope map[string]token.Token) (rune, token.Token, error) {
+func (p *tavorParser) parseExpressionGroup(definitionName string, variableScope *token.VariableScope, max int) ([]token.Token, error) {
+	_, err := p.expectScanRune('(')
+	if err != nil {
+		return nil, err
+	}
+
+	c := p.scan.Scan()
+
+	var tok token.Token
+	var toks []token.Token
+
+	for {
+		c, tok, err = p.parseExpressionTerm(definitionName, c, variableScope) // TODO
+		if err != nil {
+			return nil, err
+		} else if tok == nil {
+			return nil, &token.ParserError{
+				Message:  "expected a expression",
+				Type:     token.ParseErrorExpectedExpressionTerm,
+				Position: p.scan.Pos(),
+			}
+		}
+
+		toks = append(toks, tok)
+
+		if (max != -1 && len(toks) >= max) || c != ',' {
+			break
+		}
+
+		c = p.scan.Scan()
+	}
+
+	_, err = p.expectRune(')', c)
+	if err != nil {
+		return nil, err
+	}
+
+	return toks, err
+}
+
+func (p *tavorParser) parseExpressionOperatorNotIn(tok *sequences.Sequence, definitionName string, c rune, variableScope *token.VariableScope) (rune, token.Token, error) {
+	log.Debugf("Start not in operator")
+	defer log.Debugf("End not in operator")
+
+	_, err := p.expectText("not", c)
+	if err != nil {
+		return zeroRune, nil, err
+	}
+
+	_, err = p.expectScanText("in")
+	if err != nil {
+		return zeroRune, nil, err
+	}
+
+	expectToks, err := p.parseExpressionGroup(definitionName, variableScope, -1)
+	if err != nil {
+		return zeroRune, nil, err
+	}
+
+	c = p.scan.Scan()
+
+	return c, tok.ExistingItem(expectToks), nil
+}
+
+func (p *tavorParser) parseExpressionOperatorPath(tok token.Token, definitionName string, c rune, variableScope *token.VariableScope) (rune, token.Token, error) {
+	log.Debug("Start path operator")
+	defer log.Debug("End path operator")
+
+	listPosition := p.scan.Pos()
+	/*l, ok := tok.(token.ListToken)
+	if !ok {
+		return zeroRune, nil, &token.ParserError{
+			Message:  "expected list token",
+			Type:     token.ParseErrorInvalidTokenType,
+			Position: p.scan.Pos(),
+		}
+	}*/
+
+	_, err := p.expectScanText("from")
+	if err != nil {
+		return zeroRune, nil, err
+	}
+
+	ts, err := p.parseExpressionGroup(definitionName, variableScope, 1)
+	if err != nil {
+		return zeroRune, nil, err
+	}
+	from := ts[0]
+
+	log.Debugf("path operator from %p(%#v)", from, from)
+
+	nVariableScope := variableScope.Push()
+	nVariableScope.Set("e", variables.NewVariable("e", nil))
+
+	_, err = p.expectScanText("over")
+	if err != nil {
+		return zeroRune, nil, err
+	}
+
+	ts, err = p.parseExpressionGroup(definitionName, nVariableScope, 1)
+	if err != nil {
+		return zeroRune, nil, err
+	}
+	over := ts[0]
+
+	_, err = p.expectScanText("connect")
+	if err != nil {
+		return zeroRune, nil, err
+	}
+
+	_, err = p.expectScanText("by")
+	if err != nil {
+		return zeroRune, nil, err
+	}
+
+	connects, err := p.parseExpressionGroup(definitionName, nVariableScope, -1)
+	if err != nil {
+		return zeroRune, nil, err
+	}
+
+	_, err = p.expectScanText("without")
+	if err != nil {
+		return zeroRune, nil, err
+	}
+
+	withouts, err := p.parseExpressionGroup(definitionName, nVariableScope, -1)
+	if err != nil {
+		return zeroRune, nil, err
+	}
+
+	c = p.scan.Scan()
+
+	tok, err = expressions.NewPath(tok, from, over, connects, withouts)
+	if err != nil {
+		err.(*token.ParserError).Position = listPosition
+	}
+
+	return c, tok, nil
+}
+
+func (p *tavorParser) parseTokenAttribute(definitionName string, c rune, variableScope *token.VariableScope) (rune, token.Token, error) {
 	log.Debug("new token attribute")
 
 	_, err := p.expectRune(scanner.Ident, c)
@@ -804,108 +976,23 @@ func (p *tavorParser) parseTokenAttribute(definitionName string, c rune, variabl
 
 	c = p.scan.Scan()
 
-	if c == scanner.Ident && p.scan.TokenText() == "not" {
-		_, err := p.expectScanRune(scanner.Ident)
-		if err != nil {
-			return zeroRune, nil, err
-		}
-
-		if p.scan.TokenText() != "in" {
-			return zeroRune, nil, &token.ParserError{
-				Message:  fmt.Sprintf("expected operator %q not %q", "in", p.scan.TokenText()),
-				Type:     token.ParseErrorExpectOperator,
-				Position: p.scan.Pos(),
-			}
-		}
-
-		log.Debug("operator: not in")
-
-		_, err = p.expectScanRune('(')
-		if err != nil {
-			return zeroRune, nil, err
-		}
-
-		_, err = p.expectScanRune(scanner.Ident)
-		if err != nil {
-			return zeroRune, nil, err
-		}
-
-		expectName := p.scan.TokenText()
-		expectNamePosition := p.scan.Position
-
-		expectTok, ok := variableScope[expectName]
-
-		isPointer := false
-
-		if ok {
-			if _, pp := expectTok.(*primitives.Pointer); pp {
-				isPointer = true
-			}
-		}
-
-		attribute := "Value"
-
-		if !ok || isPointer {
-			log.Debugf("parseTokenAttribute use empty pointer for %s.%s", expectName, attribute)
-
-			var tokenInterface *token.Token
-
-			pointer := primitives.NewEmptyPointer(tokenInterface)
-			nPointer := primitives.NewPointer(pointer)
-
-			variableScope[expectName] = nPointer
-
-			nVariableScope := make(map[string]token.Token, len(variableScope))
-			for k, v := range variableScope {
-				nVariableScope[k] = v
-			}
-
-			p.forwardAttributeUsage = append(p.forwardAttributeUsage, attributeForwardUsage{
-				definitionName:    definitionName,
-				tokenName:         expectName,
-				tokenPosition:     expectNamePosition,
-				attribute:         attribute,
-				attributePosition: expectNamePosition,
-				pointer:           pointer,
-				variableScope:     nVariableScope,
-			})
-
-			expectTok = nPointer
-		} else {
-			c, expectTok, err = p.selectTokenAttribute(definitionName, expectTok, name, attribute, expectNamePosition, "", nil, c, variableScope)
-			if err != nil {
-				return zeroRune, nil, err
-			}
-		}
-
-		_, err = p.expectScanRune(')')
-		if err != nil {
-			return zeroRune, nil, err
-		}
-
-		op = "not in"
-		opToken = expectTok
-
-		c = p.scan.Scan()
-	}
-
 	var tok token.Token
 
 	use, ok := p.lookup[name]
 	if ok {
 		tok = use.token
 	} else {
-		tok, ok = variableScope[name]
+		tok = variableScope.Get(name)
 
 		isPointer := false
 
-		if ok {
+		if tok != nil {
 			if _, pp := tok.(*primitives.Pointer); pp {
 				isPointer = true
 			}
 		}
 
-		if !ok || isPointer {
+		if tok == nil || isPointer {
 			log.Debugf("parseTokenAttribute use empty pointer for %s.%s", name, attribute)
 
 			var tokenInterface *token.Token
@@ -913,12 +1000,9 @@ func (p *tavorParser) parseTokenAttribute(definitionName string, c rune, variabl
 			pointer := primitives.NewEmptyPointer(tokenInterface)
 			nPointer := primitives.NewPointer(pointer)
 
-			variableScope[name] = nPointer
+			variableScope.Set(name, nPointer)
 
-			nVariableScope := make(map[string]token.Token, len(variableScope))
-			for k, v := range variableScope {
-				nVariableScope[k] = v
-			}
+			nVariableScope := variableScope.Push()
 
 			p.forwardAttributeUsage = append(p.forwardAttributeUsage, attributeForwardUsage{
 				definitionName:    definitionName,
@@ -937,9 +1021,10 @@ func (p *tavorParser) parseTokenAttribute(definitionName string, c rune, variabl
 	}
 
 	p.used[name] = append(p.earlyUse[name], tokenUsage{
-		token:         nil,
-		position:      tokenPosition,
-		variableScope: variableScope,
+		token:          nil,
+		position:       tokenPosition,
+		variableScope:  variableScope,
+		definitionName: definitionName,
 	})
 
 	c, rtok, err := p.selectTokenAttribute(definitionName, tok, name, attribute, attributePosition, op, opToken, c, variableScope)
@@ -951,7 +1036,11 @@ func (p *tavorParser) parseTokenAttribute(definitionName string, c rune, variabl
 	return c, rtok, err
 }
 
-func (p *tavorParser) selectTokenAttribute(definitionName string, tok token.Token, tokenName string, attribute string, attributePosition scanner.Position, operator string, operatorToken token.Token, c rune, variableScope map[string]token.Token) (rune, token.Token, error) {
+func (p *tavorParser) selectTokenAttribute(definitionName string, tok token.Token, tokenName string, attribute string, attributePosition scanner.Position, operator string, operatorToken token.Token, c rune, variableScope *token.VariableScope) (rune, token.Token, error) {
+	if t, ok := tok.(*primitives.Scope); ok {
+		tok = t.Resolve()
+	}
+
 	log.Debugf("use (%p)%#v as token", tok, tok)
 
 	log.Debug("finished token attribute (or will be unknown token attribute)")
@@ -988,8 +1077,8 @@ func (p *tavorParser) selectTokenAttribute(definitionName string, tok token.Toke
 	case *sequences.Sequence:
 		switch attribute {
 		case "Existing":
-			if operator == "not in" {
-				return c, i.ExistingItem([]token.Token{operatorToken}), nil
+			if c == scanner.Ident && p.scan.TokenText() == "not" {
+				return p.parseExpressionOperatorNotIn(i, definitionName, c, variableScope)
 			}
 
 			return c, i.ExistingItem(nil), nil
@@ -1007,10 +1096,31 @@ func (p *tavorParser) selectTokenAttribute(definitionName string, tok token.Toke
 		switch attribute {
 		case "Count":
 			return c, aggregates.NewLen(i), nil
-		case "defined":
-			return c, conditions.NewVariableDefined(tokenName, variableScope), nil
 		case "Index":
 			return c, lists.NewIndexItem(variables.NewVariableValue(i)), nil
+		case "Item":
+			_, err := p.expectRune('(', c)
+			if err != nil {
+				return zeroRune, nil, err
+			}
+
+			c = p.scan.Scan()
+
+			c, index, err := p.parseExpressionTerm(definitionName, c, variableScope) // TODO
+			if err != nil {
+				return zeroRune, nil, err
+			}
+
+			_, err = p.expectRune(')', c)
+			if err != nil {
+				return zeroRune, nil, err
+			}
+
+			c = p.scan.Scan()
+
+			return c, variables.NewVariableItem(index, i), nil
+		case "Reference":
+			return c, variables.NewVariableReference(variables.NewVariable(tokenName, nil)), nil
 		case "Value":
 			v := variables.NewVariableValue(i)
 
@@ -1027,7 +1137,7 @@ func (p *tavorParser) selectTokenAttribute(definitionName string, tok token.Toke
 	}
 }
 
-func (p *tavorParser) parseScope(definitionName string, c rune, variableScope map[string]token.Token) (rune, []token.Token, error) {
+func (p *tavorParser) parseScope(definitionName string, c rune, variableScope *token.VariableScope) (rune, []token.Token, error) {
 	var err error
 	var tokens []token.Token
 
@@ -1199,7 +1309,7 @@ SCOPE:
 	return c, tokens, nil
 }
 
-func (p *tavorParser) parseConditionExpression(definitionName string, variableScope map[string]token.Token) (rune, conditions.BooleanExpression, error) {
+func (p *tavorParser) parseConditionExpression(definitionName string, variableScope *token.VariableScope) (rune, conditions.BooleanExpression, error) {
 	c, a, err := p.parseExpression(definitionName, variableScope)
 	if err != nil {
 		return zeroRune, nil, err
@@ -1231,7 +1341,7 @@ func (p *tavorParser) parseConditionExpression(definitionName string, variableSc
 	return c, conditions.NewBooleanEqual(a, b), nil
 }
 
-func (p *tavorParser) parseTokenDefinition(variableScope map[string]token.Token) (rune, error) {
+func (p *tavorParser) parseTokenDefinition(variableScope *token.VariableScope) (rune, error) {
 	var c rune
 	var err error
 
@@ -1264,11 +1374,7 @@ func (p *tavorParser) parseTokenDefinition(variableScope map[string]token.Token)
 	}
 
 	// each definition start its own scope
-	nVariableScope := make(map[string]token.Token, len(variableScope))
-	for k, v := range variableScope {
-		nVariableScope[k] = v
-	}
-	variableScope = nVariableScope
+	variableScope = variableScope.Push()
 
 	// start reading definition
 	c = p.scan.Scan()
@@ -1320,10 +1426,10 @@ func (p *tavorParser) parseTokenDefinition(variableScope map[string]token.Token)
 	return c, nil
 }
 
-func (p *tavorParser) registerNamedToken(name string, tok token.Token, tokenPosition scanner.Position, variableScope map[string]token.Token) error {
+func (p *tavorParser) setEarlyUsage(name string, tok token.Token) error {
 	// self loop?
 	if uses, ok := p.earlyUse[name]; ok {
-		log.Debugf("parseTokenDefinition fill empty pointer for %s", name)
+		log.Debugf("setEarlyUsage fill empty pointer for %s", name)
 
 		for _, use := range uses {
 			log.Debugf("use (%p)%#v for pointer (%p)%#v", tok, tok, use.token, use.token)
@@ -1341,8 +1447,19 @@ func (p *tavorParser) registerNamedToken(name string, tok token.Token, tokenPosi
 		delete(p.earlyUse, name)
 	}
 
+	return nil
+}
+
+func (p *tavorParser) registerNamedToken(name string, tok token.Token, tokenPosition scanner.Position, variableScope *token.VariableScope) error {
+	sTok := primitives.NewScope(tok)
+
+	err := p.setEarlyUsage(name, sTok)
+	if err != nil {
+		return err
+	}
+
 	p.lookup[name] = tokenUsage{
-		token:         tok,
+		token:         sTok,
 		position:      tokenPosition,
 		variableScope: variableScope,
 	}
@@ -1352,7 +1469,7 @@ func (p *tavorParser) registerNamedToken(name string, tok token.Token, tokenPosi
 	return nil
 }
 
-func (p *tavorParser) parseTypedTokenDefinition(variableScope map[string]token.Token) (rune, error) {
+func (p *tavorParser) parseTypedTokenDefinition(variableScope *token.VariableScope) (rune, error) {
 	var c rune
 	var err error
 
@@ -1560,6 +1677,67 @@ func (p *tavorParser) parseTypedTokenDefinition(variableScope map[string]token.T
 	return c, nil
 }
 
+func (p *tavorParser) getVariable(fromDefinition string, name string, pos scanner.Position) (token.VariableToken, error) {
+	calls, ok := p.called[fromDefinition]
+	if !ok {
+		return nil, nil
+	}
+
+	var v token.VariableToken
+
+	for _, c := range calls {
+		queue := linkedlist.New()
+		checked := make(map[string]struct{})
+		checked[fromDefinition] = struct{}{}
+
+		queue.Unshift(c)
+
+		var cv token.VariableToken
+
+		for !queue.Empty() {
+			i, _ := queue.Shift()
+			c := i.(call)
+
+			if vv := c.variableScope.Get(name); vv != nil {
+				if i, ok := vv.(token.VariableToken); ok {
+					cv = i
+				} else {
+					return nil, &token.ParserError{
+						Message:  fmt.Sprintf("variable token %q is not always used as a variable", name),
+						Type:     token.ParseErrorNotAlwaysUsedAsAVariable,
+						Position: pos,
+					}
+				}
+			}
+
+			if calls, ok := p.called[c.from]; ok {
+				checked[c.from] = struct{}{}
+
+				for _, c := range calls {
+					if _, ok := checked[c.from]; !ok {
+						queue.Unshift(c)
+					}
+				}
+			}
+		}
+
+		if cv == nil {
+			log.Debugf("Variable %q is not always defined", name)
+			/*return nil, &token.ParserError{
+				Message:  fmt.Sprintf("Variable %q is not always defined", name),
+				Type:     token.ParseErrorTokenNotDefined,
+				Position: pos,
+			}*/
+
+			return nil, nil
+		}
+
+		v = cv
+	}
+
+	return v, nil
+}
+
 // ParseTavor reads and parses a Tavor formatted input and returns its token graph representation beginning with the START token.
 // The error return argument is not nil if an error is encountered during reading or parsing the file e.g. a syntax or semantic error.
 func ParseTavor(src io.Reader) (token.Token, error) {
@@ -1568,6 +1746,8 @@ func ParseTavor(src io.Reader) (token.Token, error) {
 		lookup:      make(map[string]tokenUsage),
 		lookupUsage: make(map[token.Token]struct{}),
 		used:        make(map[string][]tokenUsage),
+
+		called: make(map[string][]call),
 	}
 
 	log.Debug("start parsing tavor file")
@@ -1579,7 +1759,7 @@ func ParseTavor(src io.Reader) (token.Token, error) {
 	}
 	p.scan.Whitespace = 1<<'\t' | 1<<' ' | 1<<'\r'
 
-	variableScope := make(map[string]token.Token)
+	variableScope := token.NewVariableScope()
 
 	if err := p.parseGlobalScope(variableScope); err != nil {
 		return nil, err
@@ -1600,8 +1780,38 @@ func ParseTavor(src io.Reader) (token.Token, error) {
 	})
 
 	for name, uses := range p.earlyUse {
+	USE:
 		for _, use := range uses {
 			if use.token.(*primitives.Pointer).Get() == nil {
+				if v := use.variableScope.Get(name); v != nil {
+					if vv, ok := v.(token.VariableToken); ok {
+						err := p.setEarlyUsage(name, variables.NewVariableValue(vv))
+						if err != nil {
+							return nil, err
+						}
+
+						break USE
+					} else {
+						return nil, &token.ParserError{
+							Message:  fmt.Sprintf("variable token %q is not always used as a variable", name),
+							Type:     token.ParseErrorNotAlwaysUsedAsAVariable,
+							Position: use.position,
+						}
+					}
+				}
+
+				// last chance that this token is a variable but it must be ALWAYS a variable
+				if v, err := p.getVariable(use.definitionName, name, use.position); err != nil {
+					return nil, err
+				} else if v != nil {
+					err = p.setEarlyUsage(name, variables.NewVariableValue(v))
+					if err != nil {
+						return nil, err
+					}
+
+					break USE
+				}
+
 				return nil, &token.ParserError{
 					Message:  fmt.Sprintf("token %q is not defined", name),
 					Type:     token.ParseErrorTokenNotDefined,
@@ -1614,59 +1824,39 @@ func ParseTavor(src io.Reader) (token.Token, error) {
 	for _, forwardUse := range p.forwardAttributeUsage {
 		var tok token.Token
 
+		// look for the token in the global table
 		use, ok := p.lookup[forwardUse.tokenName]
 		if ok {
 			tok = use.token
-		} else {
-			found := false
-			var typ reflect.Type
-
-			for _, usage := range p.used[forwardUse.definitionName] {
-				if t, ok := usage.variableScope[forwardUse.tokenName]; ok {
-					found = true
-
-					if typ == nil {
-						tok = t
-						typ = reflect.TypeOf(t)
-					} else {
-						tType := reflect.TypeOf(t)
-
-						if typ != tType {
-							panic(fmt.Errorf("TODO handle this better: different types %v vs %v", typ, tType))
-						}
-					}
-				} else if forwardUse.attribute != "defined" {
-					return nil, &token.ParserError{
-						Message:  fmt.Sprintf("token or variable %q is not defined", forwardUse.tokenName),
-						Type:     token.ParseErrorTokenNotDefined,
-						Position: usage.position,
-					}
-				}
+			if t, ok := tok.(*primitives.Pointer); ok {
+				tok = t.Resolve()
 			}
-
-			if !found {
-				return nil, &token.ParserError{
-					Message:  fmt.Sprintf("token or variable %q is not defined", forwardUse.tokenName),
-					Type:     token.ParseErrorTokenNotDefined,
-					Position: forwardUse.tokenPosition,
+		}
+		// look for the token in the forward scope
+		if tok == nil {
+			tok = forwardUse.variableScope.Get(forwardUse.tokenName)
+			if t, ok := tok.(*primitives.Pointer); ok {
+				tok = t.Resolve()
+			}
+		}
+		// look for the token in the call scope
+		if tok == nil {
+			if v, err := p.getVariable(forwardUse.definitionName, forwardUse.tokenName, forwardUse.tokenPosition); err != nil {
+				return nil, err
+			} else if v != nil {
+				tok = v
+				if t, ok := tok.(*primitives.Pointer); ok {
+					tok = t.Resolve()
 				}
 			}
 		}
 
-		if po, ok := tok.(*primitives.Pointer); ok {
-			log.Debugf("Found pointer in forwardAttributeUsage %#v", forwardUse)
-
-			for {
-				c := po.InternalGet()
-
-				po, ok = c.(*primitives.Pointer)
-				if !ok {
-					log.Debugf("Replaced pointer %p(%#v) with %p(%#v)", tok, tok, c, c)
-
-					tok = c
-
-					break
-				}
+		// give up, there is no token we can use
+		if tok == nil {
+			return nil, &token.ParserError{
+				Message:  fmt.Sprintf("token or variable %q is not defined", forwardUse.tokenName),
+				Type:     token.ParseErrorTokenNotDefined,
+				Position: forwardUse.tokenPosition,
 			}
 		}
 
@@ -1711,7 +1901,10 @@ func ParseTavor(src io.Reader) (token.Token, error) {
 				if !ok {
 					log.Debugf("Replaced pointer %p(%#v) with %p(%#v)", tok, tok, c, c)
 
-					variable.(token.ForwardToken).InternalReplace(tok, c)
+					err := variable.(token.ForwardToken).InternalReplace(tok, c)
+					if err != nil {
+						return nil, err
+					}
 
 					break
 				}
@@ -1724,7 +1917,12 @@ func ParseTavor(src io.Reader) (token.Token, error) {
 	// TODO this could be done much better especially we could add ALL resets here not just sequences
 	var automaticResets []token.Token
 	for _, usage := range p.lookup {
-		if tok, ok := usage.token.(*sequences.Sequence); ok {
+		tok := usage.token
+		if t, ok := tok.(token.Resolve); ok {
+			tok = t.Resolve()
+		}
+
+		if tok, ok := tok.(*sequences.Sequence); ok {
 			automaticResets = append(automaticResets, tok.ResetItem())
 		}
 	}
@@ -1734,8 +1932,15 @@ func ParseTavor(src io.Reader) (token.Token, error) {
 		start = lists.NewAll(automaticResets...)
 	}
 
-	start = token.UnrollPointers(start)
-	start = token.MinimizeTokens(start)
+	start, err := token.UnrollPointers(start)
+	if err != nil {
+		return nil, err
+	}
+
+	start, err = token.MinimizeTokens(start)
+	if err != nil {
+		return nil, err
+	}
 
 	token.ResetScope(start)
 

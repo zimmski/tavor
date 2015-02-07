@@ -109,11 +109,13 @@ func (c *Optional) InternalLogicalRemove(tok token.Token) token.Token {
 	return c
 }
 
-// InternalReplace replaces an old with a new internal token if it is referenced by this token
-func (c *Optional) InternalReplace(oldToken, newToken token.Token) {
+// InternalReplace replaces an old with a new internal token if it is referenced by this token. The error return argument is not nil, if the replacement is not suitable.
+func (c *Optional) InternalReplace(oldToken, newToken token.Token) error {
 	if c.token == oldToken {
 		c.token = newToken
 	}
+
+	return nil
 }
 
 // OptionalToken interface methods

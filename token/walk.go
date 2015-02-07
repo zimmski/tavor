@@ -59,6 +59,10 @@ func WalkInternal(root Token, walkFunc func(tok Token) error) error {
 			return err
 		}
 
+		if t, ok := v.(Follow); ok && !t.Follow() {
+			continue
+		}
+
 		switch t := tok.(type) {
 		case ForwardToken:
 			if v := t.InternalGet(); v != nil {
@@ -83,19 +87,21 @@ func WalkInternal(root Token, walkFunc func(tok Token) error) error {
 // WalkInternalTail traverses a internal token graph beginning from the given token and calls for every newly visited token the given function after it has traversed all children.
 // A depth-first algorithm is used to traverse the graph. If the given walk function returns an error, the whole walk process ends by returning the error back to the caller
 func WalkInternalTail(root Token, walkFunc func(tok Token) error) error {
-	switch t := root.(type) {
-	case ForwardToken:
-		if v := t.InternalGet(); v != nil {
-			if err := WalkInternalTail(v, walkFunc); err != nil {
-				return err
+	if t, ok := root.(Follow); !ok || t.Follow() {
+		switch t := root.(type) {
+		case ForwardToken:
+			if v := t.InternalGet(); v != nil {
+				if err := WalkInternalTail(v, walkFunc); err != nil {
+					return err
+				}
 			}
-		}
-	case ListToken:
-		for i := 0; i < t.InternalLen(); i++ {
-			c, _ := t.InternalGet(i)
+		case ListToken:
+			for i := 0; i < t.InternalLen(); i++ {
+				c, _ := t.InternalGet(i)
 
-			if err := WalkInternalTail(c, walkFunc); err != nil {
-				return err
+				if err := WalkInternalTail(c, walkFunc); err != nil {
+					return err
+				}
 			}
 		}
 	}

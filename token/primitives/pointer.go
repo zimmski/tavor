@@ -151,11 +151,13 @@ func (p *Pointer) InternalLogicalRemove(tok token.Token) token.Token {
 	return p
 }
 
-// InternalReplace replaces an old with a new internal token if it is referenced by this token
-func (p *Pointer) InternalReplace(oldToken, newToken token.Token) {
+// InternalReplace replaces an old with a new internal token if it is referenced by this token. The error return argument is not nil, if the replacement is not suitable.
+func (p *Pointer) InternalReplace(oldToken, newToken token.Token) error {
 	if p.token == oldToken {
 		p.token = newToken
 	}
+
+	return nil
 }
 
 // BooleanExpression interface methods
@@ -175,4 +177,22 @@ func (p *Pointer) Minimize() token.Token {
 	// Never ever _EVER_ minimize a pointer since it is normally there for a reason
 
 	return nil
+}
+
+// Resolve interface methods
+
+// Resolve returns the token which is referenced by the token, or a path of tokens
+func (p *Pointer) Resolve() token.Token {
+	var ok bool
+
+	po := p
+
+	for {
+		c := po.InternalGet()
+
+		po, ok = c.(*Pointer)
+		if !ok {
+			return c
+		}
+	}
 }

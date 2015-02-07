@@ -1,6 +1,8 @@
 package variables
 
 import (
+	"strconv"
+
 	"github.com/zimmski/tavor/log"
 	"github.com/zimmski/tavor/token"
 	"github.com/zimmski/tavor/token/primitives"
@@ -99,11 +101,13 @@ func (v *Variable) InternalLogicalRemove(tok token.Token) token.Token {
 	return v
 }
 
-// InternalReplace replaces an old with a new internal token if it is referenced by this token
-func (v *Variable) InternalReplace(oldToken, newToken token.Token) {
+// InternalReplace replaces an old with a new internal token if it is referenced by this token. The error return argument is not nil, if the replacement is not suitable.
+func (v *Variable) InternalReplace(oldToken, newToken token.Token) error {
 	if v.token == oldToken {
 		v.token = newToken
 	}
+
+	return nil
 }
 
 // IndexToken interface methods
@@ -120,8 +124,147 @@ func (v *Variable) Index() int {
 // ScopeToken interface methods
 
 // SetScope sets the scope of the token
-func (v *Variable) SetScope(variableScope map[string]token.Token) {
-	variableScope[v.name] = v
+func (v *Variable) SetScope(variableScope *token.VariableScope) {
+	variableScope.Set(v.name, v)
+}
+
+// VariableItem implements a token which references a Variable token to output its referenced token
+type VariableItem struct {
+	index    token.Token
+	variable token.VariableToken
+}
+
+// NewVariableItem returns a new instance of a VariableItem token
+func NewVariableItem(index token.Token, variable token.VariableToken) *VariableItem {
+	return &VariableItem{
+		index:    index,
+		variable: variable,
+	}
+}
+
+// Token interface methods
+
+// Clone returns a copy of the token and all its children
+func (v *VariableItem) Clone() token.Token {
+	return &VariableItem{
+		index:    v.index.Clone(),
+		variable: v.variable,
+	}
+}
+
+// Parse tries to parse the token beginning from the current position in the parser data.
+// If the parsing is successful the error argument is nil and the next current position after the token is returned.
+func (v *VariableItem) Parse(pars *token.InternalParser, cur int) (int, []error) {
+	panic("TODO implement")
+}
+
+// Permutation sets a specific permutation for this token
+func (v *VariableItem) Permutation(i uint) error {
+	// do nothing
+
+	return nil
+}
+
+// Permutations returns the number of permutations for this token
+func (v *VariableItem) Permutations() uint {
+	return 1
+}
+
+// PermutationsAll returns the number of all possible permutations for this token including its children
+func (v *VariableItem) PermutationsAll() uint {
+	return 1
+}
+
+func (v *VariableItem) String() string {
+	i := v.Index()
+
+	l, ok := v.variable.Get().(token.ListToken)
+	if !ok {
+		// TODO
+
+		return ""
+	}
+
+	tok, err := l.Get(i)
+	if err != nil {
+		panic(err) // TODO
+	}
+
+	return tok.String()
+}
+
+// ForwardToken interface methods
+
+// Get returns the current referenced token
+func (v *VariableItem) Get() token.Token {
+	return nil
+}
+
+// InternalGet returns the current referenced internal token
+func (v *VariableItem) InternalGet() token.Token {
+	return v.variable
+}
+
+// InternalLogicalRemove removes the referenced internal token and returns the replacement for the current token or nil if the current token should be removed.
+func (v *VariableItem) InternalLogicalRemove(tok token.Token) token.Token {
+	if v.variable == tok {
+		return nil
+	}
+
+	return v
+}
+
+// InternalReplace replaces an old with a new internal token if it is referenced by this token. The error return argument is not nil, if the replacement is not suitable.
+func (v *VariableItem) InternalReplace(oldToken, newToken token.Token) error {
+	if v.variable == oldToken {
+		v.variable = newToken.(token.VariableToken)
+	}
+
+	return nil
+}
+
+// Follow returns if the children of the token should be traversed
+func (v *VariableItem) Follow() bool {
+	return false
+}
+
+// IndexToken interface methods
+
+// Index returns the index of this token in its parent token
+func (v *VariableItem) Index() int {
+	i, err := strconv.Atoi(v.index.String())
+	if err != nil {
+		panic(err) // TODO
+	}
+
+	return i
+}
+
+// ScopeToken interface methods
+
+// SetScope sets the scope of the token
+func (v *VariableItem) SetScope(variableScope *token.VariableScope) {
+	if tok, ok := v.index.(token.ScopeToken); ok {
+		tok.SetScope(variableScope)
+	}
+
+	tok := variableScope.Get(v.variable.Name())
+
+	if p, ok := tok.(*primitives.Pointer); ok {
+		tok = p.Resolve()
+	}
+
+	if tok == nil { // TODO
+		log.Debugf("TODO VariableItem: this should not happen")
+
+		return
+	}
+
+	if t, ok := tok.(*VariableItem); ok {
+		v.variable = t.variable
+	} else {
+		v.variable = tok.(token.VariableToken)
+	}
 }
 
 // VariableSave is based on the general Variable token but does prevent the output of the referenced token
@@ -152,6 +295,94 @@ func NewVariableSave(name string, token token.Token) *VariableSave {
 			name:  name,
 			token: token,
 		},
+	}
+}
+
+// VariableReference implements a token which references a Variable token to output its referenced token
+type VariableReference struct {
+	variable token.VariableToken
+}
+
+// NewVariableReference returns a new instance of a VariableReference token
+func NewVariableReference(variable token.VariableToken) *VariableReference {
+	return &VariableReference{
+		variable: variable,
+	}
+}
+
+// Reference returns the referenced token
+func (v *VariableReference) Reference() token.Token {
+	return v.variable.Get()
+}
+
+// Token interface methods
+
+// Clone returns a copy of the token and all its children
+func (v *VariableReference) Clone() token.Token {
+	return &VariableReference{
+		variable: v.variable,
+	}
+}
+
+// Parse tries to parse the token beginning from the current position in the parser data.
+// If the parsing is successful the error argument is nil and the next current position after the token is returned.
+func (v *VariableReference) Parse(pars *token.InternalParser, cur int) (int, []error) {
+	panic("TODO implement")
+}
+
+// Permutation sets a specific permutation for this token
+func (v *VariableReference) Permutation(i uint) error {
+	// do nothing
+
+	return nil
+}
+
+// Permutations returns the number of permutations for this token
+func (v *VariableReference) Permutations() uint {
+	return 1
+}
+
+// PermutationsAll returns the number of all possible permutations for this token including its children
+func (v *VariableReference) PermutationsAll() uint {
+	return 1
+}
+
+func (v *VariableReference) String() string {
+	return ""
+}
+
+// Follow returns if the children of the token should be traversed
+func (v *VariableReference) Follow() bool {
+	return false
+}
+
+// IndexToken interface methods
+
+// Index returns the index of this token in its parent token
+func (v *VariableReference) Index() int {
+	return v.variable.Index()
+}
+
+// ScopeToken interface methods
+
+// SetScope sets the scope of the token
+func (v *VariableReference) SetScope(variableScope *token.VariableScope) {
+	tok := variableScope.Get(v.variable.Name())
+
+	if p, ok := tok.(*primitives.Pointer); ok {
+		tok = p.Resolve()
+	}
+
+	if tok == nil { // TODO
+		log.Debugf("TODO VariableReference: this should not happen")
+
+		return
+	}
+
+	if t, ok := tok.(*VariableReference); ok {
+		v.variable = t.variable
+	} else {
+		v.variable = tok.(token.VariableToken)
 	}
 }
 
@@ -224,11 +455,13 @@ func (v *VariableValue) InternalLogicalRemove(tok token.Token) token.Token {
 	return v
 }
 
-// InternalReplace replaces an old with a new internal token if it is referenced by this token
-func (v *VariableValue) InternalReplace(oldToken, newToken token.Token) {
+// InternalReplace replaces an old with a new internal token if it is referenced by this token. The error return argument is not nil, if the replacement is not suitable.
+func (v *VariableValue) InternalReplace(oldToken, newToken token.Token) error {
 	if v.variable == oldToken {
 		v.variable = newToken.(token.VariableToken)
 	}
+
+	return nil
 }
 
 // IndexToken interface methods
@@ -241,22 +474,15 @@ func (v *VariableValue) Index() int {
 // ScopeToken interface methods
 
 // SetScope sets the scope of the token
-func (v *VariableValue) SetScope(variableScope map[string]token.Token) {
-	tok := variableScope[v.variable.Name()]
+func (v *VariableValue) SetScope(variableScope *token.VariableScope) {
+	tok := variableScope.Get(v.variable.Name())
 
 	if p, ok := tok.(*primitives.Pointer); ok {
-		for {
-			tok = p.InternalGet()
-
-			p, ok = tok.(*primitives.Pointer)
-			if !ok {
-				break
-			}
-		}
+		tok = p.Resolve()
 	}
 
 	if tok == nil { // TODO
-		log.Debugf("TODO this should not happen")
+		log.Debugf("TODO VariableValue: this should not happen")
 
 		return
 	}

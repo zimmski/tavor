@@ -37,14 +37,19 @@ type List interface {
 	InternalLen() int
 	// InternalLogicalRemove removes the referenced internal token and returns the replacement for the current token or nil if the current token should be removed.
 	InternalLogicalRemove(tok Token) Token
-	// InternalReplace replaces an old with a new internal token if it is referenced by this token
-	InternalReplace(oldToken, newToken Token)
 }
 
 // ListToken combines the Token and List interface
 type ListToken interface {
 	Token
 	List
+	InternalReplace
+}
+
+// Follow defines if the children of a token should be traversed
+type Follow interface {
+	// Follow returns if the children of the token should be traversed
+	Follow() bool
 }
 
 // Forward defines a forward token which can reference another token
@@ -56,14 +61,13 @@ type Forward interface {
 	InternalGet() Token
 	// InternalLogicalRemove removes the referenced internal token and returns the replacement for the current token or nil if the current token should be removed.
 	InternalLogicalRemove(tok Token) Token
-	// InternalReplace replaces an old with a new internal token if it is referenced by this token
-	InternalReplace(oldToken, newToken Token)
 }
 
 // ForwardToken combines the Token and Forward interface
 type ForwardToken interface {
 	Token
 	Forward
+	InternalReplace
 }
 
 // Index defines an index token which provides the index in its parent token
@@ -132,6 +136,12 @@ type PointerToken interface {
 	Pointer
 }
 
+// InternalReplace defines if a token has methods to replace internal tokens
+type InternalReplace interface {
+	// InternalReplace replaces an old with a new internal token if it is referenced by this token. The error return argument is not nil, if the replacement is not suitable.. The error return argument is not nil, if the replacement is not suitable.
+	InternalReplace(oldToken, newToken Token) error
+}
+
 // Reset defines a reset token which can reset its (internal) state
 type Reset interface {
 	// Reset resets the (internal) state of this token and its dependences
@@ -170,16 +180,28 @@ type ReleaseToken interface {
 	Release
 }
 
+// Resolve defines if a token has methods to resolve its token path
+type Resolve interface {
+	// Resolve returns the token which is referenced by the token, or a path of tokens
+	Resolve() Token
+}
+
 // Scope defines a scope token which holds a scope
 type Scope interface {
 	// SetScope sets the scope of the token
-	SetScope(variableScope map[string]Token)
+	SetScope(variableScope *VariableScope)
 }
 
 // ScopeToken combines the Token and Scope interface
 type ScopeToken interface {
 	Token
 	Scope
+}
+
+// Scoping defines a scoping token which holds a new scope
+type Scoping interface {
+	// Scoping returns if the token holds a new scope
+	Scoping() bool
 }
 
 // Variable defines a variable token which holds a variable
@@ -251,6 +273,90 @@ func (err *ReduceError) Error() string {
 
 ////////////////////////
 
+// VariableScope holds a variable scope and a reference to its parent scope
+type VariableScope struct {
+	parent    *VariableScope
+	variables map[string]Token
+}
+
+// NewVariableScope returns a new instance of a variable scope
+func NewVariableScope() *VariableScope {
+	return &VariableScope{
+		parent:    nil,
+		variables: make(map[string]Token),
+	}
+}
+
+// NewVariableScopeFrom returns a new instance of a variable scope initializing the scope with the given map
+func NewVariableScopeFrom(s map[string]Token) *VariableScope {
+	return &VariableScope{
+		parent:    nil,
+		variables: s,
+	}
+}
+
+// Combine returns a map which holds the combination of all variable scopes
+func (s *VariableScope) Combine() map[string]Token {
+	vs := make(map[string]Token)
+
+	c := s
+	i := 0
+	for c != nil {
+		fmt.Printf("l %d %#v\n", i, c)
+		i++
+		for k, v := range c.variables {
+			if _, ok := vs[k]; !ok {
+				vs[k] = v
+			}
+		}
+
+		c = c.parent
+	}
+
+	return vs
+}
+
+// Get searches the variable scope for a variable with the given name and returns the token, or nil if there is no variable with the given name
+func (s *VariableScope) Get(name string) Token {
+	c := s
+
+	for c != nil {
+		if v, ok := c.variables[name]; ok {
+			return v
+		}
+
+		c = c.parent
+	}
+
+	return nil
+}
+
+// Set sets a variable with the given name
+func (s *VariableScope) Set(name string, tok Token) {
+	s.variables[name] = tok
+}
+
+// Pop returns the parent scope, or panics if there is no parent scope
+func (s *VariableScope) Pop() *VariableScope {
+	p := s.parent
+
+	if p == nil {
+		panic("Cannot pop last scope")
+	}
+
+	return p
+}
+
+// Push creates a new variable scope and returns it
+func (s *VariableScope) Push() *VariableScope {
+	return &VariableScope{
+		parent:    s,
+		variables: make(map[string]Token),
+	}
+}
+
+////////////////////////
+
 // InternalParser holds the data information for an internal parser
 type InternalParser struct { // TODO move this some place else
 	Data    string
@@ -312,6 +418,8 @@ const (
 	ParseErrorNonTerminatedString
 	// ParseErrorNoTokenForVariable variable is not assigned to a token
 	ParseErrorNoTokenForVariable
+	// ParseErrorNotAlwaysUsedAsAVariable token is not always used as a variable but at least sometimes in a variable context
+	ParseErrorNotAlwaysUsedAsAVariable
 	// ParseErrorRepeatWithOptionalTerm a repeat with an optional term was detected, which is forbidden
 	ParseErrorRepeatWithOptionalTerm
 	// ParseErrorTokenAlreadyDefined token name is already in use
@@ -328,6 +436,8 @@ const (
 	ParseErrorUnknownBooleanOperator
 	// ParseErrorUnknownCondition the condition is unknown
 	ParseErrorUnknownCondition
+	// ParseErrorUnkownOperator the operator is unknown
+	ParseErrorUnkownOperator
 	// ParseErrorUnknownTypedTokenArgument the typed token argument is unknown
 	ParseErrorUnknownTypedTokenArgument
 	// ParseErrorUnknownTypedTokenType the typed token type is unknown

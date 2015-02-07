@@ -33,7 +33,8 @@ func TestUnrollPointers(t *testing.T) {
 		err := p.Set(s)
 		Nil(t, err)
 
-		unrolled := token.UnrollPointers(s)
+		unrolled, err := token.UnrollPointers(s)
+		Nil(t, err)
 
 		token.WalkInternal(unrolled, func(tok token.Token) error {
 			if _, ok := tok.(*primitives.Pointer); ok {

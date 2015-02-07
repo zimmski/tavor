@@ -110,11 +110,13 @@ func ApplyFilters(filters []Filter, root token.Token) (token.Token, error) {
 				if pair.parent == nil {
 					root = tok
 				} else {
-					switch t := pair.parent.(type) {
-					case token.ForwardToken:
-						t.InternalReplace(pair.token, tok)
-					case token.ListToken:
-						t.InternalReplace(pair.token, tok)
+					if pTok, ok := pair.parent.(token.InternalReplace); ok {
+						err := pTok.InternalReplace(pair.token, tok)
+						if err != nil {
+							return nil, err
+						}
+					} else {
+						panic(fmt.Sprintf("Token %#v does not implement InternalReplace interface", pair.parent))
 					}
 				}
 			}

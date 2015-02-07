@@ -112,14 +112,16 @@ func (e *AddArithmetic) InternalLogicalRemove(tok token.Token) token.Token {
 	return e
 }
 
-// InternalReplace replaces an old with a new internal token if it is referenced by this token
-func (e *AddArithmetic) InternalReplace(oldToken, newToken token.Token) {
+// InternalReplace replaces an old with a new internal token if it is referenced by this token. The error return argument is not nil, if the replacement is not suitable.
+func (e *AddArithmetic) InternalReplace(oldToken, newToken token.Token) error {
 	if oldToken == e.a {
 		e.a = newToken
 	}
 	if oldToken == e.b {
 		e.b = newToken
 	}
+
+	return nil
 }
 
 // SubArithmetic implements an arithmetic token subtracting the values of two tokens
@@ -227,14 +229,16 @@ func (e *SubArithmetic) InternalLogicalRemove(tok token.Token) token.Token {
 	return e
 }
 
-// InternalReplace replaces an old with a new internal token if it is referenced by this token
-func (e *SubArithmetic) InternalReplace(oldToken, newToken token.Token) {
+// InternalReplace replaces an old with a new internal token if it is referenced by this token. The error return argument is not nil, if the replacement is not suitable.
+func (e *SubArithmetic) InternalReplace(oldToken, newToken token.Token) error {
 	if oldToken == e.a {
 		e.a = newToken
 	}
 	if oldToken == e.b {
 		e.b = newToken
 	}
+
+	return nil
 }
 
 // MulArithmetic implements an arithmetic token multiplying the values of two tokens
@@ -342,14 +346,16 @@ func (e *MulArithmetic) InternalLogicalRemove(tok token.Token) token.Token {
 	return e
 }
 
-// InternalReplace replaces an old with a new internal token if it is referenced by this token
-func (e *MulArithmetic) InternalReplace(oldToken, newToken token.Token) {
+// InternalReplace replaces an old with a new internal token if it is referenced by this token. The error return argument is not nil, if the replacement is not suitable.
+func (e *MulArithmetic) InternalReplace(oldToken, newToken token.Token) error {
 	if oldToken == e.a {
 		e.a = newToken
 	}
 	if oldToken == e.b {
 		e.b = newToken
 	}
+
+	return nil
 }
 
 // DivArithmetic implements an arithmetic token dividing the values of two tokens
@@ -405,11 +411,18 @@ func (e *DivArithmetic) PermutationsAll() uint {
 }
 
 func (e *DivArithmetic) String() string {
-	a, err := strconv.Atoi(e.a.String())
+	as := e.a.String()
+	bs := e.b.String()
+
+	if as == "" || bs == "" {
+		return "TODO"
+	}
+
+	a, err := strconv.Atoi(as)
 	if err != nil {
 		panic(err)
 	}
-	b, err := strconv.Atoi(e.b.String())
+	b, err := strconv.Atoi(bs)
 	if err != nil {
 		panic(err)
 	}
@@ -457,12 +470,14 @@ func (e *DivArithmetic) InternalLogicalRemove(tok token.Token) token.Token {
 	return e
 }
 
-// InternalReplace replaces an old with a new internal token if it is referenced by this token
-func (e *DivArithmetic) InternalReplace(oldToken, newToken token.Token) {
+// InternalReplace replaces an old with a new internal token if it is referenced by this token. The error return argument is not nil, if the replacement is not suitable.
+func (e *DivArithmetic) InternalReplace(oldToken, newToken token.Token) error {
 	if oldToken == e.a {
 		e.a = newToken
 	}
 	if oldToken == e.b {
 		e.b = newToken
 	}
+
+	return nil
 }

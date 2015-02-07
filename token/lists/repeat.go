@@ -229,8 +229,8 @@ func (l *Repeat) InternalLogicalRemove(tok token.Token) token.Token {
 	return l
 }
 
-// InternalReplace replaces an old with a new internal token if it is referenced by this token
-func (l *Repeat) InternalReplace(oldToken, newToken token.Token) {
+// InternalReplace replaces an old with a new internal token if it is referenced by this token. The error return argument is not nil, if the replacement is not suitable.
+func (l *Repeat) InternalReplace(oldToken, newToken token.Token) error {
 	if l.token == oldToken {
 		l.token = newToken
 
@@ -238,6 +238,8 @@ func (l *Repeat) InternalReplace(oldToken, newToken token.Token) {
 			l.value[i] = l.token.Clone()
 		}
 	}
+
+	return nil
 }
 
 // OptionalToken interface methods

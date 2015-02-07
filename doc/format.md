@@ -44,6 +44,7 @@ tavor --format-file file.tavor fuzz --strategy AllPermutations
 	+ [Type `Sequence`](#typed-tokens-Sequence)
 - [Expressions](#expressions)
 	+ [Arithemtic operators](#expressions-arithmetic)
+	+ [Graph operators (experimental)](#expressions-graph)
 	+ [Set operators (experimental)](#expressions-set)
 - [Variables](#variables)
 	+ [ Token attributes](#variables-token-attributes)
@@ -637,9 +638,42 @@ START = ${9 + 8 + 7} "\n",
         ${10 / 2} "\n"
 ```
 
+### <a name="expressions-graph"></a>Graph operators (experimental)
+
+Graph operators are currently experimental since only a specific case has been implemented. The `path` operator traverses a list token based on the described structure. The structure defines the starting value of the traversal, the value which identifies each entry of the list token, how the entries are connected and which values are ending values for the traversal.
+
+The `path` operator has the following format:
+
+`path from (<starting value>) over (<entry identifier>) connected by (<entry connections>) without(<ending values>)`
+
+All values are expressions. Furthermore, the `entry connections` and `ending values` are expressions lists. The `entry identifier`, `entry connections` and `ending values` have the variable `e` in their scope which holds the currently traversed entry of the token list.
+
+> **Note**: Since the `path` operator acts on a list token, it might be necessary to use a variable reference, to avoid loops in the token definition.
+
+The following example defines a list of connections called `Pairs`. Each entry in the list `Pairs` defines the identifier as its first token and the connection as its second token. The used `path` operator arguments define that all entries are traversed beginning from the value `2` and ending at the value `0`.
+
+```tavor
+START = Pairs "->" Path
+
+Path = ${Pairs path from (2) over (e.Item(0)) connect by (e.Item(1)) without (0)}
+
+Pairs = (,
+	(1 0),
+	(3 1),
+	(2 3),
+)
+```
+This example generates:
+
+```
+103123->231
+```
+
+> **Note**: The `path` operator can also traverse trees and graphs which have loops, and it can be combined with set operators.
+
 ### <a name="expressions-set"></a>Set operators (experimental)
 
-Set operators are currently experimental since only a specific case has been implemented. The `not in` operator queries the `Existing` token attribute of a sequence to not include the given argument. The argument is between parenthesis for backwards-compatible reasons, since future versions of this feature will be able to use more than one argument.
+Set operators are currently experimental since only a specific case has been implemented. The `not in` operator queries the `Existing` token attribute of a sequence to not include the given expression list. An expression list begins with the opening parenthesis `(` and ends with the closing parenthesis `)`. Each [expression](#expressions) is defined without the expression frame `${...}`. Expressions are separated by a comma.
 
 ```tavor
 $Id Sequence
@@ -649,18 +683,18 @@ Pair = $Id.Next<id> " " ${Id.Existing not in (id)} "\n"
 START = $Id.Reset +2(Pair)
 ```
 
-This will generate:
+This example generates:
 
 ```
 1 2
 2 1
 ```
 
-The `Existing` token attribute can choose only between the values `1` and `2`, since the sequence generates only two values in this format definition. The `not in` operator excludes the given argument which is the variable `id` that holds the current sequence value. Hence if the current value is `1` only `2` can be used by `Existing` and if the value is `2` only `1` can be used.
+The `Existing` token attribute can choose only between the values `1` and `2`, since the sequence generates only two values in this format definition. The `not in` operator excludes the given expression which is the variable `id` that holds the current sequence value. Hence if the current value is `1` only `2` can be used by `Existing` and if the value is `2` only `1` can be used.
 
 ## <a name="variables"></a>Variables
 
-Every token of a token definition can be saved into a variable which consists of a name and a reference to a token usage. Variables follow the [same scope rules](#attributes-scope) as token attributes. It is therefore possible to for example define the same variable name more than once in one token sequence. They also do not overwrite variables definitions of parent scopes. Variables can be defined by using the `<` character after the token which should be saved, then defining the name of the variable and closing with the `>` character. They have a range of token attributes like `Value` which embeds a new token based on the current state of the referenced token.
+Every token of a token definition can be saved into a variable which consists of a name and a reference to a token usage. Variables follow the [same scope rules](#attributes-scope) as token attributes. It is therefore possible to for example define the same variable name more than once in one token sequence. They also do not overwrite variables definitions of parent scopes. Variables can be defined by using the `<` character after the token which should be saved, then defining the name of the variable and closing with the `>` character. They have a range of token attributes such as `Value`, which embeds a new token based on the current state of the referenced token.
 
 In the following example the string token "text" will be saved into the variable `var`. The `Print` token uses this variable by embedding the referenced token.
 
@@ -676,11 +710,13 @@ This generates the string "text->text"
 
 Variables have the following token attributes:
 
-| Attribute | Arguments | Description                                                       |
-| :-------- | :-------- | :---------------------------------------------------------------- |
-| `Count`   | \-        | Holds the count of the referenced token's direct child entries    |
-| `Index`   | \-        | Holds the index of the referenced token in relation to its parent |
-| `Value`   | \-        | Embeds a new token based on the referenced token                  |
+| Attribute   | Arguments | Description                                                       |
+| :---------- | :-------- | :---------------------------------------------------------------- |
+| `Count`     | \-        | Holds the count of the referenced token's direct child entries    |
+| `Index`     | \-        | Holds the index of the referenced token in relation to its parent |
+| `Item`      | `i`       | Holds a child entry of the referenced token with the index `i`    |
+| `Reference` | \-        | Holds a reference to a token which is needed for some operators   |
+| `Value`     | \-        | Embeds a new token based on the referenced token                  |
 
 ### <a name="variables-just-save"></a>Just-save operator
 
