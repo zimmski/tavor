@@ -37,14 +37,13 @@ type List interface {
 	InternalLen() int
 	// InternalLogicalRemove removes the referenced internal token and returns the replacement for the current token or nil if the current token should be removed.
 	InternalLogicalRemove(tok Token) Token
-	// InternalReplace replaces an old with a new internal token if it is referenced by this token. The error return argument is not nil, if the replacement is not suitable.. The error return argument is not nil, if the replacement is not suitable.
-	InternalReplace(oldToken, newToken Token) error
 }
 
 // ListToken combines the Token and List interface
 type ListToken interface {
 	Token
 	List
+	ReplaceInternal
 }
 
 type Follow interface {
@@ -60,14 +59,13 @@ type Forward interface {
 	InternalGet() Token
 	// InternalLogicalRemove removes the referenced internal token and returns the replacement for the current token or nil if the current token should be removed.
 	InternalLogicalRemove(tok Token) Token
-	// InternalReplace replaces an old with a new internal token if it is referenced by this token. The error return argument is not nil, if the replacement is not suitable.
-	InternalReplace(oldToken, newToken Token) error
 }
 
 // ForwardToken combines the Token and Forward interface
 type ForwardToken interface {
 	Token
 	Forward
+	ReplaceInternal
 }
 
 // Index defines an index token which provides the index in its parent token
@@ -136,6 +134,12 @@ type PointerToken interface {
 	Pointer
 }
 
+// ReplaceInternal defines if a token has methods to replace internal tokens
+type ReplaceInternal interface {
+	// InternalReplace replaces an old with a new internal token if it is referenced by this token. The error return argument is not nil, if the replacement is not suitable.. The error return argument is not nil, if the replacement is not suitable.
+	InternalReplace(oldToken, newToken Token) error
+}
+
 // Reset defines a reset token which can reset its (internal) state
 type Reset interface {
 	// Reset resets the (internal) state of this token and its dependences
@@ -172,6 +176,12 @@ type Release interface {
 type ReleaseToken interface {
 	Token
 	Release
+}
+
+// Resolve defines if a token has methods to resolve its token path
+type Resolve interface {
+	// Resolve returns the token which is referenced by the token, or a path of tokens
+	Resolve() Token
 }
 
 // Scope defines a scope token which holds a scope
@@ -287,8 +297,10 @@ func (s *VariableScope) Combine() map[string]Token {
 	vs := make(map[string]Token)
 
 	c := s
-
+	i := 0
 	for c != nil {
+		fmt.Printf("l %d %#v\n", i, c)
+		i++
 		for k, v := range c.variables {
 			if _, ok := vs[k]; !ok {
 				vs[k] = v

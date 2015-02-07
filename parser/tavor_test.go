@@ -3,7 +3,6 @@ package parser
 import (
 	"fmt"
 	"math"
-	"os"
 	"strings"
 	"testing"
 
@@ -314,7 +313,7 @@ func TestTavorParserSimple(t *testing.T) {
 	// embed token
 	tok, err = ParseTavor(strings.NewReader("Token=123\nSTART = Token\n"))
 	Nil(t, err)
-	Equal(t, tok, primitives.NewScope(primitives.NewScope(primitives.NewConstantInt(123))))
+	Equal(t, tok, primitives.NewScope(primitives.NewConstantInt(123)))
 
 	// embed over token
 	tok, err = ParseTavor(strings.NewReader("Token=123\nAnotherToken = Token\nSTART = AnotherToken\n"))
@@ -647,7 +646,7 @@ func TestTavorParserTypedTokens(t *testing.T) {
 		Nil(t, err)
 		Equal(t, tok, lists.NewAll(
 			s.ResetItem(),
-			s.Item(),
+			primitives.NewScope(s.Item()),
 		))
 
 		s = sequences.NewSequence(2, 1)
@@ -657,7 +656,7 @@ func TestTavorParserTypedTokens(t *testing.T) {
 		Nil(t, err)
 		Equal(t, tok, lists.NewAll(
 			s.ResetItem(),
-			s.Item(),
+			primitives.NewScope(s.Item()),
 		))
 
 		s = sequences.NewSequence(1, 3)
@@ -667,7 +666,7 @@ func TestTavorParserTypedTokens(t *testing.T) {
 		Nil(t, err)
 		Equal(t, tok, lists.NewAll(
 			s.ResetItem(),
-			s.Item(),
+			primitives.NewScope(s.Item()),
 		))
 
 		s = sequences.NewSequence(1, 1)
@@ -677,7 +676,7 @@ func TestTavorParserTypedTokens(t *testing.T) {
 		Nil(t, err)
 		Equal(t, tok, lists.NewAll(
 			s.ResetItem(),
-			s.ExistingItem(nil),
+			primitives.NewScope(s.ExistingItem(nil)),
 		))
 
 		s = sequences.NewSequence(1, 1)
@@ -687,7 +686,7 @@ func TestTavorParserTypedTokens(t *testing.T) {
 		Nil(t, err)
 		Equal(t, tok, lists.NewAll(
 			s.ResetItem(),
-			s.ResetItem(),
+			primitives.NewScope(s.ResetItem()),
 		))
 	}
 }
@@ -713,10 +712,10 @@ func TestTavorParserExpressions(t *testing.T) {
 		`))
 		Nil(t, err)
 		v := variables.NewVariable("A", primitives.NewConstantString("a"))
-		Equal(t, tok, lists.NewAll(
+		Equal(t, tok, primitives.NewScope(lists.NewAll(
 			v,
 			variables.NewVariableValue(v),
-		))
+		)))
 	}
 
 	// token attribute use in expression
@@ -726,10 +725,10 @@ func TestTavorParserExpressions(t *testing.T) {
 		`))
 		Nil(t, err)
 		v := variables.NewVariable("A", primitives.NewConstantString("a"))
-		Equal(t, tok, lists.NewAll(
+		Equal(t, tok, primitives.NewScope(lists.NewAll(
 			v,
 			variables.NewVariableValue(v),
-		))
+		)))
 	}
 
 	// simple expression
@@ -741,7 +740,7 @@ func TestTavorParserExpressions(t *testing.T) {
 		Nil(t, err)
 		Equal(t, tok, lists.NewAll(
 			s.ResetItem(),
-			s.Item(),
+			primitives.NewScope(s.Item()),
 		))
 	}
 
@@ -750,10 +749,10 @@ func TestTavorParserExpressions(t *testing.T) {
 		"START = ${1 + 2}\n",
 	))
 	Nil(t, err)
-	Equal(t, tok, expressions.NewAddArithmetic(
+	Equal(t, tok, primitives.NewScope(expressions.NewAddArithmetic(
 		primitives.NewConstantInt(1),
 		primitives.NewConstantInt(2),
-	))
+	)))
 
 	tok, err = ParseTavor(strings.NewReader(`
 		START = ${A + B}
@@ -761,53 +760,53 @@ func TestTavorParserExpressions(t *testing.T) {
 		B = 2
 	`))
 	Nil(t, err)
-	Equal(t, tok, expressions.NewAddArithmetic(
-		primitives.NewConstantInt(1),
-		primitives.NewConstantInt(2),
-	))
+	Equal(t, tok, primitives.NewScope(expressions.NewAddArithmetic(
+		primitives.NewScope(primitives.NewConstantInt(1)),
+		primitives.NewScope(primitives.NewConstantInt(2)),
+	)))
 
 	// sub operator
 	tok, err = ParseTavor(strings.NewReader(
 		"START = ${1 - 2}\n",
 	))
 	Nil(t, err)
-	Equal(t, tok, expressions.NewSubArithmetic(
+	Equal(t, tok, primitives.NewScope(expressions.NewSubArithmetic(
 		primitives.NewConstantInt(1),
 		primitives.NewConstantInt(2),
-	))
+	)))
 
 	// mul operator
 	tok, err = ParseTavor(strings.NewReader(
 		"START = ${1 * 2}\n",
 	))
 	Nil(t, err)
-	Equal(t, tok, expressions.NewMulArithmetic(
+	Equal(t, tok, primitives.NewScope(expressions.NewMulArithmetic(
 		primitives.NewConstantInt(1),
 		primitives.NewConstantInt(2),
-	))
+	)))
 
 	// div operator
 	tok, err = ParseTavor(strings.NewReader(
 		"START = ${1 / 2}\n",
 	))
 	Nil(t, err)
-	Equal(t, tok, expressions.NewDivArithmetic(
+	Equal(t, tok, primitives.NewScope(expressions.NewDivArithmetic(
 		primitives.NewConstantInt(1),
 		primitives.NewConstantInt(2),
-	))
+	)))
 
 	// nested operator
 	tok, err = ParseTavor(strings.NewReader(
 		"START = ${1 + 2 + 3}\n",
 	))
 	Nil(t, err)
-	Equal(t, tok, expressions.NewAddArithmetic(
+	Equal(t, tok, primitives.NewScope(expressions.NewAddArithmetic(
 		primitives.NewConstantInt(1),
 		expressions.NewAddArithmetic(
 			primitives.NewConstantInt(2),
 			primitives.NewConstantInt(3),
 		),
-	))
+	)))
 
 	// mixed operator
 	{
@@ -818,10 +817,10 @@ func TestTavorParserExpressions(t *testing.T) {
 		Nil(t, err)
 		Equal(t, tok, lists.NewAll(
 			s.ResetItem(),
-			expressions.NewAddArithmetic(
+			primitives.NewScope(expressions.NewAddArithmetic(
 				s.Item(),
 				primitives.NewConstantInt(1),
-			),
+			)),
 		))
 		Equal(t, "2", tok.String())
 	}
@@ -853,22 +852,22 @@ func TestTavorParserAndCuriousCaseOfFuzzing(t *testing.T) {
 		"START = Token\nToken = 123\n",
 	))
 	Nil(t, err)
-	Equal(t, tok, primitives.NewConstantInt(123))
+	Equal(t, tok, primitives.NewScope(primitives.NewConstantInt(123)))
 
 	// double embedded forward token all the way
 	tok, err = ParseTavor(strings.NewReader("A = B B\nB = 1\nSTART = A\n"))
 	Nil(t, err)
-	Equal(t, tok, lists.NewAll(
-		primitives.NewConstantInt(1),
-		primitives.NewConstantInt(1),
-	))
+	Equal(t, tok, primitives.NewScope(lists.NewAll(
+		primitives.NewScope(primitives.NewConstantInt(1)),
+		primitives.NewScope(primitives.NewConstantInt(1)),
+	)))
 
 	// Token attribute forward usage
 	tok, err = ParseTavor(strings.NewReader(
 		"START = $int.Value\n$int Int\n",
 	))
 	Nil(t, err)
-	Equal(t, tok, primitives.NewRangeInt(0, math.MaxInt32))
+	Equal(t, tok, primitives.NewScope(primitives.NewRangeInt(0, math.MaxInt32)))
 
 	// Tokens should be cloned so they are different internally
 	{
@@ -876,10 +875,10 @@ func TestTavorParserAndCuriousCaseOfFuzzing(t *testing.T) {
 			"Token = 1 | 2\nSTART = Token Token\n",
 		))
 		Nil(t, err)
-		Equal(t, tok, lists.NewAll(
-			lists.NewOne(primitives.NewConstantInt(1), primitives.NewConstantInt(2)),
-			lists.NewOne(primitives.NewConstantInt(1), primitives.NewConstantInt(2)),
-		))
+		Equal(t, tok, primitives.NewScope(lists.NewAll(
+			primitives.NewScope(lists.NewOne(primitives.NewConstantInt(1), primitives.NewConstantInt(2))),
+			primitives.NewScope(lists.NewOne(primitives.NewConstantInt(1), primitives.NewConstantInt(2))),
+		)))
 
 		va, _ := tok.(*primitives.Scope).InternalGet().(token.ListToken).Get(0)
 		a := va.(*primitives.Scope).InternalGet().(*lists.One)
@@ -998,14 +997,14 @@ func TestTavorParserAndCuriousCaseOfFuzzing(t *testing.T) {
 
 			AndCycle = ${andList.Reference path from (andLiteral) over (e.Item(0)) connect by (e.Item(1), e.Item(2)) without (0, 1)}
 
-			Ands = *(And)
+			Ands = +4(And)
 			And = $Literal.Next<andLiteral> " " ExistingLiteralAnd " " ExistingLiteralAnd "\n"
 
 			START = Ands<andList>
 		`))
 		Nil(t, err)
 
-		Equal(t, "1 + 1 = 2\n1 * 1 = 1\n", tok.String())
+		Equal(t, "2 0 0\n2 0 0\n2 0 0\n2 0 0\n", tok.String())
 	}
 }
 
@@ -1021,13 +1020,13 @@ func TestTavorParserLoops(t *testing.T) {
 	`))
 	Nil(t, err)
 	{
-		Equal(t, tok, lists.NewOne(
-			lists.NewOne(
+		Equal(t, tok, primitives.NewScope(lists.NewOne(
+			primitives.NewScope(lists.NewOne(
+				primitives.NewScope(primitives.NewConstantInt(1)),
 				primitives.NewConstantInt(1),
-				primitives.NewConstantInt(1),
-			),
+			)),
 			primitives.NewConstantInt(1),
-		))
+		)))
 
 		Equal(t, "1", tok.String())
 	}
@@ -1039,19 +1038,19 @@ func TestTavorParserLoops(t *testing.T) {
 	`))
 	Nil(t, err)
 	{
-		Equal(t, tok, lists.NewOne(
+		Equal(t, tok, primitives.NewScope(lists.NewOne(
 			lists.NewAll(
-				lists.NewOne(
+				primitives.NewScope(lists.NewOne(
 					lists.NewAll(
-						primitives.NewConstantInt(2),
+						primitives.NewScope(primitives.NewConstantInt(2)),
 						primitives.NewConstantInt(1),
 					),
 					primitives.NewConstantInt(2),
-				),
+				)),
 				primitives.NewConstantInt(1),
 			),
 			primitives.NewConstantInt(2),
-		))
+		)))
 
 		Equal(t, "211", tok.String())
 	}
@@ -1064,17 +1063,17 @@ func TestTavorParserLoops(t *testing.T) {
 	`))
 	Nil(t, err)
 	{
-		Equal(t, tok, lists.NewAll(
+		Equal(t, tok, primitives.NewScope(lists.NewAll(
 			constraints.NewOptional(
-				lists.NewAll(
+				primitives.NewScope(lists.NewAll(
 					constraints.NewOptional(
-						primitives.NewConstantInt(1),
+						primitives.NewScope(primitives.NewConstantInt(1)),
 					),
 					primitives.NewConstantInt(1),
-				),
+				)),
 			),
 			primitives.NewConstantInt(1),
-		))
+		)))
 
 		Equal(t, "111", tok.String())
 	}
@@ -1087,22 +1086,22 @@ func TestTavorParserLoops(t *testing.T) {
 	`))
 	Nil(t, err)
 	{
-		Equal(t, tok, lists.NewAll(
+		Equal(t, tok, primitives.NewScope(lists.NewAll(
 			lists.NewOne(
-				lists.NewAll(
+				primitives.NewScope(lists.NewAll(
 					lists.NewOne(
-						lists.NewAll(
+						primitives.NewScope(lists.NewAll(
 							primitives.NewConstantInt(2),
 							primitives.NewConstantInt(1),
-						),
+						)),
 						primitives.NewConstantInt(2),
 					),
 					primitives.NewConstantInt(1),
-				),
+				)),
 				primitives.NewConstantInt(2),
 			),
 			primitives.NewConstantInt(1),
-		))
+		)))
 
 		Equal(t, "2111", tok.String())
 	}
@@ -1115,53 +1114,53 @@ func TestTavorParserLoops(t *testing.T) {
 			START = A
 		`))
 		Nil(t, err)
-		Equal(t, tok, lists.NewAll(
+		Equal(t, tok, primitives.NewScope(lists.NewAll(
 			lists.NewOne(
-				lists.NewAll(
+				primitives.NewScope(lists.NewAll(
 					lists.NewOne(
-						lists.NewAll(
+						primitives.NewScope(lists.NewAll(
 							primitives.NewConstantInt(2),
 							primitives.NewConstantInt(1),
 							primitives.NewConstantInt(3),
-						),
+						)),
 						primitives.NewConstantInt(2),
 					),
 					primitives.NewConstantInt(1),
 					constraints.NewOptional(
-						lists.NewAll(
+						primitives.NewScope(lists.NewAll(
 							primitives.NewConstantInt(2),
 							primitives.NewConstantInt(1),
 							primitives.NewConstantInt(3),
-						),
+						)),
 					),
 					primitives.NewConstantInt(3),
-				),
+				)),
 				primitives.NewConstantInt(2),
 			),
 			primitives.NewConstantInt(1),
 			constraints.NewOptional(
-				lists.NewAll(
+				primitives.NewScope(lists.NewAll(
 					lists.NewOne(
-						lists.NewAll(
+						primitives.NewScope(lists.NewAll(
 							primitives.NewConstantInt(2),
 							primitives.NewConstantInt(1),
 							primitives.NewConstantInt(3),
-						),
+						)),
 						primitives.NewConstantInt(2),
 					),
 					primitives.NewConstantInt(1),
 					constraints.NewOptional(
-						lists.NewAll(
+						primitives.NewScope(lists.NewAll(
 							primitives.NewConstantInt(2),
 							primitives.NewConstantInt(1),
 							primitives.NewConstantInt(3),
-						),
+						)),
 					),
 					primitives.NewConstantInt(3),
-				),
+				)),
 			),
 			primitives.NewConstantInt(3),
-		))
+		)))
 
 		Equal(t, "213121331213121333", tok.String())
 	}
@@ -1177,17 +1176,17 @@ func TestTavorParserLoops(t *testing.T) {
 		`))
 	Nil(t, err)
 	{
-		Equal(t, tok, lists.NewAll(
+		Equal(t, tok, primitives.NewScope(lists.NewAll(
 			constraints.NewOptional(
-				lists.NewAll(
+				primitives.NewScope(lists.NewAll(
 					constraints.NewOptional(
-						primitives.NewConstantInt(1),
+						primitives.NewScope(primitives.NewConstantInt(1)),
 					),
 					primitives.NewConstantInt(1),
-				),
+				)),
 			),
 			primitives.NewConstantInt(1),
-		))
+		)))
 
 		Equal(t, "111", tok.String())
 	}
@@ -1204,20 +1203,20 @@ func TestTavorParserLoops(t *testing.T) {
 		`))
 	Nil(t, err)
 	{
-		Equal(t, tok, lists.NewRepeat(
-			lists.NewOne(
-				primitives.NewConstantString("setParam"),
-				lists.NewAll(
+		Equal(t, tok, primitives.NewScope(lists.NewRepeat(
+			primitives.NewScope(lists.NewOne(
+				primitives.NewScope(primitives.NewConstantString("setParam")),
+				primitives.NewScope(lists.NewAll(
 					primitives.NewConstantString("getParam"),
 					lists.NewOne(
 						primitives.NewConstantString("param 1"),
 						primitives.NewConstantString("param 2"),
 					),
-				),
-			),
+				)),
+			)),
 			1,
 			2,
-		))
+		)))
 
 		Equal(t, "setParam", tok.String())
 	}
@@ -1233,80 +1232,80 @@ func TestTavorParserLoops(t *testing.T) {
 			START = A
 		`))
 		Nil(t, err)
-		Equal(t, tok, lists.NewAll(
+		Equal(t, tok, primitives.NewScope(lists.NewAll(
 			lists.NewOne(
-				lists.NewAll(
+				primitives.NewScope(lists.NewAll(
 					lists.NewOne(
-						lists.NewAll(
+						primitives.NewScope(lists.NewAll(
 							primitives.NewConstantInt(1),
 							primitives.NewConstantInt(2),
-						),
+						)),
 						primitives.NewConstantInt(1),
 					),
 					lists.NewOne(
-						lists.NewAll(
+						primitives.NewScope(lists.NewAll(
 							primitives.NewConstantInt(1),
 							primitives.NewConstantInt(2),
-						),
+						)),
 						primitives.NewConstantInt(2),
 					),
 					constraints.NewOptional(
-						lists.NewAll(
+						primitives.NewScope(lists.NewAll(
 							primitives.NewConstantInt(1),
 							primitives.NewConstantInt(2),
-						),
+						)),
 					),
-				),
+				)),
 				primitives.NewConstantInt(1),
 			),
 			lists.NewOne(
-				lists.NewAll(
+				primitives.NewScope(lists.NewAll(
 					lists.NewOne(
-						lists.NewAll(
+						primitives.NewScope(lists.NewAll(
 							primitives.NewConstantInt(1),
 							primitives.NewConstantInt(2),
-						),
+						)),
 						primitives.NewConstantInt(1),
 					),
 					lists.NewOne(
-						lists.NewAll(
+						primitives.NewScope(lists.NewAll(
 							primitives.NewConstantInt(1),
 							primitives.NewConstantInt(2),
-						),
+						)),
 						primitives.NewConstantInt(2),
 					),
 					constraints.NewOptional(
-						lists.NewAll(
+						primitives.NewScope(lists.NewAll(
 							primitives.NewConstantInt(1),
 							primitives.NewConstantInt(2),
-						),
+						)),
 					),
-				),
+				)),
 				primitives.NewConstantInt(2),
 			),
-			constraints.NewOptional(lists.NewAll(
+			constraints.NewOptional(primitives.NewScope(lists.NewAll(
 				lists.NewOne(
-					lists.NewAll(
+					primitives.NewScope(lists.NewAll(
 						primitives.NewConstantInt(1),
 						primitives.NewConstantInt(2),
-					),
+					)),
 					primitives.NewConstantInt(1),
 				),
 				lists.NewOne(
-					lists.NewAll(
+					primitives.NewScope(lists.NewAll(
 						primitives.NewConstantInt(1),
 						primitives.NewConstantInt(2),
-					),
+					)),
 					primitives.NewConstantInt(2),
 				),
 				constraints.NewOptional(
-					lists.NewAll(
+					primitives.NewScope(lists.NewAll(
 						primitives.NewConstantInt(1),
 						primitives.NewConstantInt(2),
-					),
+					)),
 				),
-			)),
-		))
+			))),
+		)))
 
 		Equal(t, "121212121212121212", tok.String())
 	}
@@ -1326,10 +1325,10 @@ func TestTavorParserCornerCases(t *testing.T) {
 			START = a | b
 		`))
 		Nil(t, err)
-		Equal(t, tok, lists.NewOne(
-			constraints.NewOptional(primitives.NewConstantString("TEXT")),
-			constraints.NewOptional(primitives.NewConstantString("TEXT")),
-		))
+		Equal(t, tok, primitives.NewScope(lists.NewOne(
+			primitives.NewScope(constraints.NewOptional(primitives.NewScope(primitives.NewConstantString("TEXT")))),
+			primitives.NewScope(constraints.NewOptional(primitives.NewScope(primitives.NewConstantString("TEXT")))),
+		)))
 
 		Equal(t, "TEXT", tok.String())
 	}
@@ -1346,10 +1345,10 @@ func TestTavorParserCornerCases(t *testing.T) {
 			START = a | b
 		`))
 		Nil(t, err)
-		Equal(t, tok, lists.NewOne(
-			primitives.NewConstantString("TEXT"),
-			primitives.NewConstantString("TEXT"),
-		))
+		Equal(t, tok, primitives.NewScope(lists.NewOne(
+			primitives.NewScope(primitives.NewConstantString("TEXT")),
+			primitives.NewScope(primitives.NewConstantString("TEXT")),
+		)))
 
 		Equal(t, "TEXT", tok.String())
 	}
@@ -1366,10 +1365,10 @@ func TestTavorParserCornerCases(t *testing.T) {
 			START = a | b
 		`))
 		Nil(t, err)
-		Equal(t, tok, lists.NewOne(
-			constraints.NewOptional(constraints.NewOptional(primitives.NewConstantString("TEXT"))),
-			constraints.NewOptional(constraints.NewOptional(primitives.NewConstantString("TEXT"))),
-		))
+		Equal(t, tok, primitives.NewScope(lists.NewOne(
+			primitives.NewScope(constraints.NewOptional(constraints.NewOptional(primitives.NewScope(primitives.NewConstantString("TEXT"))))),
+			primitives.NewScope(constraints.NewOptional(constraints.NewOptional(primitives.NewScope(primitives.NewConstantString("TEXT"))))),
+		)))
 
 		Equal(t, "TEXT", tok.String())
 	}
@@ -1381,11 +1380,11 @@ func TestTavorParserCornerCases(t *testing.T) {
 			B = "B"
 		`))
 		Nil(t, err)
-		Equal(t, tok, lists.NewAll(
-			primitives.NewConstantString("B"),
-			primitives.NewConstantString("B"),
-			primitives.NewConstantString("B"),
-		))
+		Equal(t, tok, primitives.NewScope(lists.NewAll(
+			primitives.NewScope(primitives.NewConstantString("B")),
+			primitives.NewScope(primitives.NewConstantString("B")),
+			primitives.NewScope(primitives.NewConstantString("B")),
+		)))
 
 		Equal(t, "BBB", tok.String())
 	}
@@ -1396,11 +1395,11 @@ func TestTavorParserCornerCases(t *testing.T) {
 			B = 1 2
 		`))
 		Nil(t, err)
-		Equal(t, tok, lists.NewAll(
-			lists.NewAll(primitives.NewConstantInt(1), primitives.NewConstantInt(2)),
-			lists.NewAll(primitives.NewConstantInt(1), primitives.NewConstantInt(2)),
-			lists.NewAll(primitives.NewConstantInt(1), primitives.NewConstantInt(2)),
-		))
+		Equal(t, tok, primitives.NewScope(lists.NewAll(
+			primitives.NewScope(lists.NewAll(primitives.NewConstantInt(1), primitives.NewConstantInt(2))),
+			primitives.NewScope(lists.NewAll(primitives.NewConstantInt(1), primitives.NewConstantInt(2))),
+			primitives.NewScope(lists.NewAll(primitives.NewConstantInt(1), primitives.NewConstantInt(2))),
+		)))
 
 		Equal(t, "121212", tok.String())
 	}
@@ -1460,10 +1459,10 @@ func TestTavorParserVariables(t *testing.T) {
 			Print = $var.Value
 		`))
 		Nil(t, err)
-		variable := variables.NewVariable("var", primitives.NewConstantString("text"))
+		variable := variables.NewVariable("var", primitives.NewScope(primitives.NewConstantString("text")))
 		Equal(t, tok, primitives.NewScope(lists.NewAll(
 			variable,
-			variables.NewVariableValue(variable),
+			primitives.NewScope(variables.NewVariableValue(variable)),
 		)))
 
 		Equal(t, "texttext", tok.String())
@@ -1481,8 +1480,8 @@ func TestTavorParserVariables(t *testing.T) {
 		v2 := variables.NewVariable("var", primitives.NewConstantInt(2))
 
 		Equal(t, tok, primitives.NewScope(lists.NewAll(
-			v1, variables.NewVariableValue(v1),
-			v2, variables.NewVariableValue(v2),
+			v1, primitives.NewScope(variables.NewVariableValue(v1)),
+			v2, primitives.NewScope(variables.NewVariableValue(v2)),
 		)))
 
 		Equal(t, "1122", tok.String())
@@ -1536,7 +1535,7 @@ func TestTavorParserVariables(t *testing.T) {
 		/* TODO if this example finally is correct.... do the token graph
 		seq := sequences.NewSequence(1, 1)
 
-		Equal(t, tok, lists.NewAll(
+		Equal(t, tok, primitives.NewScope(lists.NewAll(
 			seq.ResetItem(),
 			seq.Item(),
 
@@ -1561,15 +1560,15 @@ func TestTavorParserIfElseIfElsedd(t *testing.T) {
 		variable, _ := tok.(*primitives.Scope).InternalGet().(*lists.All).InternalGet(0)
 		one := variable.(*variables.Variable).InternalGet().(*primitives.Scope).InternalGet()
 
-		nOne := lists.NewOne(
+		nOne := primitives.NewScope(lists.NewOne(
 			primitives.NewConstantInt(1),
 			primitives.NewConstantInt(2),
 			primitives.NewConstantInt(3),
-		)
+		))
 		nVariable := variables.NewVariable("var", nOne)
 
 		var ll token.Token = primitives.NewScope(lists.NewAll(
-			primitives.NewScope(nVariable),
+			nVariable,
 			primitives.NewScope(conditions.NewIf(
 				conditions.IfPair{ // TODO FIXME AND FIXME!!!!!! allow unrolling of IfPairs and BooleanEquals and pretty much all in token/conditions
 					Head: conditions.NewBooleanEqual(primitives.NewPointer(primitives.NewTokenPointer(variables.NewVariableValue(nVariable))), primitives.NewConstantInt(1)),
@@ -1633,13 +1632,20 @@ func TestTavorParserIfElseIfElsedd(t *testing.T) {
 		Nil(t, err)
 
 		nVariable := variables.NewVariable("var", primitives.NewConstantString("abc"))
-		token.PrettyPrintInternalTree(os.Stdout, tok)
-		ll := primitives.NewScope(lists.NewAll(
+
+		definedScope := token.NewVariableScope()
+		definedScope = definedScope.Push().Push()
+		definedScope.Set("var", nVariable)
+		definedScope = definedScope.Push()
+
+		notDefinedScope := token.NewVariableScope().Push().Push()
+
+		Equal(t, tok, primitives.NewScope(lists.NewAll(
 			primitives.NewScope(lists.NewAll(
 				nVariable,
 				primitives.NewScope(conditions.NewIf(
 					conditions.IfPair{
-						Head: conditions.NewVariableDefined("var", token.NewVariableScopeFrom(map[string]token.Token{"var": nVariable})),
+						Head: conditions.NewVariableDefined("var", definedScope),
 						Body: primitives.NewConstantString("var is defined"),
 					},
 					conditions.IfPair{
@@ -1650,7 +1656,7 @@ func TestTavorParserIfElseIfElsedd(t *testing.T) {
 			)),
 			primitives.NewScope(conditions.NewIf(
 				conditions.IfPair{
-					Head: conditions.NewVariableDefined("var", token.NewVariableScopeFrom(map[string]token.Token{})),
+					Head: conditions.NewVariableDefined("var", notDefinedScope),
 					Body: primitives.NewConstantString("var is defined"),
 				},
 				conditions.IfPair{
@@ -1658,9 +1664,7 @@ func TestTavorParserIfElseIfElsedd(t *testing.T) {
 					Body: primitives.NewConstantString("var is not defined"),
 				},
 			)),
-		))
-
-		Equal(t, tok, ll)
+		)))
 
 		Equal(t, "abcvar is definedvar is not defined", tok.String())
 		Equal(t, 1, tok.Permutations())

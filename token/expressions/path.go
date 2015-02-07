@@ -2,7 +2,6 @@ package expressions
 
 import (
 	"bytes"
-	"github.com/zimmski/tavor/log"
 	"github.com/zimmski/tavor/token/primitives"
 
 	"github.com/zimmski/container/list/linkedlist"
@@ -52,9 +51,6 @@ func checkListToken(list token.Token) error {
 func (e *Path) path() []string {
 	variableScope := e.variableScope.Push()
 
-	log.Errorf("Check path")
-	log.Errorf("scope is %#v", variableScope.Combine())
-
 	if p, ok := e.list.(*primitives.Pointer); ok {
 		e.list = p.Resolve()
 	}
@@ -79,12 +75,10 @@ func (e *Path) path() []string {
 
 	l, ok := tl.(token.ListToken)
 	if !ok {
-		log.Errorf("TODO must be a ListToken but is %#v", tl)
+		// TODO must be a ListToken but is ...
 
 		return nil
 	}
-
-	//log.Errorf("scopy START %#v", variableScope.Get("andLiteral").String())
 
 	connects := make(map[string][]string, 0)
 
@@ -113,9 +107,6 @@ func (e *Path) path() []string {
 		connects[e.over.String()] = cs
 	}
 
-	//		log.Errorf("scopy %#v", variableScope.Get("andLiteral").String())
-	//log.Errorf("->@@ %#v", e.from.(*primitives.Pointer).Resolve().(*variables.VariableValue).InternalGet())
-
 	token.SetScope(e.from, variableScope)
 	from := e.from.String()
 
@@ -126,10 +117,6 @@ func (e *Path) path() []string {
 	for i := 0; i < len(e.without); i++ {
 		checked[e.without[i].String()] = struct{}{}
 	}
-
-	log.Errorf("from %#v", from)
-	log.Errorf("connects %#v", connects)
-	log.Errorf("checked %#v", checked)
 
 	stack := linkedlist.New()
 	stack.Unshift(from)
@@ -154,8 +141,6 @@ func (e *Path) path() []string {
 			}
 		}
 	}
-
-	log.Errorf("Path is %v", path)
 
 	return path
 }
@@ -306,6 +291,5 @@ var _ token.ScopeToken = (*Path)(nil)
 
 // SetScope sets the scope of the token
 func (e *Path) SetScope(variableScope *token.VariableScope) {
-	log.Errorf("PONG for (%p)%#v set %#v", e, e, variableScope.Combine())
 	e.variableScope = variableScope
 }

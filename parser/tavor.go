@@ -1037,7 +1037,7 @@ func (p *tavorParser) parseTokenAttribute(definitionName string, c rune, variabl
 
 func (p *tavorParser) selectTokenAttribute(definitionName string, tok token.Token, tokenName string, attribute string, attributePosition scanner.Position, operator string, operatorToken token.Token, c rune, variableScope *token.VariableScope) (rune, token.Token, error) {
 	if t, ok := tok.(*primitives.Scope); ok {
-		tok = t.InternalGet()
+		tok = t.Resolve()
 	}
 
 	log.Debugf("use (%p)%#v as token", tok, tok)
@@ -1916,7 +1916,12 @@ func ParseTavor(src io.Reader) (token.Token, error) {
 	// TODO this could be done much better especially we could add ALL resets here not just sequences
 	var automaticResets []token.Token
 	for _, usage := range p.lookup {
-		if tok, ok := usage.token.(*sequences.Sequence); ok {
+		tok := usage.token
+		if t, ok := tok.(token.Resolve); ok {
+			tok = t.Resolve()
+		}
+
+		if tok, ok := tok.(*sequences.Sequence); ok {
 			automaticResets = append(automaticResets, tok.ResetItem())
 		}
 	}

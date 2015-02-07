@@ -59,22 +59,6 @@ func (p *Pointer) Set(o token.Token) error {
 	return nil
 }
 
-// Resolve returns the token which is referenced by the pointer, or a path of pointers
-func (p *Pointer) Resolve() token.Token {
-	var ok bool
-
-	po := p
-
-	for {
-		c := po.InternalGet()
-
-		po, ok = c.(*Pointer)
-		if !ok {
-			return c
-		}
-	}
-}
-
 // Token interface methods
 
 // Clone returns a copy of the token and all its children
@@ -193,4 +177,22 @@ func (p *Pointer) Minimize() token.Token {
 	// Never ever _EVER_ minimize a pointer since it is normally there for a reason
 
 	return nil
+}
+
+// Resolve interface methods
+
+// Resolve returns the token which is referenced by the token, or a path of tokens
+func (p *Pointer) Resolve() token.Token {
+	var ok bool
+
+	po := p
+
+	for {
+		c := po.InternalGet()
+
+		po, ok = c.(*Pointer)
+		if !ok {
+			return c
+		}
+	}
 }

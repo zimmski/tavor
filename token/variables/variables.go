@@ -179,7 +179,7 @@ func (v *VariableItem) String() string {
 
 	l, ok := v.variable.Get().(token.ListToken)
 	if !ok {
-		log.Errorf("List is nil")
+		// TODO
 
 		return ""
 	}

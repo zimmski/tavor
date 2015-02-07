@@ -5,7 +5,6 @@ import (
 	"github.com/zimmski/tavor/rand"
 	"github.com/zimmski/tavor/token"
 	"github.com/zimmski/tavor/token/sequences"
-	"os"
 )
 
 // RandomStrategy implements a fuzzing strategy that generates a random permutation of a token graph.
@@ -103,12 +102,11 @@ func (s *RandomStrategy) fuzz(tok token.Token, r rand.Rand, variableScope *token
 }
 
 func (s *RandomStrategy) fuzzYADDA(root token.Token, r rand.Rand) {
-	token.PrettyPrintTree(os.Stdout, root)
-
 	// TODO FIXME AND FIXME FIXME FIXME this should be done automatically somehow
 	// since this doesn't work in other heuristics...
 	// especially the fuzz again part is tricky. the whole reason is because of dynamic repeats that clone during a reset. so the "reset" or regenerating of new child tokens has to be done better
 
+	token.ResetCombinedScope(root)
 	token.ResetResetTokens(root)
 	token.ResetCombinedScope(root)
 

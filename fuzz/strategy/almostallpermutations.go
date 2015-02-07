@@ -123,9 +123,9 @@ func (s *AlmostAllPermutationsStrategy) Fuzz(r rand.Rand) (chan struct{}, error)
 			}
 		}
 
-		token.ResetScope(s.root)
+		token.ResetCombinedScope(s.root)
 		token.ResetResetTokens(s.root)
-		token.ResetScope(s.root)
+		token.ResetCombinedScope(s.root)
 
 		log.Debug("done with fuzzing step")
 
@@ -234,9 +234,9 @@ STEP:
 		}
 
 		if !s.overextended {
-			token.ResetScope(s.root)
+			token.ResetCombinedScope(s.root)
 			token.ResetResetTokens(s.root)
-			token.ResetScope(s.root)
+			token.ResetCombinedScope(s.root)
 
 			log.Debug("done with fuzzing step")
 

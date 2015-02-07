@@ -1,6 +1,7 @@
 package token
 
 import (
+	"fmt"
 	"github.com/zimmski/container/list/linkedlist"
 
 	"github.com/zimmski/tavor"
@@ -30,16 +31,16 @@ func MinimizeTokens(root Token) (Token, error) {
 			if r != nil {
 				p := parents[tok]
 
-				switch pTok := p.(type) {
-				case ForwardToken:
-					err := pTok.InternalReplace(tok, r)
-					if err != nil {
-						return nil, err
-					}
-				case ListToken:
-					err := pTok.InternalReplace(tok, r)
-					if err != nil {
-						return nil, err
+				if p == nil {
+					root = r
+				} else {
+					if pTok, ok := p.(ReplaceInternal); ok {
+						err := pTok.InternalReplace(tok, r)
+						if err != nil {
+							return nil, err
+						}
+					} else {
+						panic(fmt.Sprintf("Token %#v does not implement ReplaceInternal interface", p))
 					}
 				}
 
@@ -192,17 +193,13 @@ func UnrollPointers(root Token) (Token, error) {
 				if iTok.parent != nil {
 					log.Debugf("replace in (%p)%#v", iTok.parent.tok, iTok.parent.tok)
 
-					switch tt := iTok.parent.tok.(type) {
-					case ForwardToken:
-						err := tt.InternalReplace(t, c)
+					if pTok, ok := iTok.parent.tok.(ReplaceInternal); ok {
+						err := pTok.InternalReplace(t, c)
 						if err != nil {
 							return nil, err
 						}
-					case ListToken:
-						err := tt.InternalReplace(t, c)
-						if err != nil {
-							return nil, err
-						}
+					} else {
+						panic(fmt.Sprintf("Token %#v does not implement ReplaceInternal interface", iTok.parent.tok))
 					}
 				} else {
 					log.Debugf("replace as root")

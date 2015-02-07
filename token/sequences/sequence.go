@@ -2,7 +2,6 @@ package sequences
 
 import (
 	"fmt"
-	"github.com/zimmski/tavor/log"
 	"github.com/zimmski/tavor/token/primitives"
 	"strconv"
 
@@ -61,7 +60,7 @@ func (s *Sequence) existing(r uint, except []token.Token) int {
 				}
 				ex, err := strconv.Atoi(tj.String())
 				if err != nil {
-					log.Errorf("%#v", err) // TODO
+					// TODO
 
 					continue
 				}
@@ -71,7 +70,7 @@ func (s *Sequence) existing(r uint, except []token.Token) int {
 		default:
 			ex, err := strconv.Atoi(except[i].String())
 			if err != nil {
-				log.Errorf("%#v", err) // TODO
+				// TODO
 
 				continue
 			}
@@ -79,8 +78,6 @@ func (s *Sequence) existing(r uint, except []token.Token) int {
 			exceptLookup[ex] = struct{}{}
 		}
 	}
-
-	log.Errorf("Except: %#v", exceptLookup)
 
 	for n != len(checked) {
 		i := (int(r)%n)*s.step + s.start
@@ -94,7 +91,6 @@ func (s *Sequence) existing(r uint, except []token.Token) int {
 		checked[i] = struct{}{}
 
 		if _, ok := exceptLookup[i]; !ok {
-			log.Errorf("choosen %d with checked: %#v", i, checked)
 			return i
 		}
 	}
@@ -261,9 +257,8 @@ func (s *SequenceExistingItem) Parse(pars *token.InternalParser, cur int) (int, 
 }
 
 func (s *SequenceExistingItem) permutation(i uint) {
-	s.value = -1
+	s.value = -1 // TODO set this token to a default value so we do not get confused when it is looked up
 	s.value = s.sequence.existing(i, s.except)
-	log.Errorf("HEI %v", s.value)
 }
 
 // Permutation sets a specific permutation for this token
@@ -298,7 +293,6 @@ func (s *SequenceExistingItem) PermutationsAll() uint {
 }
 
 func (s *SequenceExistingItem) String() string {
-	log.Errorf("OUTA %v", s.value)
 	return strconv.Itoa(s.value)
 }
 

@@ -75,8 +75,6 @@ func SetScope(root Token, scope *VariableScope) {
 			scope = scope.Push()
 		}
 
-		log.Errorf("LOOK %#v", tok)
-
 		if t, ok := tok.(ScopeToken); ok {
 			log.Debugf("setScope %#v(%p) with %#v", t, t, scope)
 

@@ -28,7 +28,7 @@ func (p *Scope) Clone() token.Token {
 // Parse tries to parse the token beginning from the current position in the parser data.
 // If the parsing is successful the error argument is nil and the next current position after the token is returned.
 func (p *Scope) Parse(pars *token.InternalParser, cur int) (int, []error) {
-	return cur, nil
+	return p.token.Parse(pars, cur)
 }
 
 // Permutation sets a specific permutation for this token
@@ -99,6 +99,24 @@ func (p *Scope) Minimize() token.Token {
 	}
 
 	return nil
+}
+
+// Resolve interface methods
+
+// Resolve returns the token which is referenced by the token, or a path of tokens
+func (p *Scope) Resolve() token.Token {
+	var ok bool
+
+	po := p
+
+	for {
+		c := po.InternalGet()
+
+		po, ok = c.(*Scope)
+		if !ok {
+			return c
+		}
+	}
 }
 
 // Scoping interface methods
