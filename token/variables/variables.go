@@ -177,7 +177,14 @@ func (v *VariableItem) PermutationsAll() uint {
 func (v *VariableItem) String() string {
 	i := v.Index()
 
-	tok, err := v.variable.Get().(token.ListToken).Get(i)
+	l, ok := v.variable.Get().(token.ListToken)
+	if !ok {
+		log.Errorf("List is nil")
+
+		return ""
+	}
+
+	tok, err := l.Get(i)
 	if err != nil {
 		panic(err) // TODO
 	}

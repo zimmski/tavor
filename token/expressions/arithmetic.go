@@ -411,11 +411,18 @@ func (e *DivArithmetic) PermutationsAll() uint {
 }
 
 func (e *DivArithmetic) String() string {
-	a, err := strconv.Atoi(e.a.String())
+	as := e.a.String()
+	bs := e.b.String()
+
+	if as == "" || bs == "" {
+		return "TODO"
+	}
+
+	a, err := strconv.Atoi(as)
 	if err != nil {
 		panic(err)
 	}
-	b, err := strconv.Atoi(e.b.String())
+	b, err := strconv.Atoi(bs)
 	if err != nil {
 		panic(err)
 	}
