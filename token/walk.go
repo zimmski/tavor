@@ -18,7 +18,7 @@ func Walk(root Token, walkFunc func(tok Token) error) error {
 		tok := v.(Token)
 
 		if err := walkFunc(tok); err != nil {
-			continue
+			return err
 		}
 
 		switch t := tok.(type) {

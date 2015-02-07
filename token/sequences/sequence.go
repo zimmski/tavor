@@ -2,11 +2,11 @@ package sequences
 
 import (
 	"fmt"
-	"github.com/zimmski/tavor/token/primitives"
 	"strconv"
 
 	"github.com/zimmski/tavor/token"
 	"github.com/zimmski/tavor/token/lists"
+	"github.com/zimmski/tavor/token/primitives"
 )
 
 // Sequence implements a general sequence token which can generate Item tokens to use the internal sequence

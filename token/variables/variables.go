@@ -1,10 +1,11 @@
 package variables
 
 import (
+	"strconv"
+
 	"github.com/zimmski/tavor/log"
 	"github.com/zimmski/tavor/token"
 	"github.com/zimmski/tavor/token/primitives"
-	"strconv"
 )
 
 // Variable implements general variable token which references a token as its value and forwards all token functions to its token.

@@ -43,7 +43,7 @@ type List interface {
 type ListToken interface {
 	Token
 	List
-	ReplaceInternal
+	InternalReplace
 }
 
 // Follow defines if the children of a token should be traversed
@@ -67,7 +67,7 @@ type Forward interface {
 type ForwardToken interface {
 	Token
 	Forward
-	ReplaceInternal
+	InternalReplace
 }
 
 // Index defines an index token which provides the index in its parent token
@@ -136,8 +136,8 @@ type PointerToken interface {
 	Pointer
 }
 
-// ReplaceInternal defines if a token has methods to replace internal tokens
-type ReplaceInternal interface {
+// InternalReplace defines if a token has methods to replace internal tokens
+type InternalReplace interface {
 	// InternalReplace replaces an old with a new internal token if it is referenced by this token. The error return argument is not nil, if the replacement is not suitable.. The error return argument is not nil, if the replacement is not suitable.
 	InternalReplace(oldToken, newToken Token) error
 }

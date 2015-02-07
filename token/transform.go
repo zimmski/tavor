@@ -2,6 +2,7 @@ package token
 
 import (
 	"fmt"
+
 	"github.com/zimmski/container/list/linkedlist"
 
 	"github.com/zimmski/tavor"
@@ -34,13 +35,13 @@ func MinimizeTokens(root Token) (Token, error) {
 				if p == nil {
 					root = r
 				} else {
-					if pTok, ok := p.(ReplaceInternal); ok {
+					if pTok, ok := p.(InternalReplace); ok {
 						err := pTok.InternalReplace(tok, r)
 						if err != nil {
 							return nil, err
 						}
 					} else {
-						panic(fmt.Sprintf("Token %#v does not implement ReplaceInternal interface", p))
+						panic(fmt.Sprintf("Token %#v does not implement InternalReplace interface", p))
 					}
 				}
 
@@ -193,13 +194,13 @@ func UnrollPointers(root Token) (Token, error) {
 				if iTok.parent != nil {
 					log.Debugf("replace in (%p)%#v", iTok.parent.tok, iTok.parent.tok)
 
-					if pTok, ok := iTok.parent.tok.(ReplaceInternal); ok {
+					if pTok, ok := iTok.parent.tok.(InternalReplace); ok {
 						err := pTok.InternalReplace(t, c)
 						if err != nil {
 							return nil, err
 						}
 					} else {
-						panic(fmt.Sprintf("Token %#v does not implement ReplaceInternal interface", iTok.parent.tok))
+						panic(fmt.Sprintf("Token %#v does not implement InternalReplace interface", iTok.parent.tok))
 					}
 				} else {
 					log.Debugf("replace as root")

@@ -3,12 +3,13 @@ package parser
 import (
 	"bytes"
 	"fmt"
-	"github.com/zimmski/container/list/linkedlist"
 	"io"
 	"math"
 	"reflect"
 	"strconv"
 	"text/scanner"
+
+	"github.com/zimmski/container/list/linkedlist"
 
 	"github.com/zimmski/tavor"
 	"github.com/zimmski/tavor/log"
