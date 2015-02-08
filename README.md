@@ -40,9 +40,9 @@ This command prints on every call a random generation of the given structure. He
 <group><item name="V">37</item><group><item name="S">88</item></group></group>
 ```
 
-Generating data like this is just one example of the capabilities of Tavor. Please have a look at [the complete example](#complete-example) with a complete overview over the basic features or keep reading to find out more about the background and capabilities of Tavor.
+Generating data like this is just one example of the capabilities of Tavor. Please have a look at [the complete example](#complete-example) with a broader overview over the basic features or keep reading to find out more about the background and capabilities of Tavor.
 
-Additionally you can find official Tavor format files and fuzzer applications at [https://github.com/zimmski/fuzzer](https://github.com/zimmski/fuzzer).
+Additionally you can find official Tavor format files and fuzzer applications at [https://github.com/zimmski/fuzzer](https://github.com/zimmski/fuzzer). Announcements<sup>[1](https://groups.google.com/forum/#!msg/golang-nuts/uI6hkmYyaAU/UPz5ccT5_ZgJ)</sup> of the project's progress also include explanations, examples and roadmap information.
 
 ## <a name="table-of-content"></a>Table of content
 
