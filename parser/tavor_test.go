@@ -245,9 +245,8 @@ func TestTavorParseErrors(t *testing.T) {
 	Equal(t, token.ParseErrorEmptyString, err.(*token.ParserError).Type)
 	Nil(t, tok)
 
-	/*
-		// loops in list argument of path operator is not allowed
-		tok, err = ParseTavor(strings.NewReader(`
+	// loops in list argument of path operator is not allowed
+	tok, err = ParseTavor(strings.NewReader(`
 			START = Pairs "->" Path
 
 			Path = ${Pairs path from (2) over (e.Item(0)) connect by (e.Item(1)) without (0)}
@@ -258,9 +257,8 @@ func TestTavorParseErrors(t *testing.T) {
 				(2 3),
 			)
 		`))
-		Equal(t, token.ParseErrorEndlessLoopDetected, err.(*token.ParserError).Type)
-		Nil(t, tok)
-	*/
+	Equal(t, token.ParseErrorEndlessLoopDetected, err.(*token.ParserError).Type)
+	Nil(t, tok)
 }
 
 func TestTavorParserSimple(t *testing.T) {

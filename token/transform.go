@@ -98,13 +98,34 @@ func UnrollPointers(root Token) (Token, error) {
 	})
 	parents[root] = nil
 
+	pointerlessLoopDetection := make(map[Token]struct{})
+
 	for !queue.Empty() {
 		v, _ := queue.Shift()
-
 		iTok, _ := v.(*unrollToken)
 
 		if t, ok := iTok.tok.(Follow); ok && !t.Follow() {
 			continue
+		}
+
+		if _, ok := pointerlessLoopDetection[iTok.tok]; ok {
+			checked := make(map[Token]struct{})
+			i := iTok
+
+			for i != nil {
+				if _, ok := checked[i.tok]; ok {
+					return nil, &ParserError{
+						Message: "Found a pointerless loop while unrolling. This is not allowed.",
+						Type:    ParseErrorEndlessLoopDetected,
+					}
+				}
+
+				checked[i.tok] = struct{}{}
+
+				i = i.parent
+			}
+		} else {
+			pointerlessLoopDetection[iTok.tok] = struct{}{}
 		}
 
 		switch t := iTok.tok.(type) {
@@ -175,6 +196,8 @@ func UnrollPointers(root Token) (Token, error) {
 			if replace {
 				log.Debugf("clone (%p)%#v with child (%p)%#v", t, t, child, child)
 
+				pointerlessLoopDetection = make(map[Token]struct{})
+
 				c := originalClones[original].Clone()
 
 				counts := make(map[Token]int)
@@ -202,6 +225,7 @@ func UnrollPointers(root Token) (Token, error) {
 					} else {
 						panic(fmt.Sprintf("Token %#v does not implement InternalReplace interface", iTok.parent.tok))
 					}
+
 				} else {
 					log.Debugf("replace as root")
 

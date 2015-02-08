@@ -251,9 +251,7 @@ func (e *Path) InternalLen() int {
 
 // InternalLogicalRemove removes the referenced internal token and returns the replacement for the current token or nil if the current token should be removed.
 func (e *Path) InternalLogicalRemove(tok token.Token) token.Token {
-	// TODO
-
-	return nil
+	panic("TODO")
 }
 
 // InternalReplace replaces an old with a new internal token if it is referenced by this token. The error return argument is not nil, if the replacement is not suitable.
