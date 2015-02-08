@@ -4,6 +4,8 @@ The [Tavor](/) format is an [EBNF-like notation](https://en.wikipedia.org/wiki/E
 
 The format is Unicode text encoded in UTF-8 and consists of terminal and non-terminal symbols which are called `tokens` throughout the Tavor framework. An explanation of the general meaning can be found in the [What are tokens?](/#token) section.
 
+> **Note**: The Tavor format is not stable and changes slightly with every version of Tavor. This is necessary to make the format more powerful and easier to understand and write. Please [submit an issue](https://github.com/zimmski/tavor/issues/new) if you find flaws, ambiguous content or definitions, or something that could be easier defined.
+
 Every example of this page is a complete and syntactical correct Tavor format file. The content of each example can be for instance saved into a file called `file.tavor` and then fuzzed with the Tavor binary. To get a a better understanding of the format it is advised to do this with every example.
 
 ```bash
