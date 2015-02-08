@@ -60,11 +60,18 @@ func (e *AddArithmetic) PermutationsAll() uint {
 }
 
 func (e *AddArithmetic) String() string {
-	a, err := strconv.Atoi(e.a.String())
+	as := e.a.String()
+	bs := e.b.String()
+
+	if as == "" || bs == "" || as == "TODO" || bs == "TODO" {
+		return "TODO"
+	}
+
+	a, err := strconv.Atoi(as)
 	if err != nil {
 		panic(err)
 	}
-	b, err := strconv.Atoi(e.b.String())
+	b, err := strconv.Atoi(bs)
 	if err != nil {
 		panic(err)
 	}
@@ -177,11 +184,18 @@ func (e *SubArithmetic) PermutationsAll() uint {
 }
 
 func (e *SubArithmetic) String() string {
-	a, err := strconv.Atoi(e.a.String())
+	as := e.a.String()
+	bs := e.b.String()
+
+	if as == "" || bs == "" || as == "TODO" || bs == "TODO" {
+		return "TODO"
+	}
+
+	a, err := strconv.Atoi(as)
 	if err != nil {
 		panic(err)
 	}
-	b, err := strconv.Atoi(e.b.String())
+	b, err := strconv.Atoi(bs)
 	if err != nil {
 		panic(err)
 	}
@@ -294,11 +308,18 @@ func (e *MulArithmetic) PermutationsAll() uint {
 }
 
 func (e *MulArithmetic) String() string {
-	a, err := strconv.Atoi(e.a.String())
+	as := e.a.String()
+	bs := e.b.String()
+
+	if as == "" || bs == "" || as == "TODO" || bs == "TODO" {
+		return "TODO"
+	}
+
+	a, err := strconv.Atoi(as)
 	if err != nil {
 		panic(err)
 	}
-	b, err := strconv.Atoi(e.b.String())
+	b, err := strconv.Atoi(bs)
 	if err != nil {
 		panic(err)
 	}
@@ -414,7 +435,7 @@ func (e *DivArithmetic) String() string {
 	as := e.a.String()
 	bs := e.b.String()
 
-	if as == "" || bs == "" {
+	if as == "" || bs == "" || as == "TODO" || bs == "TODO" {
 		return "TODO"
 	}
 
