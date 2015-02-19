@@ -170,6 +170,20 @@ func TestLinearStrategy(t *testing.T) {
 			"b",
 		)
 	}
+
+	/*
+		TODO read this files in with the aag.tavor file.
+		Since they have a AND loop in them, they should be not valid
+
+		aag 3 0 0 0 2
+		2 5 4
+		4 3 0
+
+		aag 3 0 0 0 3
+		2 5 4
+		4 6 0
+		6 2 0
+	*/
 }
 
 func validateTavorLinear(t *testing.T, tok token.Token, input string, feedback func(out string) ReduceFeedbackType, expected []string, final string) {
