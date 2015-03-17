@@ -118,9 +118,9 @@ func TestStrategyReplaces(t *testing.T) {
 		rootNew, err := ApplyFilters(filters2, root)
 		Nil(t, err)
 		Equal(t, 2, rootNew.(*lists.One).InternalLen())
-		rootNew.Permutation(1)
+		Nil(t, rootNew.Permutation(1))
 		Equal(t, "ab", rootNew.String())
-		rootNew.Permutation(2)
+		Nil(t, rootNew.Permutation(2))
 		Equal(t, "ac", rootNew.String())
 	}
 }
