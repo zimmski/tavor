@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/zimmski/tavor/token"
+	"github.com/zimmski/tavor/token/lists"
 	"github.com/zimmski/tavor/token/primitives"
 )
 
@@ -25,12 +26,12 @@ func init() {
 
 // Apply applies the fuzzing filter onto the token and returns a replacement token, or nil if there is no replacement.
 // If a fatal error is encountered the error return argument is not nil.
-func (f *PositiveBoundaryValueAnalysisFilter) Apply(tok token.Token) ([]token.Token, error) {
+func (f *PositiveBoundaryValueAnalysisFilter) Apply(tok token.Token) (token.Token, error) {
+	var replacements []token.Token
+
 	switch tok := tok.(type) {
 	case *primitives.CharacterClass:
 		l := tok.Permutations()
-
-		var replacements []token.Token
 
 		// lower boundary
 		if err := tok.Permutation(1); err != nil {
@@ -56,12 +57,8 @@ func (f *PositiveBoundaryValueAnalysisFilter) Apply(tok token.Token) ([]token.To
 
 			replacements = append(replacements, primitives.NewConstantString(tok.String()))
 		}
-
-		return replacements, nil
 	case *primitives.RangeInt:
 		l := tok.Permutations()
-
-		var replacements []token.Token
 
 		// lower boundary
 		if err := tok.Permutation(1); err != nil {
@@ -93,9 +90,12 @@ func (f *PositiveBoundaryValueAnalysisFilter) Apply(tok token.Token) ([]token.To
 
 			replacements = append(replacements, primitives.NewConstantInt(i))
 		}
-
-		return replacements, nil
 	default:
 		return nil, nil
 	}
+
+	if len(replacements) == 1 {
+		return replacements[0], nil
+	}
+	return lists.NewOne(replacements...), nil
 }

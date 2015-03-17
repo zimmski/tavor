@@ -14,7 +14,7 @@ import (
 type Filter interface {
 	// Apply applies the fuzzing filter onto the token and returns a replacement token, or nil if there is no replacement.
 	// If a fatal error is encountered the error return argument is not nil.
-	Apply(tok token.Token) ([]token.Token, error)
+	Apply(tok token.Token) (token.Token, error)
 }
 
 var filterLookup = make(map[string]func() Filter)
@@ -58,6 +58,7 @@ func Register(name string, filt func() Filter) {
 
 // ApplyFilters applies a set of filters onto a token.
 // Filters are not applied onto filter generated tokens.
+// When multiple filters replace the same token, the resulting token is the alternation group of all the replacements.
 func ApplyFilters(filters []Filter, root token.Token) (token.Token, error) {
 	type Pair struct {
 		token  token.Token
@@ -90,8 +91,8 @@ func ApplyFilters(filters []Filter, root token.Token) (token.Token, error) {
 					return nil, fmt.Errorf("error in fuzzing filter %v: %s", filters[i], err)
 				}
 
-				if len(replacement) > 0 {
-					newTokens = append(newTokens, replacement...)
+				if replacement != nil {
+					newTokens = append(newTokens, replacement)
 				}
 			}
 

@@ -4,6 +4,7 @@ import (
 	"strconv"
 
 	"github.com/zimmski/tavor/token"
+	"github.com/zimmski/tavor/token/lists"
 	"github.com/zimmski/tavor/token/primitives"
 )
 
@@ -24,7 +25,7 @@ func init() {
 
 // Apply applies the fuzzing filter onto the token and returns a replacement token, or nil if there is no replacement.
 // If a fatal error is encountered the error return argument is not nil.
-func (f *NegativeBoundaryValueAnalysisFilter) Apply(tok token.Token) ([]token.Token, error) {
+func (f *NegativeBoundaryValueAnalysisFilter) Apply(tok token.Token) (token.Token, error) {
 	t, ok := tok.(*primitives.RangeInt)
 	if !ok {
 		return nil, nil
@@ -52,5 +53,5 @@ func (f *NegativeBoundaryValueAnalysisFilter) Apply(tok token.Token) ([]token.To
 
 	replacements = append(replacements, primitives.NewConstantInt(i+1))
 
-	return replacements, nil
+	return lists.NewOne(replacements...), nil
 }
