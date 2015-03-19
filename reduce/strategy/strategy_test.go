@@ -117,7 +117,7 @@ func testStrategyLoopDetection(t *testing.T, newStrategy func(root token.Token) 
 			p,
 			primitives.NewConstantInt(1),
 		)
-		p.Set(o)
+		Nil(t, p.Set(o))
 
 		s := newStrategy(o)
 
@@ -131,7 +131,7 @@ func testStrategyLoopDetection(t *testing.T, newStrategy func(root token.Token) 
 			primitives.NewConstantInt(1),
 			p,
 		)
-		p.Set(o)
+		Nil(t, p.Set(o))
 
 		s = newStrategy(o)
 
@@ -157,7 +157,7 @@ func testStrategyLoopDetection(t *testing.T, newStrategy func(root token.Token) 
 				p,
 			),
 		)
-		p.Set(o)
+		Nil(t, p.Set(o))
 
 		s := newStrategy(o)
 

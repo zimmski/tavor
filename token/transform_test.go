@@ -36,20 +36,20 @@ func TestUnrollPointers(t *testing.T) {
 		unrolled, err := token.UnrollPointers(s)
 		Nil(t, err)
 
-		token.WalkInternal(unrolled, func(tok token.Token) error {
+		Nil(t, token.WalkInternal(unrolled, func(tok token.Token) error {
 			if _, ok := tok.(*primitives.Pointer); ok {
 				t.Fatalf("Found pointer in the internal structure %#v", tok)
 			}
 
 			return nil
-		})
+		}))
 
-		token.Walk(unrolled, func(tok token.Token) error {
+		Nil(t, token.Walk(unrolled, func(tok token.Token) error {
 			if _, ok := tok.(*primitives.Pointer); ok {
 				t.Fatalf("Found pointer in the external structure %#v", tok)
 			}
 
 			return nil
-		})
+		}))
 	}
 }
