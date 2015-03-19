@@ -107,7 +107,7 @@ func TestStrategyReplaces(t *testing.T) {
 		Nil(t, err)
 		Equal(t, "1bab2b2b", rootNew.String())
 	}
-	// double the replace
+	// double the replace: only the first filter should be applied
 	{
 		filters2 := []Filter{
 			&mockReplaceFilter{"b"},
@@ -117,10 +117,7 @@ func TestStrategyReplaces(t *testing.T) {
 
 		rootNew, err := ApplyFilters(filters2, root)
 		Nil(t, err)
-		Equal(t, 2, rootNew.(*lists.One).InternalLen())
-		Nil(t, rootNew.Permutation(1))
+		Equal(t, 1, rootNew.Permutations())
 		Equal(t, "ab", rootNew.String())
-		Nil(t, rootNew.Permutation(2))
-		Equal(t, "ac", rootNew.String())
 	}
 }
