@@ -57,19 +57,19 @@ func execMain(t *testing.T, args []string) (exitCodeType, string) {
 	go func() {
 		buf := new(bytes.Buffer)
 		_, err = io.Copy(buf, r)
-		r.Close()
 		assert.Nil(t, err)
+		assert.Nil(t, r.Close())
 
 		bufChannel <- buf.String()
 	}()
 
 	exitCode := mainCmd(args)
 
-	w.Close()
+	assert.Nil(t, w.Close())
 
 	os.Stderr = saveStderr
 	os.Stdout = saveStdout
-	os.Chdir(saveCwd)
+	assert.Nil(t, os.Chdir(saveCwd))
 
 	out := <-bufChannel
 
