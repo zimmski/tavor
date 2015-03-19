@@ -14,7 +14,7 @@ type mockSeeFilter struct {
 	Seen map[token.Token]struct{}
 }
 
-func (f *mockSeeFilter) Apply(tok token.Token) ([]token.Token, error) {
+func (f *mockSeeFilter) Apply(tok token.Token) (token.Token, error) {
 	f.Seen[tok] = struct{}{}
 
 	return nil, nil
@@ -63,11 +63,12 @@ func TestStrategySeen(t *testing.T) {
 }
 
 type mockReplaceFilter struct {
+	stringSuffix string
 }
 
-func (f *mockReplaceFilter) Apply(tok token.Token) ([]token.Token, error) {
+func (f *mockReplaceFilter) Apply(tok token.Token) (token.Token, error) {
 	if t, ok := tok.(*primitives.ConstantString); ok {
-		return []token.Token{primitives.NewConstantString(t.String() + "b")}, nil
+		return primitives.NewConstantString(t.String() + f.stringSuffix), nil
 	}
 
 	return nil, nil
@@ -75,7 +76,7 @@ func (f *mockReplaceFilter) Apply(tok token.Token) ([]token.Token, error) {
 
 func TestStrategyReplaces(t *testing.T) {
 	filters := []Filter{
-		&mockReplaceFilter{},
+		&mockReplaceFilter{"b"},
 	}
 
 	// root replace
@@ -106,15 +107,17 @@ func TestStrategyReplaces(t *testing.T) {
 		Nil(t, err)
 		Equal(t, "1bab2b2b", rootNew.String())
 	}
-	// double the replace
+	// double the replace: only the first filter should be applied
 	{
-		filters2 := append([]Filter{}, filters...)
-		filters2 = append(filters2, filters...)
+		filters2 := []Filter{
+			&mockReplaceFilter{"b"},
+			&mockReplaceFilter{"c"},
+		}
 		root := primitives.NewConstantString("a")
 
 		rootNew, err := ApplyFilters(filters2, root)
 		Nil(t, err)
+		Equal(t, 1, rootNew.Permutations())
 		Equal(t, "ab", rootNew.String())
-		Equal(t, 2, rootNew.(*lists.One).InternalLen())
 	}
 }
