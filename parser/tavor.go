@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"math"
 	"reflect"
 	"strconv"
 	"text/scanner"
@@ -1565,102 +1564,19 @@ func (p *tavorParser) parseTypedTokenDefinition(variableScope *token.VariableSco
 		return zeroRune, err
 	}
 
-	var tok token.Token
-	usedArguments := make(map[string]struct{})
-
-	switch typ {
-	case "Int":
-		rawFrom, okFrom := arguments["from"]
-		rawTo, okTo := arguments["to"]
-
-		from := 0
-		if okFrom {
-			from, err = strconv.Atoi(rawFrom)
-			if err != nil {
-				return zeroRune, &token.ParserError{
-					Message:  "\"from\" needs an integer value",
-					Type:     token.ParseErrorInvalidArgumentValue,
-					Position: p.scan.Pos(),
-				}
-			}
-		}
-
-		to := math.MaxInt32
-		if okTo {
-			to, err = strconv.Atoi(rawTo)
-			if err != nil {
-				return zeroRune, &token.ParserError{
-					Message:  "\"to\" needs an integer value",
-					Type:     token.ParseErrorInvalidArgumentValue,
-					Position: p.scan.Pos(),
-				}
-			}
-		}
-
-		step := 1
-
-		if raw, ok := arguments["step"]; ok {
-			step, err = strconv.Atoi(raw)
-			if err != nil {
-				return zeroRune, &token.ParserError{
-					Message:  "\"step\" needs an integer value",
-					Type:     token.ParseErrorInvalidArgumentValue,
-					Position: p.scan.Pos(),
-				}
-			}
-
-			usedArguments["step"] = struct{}{}
-		}
-
-		usedArguments["from"] = struct{}{}
-		usedArguments["to"] = struct{}{}
-
-		tok = primitives.NewRangeIntWithStep(from, to, step)
-	case "Sequence":
-		start := 1
-		step := 1
-
-		if raw, ok := arguments["start"]; ok {
-			start, err = strconv.Atoi(raw)
-			if err != nil {
-				return zeroRune, &token.ParserError{
-					Message:  "\"start\" needs an integer value",
-					Type:     token.ParseErrorInvalidArgumentValue,
-					Position: p.scan.Pos(),
-				}
-			}
-		}
-
-		if raw, ok := arguments["step"]; ok {
-			step, err = strconv.Atoi(raw)
-			if err != nil {
-				return zeroRune, &token.ParserError{
-					Message:  "\"step\" needs an integer value",
-					Type:     token.ParseErrorInvalidArgumentValue,
-					Position: p.scan.Pos(),
-				}
-			}
-		}
-
-		usedArguments["start"] = struct{}{}
-		usedArguments["step"] = struct{}{}
-
-		tok = sequences.NewSequence(start, step)
-	default:
-		return zeroRune, &token.ParserError{
-			Message:  fmt.Sprintf("unknown typed token type %q", typ),
-			Type:     token.ParseErrorUnknownTypedTokenType,
-			Position: p.scan.Pos(),
-		}
+	// construct the typed token
+	argParser := newArgumentsParser(arguments)
+	tok, err := token.NewTyped(typ, argParser, p.scan.Pos())
+	if err != nil {
+		return zeroRune, err
 	}
 
-	for arg := range arguments {
-		if _, ok := usedArguments[arg]; !ok {
-			return zeroRune, &token.ParserError{
-				Message:  fmt.Sprintf("unknown typed token argument %q", arg),
-				Type:     token.ParseErrorUnknownTypedTokenArgument,
-				Position: p.scan.Pos(),
-			}
+	// forbid unused arguments
+	if arg := argParser.firstUnusedArgument(); arg != "" {
+		return zeroRune, &token.ParserError{
+			Message:  fmt.Sprintf("unknown typed token argument %q", arg),
+			Type:     token.ParseErrorUnknownTypedTokenArgument,
+			Position: p.scan.Pos(),
 		}
 	}
 

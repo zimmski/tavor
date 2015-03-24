@@ -143,6 +143,20 @@ func NewRangeIntWithStep(from, to, step int) *RangeInt {
 	}
 }
 
+func init() {
+	token.RegisterTyped("Int", func(argParser token.ArgumentsTypedParser) (token.Token, error) {
+		from := argParser.GetInt("from", 0)
+		to := argParser.GetInt("to", math.MaxInt32)
+		step := argParser.GetInt("step", 1)
+
+		if err := argParser.Err(); err != nil {
+			return nil, err
+		}
+
+		return NewRangeIntWithStep(from, to, step), nil
+	})
+}
+
 // From returns the from value of the range
 func (p *RangeInt) From() int {
 	return p.from
