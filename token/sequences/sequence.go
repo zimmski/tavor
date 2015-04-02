@@ -26,6 +26,19 @@ func NewSequence(start, step int) *Sequence {
 	}
 }
 
+func init() {
+	token.RegisterTyped("Sequence", func(argParser token.ArgumentsTypedParser) (token.Token, error) {
+		start := argParser.GetInt("start", 1)
+		step := argParser.GetInt("step", 1)
+
+		if err := argParser.Err(); err != nil {
+			return nil, err
+		}
+
+		return NewSequence(start, step), nil
+	})
+}
+
 // TODO this must be handled without panics
 var errNoSequenceValue = fmt.Sprintf("There is no sequence value to choose from")
 

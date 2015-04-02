@@ -1392,9 +1392,9 @@ Every token type and interface can have its own token attributes. Currently it i
 
 ### <a name="extend-typed-tokens"></a>Typed tokens
 
-Typed tokens provide additional types for formats. Currently it is not possible to define typed tokens and their arguments externally. Instead they must be implemented directly in the format parsers. For example the method `parseTypedTokenDefinition` of the [Tavor format parser](/parser/tavor.go) has to be extended. To add token attributes to typed tokens, please have a look at the  [token attributes section](#extend-token-attributes). It is only necessary to implement the [Token interface](https://godoc.org/github.com/zimmski/tavor/token#Token), since typed tokens behave like regular tokens. Arguments for the typed tokens have to be currently parsed and validated by hand. They are used as initialization values for the instanced token. It is therefore not possible to lookup argument values after the typed token definition is processed.
-
-> **Note:** The mentioned implementation inconveniences will be addressed in future versions of Tavor.
+Typed tokens provide additional types for formats. It is possible to define new typed tokens by calling the  [`token.RegisterTyped`](https://godoc.org/github.com/zimmski/tavor/token#RegisterTyped) function. It is only necessary to implement the [Token interface](https://godoc.org/github.com/zimmski/tavor/token#Token), since typed tokens behave like regular tokens. Arguments for the typed tokens are used as initialization values for the instanced token. It is therefore not possible to lookup argument values after the typed token definition is processed.
+ 		 
+An example of typed token creation function can be found in [the sequence token](/token/sequences/sequence.go#L29). Currently, the arguments of a typed token are limited to integers. To support new argument types, it is necessary to extend the [ArgumentsTypedParser](https://godoc.org/github.com/zimmski/tavor/token#ArgumentsTypedParser) interface and [its implementation](/parser/typed.go). To add token attributes to typed tokens, please have a look at the  [token attributes section](#extend-token-attributes).
 
 ## <a name="stability"></a>How stable is Tavor?
 
