@@ -252,11 +252,11 @@ func WriteDot(root token.Token, dst io.Writer) {
 
 	fmt.Fprintf(dst, "digraph Graphing {\n")
 
-	fmt.Fprintf(dst, "\tnode [shape = doublecircle];")
+	fmt.Fprintf(dst, "\tnode [peripheries = 2];")
 	for tok := range next {
 		fmt.Fprintf(dst, " %s", nodeUID(tok))
 	}
-	fmt.Fprintf(dst, ";\n")
+	fmt.Fprintf(dst, "; node [peripheries = 1];\n")
 
 	fmt.Fprintf(dst, "\tnode [shape = point] START;\n")
 
