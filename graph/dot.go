@@ -3,6 +3,7 @@ package graph
 import (
 	"fmt"
 	"io"
+	"strings"
 
 	"github.com/zimmski/tavor/token"
 	"github.com/zimmski/tavor/token/constraints"
@@ -270,7 +271,9 @@ func WriteDot(root token.Token, dst io.Writer) {
 	fmt.Fprintln(dst)
 
 	for tok, vertice := range g.vertices {
-		fmt.Fprintf(dst, "\t%s [label=%q]\n", nodeUID(tok), vertice.label)
+		// Double escape the labels so that graphviz display the special sequences (\n, \t, ...)
+		label := strings.Replace(fmt.Sprintf("%q", vertice.label), "\\", "\\\\", -1)
+		fmt.Fprintf(dst, "\t%s [label=%s]\n", nodeUID(tok), label)
 	}
 
 	fmt.Fprintln(dst)
