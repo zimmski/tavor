@@ -202,6 +202,8 @@ func (g *dotGraph) addDot(tok token.Token) (start, next map[token.Token]bool) {
 
 		start[tok] = false
 		next[tok] = false
+	case *primitives.Scope:
+		return g.addDot(t.InternalGet())
 	default:
 		g.vertices[tok] = dotVertice{
 			label: tok.String(),
