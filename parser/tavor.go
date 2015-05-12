@@ -1525,11 +1525,22 @@ func (p *tavorParser) parseTypedTokenDefinition(variableScope *token.VariableSco
 			}
 
 			c = p.scan.Scan()
+
+			// optional sign (+/-)
+			prefix := ""
+			if c == '-' {
+				log.Debug("parseTypedTokenDefinition negate next argument")
+				prefix = "-"
+				c = p.scan.Scan()
+			} else if c == '+' {
+				c = p.scan.Scan()
+			}
+
 			log.Debugf("parseTypedTokenDefinition argument value %d:%v -> %v", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
 
 			switch c {
 			case scanner.Ident, scanner.String, scanner.Int:
-				arguments[arg] = p.scan.TokenText()
+				arguments[arg] = prefix + p.scan.TokenText()
 			default:
 				return zeroRune, &token.ParserError{
 					Message:  fmt.Sprintf("invalid argument value %v", c),

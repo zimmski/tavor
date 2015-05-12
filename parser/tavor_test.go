@@ -635,6 +635,12 @@ func TestTavorParserTypedTokens(t *testing.T) {
 	Nil(t, err)
 	Equal(t, tok, primitives.NewScope(primitives.NewRangeIntWithStep(2, math.MaxInt32, 2)))
 
+	tok, err = ParseTavor(strings.NewReader(
+		"$Spec Int = from: -10\nSTART = Spec\n",
+	))
+	Nil(t, err)
+	Equal(t, tok, primitives.NewScope(primitives.NewRangeInt(-10, math.MaxInt32)))
+
 	// Sequence
 	{
 		s := sequences.NewSequence(1, 1)
