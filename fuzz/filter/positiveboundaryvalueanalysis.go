@@ -1,7 +1,6 @@
 package filter
 
 import (
-	"math"
 	"strconv"
 
 	"github.com/zimmski/tavor/token"
@@ -42,7 +41,7 @@ func (f *PositiveBoundaryValueAnalysisFilter) Apply(tok token.Token) (token.Toke
 
 		// middle
 		if l > 2 {
-			if err := tok.Permutation(uint(math.Ceil(float64(l) / 2.0))); err != nil {
+			if err := tok.Permutation((l + 1) / 2); err != nil {
 				panic(err)
 			}
 
@@ -71,7 +70,7 @@ func (f *PositiveBoundaryValueAnalysisFilter) Apply(tok token.Token) (token.Toke
 
 		// middle
 		if l > 2 {
-			if err := tok.Permutation(uint(math.Ceil(float64(l) / 2.0))); err != nil {
+			if err := tok.Permutation((l + 1) / 2); err != nil {
 				panic(err)
 			}
 
