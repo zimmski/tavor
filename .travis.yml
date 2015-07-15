@@ -40,3 +40,5 @@ script:
 env:
   # coveralls.io
   secure: "CPuDl59GuLvd8BFbJwuy2mynpN4e9l2LAPF42yaf8b9HQIYQPrSeycqQAIDPQgKhk4x3/FbX1JrvieTP/P2hx+alxJv6tvEvh/aGg91h/dgLpUHiIvBQfa7viUKZrxkER3pQg30Ql2fMJOz8gKPWyB0mNvm5Eh4ysdjJmILTGuM="
+
+sudo: false
