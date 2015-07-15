@@ -3,6 +3,7 @@ package graph
 import (
 	"fmt"
 	"io"
+	"strings"
 
 	"github.com/zimmski/tavor/token"
 	"github.com/zimmski/tavor/token/constraints"
@@ -202,6 +203,8 @@ func (g *dotGraph) addDot(tok token.Token) (start, next map[token.Token]bool) {
 
 		start[tok] = false
 		next[tok] = false
+	case *primitives.Scope:
+		return g.addDot(t.InternalGet())
 	default:
 		g.vertices[tok] = dotVertice{
 			label: tok.String(),
@@ -249,11 +252,11 @@ func WriteDot(root token.Token, dst io.Writer) {
 
 	fmt.Fprintf(dst, "digraph Graphing {\n")
 
-	fmt.Fprintf(dst, "\tnode [shape = doublecircle];")
+	fmt.Fprintf(dst, "\tnode [peripheries = 2];")
 	for tok := range next {
 		fmt.Fprintf(dst, " %s", nodeUID(tok))
 	}
-	fmt.Fprintf(dst, ";\n")
+	fmt.Fprintf(dst, "; node [peripheries = 1];\n")
 
 	fmt.Fprintf(dst, "\tnode [shape = point] START;\n")
 
@@ -268,7 +271,9 @@ func WriteDot(root token.Token, dst io.Writer) {
 	fmt.Fprintln(dst)
 
 	for tok, vertice := range g.vertices {
-		fmt.Fprintf(dst, "\t%s [label=%q]\n", nodeUID(tok), vertice.label)
+		// Double escape the labels so that graphviz display the special sequences (\n, \t, ...)
+		label := strings.Replace(fmt.Sprintf("%q", vertice.label), "\\", "\\\\", -1)
+		fmt.Fprintf(dst, "\t%s [label=%s]\n", nodeUID(tok), label)
 	}
 
 	fmt.Fprintln(dst)
