@@ -3,7 +3,6 @@ package lists
 import (
 	"testing"
 
-	"github.com/zimmski/go-leak"
 	. "github.com/zimmski/tavor/test/assert"
 
 	"github.com/zimmski/tavor/token"
@@ -246,8 +245,6 @@ func TestRepeatCombinations(t *testing.T) {
 		},
 	}
 
-	m := leak.MarkGoRoutines()
-
 	for _, test := range tests {
 		var actual [][]int
 
@@ -258,8 +255,6 @@ func TestRepeatCombinations(t *testing.T) {
 
 		Equal(t, test.expected, actual)
 	}
-
-	Equal(t, 0, m.Release(), "check for goroutine leaks")
 }
 
 func TestRepeatReduce(t *testing.T) {
@@ -365,8 +360,6 @@ func TestRepeatReduce(t *testing.T) {
 		},
 	}
 
-	m := leak.MarkGoRoutines()
-
 	for _, test := range tests {
 		o := NewRepeat(a, test.from, test.to)
 		o.value = make([]token.Token, test.to)
@@ -396,6 +389,4 @@ func TestRepeatReduce(t *testing.T) {
 			Equal(t, test.expected, actual)
 		}
 	}
-
-	Equal(t, 0, m.Release(), "check for goroutine leaks")
 }

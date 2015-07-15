@@ -4,7 +4,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/zimmski/go-leak"
 	. "github.com/zimmski/tavor/test/assert"
 
 	"github.com/zimmski/tavor/parser"
@@ -546,8 +545,6 @@ func TestAlmostAllPermutationsStrategy(t *testing.T) {
 }
 
 func validateTavorAlmostAllPermutations(t *testing.T, format string, expect []string) {
-	m := leak.MarkGoRoutines()
-
 	r := test.NewRandTest(1)
 
 	o, err := parser.ParseTavor(strings.NewReader(format))
@@ -566,8 +563,6 @@ func validateTavorAlmostAllPermutations(t *testing.T, format string, expect []st
 	}
 
 	Equal(t, got, expect)
-
-	Equal(t, 0, m.Release(), "check for goroutine leaks")
 }
 
 func TestAlmostAllPermutationsStrategyLoopDetection(t *testing.T) {
