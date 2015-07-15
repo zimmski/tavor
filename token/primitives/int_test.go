@@ -49,4 +49,8 @@ func TestRangeInt(t *testing.T) {
 	// range with step 2
 	o = NewRangeIntWithStep(2, 6, 2)
 	Equal(t, "2", o.String())
+
+	// range with negative lower value
+	o = NewRangeInt(-2, 1)
+	Equal(t, "-2", o.String())
 }

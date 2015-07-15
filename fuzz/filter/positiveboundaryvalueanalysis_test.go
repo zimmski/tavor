@@ -68,6 +68,30 @@ func TestNewPositiveBoundaryValueAnalysisFilter(t *testing.T) {
 			primitives.NewConstantInt(14),
 		))
 	}
+	// negative range
+	{
+		root := primitives.NewRangeInt(-14, -10)
+		replacements, err := f.Apply(root)
+		Nil(t, err)
+		Equal(t, replacements, lists.NewOne(
+			primitives.NewConstantInt(-14),
+			primitives.NewConstantInt(-12),
+			primitives.NewConstantInt(-10),
+		))
+	}
+	// negative to positive range
+	{
+		root := primitives.NewRangeInt(-5, 10)
+		replacements, err := f.Apply(root)
+		Nil(t, err)
+		Equal(t, replacements, lists.NewOne(
+			primitives.NewConstantInt(-5),
+			primitives.NewConstantInt(-1),
+			primitives.NewConstantInt(0),
+			primitives.NewConstantInt(1),
+			primitives.NewConstantInt(10),
+		))
+	}
 	// three value CharacterClass
 	{
 		root := primitives.NewCharacterClass("a-z")

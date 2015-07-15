@@ -1,7 +1,6 @@
 package filter
 
 import (
-	"math"
 	"strconv"
 
 	"github.com/zimmski/tavor/token"
@@ -10,7 +9,7 @@ import (
 )
 
 // PositiveBoundaryValueAnalysisFilter implements a fuzzing filter for positive boundary-value analysis.
-// This filter searches the token graph for range tokens which will be transformed to at most three new values: The lower and higher boundary as well as the value exactly at the middle of the range. Using this filter reduces for example integer ranges of 1-100 to the integers 1, 50 and 100. Which reduces permutations dramatically. A range of 1-2 will be reduces to the integers 1 and 2. A range of 1 will be reduced to the integer 1. Resulting integers of this filter therefore do not overlap.
+// This filter searches the token graph for range tokens which will be transformed to a most 5 values: the lower and high boundaries as well as the middle values of the range. Using this filter reduces for example integer ranges of 1-100 to the integers 1, 50 and 100, which reduces permutations dramatically. A range of 1-2 will be reduces to the integers 1 and 2. A range of 1 will be reduced to the integer 1. Resulting integers of this filter therefore do not overlap. As a special case, integer ranges where the signs of the two boundaries are different are reduced to a maximum of 5 non-overlapping values. For instance, the integer range [-5, 10] is reduced to the integers -5, -1, 0, 1 and 10.
 type PositiveBoundaryValueAnalysisFilter struct{}
 
 // NewPositiveBoundaryValueAnalysisFilter returns a new instance of the positive boundary-value analysis fuzzing filter
@@ -42,7 +41,7 @@ func (f *PositiveBoundaryValueAnalysisFilter) Apply(tok token.Token) (token.Toke
 
 		// middle
 		if l > 2 {
-			if err := tok.Permutation(uint(math.Ceil(float64(l) / 2.0))); err != nil {
+			if err := tok.Permutation((l + 1) / 2); err != nil {
 				panic(err)
 			}
 
@@ -71,13 +70,27 @@ func (f *PositiveBoundaryValueAnalysisFilter) Apply(tok token.Token) (token.Toke
 
 		// middle
 		if l > 2 {
-			if err := tok.Permutation(uint(math.Ceil(float64(l) / 2.0))); err != nil {
-				panic(err)
+			if tok.From() < 0 && tok.To() > 0 {
+				// the boundaries are -1, 0 and 1
+				if tok.From() < -1 {
+					replacements = append(replacements, primitives.NewConstantInt(-1))
+				}
+
+				replacements = append(replacements, primitives.NewConstantInt(0))
+
+				if tok.To() > 1 {
+					replacements = append(replacements, primitives.NewConstantInt(1))
+				}
+			} else {
+				// the boundary is just the middle value
+				if err := tok.Permutation((l + 1) / 2); err != nil {
+					panic(err)
+				}
+
+				i, _ := strconv.Atoi(tok.String())
+
+				replacements = append(replacements, primitives.NewConstantInt(i))
 			}
-
-			i, _ := strconv.Atoi(tok.String())
-
-			replacements = append(replacements, primitives.NewConstantInt(i))
 		}
 
 		// upper boundary
