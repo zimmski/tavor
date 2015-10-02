@@ -20,6 +20,14 @@ func TestRandomStrategyToBeStrategy(t *testing.T) {
 	Implements(t, strat, &RandomStrategy{})
 }
 
+func TestRandomStrategyNilRandomGenerator(t *testing.T) {
+	r := &RandomStrategy{}
+
+	ch, err := r.Fuzz(nil)
+	Nil(t, ch)
+	Equal(t, ErrorNilRandomGenerator, err.(*Error).Type)
+}
+
 func TestRandomStrategy(t *testing.T) {
 	a := primitives.NewRangeInt(5, 10)
 	b := primitives.NewRangeInt(5, 10)

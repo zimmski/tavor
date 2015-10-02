@@ -14,6 +14,8 @@ type ErrorType int
 const (
 	// ErrorEndlessLoopDetected the token graph has a cycle which is not allowed.
 	ErrorEndlessLoopDetected ErrorType = iota
+	// ErrorNilRandomGenerator the random generator is nil
+	ErrorNilRandomGenerator
 )
 
 // Error holds a fuzzing strategy error
