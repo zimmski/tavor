@@ -9,7 +9,7 @@ const _ReduceFeedbackType_name = "UnknownGoodBad"
 var _ReduceFeedbackType_index = [...]uint8{0, 7, 11, 14}
 
 func (i ReduceFeedbackType) String() string {
-	if i < 0 || i+1 >= ReduceFeedbackType(len(_ReduceFeedbackType_index)) {
+	if i < 0 || i >= ReduceFeedbackType(len(_ReduceFeedbackType_index)-1) {
 		return fmt.Sprintf("ReduceFeedbackType(%d)", i)
 	}
 	return _ReduceFeedbackType_name[_ReduceFeedbackType_index[i]:_ReduceFeedbackType_index[i+1]]

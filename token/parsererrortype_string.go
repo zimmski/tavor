@@ -6,10 +6,10 @@ import "fmt"
 
 const _ParserErrorType_name = "ParseErrorNoStartParseErrorNewLineNeededParseErrorEarlyNewLineParseErrorEmptyExpressionIsInvalidParseErrorEmptyStringParseErrorEmptyTokenDefinitionParseErrorInvalidArgumentValueParseErrorInvalidTokenNameParseErrorInvalidTokenTypeParseErrorUnusedTokenParseErrorMissingTypedTokenArgumentParseErrorNonTerminatedStringParseErrorNoTokenForVariableParseErrorNotAlwaysUsedAsAVariableParseErrorRepeatWithOptionalTermParseErrorTokenAlreadyDefinedParseErrorTokenNotDefinedParseErrorTypeNotDefinedForTypedTokenParseErrorExpectRuneParseErrorExpectOperatorParseErrorUnknownBooleanOperatorParseErrorUnknownConditionParseErrorUnkownOperatorParseErrorUnknownTypedTokenArgumentParseErrorUnknownTypedTokenTypeParseErrorUnknownTokenAttributeParseErrorUnexpectedTokenDefinitionTerminationParseErrorExpectedExpressionTermParseErrEndlessLoopDetectedParseErrorExpectedEOFParseErrorRootIsNilParseErrorUnexpectedEOFParseErrorUnexpectedData"
 
-var _ParserErrorType_index = [...]uint16{0, 17, 40, 62, 96, 117, 147, 177, 203, 229, 250, 285, 314, 342, 376, 408, 437, 462, 499, 519, 543, 575, 601, 625, 660, 691, 722, 768, 800, 829, 850, 869, 892, 916}
+var _ParserErrorType_index = [...]uint16{0, 17, 40, 62, 96, 117, 147, 177, 203, 229, 250, 285, 314, 342, 376, 408, 437, 462, 499, 519, 543, 575, 601, 625, 660, 691, 722, 768, 800, 827, 848, 867, 890, 914}
 
 func (i ParserErrorType) String() string {
-	if i < 0 || i+1 >= ParserErrorType(len(_ParserErrorType_index)) {
+	if i < 0 || i >= ParserErrorType(len(_ParserErrorType_index)-1) {
 		return fmt.Sprintf("ParserErrorType(%d)", i)
 	}
 	return _ParserErrorType_name[_ParserErrorType_index[i]:_ParserErrorType_index[i+1]]
