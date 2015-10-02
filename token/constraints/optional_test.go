@@ -28,12 +28,12 @@ func TestOptional(t *testing.T) {
 	Equal(t, 2, o.Permutations())
 	Equal(t, 2, o.PermutationsAll())
 
-	Nil(t, o.Permutation(1))
+	Nil(t, o.Permutation(0))
 	Equal(t, "", o.String())
-	Nil(t, o.Permutation(2))
+	Nil(t, o.Permutation(1))
 	Equal(t, "1", o.String())
 
-	Equal(t, o.Permutation(3).(*token.PermutationError).Type, token.PermutationErrorIndexOutOfBound)
+	Equal(t, o.Permutation(2).(*token.PermutationError).Type, token.PermutationErrorIndexOutOfBound)
 
 	o2 := o.Clone()
 	Equal(t, o.String(), o2.String())

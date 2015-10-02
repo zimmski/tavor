@@ -40,7 +40,7 @@ func (l *ListItem) Parse(pars *token.InternalParser, cur int) (int, []error) {
 func (l *ListItem) Permutation(i uint) error {
 	permutations := l.Permutations()
 
-	if i < 1 || i > permutations {
+	if i < 0 || i >= permutations {
 		return &token.PermutationError{
 			Type: token.PermutationErrorIndexOutOfBound,
 		}
@@ -124,7 +124,7 @@ func (l *IndexItem) Parse(pars *token.InternalParser, cur int) (int, []error) {
 func (l *IndexItem) Permutation(i uint) error {
 	permutations := l.Permutations()
 
-	if i < 1 || i > permutations {
+	if i < 0 || i >= permutations {
 		return &token.PermutationError{
 			Type: token.PermutationErrorIndexOutOfBound,
 		}
@@ -230,13 +230,13 @@ func (l *UniqueItem) Permutation(i uint) error {
 
 	permutations := l.Permutations()
 
-	if i < 1 || i > permutations {
+	if i < 0 || i >= permutations {
 		return &token.PermutationError{
 			Type: token.PermutationErrorIndexOutOfBound,
 		}
 	}
 
-	l.pick(i - 1)
+	l.pick(i)
 
 	return nil
 }

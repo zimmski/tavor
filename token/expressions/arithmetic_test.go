@@ -38,7 +38,7 @@ func TestAddArithmetic(t *testing.T) {
 	Equal(t, err.(*lists.ListError).Type, lists.ListErrorOutOfBound)
 	Nil(t, i)
 
-	Nil(t, a.Permutation(3))
+	Nil(t, a.Permutation(2))
 	Equal(t, "5", o.String())
 
 	o2 := o.Clone()
@@ -64,7 +64,7 @@ func TestSubArithmetic(t *testing.T) {
 	Equal(t, err.(*lists.ListError).Type, lists.ListErrorOutOfBound)
 	Nil(t, i)
 
-	Nil(t, a.Permutation(3))
+	Nil(t, a.Permutation(2))
 	Equal(t, "1", o.String())
 
 	o2 := o.Clone()
@@ -90,7 +90,7 @@ func TestMulArithmetic(t *testing.T) {
 	Equal(t, err.(*lists.ListError).Type, lists.ListErrorOutOfBound)
 	Nil(t, i)
 
-	Nil(t, a.Permutation(3))
+	Nil(t, a.Permutation(2))
 	Equal(t, "6", o.String())
 
 	o2 := o.Clone()
@@ -116,7 +116,7 @@ func TestDivArithmetic(t *testing.T) {
 	Equal(t, err.(*lists.ListError).Type, lists.ListErrorOutOfBound)
 	Nil(t, i)
 
-	Nil(t, a.Permutation(3))
+	Nil(t, a.Permutation(2))
 	Equal(t, "4", o.String())
 
 	o2 := o.Clone()

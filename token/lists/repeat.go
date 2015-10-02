@@ -143,13 +143,13 @@ func (l *Repeat) permutation(i uint) {
 func (l *Repeat) Permutation(i uint) error {
 	permutations := l.Permutations()
 
-	if i < 1 || i > permutations {
+	if i < 0 || i >= permutations {
 		return &token.PermutationError{
 			Type: token.PermutationErrorIndexOutOfBound,
 		}
 	}
 
-	l.permutation(i - 1)
+	l.permutation(i)
 
 	return nil
 }
@@ -381,7 +381,7 @@ func (l *Repeat) Reduce(i uint) error {
 		count += uint(le)
 	}
 
-	if count <= 1 || i < 1 || i > count {
+	if count <= 1 || i < 0 || i >= count {
 		return &token.ReduceError{
 			Type: token.ReduceErrorIndexOutOfBound,
 		}
@@ -393,9 +393,8 @@ func (l *Repeat) Reduce(i uint) error {
 	}
 
 	j := 0
-
 	if l.From() == 0 {
-		if i == 1 {
+		if i == 0 {
 			l.value = []token.Token{}
 
 			return nil
@@ -404,8 +403,6 @@ func (l *Repeat) Reduce(i uint) error {
 		i--
 		j++
 	}
-
-	i--
 
 	for i >= reduces[j] {
 		i -= reduces[j]

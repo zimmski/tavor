@@ -36,7 +36,7 @@ func (f *NegativeBoundaryValueAnalysisFilter) Apply(tok token.Token) (token.Toke
 	var replacements []token.Token
 
 	// lower boundary
-	if err := t.Permutation(1); err != nil {
+	if err := t.Permutation(0); err != nil {
 		panic(err)
 	}
 
@@ -45,7 +45,7 @@ func (f *NegativeBoundaryValueAnalysisFilter) Apply(tok token.Token) (token.Toke
 	replacements = append(replacements, primitives.NewConstantInt(i-1))
 
 	// upper boundary
-	if err := t.Permutation(l); err != nil {
+	if err := t.Permutation(l - 1); err != nil {
 		panic(err)
 	}
 

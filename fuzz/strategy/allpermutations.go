@@ -38,11 +38,11 @@ func (s *AllPermutationsStrategy) getTree(root token.Token, fromChildren bool) [
 	var tree []allPermutationsLevel
 
 	add := func(tok token.Token) {
-		s.setPermutation(tok, 1)
+		s.setPermutation(tok, 0)
 
 		tree = append(tree, allPermutationsLevel{
 			token:       tok,
-			permutation: 1,
+			permutation: 0,
 
 			children: s.getTree(tok, true),
 		})
@@ -127,7 +127,7 @@ STEP:
 		} else {
 			log.Debugf("permute %d->%#v", 0, tree[0])
 
-			if tree[0].permutation > 1 {
+			if tree[0].permutation > 0 {
 				s.setPermutation(tree[0].token, tree[0].permutation)
 				tree[0].children = s.getTree(tree[0].token, true)
 			}
@@ -141,7 +141,7 @@ STEP:
 					return true, true
 				}
 			} else {
-				if !justastep && (tree[0].token != s.root || tree[0].permutation <= tree[0].token.Permutations()) && !s.nextStep(continueFuzzing) {
+				if !justastep && (tree[0].token != s.root || tree[0].permutation < tree[0].token.Permutations()) && !s.nextStep(continueFuzzing) {
 					return false, false
 				}
 			}
@@ -149,9 +149,9 @@ STEP:
 
 		tree[0].permutation++
 
-		if tree[0].permutation > tree[0].token.Permutations() {
+		if tree[0].permutation >= tree[0].token.Permutations() {
 			for i := 0; i < len(tree); i++ {
-				log.Debugf("check %d vs %d for %#v", tree[i].permutation, tree[i].token.Permutations(), tree[i])
+				log.Debugf("check %d vs %d for %#v", tree[i].permutation, tree[i].token.Permutations()-1, tree[i])
 			}
 
 			i := 0
@@ -172,7 +172,7 @@ STEP:
 						return false, false
 					} else if step {
 						for j := 0; j < i; j++ {
-							tree[j].permutation = 1
+							tree[j].permutation = 0
 							s.setPermutation(tree[j].token, tree[j].permutation)
 							tree[j].children = s.getTree(tree[j].token, true)
 						}
@@ -191,9 +191,9 @@ STEP:
 
 				tree[i].permutation++
 
-				if tree[i].permutation <= tree[i].token.Permutations() {
+				if tree[i].permutation < tree[i].token.Permutations() {
 					for j := 0; j < i; j++ {
-						tree[j].permutation = 1
+						tree[j].permutation = 0
 						s.setPermutation(tree[j].token, tree[j].permutation)
 						tree[j].children = s.getTree(tree[j].token, true)
 					}

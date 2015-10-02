@@ -66,7 +66,7 @@ func (s *AlmostAllPermutationsStrategy) getLevel(root token.Token, fromChildren 
 				level = append(level, almostAllPermutationsLevel{
 					parent:      root,
 					tokenIndex:  0,
-					permutation: 1,
+					permutation: 0,
 				})
 			}
 		case token.ListToken:
@@ -76,7 +76,7 @@ func (s *AlmostAllPermutationsStrategy) getLevel(root token.Token, fromChildren 
 				level = append(level, almostAllPermutationsLevel{
 					parent:      root,
 					tokenIndex:  i,
-					permutation: 1,
+					permutation: 0,
 				})
 			}
 		}
@@ -84,12 +84,12 @@ func (s *AlmostAllPermutationsStrategy) getLevel(root token.Token, fromChildren 
 		level = append(level, almostAllPermutationsLevel{
 			parent:      root,
 			tokenIndex:  -1,
-			permutation: 1,
+			permutation: 0,
 		})
 	}
 
 	for _, l := range level {
-		s.setTokenPermutation(l.token(), 1)
+		s.setTokenPermutation(l.token(), 0)
 	}
 
 	return level
@@ -168,21 +168,21 @@ func (s *AlmostAllPermutationsStrategy) fuzz(continueFuzzing chan struct{}, leve
 STEP:
 	for {
 		for i := range level {
-			if level[i].permutation > level[i].token().Permutations() {
+			if level[i].permutation >= level[i].token().Permutations() {
 				if i < last {
 					log.Debugf("max reached redo everything <= %d and increment next", i)
 
-					if level[i].token().Permutations() != 1 {
+					if level[i].token().Permutations() != 0 {
 						log.Debug("Let's stay here")
 
 						s.overextended = false
 					}
 
 					level[i+1].permutation++
-					if level[i+1].permutation <= level[i+1].token().Permutations() {
+					if level[i+1].permutation < level[i+1].token().Permutations() {
 						s.setTokenPermutation(level[i+1].token(), level[i+1].permutation)
 					}
-					s.getLevel(level[i+1].token(), true) // set all children to permutation 1
+					s.getLevel(level[i+1].token(), true) // set all children to permutation 0
 				} else {
 					log.Debug("Overextended our stay, let's get out of here!")
 
@@ -192,9 +192,9 @@ STEP:
 				}
 
 				for k := 0; k <= i; k++ {
-					level[k].permutation = 1
-					s.setTokenPermutation(level[k].token(), 1)
-					s.getLevel(level[k].token(), true) // set all children to permutation 1
+					level[k].permutation = 0
+					s.setTokenPermutation(level[k].token(), 0)
+					s.getLevel(level[k].token(), true) // set all children to permutation 0
 				}
 
 				continue STEP
@@ -204,8 +204,8 @@ STEP:
 
 			s.setTokenPermutation(level[i].token(), level[i].permutation)
 
-			if t, ok := level[i].token().(token.OptionalToken); !ok || !t.IsOptional() || level[i].permutation > 1 {
-				children := s.getLevel(level[i].token(), true) // set all children to permutation 1
+			if t, ok := level[i].token().(token.OptionalToken); !ok || !t.IsOptional() || level[i].permutation > 0 {
+				children := s.getLevel(level[i].token(), true) // set all children to permutation 0
 
 				if len(children) > 0 {
 					if !s.fuzz(continueFuzzing, children) {
@@ -219,10 +219,10 @@ STEP:
 			}
 		}
 
-		if level[0].permutation > level[0].token().Permutations() {
+		if level[0].permutation >= level[0].token().Permutations() {
 			found := false
 			for i := 1; i < len(level); i++ {
-				if level[i].permutation < level[i].token().Permutations() {
+				if level[i].permutation < level[i].token().Permutations()-1 {
 					found = true
 
 					break

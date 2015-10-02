@@ -68,13 +68,13 @@ func (l *One) permutation(i uint) {
 func (l *One) Permutation(i uint) error {
 	permutations := l.Permutations()
 
-	if i < 1 || i > permutations {
+	if i < 0 || i >= permutations {
 		return &token.PermutationError{
 			Type: token.PermutationErrorIndexOutOfBound,
 		}
 	}
 
-	l.permutation(i - 1)
+	l.permutation(i)
 
 	return nil
 }

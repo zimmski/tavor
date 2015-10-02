@@ -43,10 +43,10 @@ func TestFuncExpression(t *testing.T) {
 	Equal(t, 2, o.PermutationsAll())
 	Equal(t, "", o.String())
 
-	Nil(t, o.Permutation(1))
+	Nil(t, o.Permutation(0))
 	Equal(t, "", o.String())
 
-	Nil(t, o.Permutation(2))
+	Nil(t, o.Permutation(1))
 	Equal(t, "abc", o.String())
 
 	o2 := o.Clone()

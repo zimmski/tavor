@@ -47,7 +47,7 @@ func TestOnce(t *testing.T) {
 		"def10abc",
 		"defabc10",
 	} {
-		Nil(t, o.Permutation(uint(i+1)))
+		Nil(t, o.Permutation(uint(i)))
 		Equal(t, s, o.String())
 	}
 
@@ -58,7 +58,7 @@ func TestOnce(t *testing.T) {
 	Equal(t, 6, o.Permutations())
 	Equal(t, 12, o.PermutationsAll())
 
-	Nil(t, o.Permutation(2))
+	Nil(t, o.Permutation(1))
 	Equal(t, "101abc", o.String())
 	Equal(t, 3, o.Len())
 

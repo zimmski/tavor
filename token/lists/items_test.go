@@ -22,17 +22,17 @@ func TestUniqueItem(t *testing.T) {
 	Equal(t, 3, a.Permutations())
 	Equal(t, 3, a.PermutationsAll())
 
-	Nil(t, a.Permutation(3))
+	Nil(t, a.Permutation(2))
 	Equal(t, "3", a.String())
 	Equal(t, 3, a.Permutations())
 	Equal(t, 3, a.PermutationsAll())
 
-	Nil(t, a.Permutation(2))
+	Nil(t, a.Permutation(1))
 	Equal(t, "2", a.String())
 	Equal(t, 3, a.Permutations())
 	Equal(t, 3, a.PermutationsAll())
 
-	Nil(t, a.Permutation(1))
+	Nil(t, a.Permutation(0))
 	Equal(t, "1", a.String())
 	Equal(t, 3, a.Permutations())
 	Equal(t, 3, a.PermutationsAll())
@@ -44,12 +44,12 @@ func TestUniqueItem(t *testing.T) {
 	Equal(t, 2, b.Permutations())
 	Equal(t, 2, b.PermutationsAll())
 
-	Nil(t, b.Permutation(1))
+	Nil(t, b.Permutation(0))
 	Equal(t, "2", b.String())
 	Equal(t, 2, b.Permutations())
 	Equal(t, 2, b.PermutationsAll())
 
-	Nil(t, b.Permutation(2))
+	Nil(t, b.Permutation(1))
 	Equal(t, "3", b.String())
 	Equal(t, 2, b.Permutations())
 	Equal(t, 2, b.PermutationsAll())

@@ -39,7 +39,7 @@ func (e *AddArithmetic) Parse(pars *token.InternalParser, cur int) (int, []error
 func (e *AddArithmetic) Permutation(i uint) error {
 	permutations := e.Permutations()
 
-	if i < 1 || i > permutations {
+	if i < 0 || i >= permutations {
 		return &token.PermutationError{
 			Type: token.PermutationErrorIndexOutOfBound,
 		}
@@ -163,7 +163,7 @@ func (e *SubArithmetic) Parse(pars *token.InternalParser, cur int) (int, []error
 func (e *SubArithmetic) Permutation(i uint) error {
 	permutations := e.Permutations()
 
-	if i < 1 || i > permutations {
+	if i < 0 || i >= permutations {
 		return &token.PermutationError{
 			Type: token.PermutationErrorIndexOutOfBound,
 		}
@@ -287,7 +287,7 @@ func (e *MulArithmetic) Parse(pars *token.InternalParser, cur int) (int, []error
 func (e *MulArithmetic) Permutation(i uint) error {
 	permutations := e.Permutations()
 
-	if i < 1 || i > permutations {
+	if i < 0 || i >= permutations {
 		return &token.PermutationError{
 			Type: token.PermutationErrorIndexOutOfBound,
 		}
@@ -411,7 +411,7 @@ func (e *DivArithmetic) Parse(pars *token.InternalParser, cur int) (int, []error
 func (e *DivArithmetic) Permutation(i uint) error {
 	permutations := e.Permutations()
 
-	if i < 1 || i > permutations {
+	if i < 0 || i >= permutations {
 		return &token.PermutationError{
 			Type: token.PermutationErrorIndexOutOfBound,
 		}

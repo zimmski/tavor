@@ -69,7 +69,7 @@ func (s *RandomStrategy) fuzz(tok token.Token, r rand.Rand, variableScope *token
 		variableScope = variableScope.Push()
 	}
 
-	err := tok.Permutation(uint(r.Int63n(int64(tok.Permutations())) + 1))
+	err := tok.Permutation(uint(r.Int63n(int64(tok.Permutations()))))
 	if err != nil {
 		log.Panic(err)
 	}
@@ -109,7 +109,7 @@ func (s *RandomStrategy) fuzzYADDA(root token.Token, r rand.Rand) {
 		case *sequences.SequenceExistingItem:
 			log.Debugf("Fuzz again %p(%#v)", tok, tok)
 
-			err := tok.Permutation(uint(r.Int63n(int64(tok.Permutations())) + 1))
+			err := tok.Permutation(uint(r.Int63n(int64(tok.Permutations()))))
 			if err != nil {
 				log.Panic(err)
 			}

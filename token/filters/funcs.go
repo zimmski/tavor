@@ -55,13 +55,13 @@ func (f *FuncFilter) Parse(pars *token.InternalParser, cur int) (int, []error) {
 func (f *FuncFilter) Permutation(i uint) error {
 	permutations := f.Permutations()
 
-	if i < 1 || i > permutations {
+	if i < 0 || i >= permutations {
 		return &token.PermutationError{
 			Type: token.PermutationErrorIndexOutOfBound,
 		}
 	}
 
-	f.state = f.permutationFunc(f.state, f.token, i-1)
+	f.state = f.permutationFunc(f.state, f.token, i)
 
 	return nil
 }

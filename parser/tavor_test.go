@@ -1595,10 +1595,10 @@ func TestTavorParserIfElseIfElsedd(t *testing.T) {
 
 		Equal(t, 3, one.Permutations())
 
-		Nil(t, one.Permutation(2))
+		Nil(t, one.Permutation(1))
 		Equal(t, "2var is two", tok.String())
 
-		Nil(t, one.Permutation(3))
+		Nil(t, one.Permutation(2))
 		Equal(t, "3var is three", tok.String())
 	}
 	// continued definition

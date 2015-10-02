@@ -64,7 +64,7 @@ func (s *LinearStrategy) getTree(root token.Token, fromChildren bool) []linearLe
 				continue
 			}
 
-			maxReductions := t.Reduces()
+			maxReductions := t.Reduces() - 1
 
 			s.setReduction(t, maxReductions)
 
@@ -144,7 +144,6 @@ func (s *LinearStrategy) reduce(continueReducing chan struct{}, feedbackReducing
 		c.reduction = 0
 
 		for {
-			c.reduction++
 			if err := c.token.Reduce(c.reduction); err != nil {
 				panic(err)
 			}
@@ -166,6 +165,8 @@ func (s *LinearStrategy) reduce(continueReducing chan struct{}, feedbackReducing
 
 				break
 			}
+
+			c.reduction++
 		}
 
 		log.Debugf("reduced (%p)%#v to reduction %d/%d", c.token, c.token, c.reduction, c.maxReductions)

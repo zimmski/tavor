@@ -170,7 +170,7 @@ func (e *Path) Parse(pars *token.InternalParser, cur int) (int, []error) {
 func (e *Path) Permutation(i uint) error {
 	permutations := e.Permutations()
 
-	if i < 1 || i > permutations {
+	if i < 0 || i >= permutations {
 		return &token.PermutationError{
 			Type: token.PermutationErrorIndexOutOfBound,
 		}

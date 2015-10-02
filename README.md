@@ -678,7 +678,7 @@ import (
 
 func main() {
 	tok := lists.NewRepeat(primitives.NewConstantString("a"), 0, 100)
-	tok.Permutation(20)
+	tok.Permutation(19)
 
 	fmt.Println(tok.String())
 
@@ -958,6 +958,7 @@ The `Register` function of the [github.com/zimmski/tavor/reduce/strategy package
 **Examples**
 
 The following reduce strategy searches the token graph for repeat tokens holding one constant string token as its internal token and reduces the repetition by one token for every reduce step. This could be done more efficiently but it is very simple and should demonstrate that reduce strategies can be implemented very easily to start with. It is a stateful strategy since every step depends on the previous one. Additionally it is guaranteed to end, since only a finite amount of tokens is targeted without generating new ones.
+TODO this example
 
 ```go
 import (
@@ -1000,20 +1001,26 @@ func (s *SampleStrategy) Reduce() (chan struct{}, chan<- strategy.ReduceFeedback
 				return nil
 			}
 
-			for i := repeat.Reduces(); i >= 1; {
-				found := false
-				l := len(repeat.String())
-				for ; i >= 1; i-- {
-					if err := repeat.Reduce(i); err != nil {
-						return err
-					}
+      for i := repeat.Reduces() - 1; i >= 0; {
+        found := false
+        l := len(repeat.String())
+        for {
+          if err := repeat.Reduce(i); err != nil {
+            return err
+          }
 
-					if l-1 == len(repeat.String()) {
-						found = true
+          if l-1 == len(repeat.String()) {
+            found = true
 
-						break
-					}
-				}
+            break
+          }
+
+          if i == 0 {
+            break
+          }
+
+          i--
+        }
 
 				if !found {
 					break
@@ -1063,13 +1070,13 @@ import (
 
 func main() {
 	aRepeat := lists.NewRepeat(primitives.NewConstantString("a"), 0, 100)
-	aRepeat.Permutation(7)
+	aRepeat.Permutation(6)
 	bRepeat := lists.NewRepeat(primitives.NewConstantString("b"), 1, 100)
-	bRepeat.Permutation(5)
+	bRepeat.Permutation(4)
 	cRepeat := lists.NewRepeat(primitives.NewConstantString("c"), 7, 100)
-	cRepeat.Permutation(9)
+	cRepeat.Permutation(8)
 	dRepeat := lists.NewRepeat(primitives.NewConstantString("d"), 1, 100)
-	dRepeat.Permutation(2)
+	dRepeat.Permutation(1)
 
 	var doc token.Token = lists.NewAll(
 		aRepeat,
@@ -1239,13 +1246,13 @@ func (s *Smiley) PermutationsAll() uint {
 func (s *Smiley) Permutation(i uint) error {
 	permutations := s.Permutations()
 
-	if i < 1 || i > permutations {
+	if i < 0 || i >= permutations {
 		return &token.PermutationError{
 			Type: token.PermutationErrorIndexOutOfBound,
 		}
 	}
 
-	s.permutation(i - 1)
+	s.permutation(i)
 
 	return nil
 }
@@ -1357,7 +1364,7 @@ func main() {
 	fmt.Println("New:", s.String())
 
 	fmt.Print("Permutations:")
-	for i := uint(1); i <= s.Permutations(); i++ {
+	for i := uint(0); i < s.Permutations(); i++ {
 		s.Permutation(i)
 		fmt.Print(" ", s.String())
 	}
@@ -1393,7 +1400,7 @@ Every token type and interface can have its own token attributes. Currently it i
 ### <a name="extend-typed-tokens"></a>Typed tokens
 
 Typed tokens provide additional types for formats. It is possible to define new typed tokens by calling the  [`token.RegisterTyped`](https://godoc.org/github.com/zimmski/tavor/token#RegisterTyped) function. It is only necessary to implement the [Token interface](https://godoc.org/github.com/zimmski/tavor/token#Token), since typed tokens behave like regular tokens. Arguments for the typed tokens are used as initialization values for the instanced token. It is therefore not possible to lookup argument values after the typed token definition is processed.
- 		 
+
 An example of typed token creation function can be found in [the sequence token](/token/sequences/sequence.go#L29). Currently, the arguments of a typed token are limited to integers. To support new argument types, it is necessary to extend the [ArgumentsTypedParser](https://godoc.org/github.com/zimmski/tavor/token#ArgumentsTypedParser) interface and [its implementation](/parser/typed.go). To add token attributes to typed tokens, please have a look at the  [token attributes section](#extend-token-attributes).
 
 ## <a name="stability"></a>How stable is Tavor?

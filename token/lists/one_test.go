@@ -32,12 +32,12 @@ func TestOne(t *testing.T) {
 	Equal(t, err.(*ListError).Type, ListErrorOutOfBound)
 	Nil(t, i)
 
-	Nil(t, o.Permutation(1))
+	Nil(t, o.Permutation(0))
 	Equal(t, "a", o.String())
-	Nil(t, o.Permutation(2))
+	Nil(t, o.Permutation(1))
 	Equal(t, "b", o.String())
 
-	Equal(t, o.Permutation(3).(*token.PermutationError).Type, token.PermutationErrorIndexOutOfBound)
+	Equal(t, o.Permutation(2).(*token.PermutationError).Type, token.PermutationErrorIndexOutOfBound)
 
 	c := primitives.NewRangeInt(5, 10)
 	o = NewOne(c)
@@ -49,8 +49,8 @@ func TestOne(t *testing.T) {
 	o2 := o.Clone()
 	Equal(t, o.String(), o2.String())
 
-	Nil(t, c.Permutation(2))
+	Nil(t, c.Permutation(1))
 	Equal(t, "6", o.String())
 
-	Equal(t, o.Permutation(2).(*token.PermutationError).Type, token.PermutationErrorIndexOutOfBound)
+	Equal(t, o.Permutation(1).(*token.PermutationError).Type, token.PermutationErrorIndexOutOfBound)
 }

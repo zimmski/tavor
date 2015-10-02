@@ -25,22 +25,22 @@ func TestConstantInt(t *testing.T) {
 	Equal(t, 1, o.Permutations())
 	Equal(t, 1, o.Permutations())
 
-	Nil(t, list.Permutation(1))
+	Nil(t, list.Permutation(0))
 	Equal(t, "1", o.String())
 
-	Nil(t, list.Permutation(2))
+	Nil(t, list.Permutation(1))
 	Equal(t, "11", list.String())
 	Equal(t, "2", o.String())
 
-	Nil(t, list.Permutation(3))
+	Nil(t, list.Permutation(2))
 	Equal(t, "111", list.String())
 	Equal(t, "3", o.String())
 
-	Nil(t, list.Permutation(4))
+	Nil(t, list.Permutation(3))
 	Equal(t, "1111", list.String())
 	Equal(t, "4", o.String())
 
-	Nil(t, list.Permutation(5))
+	Nil(t, list.Permutation(4))
 	Equal(t, "11111", list.String())
 	Equal(t, "5", o.String())
 
@@ -49,8 +49,8 @@ func TestConstantInt(t *testing.T) {
 
 	Equal(t, 1, o.Permutations())
 
-	Nil(t, o.Permutation(1))
+	Nil(t, o.Permutation(0))
 	Equal(t, "5", o.String())
 
-	Equal(t, o.Permutation(2).(*token.PermutationError).Type, token.PermutationErrorIndexOutOfBound)
+	Equal(t, o.Permutation(1).(*token.PermutationError).Type, token.PermutationErrorIndexOutOfBound)
 }

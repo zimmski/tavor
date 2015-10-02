@@ -53,7 +53,7 @@ func TestNewPositiveBoundaryValueAnalysisFilter(t *testing.T) {
 		Nil(t, err)
 		Equal(t, replacements, lists.NewOne(
 			primitives.NewConstantInt(10),
-			primitives.NewConstantInt(11),
+			primitives.NewConstantInt(12),
 			primitives.NewConstantInt(13),
 		))
 	}
@@ -99,7 +99,7 @@ func TestNewPositiveBoundaryValueAnalysisFilter(t *testing.T) {
 		Nil(t, err)
 		Equal(t, replacements, lists.NewOne(
 			primitives.NewConstantString("a"),
-			primitives.NewConstantString("m"),
+			primitives.NewConstantString("n"),
 			primitives.NewConstantString("z"),
 		))
 	}

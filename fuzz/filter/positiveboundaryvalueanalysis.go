@@ -33,7 +33,7 @@ func (f *PositiveBoundaryValueAnalysisFilter) Apply(tok token.Token) (token.Toke
 		l := tok.Permutations()
 
 		// lower boundary
-		if err := tok.Permutation(1); err != nil {
+		if err := tok.Permutation(0); err != nil {
 			panic(err)
 		}
 
@@ -41,7 +41,7 @@ func (f *PositiveBoundaryValueAnalysisFilter) Apply(tok token.Token) (token.Toke
 
 		// middle
 		if l > 2 {
-			if err := tok.Permutation((l + 1) / 2); err != nil {
+			if err := tok.Permutation(l / 2); err != nil {
 				panic(err)
 			}
 
@@ -50,7 +50,7 @@ func (f *PositiveBoundaryValueAnalysisFilter) Apply(tok token.Token) (token.Toke
 
 		// upper boundary
 		if l > 1 {
-			if err := tok.Permutation(l); err != nil {
+			if err := tok.Permutation(l - 1); err != nil {
 				panic(err)
 			}
 
@@ -60,7 +60,7 @@ func (f *PositiveBoundaryValueAnalysisFilter) Apply(tok token.Token) (token.Toke
 		l := tok.Permutations()
 
 		// lower boundary
-		if err := tok.Permutation(1); err != nil {
+		if err := tok.Permutation(0); err != nil {
 			panic(err)
 		}
 
@@ -83,7 +83,7 @@ func (f *PositiveBoundaryValueAnalysisFilter) Apply(tok token.Token) (token.Toke
 				}
 			} else {
 				// the boundary is just the middle value
-				if err := tok.Permutation((l + 1) / 2); err != nil {
+				if err := tok.Permutation(l / 2); err != nil {
 					panic(err)
 				}
 
@@ -95,7 +95,7 @@ func (f *PositiveBoundaryValueAnalysisFilter) Apply(tok token.Token) (token.Toke
 
 		// upper boundary
 		if l > 1 {
-			if err := tok.Permutation(l); err != nil {
+			if err := tok.Permutation(l - 1); err != nil {
 				panic(err)
 			}
 

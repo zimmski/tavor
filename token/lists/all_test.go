@@ -25,7 +25,7 @@ func TestAll(t *testing.T) {
 	Equal(t, 1, o.Permutations())
 	Equal(t, 1, o.PermutationsAll())
 
-	Nil(t, o.Permutation(1))
+	Nil(t, o.Permutation(0))
 	Equal(t, "10abc", o.String())
 
 	i, err := o.Get(0)
@@ -45,10 +45,10 @@ func TestAll(t *testing.T) {
 	Equal(t, 1, o.Permutations())
 	Equal(t, 2, o.PermutationsAll())
 
-	Nil(t, o.Permutation(1))
+	Nil(t, o.Permutation(0))
 	Equal(t, "10abc1", o.String())
 
-	Nil(t, c.Permutation(2))
+	Nil(t, c.Permutation(1))
 	Equal(t, "10abc2", o.String())
 	Equal(t, 3, o.Len())
 

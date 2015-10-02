@@ -21,10 +21,10 @@ func TestConstantInt(t *testing.T) {
 
 	Equal(t, 1, o.Permutations())
 
-	Nil(t, o.Permutation(1))
+	Nil(t, o.Permutation(0))
 	Equal(t, "10", o.String())
 
-	Equal(t, o.Permutation(2).(*token.PermutationError).Type, token.PermutationErrorIndexOutOfBound)
+	Equal(t, o.Permutation(1).(*token.PermutationError).Type, token.PermutationErrorIndexOutOfBound)
 
 	o2 := o.Clone()
 	Equal(t, o.String(), o2.String())
@@ -36,12 +36,12 @@ func TestRangeInt(t *testing.T) {
 
 	Equal(t, 3, o.Permutations())
 
-	Nil(t, o.Permutation(1))
+	Nil(t, o.Permutation(0))
 	Equal(t, "2", o.String())
-	Nil(t, o.Permutation(2))
+	Nil(t, o.Permutation(1))
 	Equal(t, "3", o.String())
 
-	Equal(t, o.Permutation(4).(*token.PermutationError).Type, token.PermutationErrorIndexOutOfBound)
+	Equal(t, o.Permutation(3).(*token.PermutationError).Type, token.PermutationErrorIndexOutOfBound)
 
 	o2 := o.Clone()
 	Equal(t, o.String(), o2.String())

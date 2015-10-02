@@ -20,16 +20,16 @@ func TestCharacterClass(t *testing.T) {
 
 	Equal(t, 3, o.Permutations())
 
-	Nil(t, o.Permutation(1))
+	Nil(t, o.Permutation(0))
 	Equal(t, "a", o.String())
 
-	Nil(t, o.Permutation(2))
+	Nil(t, o.Permutation(1))
 	Equal(t, "b", o.String())
 
-	Nil(t, o.Permutation(3))
+	Nil(t, o.Permutation(2))
 	Equal(t, "c", o.String())
 
-	Equal(t, o.Permutation(4).(*token.PermutationError).Type, token.PermutationErrorIndexOutOfBound)
+	Equal(t, o.Permutation(3).(*token.PermutationError).Type, token.PermutationErrorIndexOutOfBound)
 
 	o = NewCharacterClass(`\d`)
 	Equal(t, "0", o.String())
@@ -39,49 +39,49 @@ func TestCharacterClass(t *testing.T) {
 	Equal(t, "1", o.String())
 	Equal(t, 9, o.Permutations())
 
-	Nil(t, o.Permutation(2))
+	Nil(t, o.Permutation(1))
 	Equal(t, "2", o.String())
+
+	Nil(t, o.Permutation(8))
+	Equal(t, "9", o.String())
+
+	Equal(t, o.Permutation(9).(*token.PermutationError).Type, token.PermutationErrorIndexOutOfBound)
+
+	o = NewCharacterClass(`a1-9`)
+	Equal(t, "a", o.String())
+	Equal(t, 10, o.Permutations())
+
+	Nil(t, o.Permutation(1))
+	Equal(t, "1", o.String())
 
 	Nil(t, o.Permutation(9))
 	Equal(t, "9", o.String())
 
 	Equal(t, o.Permutation(10).(*token.PermutationError).Type, token.PermutationErrorIndexOutOfBound)
 
-	o = NewCharacterClass(`a1-9`)
-	Equal(t, "a", o.String())
-	Equal(t, 10, o.Permutations())
-
-	Nil(t, o.Permutation(2))
-	Equal(t, "1", o.String())
-
-	Nil(t, o.Permutation(10))
-	Equal(t, "9", o.String())
-
-	Equal(t, o.Permutation(11).(*token.PermutationError).Type, token.PermutationErrorIndexOutOfBound)
-
 	o = NewCharacterClass(`a-fA-F0-9`)
 	Equal(t, "a", o.String())
 	Equal(t, 22, o.Permutations())
 
-	Nil(t, o.Permutation(1))
+	Nil(t, o.Permutation(0))
 	Equal(t, "a", o.String())
 
-	Nil(t, o.Permutation(2))
+	Nil(t, o.Permutation(1))
 	Equal(t, "b", o.String())
 
-	Nil(t, o.Permutation(7))
+	Nil(t, o.Permutation(6))
 	Equal(t, "A", o.String())
 
-	Nil(t, o.Permutation(8))
+	Nil(t, o.Permutation(7))
 	Equal(t, "B", o.String())
 
-	Nil(t, o.Permutation(13))
+	Nil(t, o.Permutation(12))
 	Equal(t, "0", o.String())
 
-	Nil(t, o.Permutation(14))
+	Nil(t, o.Permutation(13))
 	Equal(t, "1", o.String())
 
-	Equal(t, o.Permutation(23).(*token.PermutationError).Type, token.PermutationErrorIndexOutOfBound)
+	Equal(t, o.Permutation(22).(*token.PermutationError).Type, token.PermutationErrorIndexOutOfBound)
 
 	o2 := o.Clone()
 	Equal(t, o.String(), o2.String())

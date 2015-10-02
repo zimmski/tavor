@@ -36,7 +36,7 @@ func TestAlmostAllPermutationsStrategygetLevel(t *testing.T) {
 			almostAllPermutationsLevel{
 				parent:      d,
 				tokenIndex:  -1,
-				permutation: 1,
+				permutation: 0,
 			},
 		})
 
@@ -46,17 +46,17 @@ func TestAlmostAllPermutationsStrategygetLevel(t *testing.T) {
 			almostAllPermutationsLevel{
 				parent:      d,
 				tokenIndex:  0,
-				permutation: 1,
+				permutation: 0,
 			},
 			almostAllPermutationsLevel{
 				parent:      d,
 				tokenIndex:  1,
-				permutation: 1,
+				permutation: 0,
 			},
 			almostAllPermutationsLevel{
 				parent:      d,
 				tokenIndex:  2,
-				permutation: 1,
+				permutation: 0,
 			},
 		})
 	}

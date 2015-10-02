@@ -38,7 +38,7 @@ func TestSequenceItem(t *testing.T) {
 	o := s.Item()
 	Equal(t, "10", o.String())
 
-	Nil(t, o.Permutation(1))
+	Nil(t, o.Permutation(0))
 	Equal(t, "12", o.String())
 	Equal(t, 14, s.Next())
 
@@ -65,24 +65,24 @@ func TestExistingSequenceItem(t *testing.T) {
 	Equal(t, "10", o.String())
 	Equal(t, 3, o.Permutations())
 
-	Nil(t, o.Permutation(2))
+	Nil(t, o.Permutation(1))
 	Equal(t, "12", o.String())
 
-	Nil(t, o.Permutation(3))
+	Nil(t, o.Permutation(2))
 	Equal(t, "14", o.String())
 
-	Nil(t, o.Permutation(1))
+	Nil(t, o.Permutation(0))
 	Equal(t, "10", o.String())
 
 	// Except
 	o = s.ExistingItem([]token.Token{primitives.NewConstantInt(10)})
 	Equal(t, "10", o.String())
-	Nil(t, o.Permutation(1))
+	Nil(t, o.Permutation(0))
 	Equal(t, "12", o.String())
 
 	o = s.ExistingItem([]token.Token{primitives.NewConstantInt(14)})
 	Equal(t, "10", o.String())
-	Nil(t, o.Permutation(1))
+	Nil(t, o.Permutation(0))
 	Equal(t, "10", o.String())
 
 	// Except with list token
@@ -90,7 +90,7 @@ func TestExistingSequenceItem(t *testing.T) {
 		a := lists.NewAll(primitives.NewConstantInt(10), primitives.NewConstantInt(12))
 		o = s.ExistingItem([]token.Token{a})
 		Equal(t, "10", o.String())
-		Nil(t, o.Permutation(1))
+		Nil(t, o.Permutation(0))
 		Equal(t, "14", o.String())
 	}
 }
@@ -104,7 +104,7 @@ func TestResetSequenceItem(t *testing.T) {
 
 	o := s.ResetItem()
 
-	Nil(t, o.Permutation(1))
+	Nil(t, o.Permutation(0))
 
 	Equal(t, 10, s.Next())
 	Equal(t, 12, s.Next())

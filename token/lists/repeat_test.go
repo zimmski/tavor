@@ -31,14 +31,14 @@ func TestRepeat(t *testing.T) {
 	Equal(t, err.(*ListError).Type, ListErrorOutOfBound)
 	Nil(t, i)
 
-	Nil(t, o.Permutation(1))
+	Nil(t, o.Permutation(0))
 	Equal(t, "aaaaa", o.String())
-	Nil(t, o.Permutation(2))
+	Nil(t, o.Permutation(1))
 	Equal(t, "aaaaaa", o.String())
-	Nil(t, o.Permutation(3))
+	Nil(t, o.Permutation(2))
 	Equal(t, "aaaaaaa", o.String())
 
-	Equal(t, o.Permutation(7).(*token.PermutationError).Type, token.PermutationErrorIndexOutOfBound)
+	Equal(t, o.Permutation(6).(*token.PermutationError).Type, token.PermutationErrorIndexOutOfBound)
 
 	o = NewRepeat(primitives.NewRangeInt(1, 2), 0, 2)
 	Equal(t, "", o.String())
@@ -77,14 +77,14 @@ func TestRepeat(t *testing.T) {
 	Equal(t, 9, o.Permutations())
 	Equal(t, 88569, o.PermutationsAll())
 
-	Nil(t, o.Permutation(1))
+	Nil(t, o.Permutation(0))
 	Equal(t, "11", o.String())
-	Nil(t, o.Permutation(2))
+	Nil(t, o.Permutation(1))
 	Equal(t, "111", o.String())
-	Nil(t, o.Permutation(3))
+	Nil(t, o.Permutation(2))
 	Equal(t, "1111", o.String())
 
-	Equal(t, o.Permutation(10).(*token.PermutationError).Type, token.PermutationErrorIndexOutOfBound)
+	Equal(t, o.Permutation(9).(*token.PermutationError).Type, token.PermutationErrorIndexOutOfBound)
 
 	o2 := o.Clone()
 	Equal(t, o.String(), o2.String())
@@ -94,44 +94,44 @@ func TestRepeatReduces(t *testing.T) {
 	a := primitives.NewConstantString("a")
 
 	o := NewRepeat(a, 0, 1)
-	Nil(t, o.Permutation(o.Permutations()))
+	Nil(t, o.Permutation(o.Permutations()-1))
 	Equal(t, o.reduces(), []uint{1, 1})
 	Equal(t, o.Reduces(), 2)
 
 	// cannnot be reduces!
 	o = NewRepeat(a, 1, 1)
-	Nil(t, o.Permutation(o.Permutations()))
+	Nil(t, o.Permutation(o.Permutations()-1))
 	Equal(t, o.reduces(), []uint{1})
 	Equal(t, o.Reduces(), 0)
 
 	o = NewRepeat(a, 0, 2)
-	Nil(t, o.Permutation(o.Permutations()))
+	Nil(t, o.Permutation(o.Permutations()-1))
 	Equal(t, o.reduces(), []uint{1, 2, 1})
 	Equal(t, o.Reduces(), 4)
 
 	o = NewRepeat(a, 1, 2)
-	Nil(t, o.Permutation(o.Permutations()))
+	Nil(t, o.Permutation(o.Permutations()-1))
 	Equal(t, o.reduces(), []uint{2, 1})
 	Equal(t, o.Reduces(), 3)
 
 	o = NewRepeat(a, 0, 3)
-	Nil(t, o.Permutation(o.Permutations()))
+	Nil(t, o.Permutation(o.Permutations()-1))
 	Equal(t, o.reduces(), []uint{1, 3, 3, 1})
 	Equal(t, o.Reduces(), 8)
 
 	o = NewRepeat(a, 1, 3)
-	Nil(t, o.Permutation(o.Permutations()))
+	Nil(t, o.Permutation(o.Permutations()-1))
 	Equal(t, o.reduces(), []uint{3, 3, 1})
 	Equal(t, o.Reduces(), 7)
 
 	o = NewRepeat(a, 2, 3)
-	Nil(t, o.Permutation(o.Permutations()))
+	Nil(t, o.Permutation(o.Permutations()-1))
 	Equal(t, o.reduces(), []uint{3, 1})
 	Equal(t, o.Reduces(), 4)
 
 	// cannnot be reduces!
 	o = NewRepeat(a, 3, 3)
-	Nil(t, o.Permutation(o.Permutations()))
+	Nil(t, o.Permutation(o.Permutations()-1))
 	Equal(t, o.reduces(), []uint{1})
 	Equal(t, o.Reduces(), 0)
 }
@@ -371,15 +371,13 @@ func TestRepeatReduce(t *testing.T) {
 
 		Equal(t, reduces, o.Reduces())
 
-		err := o.Reduce(0)
-		NotNil(t, err)
-		err = o.Reduce(reduces + 1)
+		err := o.Reduce(reduces)
 		NotNil(t, err)
 
-		if reduces > 0 {
+		if reduces >= 0 {
 			var actual []string
 
-			for i := uint(1); i <= o.Reduces(); i++ {
+			for i := uint(0); i < o.Reduces(); i++ {
 				err := o.Reduce(i)
 				Nil(t, err)
 

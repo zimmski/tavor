@@ -30,10 +30,10 @@ func TestVariableIf(t *testing.T) {
 
 	Equal(t, 1, o.Permutations())
 
-	Nil(t, o.Permutation(1))
+	Nil(t, o.Permutation(0))
 	Equal(t, "a", o.String())
 
-	Equal(t, o.Permutation(2).(*token.PermutationError).Type, token.PermutationErrorIndexOutOfBound)
+	Equal(t, o.Permutation(1).(*token.PermutationError).Type, token.PermutationErrorIndexOutOfBound)
 
 	o = lists.NewAll(
 		NewIf(IfPair{
@@ -65,8 +65,8 @@ func TestVariableElse(t *testing.T) {
 
 	Equal(t, 1, o.Permutations())
 
-	Nil(t, o.Permutation(1))
+	Nil(t, o.Permutation(0))
 	Equal(t, "b", o.String())
 
-	Equal(t, o.Permutation(2).(*token.PermutationError).Type, token.PermutationErrorIndexOutOfBound)
+	Equal(t, o.Permutation(1).(*token.PermutationError).Type, token.PermutationErrorIndexOutOfBound)
 }
