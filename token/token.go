@@ -448,8 +448,8 @@ const (
 	ParseErrorUnexpectedTokenDefinitionTermination
 	// ParseErrorExpectedExpressionTerm expression term is expected
 	ParseErrorExpectedExpressionTerm
-	// ParseErrorEndlessLoopDetected an invalid loop was detected
-	ParseErrorEndlessLoopDetected
+	// ParseErrEndlessLoopDetected an invalid loop was detected
+	ParseErrEndlessLoopDetected
 
 	// ParseErrorExpectedEOF expected EOF
 	ParseErrorExpectedEOF

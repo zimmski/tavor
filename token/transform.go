@@ -116,7 +116,7 @@ func UnrollPointers(root Token) (Token, error) {
 				if _, ok := checked[i.tok]; ok {
 					return nil, &ParserError{
 						Message: "Found a pointerless loop while unrolling. This is not allowed.",
-						Type:    ParseErrorEndlessLoopDetected,
+						Type:    ParseErrEndlessLoopDetected,
 					}
 				}
 

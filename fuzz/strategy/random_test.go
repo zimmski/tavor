@@ -25,7 +25,7 @@ func TestRandomStrategyNilRandomGenerator(t *testing.T) {
 
 	ch, err := r.Fuzz(nil)
 	Nil(t, ch)
-	Equal(t, ErrorNilRandomGenerator, err.(*Error).Type)
+	Equal(t, ErrNilRandomGenerator, err.(*Error).Type)
 }
 
 func TestRandomStrategy(t *testing.T) {

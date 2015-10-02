@@ -104,14 +104,14 @@ func (s *PermuteOptionalsStrategy) Fuzz(r rand.Rand) (chan struct{}, error) {
 	if r == nil {
 		return nil, &Error{
 			Message: "random generator is nil",
-			Type:    ErrorNilRandomGenerator,
+			Type:    ErrNilRandomGenerator,
 		}
 	}
 
 	if token.LoopExists(s.root) {
 		return nil, &Error{
 			Message: "found endless loop in graph. Cannot proceed.",
-			Type:    ErrorEndlessLoopDetected,
+			Type:    ErrEndlessLoopDetected,
 		}
 	}
 

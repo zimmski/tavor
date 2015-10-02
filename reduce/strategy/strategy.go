@@ -11,8 +11,8 @@ import (
 type ErrorType int
 
 const (
-	// ErrorEndlessLoopDetected the token graph has a cycle which is not allowed.
-	ErrorEndlessLoopDetected ErrorType = iota
+	// ErrEndlessLoopDetected the token graph has a cycle which is not allowed.
+	ErrEndlessLoopDetected ErrorType = iota
 )
 
 // Error holds a reduce strategy error

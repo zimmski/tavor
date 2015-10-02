@@ -12,10 +12,10 @@ import (
 type ErrorType int
 
 const (
-	// ErrorEndlessLoopDetected the token graph has a cycle which is not allowed.
-	ErrorEndlessLoopDetected ErrorType = iota
-	// ErrorNilRandomGenerator the random generator is nil
-	ErrorNilRandomGenerator
+	// ErrEndlessLoopDetected the token graph has a cycle which is not allowed.
+	ErrEndlessLoopDetected ErrorType = iota
+	// ErrNilRandomGenerator the random generator is nil
+	ErrNilRandomGenerator
 )
 
 // Error holds a fuzzing strategy error

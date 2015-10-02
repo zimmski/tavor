@@ -103,7 +103,7 @@ func (s *LinearStrategy) Reduce() (chan struct{}, chan<- ReduceFeedbackType, err
 	if token.LoopExists(s.root) {
 		return nil, nil, &Error{
 			Message: "found endless loop in graph. Cannot proceed.",
-			Type:    ErrorEndlessLoopDetected,
+			Type:    ErrEndlessLoopDetected,
 		}
 	}
 

@@ -41,7 +41,7 @@ func checkListToken(list token.Token) error {
 	if token.LoopExists(list) {
 		return &token.ParserError{
 			Message: "There is an endless loop in the list argument. Use a variable reference to avoid this.",
-			Type:    token.ParseErrorEndlessLoopDetected,
+			Type:    token.ParseErrEndlessLoopDetected,
 		}
 	}
 

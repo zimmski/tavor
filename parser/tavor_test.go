@@ -257,7 +257,7 @@ func TestTavorParseErrors(t *testing.T) {
 				(2 3),
 			)
 		`))
-	Equal(t, token.ParseErrorEndlessLoopDetected, err.(*token.ParserError).Type)
+	Equal(t, token.ParseErrEndlessLoopDetected, err.(*token.ParserError).Type)
 	Nil(t, tok)
 }
 
