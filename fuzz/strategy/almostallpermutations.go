@@ -90,13 +90,6 @@ func (s *almostAllPermutations) getLevel(root token.Token, fromChildren bool) []
 // NewAlmostAllPermutations implements a fuzzing strategy that generates "almost" all possible permutations of a token graph.
 // Every iteration of the strategy generates a new permutation. The generation is deterministic. This strategy does not cover all repititional permutations which can be helpful when less permutations are needed but a almost complete permutation coverage is still needed. For example the definition +2(?(1)?(2)) does not result in 16 permutations but instead it results in only 7.
 func NewAlmostAllPermutations(root token.Token, r rand.Rand) (chan struct{}, error) {
-	if r == nil {
-		return nil, &Error{
-			Message: "random generator is nil",
-			Type:    ErrNilRandomGenerator,
-		}
-	}
-
 	if token.LoopExists(root) {
 		return nil, &Error{
 			Message: "found endless loop in graph. Cannot proceed.",

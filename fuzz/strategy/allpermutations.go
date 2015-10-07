@@ -66,13 +66,6 @@ func (s *allPermutations) setPermutation(tok token.Token, permutation uint) {
 // NewAllPermutations implements a fuzzing strategy that generates all possible permutations of a token graph.
 // Every iteration of the strategy generates a new permutation. The generation is deterministic. Since this strategy really produces every possible permutation of a token graph, it is advised to only use the strategy on graphs with few states since the state explosion problem manifests itself quite fast.
 func NewAllPermutations(root token.Token, r rand.Rand) (chan struct{}, error) {
-	if r == nil {
-		return nil, &Error{
-			Message: "random generator is nil",
-			Type:    ErrNilRandomGenerator,
-		}
-	}
-
 	if token.LoopExists(root) {
 		return nil, &Error{
 			Message: "found endless loop in graph. Cannot proceed.",

@@ -88,13 +88,6 @@ func (s *permuteOptionals) findOptionals(r rand.Rand, root token.Token, fromChil
 // NewPermuteOptionals implements a fuzzing strategy that generates permutations of only optional tokens of a token graph.
 // Every iteration of the strategy generates a new permutation. The generation is deterministic. This strategy searches the graph for tokens who implement the OptionalToken interface and permutates over them by deactivating or activating them. The permutations always start from the deactivated states so that minimum data is generated first.
 func NewPermuteOptionals(root token.Token, r rand.Rand) (chan struct{}, error) {
-	if r == nil {
-		return nil, &Error{
-			Message: "random generator is nil",
-			Type:    ErrNilRandomGenerator,
-		}
-	}
-
 	if token.LoopExists(root) {
 		return nil, &Error{
 			Message: "found endless loop in graph. Cannot proceed.",
