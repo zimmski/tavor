@@ -122,24 +122,16 @@ This command results into exactly **31** files created in the folder `testset` a
 
 ## <a name="executor"></a>Implementing an executor
 
-The executor connects the key-driven test files with the implementation under test. It reads, parses and validates one key-driven file, executes sequentially each key with its arguments by invoking actions of the implementation and validates these actions. A test passes if each key executes without any problem. We will first define the groundwork of the executor since it is not yet defined how the implementation can be contacted. The executor will be written in Go, since all Tavor examples are written in Go. However, the generated key-driven test files are independent of the programming language which means that the executor could be implemented in any language too.
+The executor connects the key-driven test files with the implementation under test. It reads, parses and validates one key-driven file, executes sequentially each key with its arguments by invoking actions of the implementation and validates these actions. A test passes if each key executes without any problem. We will first define the groundwork of the executor since it is not yet defined how the implementation can be contacted. The executor will be written in Go, since all Tavor examples are written in Go. However, the generated key-driven test files are independent of the programming language which means that the executor could be implemented in any language.
 
 ```go
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
-	"strings"
+	"strconv"
+
+	"github.com/zimmski/tavor/executor/keydriven"
 )
-
-type action func(parameters []string) error
-
-type command struct {
-	key        string
-	parameters []string
-}
-
-var actions = make(map[string]action)
 
 const (
 	exitPassed = iota
@@ -154,52 +146,32 @@ func main() {
 		os.Exit(exitError)
 	}
 
-	input, err := ioutil.ReadFile(os.Args[1])
+	cmds, err := keydriven.ReadKeyDrivenFile(os.Args[1])
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)
 
 		os.Exit(exitError)
 	}
 
-	var cmds []*command
+	executor := initExecutor()
 
-	for li, l := range strings.Split(string(input), "\n") {
-		lc := strings.Split(l, "\t")
+	if err := executor.Execute(cmds); err != nil {
+		fmt.Printf("Failed: %v\n", err)
 
-		for i := 0; i < len(lc); i++ {
-			lc[i] = strings.Trim(lc[i], "\r ")
-		}
-
-		if len(lc[0]) != 0 {
-			if _, ok := actions[lc[0]]; !ok {
-				fmt.Printf("Error: Unknown key %q at line %d\n", lc[0], li+1)
-
-				os.Exit(exitError)
-			}
-
-			cmds = append(cmds, &command{
-				key:        lc[0],
-				parameters: lc[1:],
-			})
-		}
-	}
-
-	for _, cmd := range cmds {
-		fmt.Printf("%s %v\n", cmd.key, cmd.parameters)
-
-		err := actions[cmd.key](cmd.parameters)
-		if err != nil {
-			fmt.Printf("Error: %v\n", err)
-
-			os.Exit(exitFailed)
-		}
+		os.Exit(exitFailed)
 	}
 
 	os.Exit(exitPassed)
 }
+
+func initExecutor() *keydriven.Executor {
+	executor := keydriven.NewExecutor()
+
+	return executor
+}
 ```
 
-This program reads a file given as CLI argument, parses it according to our key-driven format rules and then executes each key with its parameters using the map `actions`. Since we did not fill the map yet, every key-driven file will fail. However, the groundwork of the executor is hereby done and we can move on to define the actions for our keys. Since this example should be kept simple, we will use an additional package as our implementation. It should be noted that the same mechanisms could be used to test implementations of external processes, web APIs or any other implementation as long as an interface can be used.
+This program reads a file given as CLI argument, parses it according to our key-driven format rules and then executes it. Since we did not define the executor actions yet, every key-driven file will fail. However, the groundwork of the executor is hereby done and we can move on to define the actions for our keys. Since this example should be kept simple, we will use an additional package as our implementation. It should be noted that the same mechanisms could be used to test implementations of external processes, web APIs or any other implementation as long as an interface can be used.
 
 The following code introduces the implementation of the given state machine which we will declare in its own package.
 
@@ -266,16 +238,24 @@ func (v *VendingMachine) Vend() bool {
 This implementation can be now used in the executor to define actions for the given keys.
 
 ```go
-var (
-	errInvalidParametersCount = errors.New("Invalid parmaters count")
+import (
+	"github.com/zimmski/tavor/examples/complete/implementation"
 )
 
-func init() {
+func initExecutor() *keydriven.Executor {
+	executor := keydriven.NewExecutor()
+
+	executor.BeforeAction = func(key string, parameters ...string) error {
+		fmt.Printf("%s %v\n", key, parameters)
+
+		return nil
+	}
+
 	machine := implementation.NewVendingMachine()
 
-	actions["credit"] = func(parameters []string) error {
-		if len(parameters) != 1 {
-			return errInvalidParametersCount
+	executor.MustRegister("credit", func(key string, parameters ...string) error {
+		if err := checkParameterCount(key, len(parameters), 1); err != nil {
+			return err
 		}
 
 		expected, err := strconv.Atoi(parameters[0])
@@ -290,11 +270,11 @@ func init() {
 		}
 
 		return nil
-	}
+	})
 
-	actions["coin"] = func(parameters []string) error {
-		if len(parameters) != 1 {
-			return errInvalidParametersCount
+	executor.MustRegister("coin", func(key string, parameters ...string) error {
+		if err := checkParameterCount(key, len(parameters), 1); err != nil {
+			return err
 		}
 
 		coin, err := strconv.Atoi(parameters[0])
@@ -308,11 +288,11 @@ func init() {
 		}
 
 		return nil
-	}
+	})
 
-	actions["vend"] = func(parameters []string) error {
-		if len(parameters) != 0 {
-			return errInvalidParametersCount
+	executor.MustRegister("vend", func(key string, parameters ...string) error {
+		if err := checkParameterCount(key, len(parameters), 0); err != nil {
+			return err
 		}
 
 		vend := machine.Vend()
@@ -321,7 +301,20 @@ func init() {
 		}
 
 		return nil
+	})
+
+	return executor
+}
+
+func checkParameterCount(key string, got int, expected int) error {
+	if got != expected {
+		return &keydriven.Error{
+			Message: fmt.Sprintf("Key %q requires %d parameters not %d", key, expected, got),
+			Err:     keydriven.ErrInvalidParametersCount,
+		}
 	}
+
+	return nil
 }
 ```
 

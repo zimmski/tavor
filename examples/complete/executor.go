@@ -3,24 +3,14 @@
 package main
 
 import (
-	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strconv"
-	"strings"
+
+	"github.com/zimmski/tavor/executor/keydriven"
 
 	"github.com/zimmski/tavor/examples/complete/implementation"
 )
-
-type action func(parameters []string) error
-
-type command struct {
-	key        string
-	parameters []string
-}
-
-var actions = make(map[string]action)
 
 const (
 	exitPassed = iota
@@ -35,60 +25,38 @@ func main() {
 		os.Exit(exitError)
 	}
 
-	input, err := ioutil.ReadFile(os.Args[1])
+	cmds, err := keydriven.ReadKeyDrivenFile(os.Args[1])
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)
 
 		os.Exit(exitError)
 	}
 
-	var cmds []*command
+	executor := initExecutor()
 
-	for li, l := range strings.Split(string(input), "\n") {
-		lc := strings.Split(l, "\t")
+	if err := executor.Execute(cmds); err != nil {
+		fmt.Printf("Failed: %v\n", err)
 
-		for i := 0; i < len(lc); i++ {
-			lc[i] = strings.Trim(lc[i], "\r ")
-		}
-
-		if len(lc[0]) != 0 {
-			if _, ok := actions[lc[0]]; !ok {
-				fmt.Printf("Error: Unknown key %q at line %d\n", lc[0], li+1)
-
-				os.Exit(exitError)
-			}
-
-			cmds = append(cmds, &command{
-				key:        lc[0],
-				parameters: lc[1:],
-			})
-		}
-	}
-
-	for _, cmd := range cmds {
-		fmt.Printf("%s %v\n", cmd.key, cmd.parameters)
-
-		err := actions[cmd.key](cmd.parameters)
-		if err != nil {
-			fmt.Printf("Error: %v\n", err)
-
-			os.Exit(exitFailed)
-		}
+		os.Exit(exitFailed)
 	}
 
 	os.Exit(exitPassed)
 }
 
-var (
-	errInvalidParametersCount = errors.New("Invalid parmaters count")
-)
+func initExecutor() *keydriven.Executor {
+	executor := keydriven.NewExecutor()
 
-func init() {
+	executor.BeforeAction = func(key string, parameters ...string) error {
+		fmt.Printf("%s %v\n", key, parameters)
+
+		return nil
+	}
+
 	machine := implementation.NewVendingMachine()
 
-	actions["credit"] = func(parameters []string) error {
-		if len(parameters) != 1 {
-			return errInvalidParametersCount
+	executor.MustRegister("credit", func(key string, parameters ...string) error {
+		if err := checkParameterCount(key, len(parameters), 1); err != nil {
+			return err
 		}
 
 		expected, err := strconv.Atoi(parameters[0])
@@ -103,11 +71,11 @@ func init() {
 		}
 
 		return nil
-	}
+	})
 
-	actions["coin"] = func(parameters []string) error {
-		if len(parameters) != 1 {
-			return errInvalidParametersCount
+	executor.MustRegister("coin", func(key string, parameters ...string) error {
+		if err := checkParameterCount(key, len(parameters), 1); err != nil {
+			return err
 		}
 
 		coin, err := strconv.Atoi(parameters[0])
@@ -121,11 +89,11 @@ func init() {
 		}
 
 		return nil
-	}
+	})
 
-	actions["vend"] = func(parameters []string) error {
-		if len(parameters) != 0 {
-			return errInvalidParametersCount
+	executor.MustRegister("vend", func(key string, parameters ...string) error {
+		if err := checkParameterCount(key, len(parameters), 0); err != nil {
+			return err
 		}
 
 		vend := machine.Vend()
@@ -134,5 +102,18 @@ func init() {
 		}
 
 		return nil
+	})
+
+	return executor
+}
+
+func checkParameterCount(key string, got int, expected int) error {
+	if got != expected {
+		return &keydriven.Error{
+			Message: fmt.Sprintf("Key %q requires %d parameters not %d", key, expected, got),
+			Err:     keydriven.ErrInvalidParametersCount,
+		}
 	}
+
+	return nil
 }
