@@ -7,6 +7,10 @@ import (
 	"github.com/zimmski/tavor/token"
 )
 
+func init() {
+	Register("Linear", NewLinear)
+}
+
 type linearStrategyLevel struct {
 	token         token.ReduceToken
 	reduction     uint
@@ -17,71 +21,6 @@ type linearStrategyLevel struct {
 
 type linearStrategy struct {
 	root token.Token
-}
-
-func init() {
-	Register("Linear", NewLinear)
-}
-
-func (s *linearStrategy) getTree(root token.Token, fromChildren bool) []linearStrategyLevel {
-	var tree []linearStrategyLevel
-	var queue = linkedlist.New()
-
-	if fromChildren {
-		switch t := root.(type) {
-		case token.ForwardToken:
-			queue.Unshift(t.Get())
-		case token.ListToken:
-			for i := t.Len() - 1; i >= 0; i-- {
-				c, _ := t.Get(i)
-
-				queue.Unshift(c)
-			}
-		}
-	} else {
-		queue.Unshift(root)
-	}
-
-	for !queue.Empty() {
-		tok, _ := queue.Shift()
-
-		switch t := tok.(type) {
-		case token.ReduceToken:
-			if t.Reduces() < 2 {
-				continue
-			}
-
-			maxReductions := t.Reduces() - 1
-
-			s.setReduction(t, maxReductions)
-
-			tree = append(tree, linearStrategyLevel{
-				token:         t,
-				reduction:     maxReductions,
-				maxReductions: maxReductions,
-			})
-		case token.ForwardToken:
-			c := t.Get()
-
-			queue.Unshift(c)
-		case token.ListToken:
-			for i := t.Len() - 1; i >= 0; i-- {
-				c, _ := t.Get(i)
-
-				queue.Unshift(c)
-			}
-		}
-	}
-
-	return tree
-}
-
-func (s *linearStrategy) setReduction(tok token.ReduceToken, reduction uint) {
-	log.Debugf("set (%p)%#v to reduction %d", tok, tok, reduction)
-
-	if err := tok.Reduce(reduction); err != nil {
-		panic(err)
-	}
 }
 
 // NewLinear implements a reduce strategy that reduces the data through a linear search algorithm.
@@ -204,4 +143,65 @@ func (s *linearStrategy) nextStep(continueReducing chan struct{}, feedbackReduci
 	log.Debug("start reducing step")
 
 	return true, feedback
+}
+
+func (s *linearStrategy) getTree(root token.Token, fromChildren bool) []linearStrategyLevel {
+	var tree []linearStrategyLevel
+	var queue = linkedlist.New()
+
+	if fromChildren {
+		switch t := root.(type) {
+		case token.ForwardToken:
+			queue.Unshift(t.Get())
+		case token.ListToken:
+			for i := t.Len() - 1; i >= 0; i-- {
+				c, _ := t.Get(i)
+
+				queue.Unshift(c)
+			}
+		}
+	} else {
+		queue.Unshift(root)
+	}
+
+	for !queue.Empty() {
+		tok, _ := queue.Shift()
+
+		switch t := tok.(type) {
+		case token.ReduceToken:
+			if t.Reduces() < 2 {
+				continue
+			}
+
+			maxReductions := t.Reduces() - 1
+
+			s.setReduction(t, maxReductions)
+
+			tree = append(tree, linearStrategyLevel{
+				token:         t,
+				reduction:     maxReductions,
+				maxReductions: maxReductions,
+			})
+		case token.ForwardToken:
+			c := t.Get()
+
+			queue.Unshift(c)
+		case token.ListToken:
+			for i := t.Len() - 1; i >= 0; i-- {
+				c, _ := t.Get(i)
+
+				queue.Unshift(c)
+			}
+		}
+	}
+
+	return tree
+}
+
+func (s *linearStrategy) setReduction(tok token.ReduceToken, reduction uint) {
+	log.Debugf("set (%p)%#v to reduction %d", tok, tok, reduction)
+
+	if err := tok.Reduce(reduction); err != nil {
+		panic(err)
+	}
 }

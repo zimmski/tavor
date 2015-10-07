@@ -6,6 +6,10 @@ import (
 	"github.com/zimmski/tavor/token"
 )
 
+func init() {
+	Register("AlmostAllPermutations", NewAlmostAllPermutations)
+}
+
 type almostAllPermutationsLevel struct {
 	parent      token.Token
 	tokenIndex  int
@@ -42,49 +46,6 @@ func newAlmostAllPermutations(root token.Token) *almostAllPermutations {
 		resetedLookup: make(map[token.Token]uint),
 		overextended:  false,
 	}
-}
-
-func init() {
-	Register("AlmostAllPermutations", NewAlmostAllPermutations)
-}
-
-func (s *almostAllPermutations) getLevel(root token.Token, fromChildren bool) []almostAllPermutationsLevel {
-	var level []almostAllPermutationsLevel
-
-	if fromChildren {
-		switch t := root.(type) {
-		case token.ForwardToken:
-			if v := t.Get(); v != nil {
-				level = append(level, almostAllPermutationsLevel{
-					parent:      root,
-					tokenIndex:  0,
-					permutation: 0,
-				})
-			}
-		case token.ListToken:
-			l := t.Len()
-
-			for i := 0; i < l; i++ {
-				level = append(level, almostAllPermutationsLevel{
-					parent:      root,
-					tokenIndex:  i,
-					permutation: 0,
-				})
-			}
-		}
-	} else {
-		level = append(level, almostAllPermutationsLevel{
-			parent:      root,
-			tokenIndex:  -1,
-			permutation: 0,
-		})
-	}
-
-	for _, l := range level {
-		s.setTokenPermutation(l.token(), 0)
-	}
-
-	return level
 }
 
 // NewAlmostAllPermutations implements a fuzzing strategy that generates "almost" all possible permutations of a token graph.
@@ -133,22 +94,6 @@ func NewAlmostAllPermutations(root token.Token, r rand.Rand) (chan struct{}, err
 	}()
 
 	return continueFuzzing, nil
-}
-
-func (s *almostAllPermutations) setTokenPermutation(tok token.Token, permutation uint) {
-	if per, ok := s.resetedLookup[tok]; ok && per == permutation {
-		// Permutation already set in this step
-
-		return
-	}
-
-	log.Debugf("set %#v(%p) to permutation %d of max permutations %d", tok, tok, permutation, tok.Permutations())
-
-	if err := tok.Permutation(permutation); err != nil {
-		panic(err)
-	}
-
-	s.resetedLookup[tok] = permutation
 }
 
 func (s *almostAllPermutations) fuzz(continueFuzzing chan struct{}, level []almostAllPermutationsLevel) bool {
@@ -250,4 +195,59 @@ STEP:
 	log.Debug("done with fuzzing this level")
 
 	return true
+}
+
+func (s *almostAllPermutations) getLevel(root token.Token, fromChildren bool) []almostAllPermutationsLevel {
+	var level []almostAllPermutationsLevel
+
+	if fromChildren {
+		switch t := root.(type) {
+		case token.ForwardToken:
+			if v := t.Get(); v != nil {
+				level = append(level, almostAllPermutationsLevel{
+					parent:      root,
+					tokenIndex:  0,
+					permutation: 0,
+				})
+			}
+		case token.ListToken:
+			l := t.Len()
+
+			for i := 0; i < l; i++ {
+				level = append(level, almostAllPermutationsLevel{
+					parent:      root,
+					tokenIndex:  i,
+					permutation: 0,
+				})
+			}
+		}
+	} else {
+		level = append(level, almostAllPermutationsLevel{
+			parent:      root,
+			tokenIndex:  -1,
+			permutation: 0,
+		})
+	}
+
+	for _, l := range level {
+		s.setTokenPermutation(l.token(), 0)
+	}
+
+	return level
+}
+
+func (s *almostAllPermutations) setTokenPermutation(tok token.Token, permutation uint) {
+	if per, ok := s.resetedLookup[tok]; ok && per == permutation {
+		// Permutation already set in this step
+
+		return
+	}
+
+	log.Debugf("set %#v(%p) to permutation %d of max permutations %d", tok, tok, permutation, tok.Permutations())
+
+	if err := tok.Permutation(permutation); err != nil {
+		panic(err)
+	}
+
+	s.resetedLookup[tok] = permutation
 }

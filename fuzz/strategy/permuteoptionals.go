@@ -10,79 +10,12 @@ import (
 	"github.com/zimmski/tavor/token"
 )
 
-type permuteOptionals struct {
-	root token.Token
-}
-
 func init() {
 	Register("PermuteOptionals", NewPermuteOptionals)
 }
 
-func (s *permuteOptionals) findOptionals(r rand.Rand, root token.Token, fromChildren bool) []token.OptionalToken {
-	var optionals []token.OptionalToken
-	var queue = linkedlist.New()
-
-	if fromChildren {
-		switch t := root.(type) {
-		case token.ForwardToken:
-			queue.Unshift(t.Get())
-		case token.ListToken:
-			for i := t.Len() - 1; i >= 0; i-- {
-				c, _ := t.Get(i)
-
-				queue.Unshift(c)
-			}
-		}
-	} else {
-		queue.Unshift(root)
-	}
-
-	for !queue.Empty() {
-		tok, _ := queue.Shift()
-
-		switch t := tok.(type) {
-		case token.OptionalToken:
-			if !t.IsOptional() {
-				opts := s.findOptionals(r, t, true)
-
-				if len(opts) > 0 {
-					optionals = append(optionals, opts...)
-				}
-
-				continue
-			}
-
-			log.Debugf("found optional %#v", t)
-
-			t.Deactivate()
-
-			optionals = append(optionals, t)
-		case token.ForwardToken:
-			c := t.Get()
-
-			if c != nil {
-				err := c.Permutation(uint(r.Intn(int(c.Permutations()))))
-				if err != nil {
-					log.Panic(err)
-				}
-
-				queue.Unshift(c)
-			}
-		case token.ListToken:
-			for i := t.Len() - 1; i >= 0; i-- {
-				c, _ := t.Get(i)
-
-				err := c.Permutation(uint(r.Intn(int(c.Permutations()))))
-				if err != nil {
-					log.Panic(err)
-				}
-
-				queue.Unshift(c)
-			}
-		}
-	}
-
-	return optionals
+type permuteOptionals struct {
+	root token.Token
 }
 
 // NewPermuteOptionals implements a fuzzing strategy that generates permutations of only optional tokens of a token graph.
@@ -191,4 +124,71 @@ func (s *permuteOptionals) fuzz(r rand.Rand, continueFuzzing chan struct{}, opti
 	}
 
 	return true
+}
+
+func (s *permuteOptionals) findOptionals(r rand.Rand, root token.Token, fromChildren bool) []token.OptionalToken {
+	var optionals []token.OptionalToken
+	var queue = linkedlist.New()
+
+	if fromChildren {
+		switch t := root.(type) {
+		case token.ForwardToken:
+			queue.Unshift(t.Get())
+		case token.ListToken:
+			for i := t.Len() - 1; i >= 0; i-- {
+				c, _ := t.Get(i)
+
+				queue.Unshift(c)
+			}
+		}
+	} else {
+		queue.Unshift(root)
+	}
+
+	for !queue.Empty() {
+		tok, _ := queue.Shift()
+
+		switch t := tok.(type) {
+		case token.OptionalToken:
+			if !t.IsOptional() {
+				opts := s.findOptionals(r, t, true)
+
+				if len(opts) > 0 {
+					optionals = append(optionals, opts...)
+				}
+
+				continue
+			}
+
+			log.Debugf("found optional %#v", t)
+
+			t.Deactivate()
+
+			optionals = append(optionals, t)
+		case token.ForwardToken:
+			c := t.Get()
+
+			if c != nil {
+				err := c.Permutation(uint(r.Intn(int(c.Permutations()))))
+				if err != nil {
+					log.Panic(err)
+				}
+
+				queue.Unshift(c)
+			}
+		case token.ListToken:
+			for i := t.Len() - 1; i >= 0; i-- {
+				c, _ := t.Get(i)
+
+				err := c.Permutation(uint(r.Intn(int(c.Permutations()))))
+				if err != nil {
+					log.Panic(err)
+				}
+
+				queue.Unshift(c)
+			}
+		}
+	}
+
+	return optionals
 }

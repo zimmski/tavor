@@ -7,12 +7,12 @@ import (
 	"github.com/zimmski/tavor/token/sequences"
 )
 
-type random struct {
-	root token.Token
-}
-
 func init() {
 	Register("random", NewRandom)
+}
+
+type random struct {
+	root token.Token
 }
 
 // NewRandom implements a fuzzing strategy that generates a random permutation of a token graph.

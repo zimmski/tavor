@@ -6,6 +6,10 @@ import (
 	"github.com/zimmski/tavor/token"
 )
 
+func init() {
+	Register("AllPermutations", NewAllPermutations)
+}
+
 type allPermutationsLevel struct {
 	token       token.Token
 	permutation uint
@@ -15,52 +19,6 @@ type allPermutationsLevel struct {
 
 type allPermutations struct {
 	root token.Token
-}
-
-func init() {
-	Register("AllPermutations", NewAllPermutations)
-}
-
-func (s *allPermutations) getTree(root token.Token, fromChildren bool) []allPermutationsLevel {
-	var tree []allPermutationsLevel
-
-	add := func(tok token.Token) {
-		s.setPermutation(tok, 0)
-
-		tree = append(tree, allPermutationsLevel{
-			token:       tok,
-			permutation: 0,
-
-			children: s.getTree(tok, true),
-		})
-	}
-
-	if fromChildren {
-		switch t := root.(type) {
-		case token.ForwardToken:
-			if v := t.Get(); v != nil {
-				add(v)
-			}
-		case token.ListToken:
-			for i := 0; i < t.Len(); i++ {
-				c, _ := t.Get(i)
-
-				add(c)
-			}
-		}
-	} else {
-		add(root)
-	}
-
-	return tree
-}
-
-func (s *allPermutations) setPermutation(tok token.Token, permutation uint) {
-	log.Debugf("set %#v(%p) to permutation %d", tok, tok, permutation)
-
-	if err := tok.Permutation(permutation); err != nil {
-		panic(err)
-	}
 }
 
 // NewAllPermutations implements a fuzzing strategy that generates all possible permutations of a token graph.
@@ -234,4 +192,46 @@ func (s *allPermutations) nextStep(continueFuzzing chan struct{}) bool {
 	log.Debug("start fuzzing step")
 
 	return true
+}
+
+func (s *allPermutations) getTree(root token.Token, fromChildren bool) []allPermutationsLevel {
+	var tree []allPermutationsLevel
+
+	add := func(tok token.Token) {
+		s.setPermutation(tok, 0)
+
+		tree = append(tree, allPermutationsLevel{
+			token:       tok,
+			permutation: 0,
+
+			children: s.getTree(tok, true),
+		})
+	}
+
+	if fromChildren {
+		switch t := root.(type) {
+		case token.ForwardToken:
+			if v := t.Get(); v != nil {
+				add(v)
+			}
+		case token.ListToken:
+			for i := 0; i < t.Len(); i++ {
+				c, _ := t.Get(i)
+
+				add(c)
+			}
+		}
+	} else {
+		add(root)
+	}
+
+	return tree
+}
+
+func (s *allPermutations) setPermutation(tok token.Token, permutation uint) {
+	log.Debugf("set %#v(%p) to permutation %d", tok, tok, permutation)
+
+	if err := tok.Permutation(permutation); err != nil {
+		panic(err)
+	}
 }
