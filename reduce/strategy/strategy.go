@@ -39,23 +39,20 @@ const (
 )
 
 // Strategy defines a reduce strategy
-type Strategy interface {
-	// Reduce starts the first step of the reduce strategy returning a channel which controls the step flow and a channel for the feedback of the step.
-	// The channel returns a value if the step is complete and waits with calculating the next step until a value is put in and feedback is given. The channels are automatically closed when there are no more steps. The error return argument is not nil if an error occurs during the initialization of the reduce strategy.
-	Reduce() (chan struct{}, chan<- ReduceFeedbackType, error)
-}
+// The function starts the first step of the reduce strategy returning a channel which controls the step flow and a channel for the feedback of the step. The channel returns a value if the step is complete and waits with calculating the next step until a value is put in and feedback is given. The channels are automatically closed when there are no more steps. The error return argument is not nil if an error occurs during the initialization of the reduce strategy.
+type Strategy func(root token.Token) (chan struct{}, chan<- ReduceFeedbackType, error)
 
-var strategyLookup = make(map[string]func(tok token.Token) Strategy)
+var strategyLookup = make(map[string]Strategy)
 
 // New returns a new reduce strategy instance given the registered name of the strategy.
 // The error return argument is not nil, if the name does not exist in the registered reduce strategy list.
-func New(name string, tok token.Token) (Strategy, error) {
+func New(name string) (Strategy, error) {
 	strat, ok := strategyLookup[name]
 	if !ok {
 		return nil, fmt.Errorf("unknown reduce strategy %q", name)
 	}
 
-	return strat(tok), nil
+	return strat, nil
 }
 
 // List returns a list of all registered reduce strategy names.
@@ -72,7 +69,7 @@ func List() []string {
 }
 
 // Register registers a reduce strategy instance function with the given name.
-func Register(name string, strat func(tok token.Token) Strategy) {
+func Register(name string, strat Strategy) {
 	if strat == nil {
 		panic("register reduce strategy is nil")
 	}

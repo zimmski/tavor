@@ -10,28 +10,15 @@ import (
 	"github.com/zimmski/tavor/token"
 )
 
-// PermuteOptionalsStrategy implements a fuzzing strategy that generates permutations of only optional tokens of a token graph.
-// Every iteration of the strategy generates a new permutation. The generation is deterministic. This strategy searches the graph for tokens who implement the OptionalToken interface and permutates over them by deactivating or activating them. The permutations always start from the deactivated states so that minimum data is generated first.
-type PermuteOptionalsStrategy struct {
+type permuteOptionals struct {
 	root token.Token
 }
 
-// NewPermuteOptionalsStrategy returns a new instance of the Permute Optionals fuzzing strategy
-func NewPermuteOptionalsStrategy(tok token.Token) *PermuteOptionalsStrategy {
-	s := &PermuteOptionalsStrategy{
-		root: tok,
-	}
-
-	return s
-}
-
 func init() {
-	Register("PermuteOptionals", func(tok token.Token) Strategy {
-		return NewPermuteOptionalsStrategy(tok)
-	})
+	Register("PermuteOptionals", NewPermuteOptionals)
 }
 
-func (s *PermuteOptionalsStrategy) findOptionals(r rand.Rand, root token.Token, fromChildren bool) []token.OptionalToken {
+func (s *permuteOptionals) findOptionals(r rand.Rand, root token.Token, fromChildren bool) []token.OptionalToken {
 	var optionals []token.OptionalToken
 	var queue = linkedlist.New()
 
@@ -98,9 +85,9 @@ func (s *PermuteOptionalsStrategy) findOptionals(r rand.Rand, root token.Token, 
 	return optionals
 }
 
-// Fuzz starts the first iteration of the fuzzing strategy returning a channel which controls the iteration flow.
-// The channel returns a value if the iteration is complete and waits with calculating the next iteration until a value is put in. The channel is automatically closed when there are no more iterations. The error return argument is not nil if an error occurs during the setup of the fuzzing strategy.
-func (s *PermuteOptionalsStrategy) Fuzz(r rand.Rand) (chan struct{}, error) {
+// NewPermuteOptionals implements a fuzzing strategy that generates permutations of only optional tokens of a token graph.
+// Every iteration of the strategy generates a new permutation. The generation is deterministic. This strategy searches the graph for tokens who implement the OptionalToken interface and permutates over them by deactivating or activating them. The permutations always start from the deactivated states so that minimum data is generated first.
+func NewPermuteOptionals(root token.Token, r rand.Rand) (chan struct{}, error) {
 	if r == nil {
 		return nil, &Error{
 			Message: "random generator is nil",
@@ -108,11 +95,15 @@ func (s *PermuteOptionalsStrategy) Fuzz(r rand.Rand) (chan struct{}, error) {
 		}
 	}
 
-	if token.LoopExists(s.root) {
+	if token.LoopExists(root) {
 		return nil, &Error{
 			Message: "found endless loop in graph. Cannot proceed.",
 			Type:    ErrEndlessLoopDetected,
 		}
+	}
+
+	s := &permuteOptionals{
+		root: root,
 	}
 
 	continueFuzzing := make(chan struct{})
@@ -149,7 +140,7 @@ func (s *PermuteOptionalsStrategy) Fuzz(r rand.Rand) (chan struct{}, error) {
 	return continueFuzzing, nil
 }
 
-func (s *PermuteOptionalsStrategy) fuzz(r rand.Rand, continueFuzzing chan struct{}, optionals []token.OptionalToken) bool {
+func (s *permuteOptionals) fuzz(r rand.Rand, continueFuzzing chan struct{}, optionals []token.OptionalToken) bool {
 	log.Debugf("fuzzing optionals %#v", optionals)
 
 	// TODO make this WAYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY smarter

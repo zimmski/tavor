@@ -15,14 +15,8 @@ import (
 	"github.com/zimmski/tavor/token/sequences"
 )
 
-func TestAllPermutationsStrategyToBeStrategy(t *testing.T) {
-	var strat *Strategy
-
-	Implements(t, strat, &AllPermutationsStrategy{})
-}
-
 func TestAllPermutationsStrategygetLevel(t *testing.T) {
-	o := NewAllPermutationsStrategy(nil)
+	o := &allPermutations{}
 
 	var nilChildren []allPermutationsLevel
 
@@ -109,9 +103,7 @@ func TestAllPermutationsStrategy(t *testing.T) {
 	{
 		a := primitives.NewConstantInt(1)
 
-		o := NewAllPermutationsStrategy(a)
-
-		ch, err := o.Fuzz(r)
+		ch, err := NewAllPermutations(a, r)
 		Nil(t, err)
 
 		_, ok := <-ch
@@ -200,9 +192,7 @@ func TestAllPermutationsStrategy(t *testing.T) {
 		c := constraints.NewOptional(primitives.NewConstantInt(3))
 		d := lists.NewAll(a, b, c)
 
-		o := NewAllPermutationsStrategy(d)
-
-		ch, err := o.Fuzz(r)
+		ch, err := NewAllPermutations(d, r)
 		Nil(t, err)
 
 		_, ok := <-ch
@@ -229,7 +219,7 @@ func TestAllPermutationsStrategy(t *testing.T) {
 		False(t, ok)
 
 		// rerun
-		ch, err = o.Fuzz(r)
+		ch, err = NewAllPermutations(d, r)
 		Nil(t, err)
 
 		_, ok = <-ch
@@ -241,7 +231,7 @@ func TestAllPermutationsStrategy(t *testing.T) {
 		// run with range
 		var got []string
 
-		ch, err = o.Fuzz(r)
+		ch, err = NewAllPermutations(d, r)
 		Nil(t, err)
 		for i := range ch {
 			got = append(got, d.String())
@@ -572,11 +562,9 @@ func validateTavorAllPermutations(t *testing.T, format string, expect []string) 
 	o, err := parser.ParseTavor(strings.NewReader(format))
 	Nil(t, err)
 
-	s := NewAllPermutationsStrategy(o)
-
 	var got []string
 
-	ch, err := s.Fuzz(r)
+	ch, err := NewAllPermutations(o, r)
 	Nil(t, err)
 	for i := range ch {
 		got = append(got, o.String())
@@ -590,9 +578,7 @@ func validateTavorAllPermutations(t *testing.T, format string, expect []string) 
 func validateTokenAllPermutations(t *testing.T, tok token.Token, expect []string) {
 	r := test.NewRandTest(1)
 
-	o := NewAllPermutationsStrategy(tok)
-
-	ch, err := o.Fuzz(r)
+	ch, err := NewAllPermutations(tok, r)
 	Nil(t, err)
 
 	var got []string
@@ -607,7 +593,5 @@ func validateTokenAllPermutations(t *testing.T, tok token.Token, expect []string
 }
 
 func TestAllPermutationsStrategyLoopDetection(t *testing.T) {
-	testStrategyLoopDetection(t, func(root token.Token) Strategy {
-		return NewAllPermutationsStrategy(root)
-	})
+	testStrategyLoopDetection(t, NewAllPermutations)
 }

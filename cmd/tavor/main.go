@@ -407,7 +407,7 @@ func mainCmd(args []string) exitCodeType {
 
 		log.Infof("counted %d overall permutations", doc.PermutationsAll())
 
-		strat, err := tavorFuzzStrategy.New(string(opts.Fuzz.Strategy), doc)
+		strat, err := tavorFuzzStrategy.New(string(opts.Fuzz.Strategy))
 		if err != nil {
 			return exitError(err.Error())
 		}
@@ -419,7 +419,7 @@ func mainCmd(args []string) exitCodeType {
 			folder += "/"
 		}
 
-		ch, err := strat.Fuzz(r)
+		ch, err := strat(doc, r)
 		if err != nil {
 			return exitError(err.Error())
 		}
@@ -806,7 +806,7 @@ func mainCmd(args []string) exitCodeType {
 		}
 
 		if command == "reduce" {
-			strat, err := tavorReduceStrategy.New(string(opts.Reduce.Strategy), doc)
+			strat, err := tavorReduceStrategy.New(string(opts.Reduce.Strategy))
 			if err != nil {
 				return exitError(err.Error())
 			}
@@ -918,7 +918,7 @@ func mainCmd(args []string) exitCodeType {
 					}
 				}
 
-				contin, feedback, err := strat.Reduce()
+				contin, feedback, err := strat(doc)
 				if err != nil {
 					return exitError(err.Error())
 				}
@@ -1134,7 +1134,7 @@ func mainCmd(args []string) exitCodeType {
 					return exitError("Feedback from script to orignal was not OK: %s", feed)
 				}
 
-				contin, feedback, err := strat.Reduce()
+				contin, feedback, err := strat(doc)
 				if err != nil {
 					return exitError(err.Error())
 				}
@@ -1193,7 +1193,7 @@ func mainCmd(args []string) exitCodeType {
 			} else {
 				readCLI := bufio.NewReader(os.Stdin)
 
-				contin, feedback, err := strat.Reduce()
+				contin, feedback, err := strat(doc)
 				if err != nil {
 					return exitError(err.Error())
 				}

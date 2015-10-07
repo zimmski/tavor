@@ -29,34 +29,26 @@ func (l almostAllPermutationsLevel) token() token.Token {
 	return nil
 }
 
-// AlmostAllPermutationsStrategy implements a fuzzing strategy that generates "almost" all possible permutations of a token graph.
-// Every iteration of the strategy generates a new permutation. The generation is deterministic. This strategy does not cover all repititional permutations which can be helpful when less permutations are needed but a almost complete permutation coverage is still needed. For example the definition +2(?(1)?(2)) does not result in 16 permutations but instead it results in only 7.
-type AlmostAllPermutationsStrategy struct {
+type almostAllPermutations struct {
 	root token.Token
 
 	resetedLookup map[token.Token]uint
 	overextended  bool
 }
 
-// NewAlmostAllPermutationsStrategy returns a new instance of the Almost All Permutations fuzzing strategy
-func NewAlmostAllPermutationsStrategy(tok token.Token) *AlmostAllPermutationsStrategy {
-	s := &AlmostAllPermutationsStrategy{
-		root: tok,
-
+func newAlmostAllPermutations(root token.Token) *almostAllPermutations {
+	return &almostAllPermutations{
+		root:          root,
 		resetedLookup: make(map[token.Token]uint),
 		overextended:  false,
 	}
-
-	return s
 }
 
 func init() {
-	Register("AlmostAllPermutations", func(tok token.Token) Strategy {
-		return NewAlmostAllPermutationsStrategy(tok)
-	})
+	Register("AlmostAllPermutations", NewAlmostAllPermutations)
 }
 
-func (s *AlmostAllPermutationsStrategy) getLevel(root token.Token, fromChildren bool) []almostAllPermutationsLevel {
+func (s *almostAllPermutations) getLevel(root token.Token, fromChildren bool) []almostAllPermutationsLevel {
 	var level []almostAllPermutationsLevel
 
 	if fromChildren {
@@ -95,9 +87,9 @@ func (s *AlmostAllPermutationsStrategy) getLevel(root token.Token, fromChildren 
 	return level
 }
 
-// Fuzz starts the first iteration of the fuzzing strategy returning a channel which controls the iteration flow.
-// The channel returns a value if the iteration is complete and waits with calculating the next iteration until a value is put in. The channel is automatically closed when there are no more iterations. The error return argument is not nil if an error occurs during the setup of the fuzzing strategy.
-func (s *AlmostAllPermutationsStrategy) Fuzz(r rand.Rand) (chan struct{}, error) {
+// NewAlmostAllPermutations implements a fuzzing strategy that generates "almost" all possible permutations of a token graph.
+// Every iteration of the strategy generates a new permutation. The generation is deterministic. This strategy does not cover all repititional permutations which can be helpful when less permutations are needed but a almost complete permutation coverage is still needed. For example the definition +2(?(1)?(2)) does not result in 16 permutations but instead it results in only 7.
+func NewAlmostAllPermutations(root token.Token, r rand.Rand) (chan struct{}, error) {
 	if r == nil {
 		return nil, &Error{
 			Message: "random generator is nil",
@@ -105,17 +97,16 @@ func (s *AlmostAllPermutationsStrategy) Fuzz(r rand.Rand) (chan struct{}, error)
 		}
 	}
 
-	if token.LoopExists(s.root) {
+	if token.LoopExists(root) {
 		return nil, &Error{
 			Message: "found endless loop in graph. Cannot proceed.",
 			Type:    ErrEndlessLoopDetected,
 		}
 	}
 
-	continueFuzzing := make(chan struct{})
+	s := newAlmostAllPermutations(root)
 
-	s.resetedLookup = make(map[token.Token]uint)
-	s.overextended = false
+	continueFuzzing := make(chan struct{})
 
 	go func() {
 		log.Debug("start almost all permutations routine")
@@ -151,7 +142,7 @@ func (s *AlmostAllPermutationsStrategy) Fuzz(r rand.Rand) (chan struct{}, error)
 	return continueFuzzing, nil
 }
 
-func (s *AlmostAllPermutationsStrategy) setTokenPermutation(tok token.Token, permutation uint) {
+func (s *almostAllPermutations) setTokenPermutation(tok token.Token, permutation uint) {
 	if per, ok := s.resetedLookup[tok]; ok && per == permutation {
 		// Permutation already set in this step
 
@@ -167,7 +158,7 @@ func (s *AlmostAllPermutationsStrategy) setTokenPermutation(tok token.Token, per
 	s.resetedLookup[tok] = permutation
 }
 
-func (s *AlmostAllPermutationsStrategy) fuzz(continueFuzzing chan struct{}, level []almostAllPermutationsLevel) bool {
+func (s *almostAllPermutations) fuzz(continueFuzzing chan struct{}, level []almostAllPermutationsLevel) bool {
 	log.Debugf("fuzzing level %d->%#v", len(level), level)
 
 	last := len(level) - 1

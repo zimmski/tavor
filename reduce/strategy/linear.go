@@ -7,37 +7,24 @@ import (
 	"github.com/zimmski/tavor/token"
 )
 
-type linearLevel struct {
+type linearStrategyLevel struct {
 	token         token.ReduceToken
 	reduction     uint
 	maxReductions uint
 
-	children []linearLevel
+	children []linearStrategyLevel
 }
 
-// LinearStrategy implements a reduce strategy that reduces the data through a linear search algorithm.
-// Every step of the strategy generates a new valid token graph state. The generation is deterministic. The algorithm starts by deactivating all optional tokens, this includes for example reducing lists to their minimum repetition. Each step uses the feedback to determine which tokens to reactivate next.
-type LinearStrategy struct {
+type linearStrategy struct {
 	root token.Token
 }
 
-// NewLinear returns a new instance of the linear reduce strategy
-func NewLinear(tok token.Token) *LinearStrategy {
-	s := &LinearStrategy{
-		root: tok,
-	}
-
-	return s
-}
-
 func init() {
-	Register("Linear", func(tok token.Token) Strategy {
-		return NewLinear(tok)
-	})
+	Register("Linear", NewLinear)
 }
 
-func (s *LinearStrategy) getTree(root token.Token, fromChildren bool) []linearLevel {
-	var tree []linearLevel
+func (s *linearStrategy) getTree(root token.Token, fromChildren bool) []linearStrategyLevel {
+	var tree []linearStrategyLevel
 	var queue = linkedlist.New()
 
 	if fromChildren {
@@ -68,7 +55,7 @@ func (s *LinearStrategy) getTree(root token.Token, fromChildren bool) []linearLe
 
 			s.setReduction(t, maxReductions)
 
-			tree = append(tree, linearLevel{
+			tree = append(tree, linearStrategyLevel{
 				token:         t,
 				reduction:     maxReductions,
 				maxReductions: maxReductions,
@@ -89,7 +76,7 @@ func (s *LinearStrategy) getTree(root token.Token, fromChildren bool) []linearLe
 	return tree
 }
 
-func (s *LinearStrategy) setReduction(tok token.ReduceToken, reduction uint) {
+func (s *linearStrategy) setReduction(tok token.ReduceToken, reduction uint) {
 	log.Debugf("set (%p)%#v to reduction %d", tok, tok, reduction)
 
 	if err := tok.Reduce(reduction); err != nil {
@@ -97,14 +84,18 @@ func (s *LinearStrategy) setReduction(tok token.ReduceToken, reduction uint) {
 	}
 }
 
-// Reduce starts the first step of the reduce strategy returning a channel which controls the step flow and a channel for the feedback of the step.
-// The channel returns a value if the step is complete and waits with calculating the next step until a value is put in and feedback is given. The channels are automatically closed when there are no more steps. The error return argument is not nil if an error occurs during the initialization of the reduce strategy.
-func (s *LinearStrategy) Reduce() (chan struct{}, chan<- ReduceFeedbackType, error) {
-	if token.LoopExists(s.root) {
+// NewLinear implements a reduce strategy that reduces the data through a linear search algorithm.
+// Every step of the strategy generates a new valid token graph state. The generation is deterministic. The algorithm starts by deactivating all optional tokens, this includes for example reducing lists to their minimum repetition. Each step uses the feedback to determine which tokens to reactivate next.
+func NewLinear(root token.Token) (chan struct{}, chan<- ReduceFeedbackType, error) {
+	if token.LoopExists(root) {
 		return nil, nil, &Error{
 			Message: "found endless loop in graph. Cannot proceed.",
 			Type:    ErrEndlessLoopDetected,
 		}
+	}
+
+	s := &linearStrategy{
+		root: root,
 	}
 
 	continueReducing := make(chan struct{})
@@ -134,7 +125,7 @@ func (s *LinearStrategy) Reduce() (chan struct{}, chan<- ReduceFeedbackType, err
 	return continueReducing, feedbackReducing, nil
 }
 
-func (s *LinearStrategy) reduce(continueReducing chan struct{}, feedbackReducing <-chan ReduceFeedbackType, tree []linearLevel) bool {
+func (s *linearStrategy) reduce(continueReducing chan struct{}, feedbackReducing <-chan ReduceFeedbackType, tree []linearStrategyLevel) bool {
 	log.Debugf("reducing level %d->%#v", len(tree), tree)
 
 	// we always asume that the initial values are good so we ignore them right away
@@ -183,7 +174,7 @@ func (s *LinearStrategy) reduce(continueReducing chan struct{}, feedbackReducing
 	return true
 }
 
-func (s *LinearStrategy) nextStep(continueReducing chan struct{}, feedbackReducing <-chan ReduceFeedbackType) (bool, ReduceFeedbackType) {
+func (s *linearStrategy) nextStep(continueReducing chan struct{}, feedbackReducing <-chan ReduceFeedbackType) (bool, ReduceFeedbackType) {
 	token.ResetScope(s.root)
 	token.ResetResetTokens(s.root)
 	token.ResetScope(s.root)

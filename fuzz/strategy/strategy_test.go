@@ -17,15 +17,13 @@ type mockStrategy struct {
 	root token.Token
 }
 
-func (s *mockStrategy) Fuzz(r rand.Rand) (chan struct{}, error) {
+func newMockStrategy(root token.Token, r rand.Rand) (chan struct{}, error) {
 	// do nothing
 
 	return nil, nil
 }
 
 func TestStrategy(t *testing.T) {
-	a := primitives.NewConstantInt(123)
-
 	// mock is not registered
 	for _, name := range List() {
 		if name == "mock" {
@@ -33,16 +31,12 @@ func TestStrategy(t *testing.T) {
 		}
 	}
 
-	stat, err := New("mock", a)
-	Nil(t, stat)
+	strat, err := New("mock")
+	Nil(t, strat)
 	NotNil(t, err)
 
 	// register mock
-	Register("mock", func(tok token.Token) Strategy {
-		return &mockStrategy{
-			root: tok,
-		}
-	})
+	Register("mock", newMockStrategy)
 
 	// mock is registered
 	found := false
@@ -55,9 +49,8 @@ func TestStrategy(t *testing.T) {
 	}
 	True(t, found)
 
-	stat, err = New("mock", a)
-	NotNil(t, stat)
-	True(t, Exactly(t, a, stat.(*mockStrategy).root))
+	strat, err = New("mock")
+	NotNil(t, strat)
 	Nil(t, err)
 
 	// register mock a second time
@@ -69,11 +62,7 @@ func TestStrategy(t *testing.T) {
 			}
 		}()
 
-		Register("mock", func(tok token.Token) Strategy {
-			return &mockStrategy{
-				root: tok,
-			}
-		})
+		Register("mock", newMockStrategy)
 	}()
 	True(t, caught)
 
@@ -91,7 +80,7 @@ func TestStrategy(t *testing.T) {
 	True(t, caught)
 }
 
-func testStrategyLoopDetection(t *testing.T, newStrategy func(root token.Token) Strategy) {
+func testStrategyLoopDetection(t *testing.T, newStrategy Strategy) {
 	var tok *token.Token
 	r := test.NewRandTest(1)
 
@@ -105,9 +94,7 @@ func testStrategyLoopDetection(t *testing.T, newStrategy func(root token.Token) 
 			primitives.NewConstantInt(1),
 		)
 
-		s := newStrategy(o)
-
-		ch, err := s.Fuzz(r)
+		ch, err := newStrategy(o, r)
 		NotNil(t, ch)
 		Nil(t, err)
 	}
@@ -121,9 +108,7 @@ func testStrategyLoopDetection(t *testing.T, newStrategy func(root token.Token) 
 		)
 		Nil(t, p.Set(o))
 
-		s := newStrategy(o)
-
-		ch, err := s.Fuzz(r)
+		ch, err := newStrategy(o, r)
 		Nil(t, ch)
 		Equal(t, ErrEndlessLoopDetected, err.(*Error).Type)
 
@@ -134,9 +119,7 @@ func testStrategyLoopDetection(t *testing.T, newStrategy func(root token.Token) 
 		)
 		Nil(t, p.Set(o))
 
-		s = newStrategy(o)
-
-		ch, err = s.Fuzz(r)
+		ch, err = newStrategy(o, r)
 		Nil(t, ch)
 		Equal(t, ErrEndlessLoopDetected, err.(*Error).Type)
 	}
@@ -159,9 +142,7 @@ func testStrategyLoopDetection(t *testing.T, newStrategy func(root token.Token) 
 		)
 		Nil(t, p.Set(o))
 
-		s := newStrategy(o)
-
-		ch, err := s.Fuzz(r)
+		ch, err := newStrategy(o, r)
 		Nil(t, ch)
 		Equal(t, ErrEndlessLoopDetected, err.(*Error).Type)
 	}

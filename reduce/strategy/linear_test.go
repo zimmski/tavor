@@ -15,19 +15,11 @@ import (
 	"github.com/zimmski/tavor/token/primitives"
 )
 
-func TestLinearStrategyToBeStrategy(t *testing.T) {
-	var strat *Strategy
-
-	Implements(t, strat, &LinearStrategy{})
-}
-
 func TestLinearStrategy(t *testing.T) {
 	{
 		root := primitives.NewConstantInt(1)
 
-		o := NewLinear(root)
-
-		contin, _, err := o.Reduce()
+		contin, _, err := NewLinear(root)
 		Nil(t, err)
 
 		_, ok := <-contin
@@ -45,9 +37,7 @@ func TestLinearStrategy(t *testing.T) {
 			c,
 		)
 
-		o := NewLinear(root)
-
-		contin, feedback, err := o.Reduce()
+		contin, feedback, err := NewLinear(root)
 		Nil(t, err)
 
 		_, ok := <-contin
@@ -73,9 +63,7 @@ func TestLinearStrategy(t *testing.T) {
 			c,
 		)
 
-		o := NewLinear(root)
-
-		contin, feedback, err := o.Reduce()
+		contin, feedback, err := NewLinear(root)
 		Nil(t, err)
 
 		_, ok := <-contin
@@ -102,9 +90,7 @@ func TestLinearStrategy(t *testing.T) {
 
 		Equal(t, input, root.String())
 
-		o := NewLinear(root)
-
-		contin, _, err := o.Reduce()
+		contin, _, err := NewLinear(root)
 		Nil(t, err)
 
 		_, ok := <-contin
@@ -195,9 +181,7 @@ func validateTavorLinear(t *testing.T, tok token.Token, input string, feedback f
 
 	Equal(t, input, tok.String(), "Generation 0")
 
-	strat := NewLinear(tok)
-
-	continueFuzzing, feedbackReducing, err := strat.Reduce()
+	continueFuzzing, feedbackReducing, err := NewLinear(tok)
 	if err != nil {
 		panic(err)
 	}
@@ -223,7 +207,5 @@ func validateTavorLinear(t *testing.T, tok token.Token, input string, feedback f
 }
 
 func TestLinearStrategyLoopDetection(t *testing.T) {
-	testStrategyLoopDetection(t, func(root token.Token) Strategy {
-		return NewLinear(root)
-	})
+	testStrategyLoopDetection(t, NewLinear)
 }

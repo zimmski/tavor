@@ -11,19 +11,13 @@ import (
 	"github.com/zimmski/tavor/token/primitives"
 )
 
-type mockStrategy struct {
-	root token.Token
-}
-
-func (s *mockStrategy) Reduce() (chan struct{}, chan<- ReduceFeedbackType, error) {
+func mockStrategy(root token.Token) (chan struct{}, chan<- ReduceFeedbackType, error) {
 	// do nothing
 
 	return nil, nil, nil
 }
 
 func TestStrategy(t *testing.T) {
-	a := primitives.NewConstantInt(123)
-
 	// mock is not registered
 	for _, name := range List() {
 		if name == "mock" {
@@ -31,16 +25,12 @@ func TestStrategy(t *testing.T) {
 		}
 	}
 
-	stat, err := New("mock", a)
+	stat, err := New("mock")
 	Nil(t, stat)
 	NotNil(t, err)
 
 	// register mock
-	Register("mock", func(tok token.Token) Strategy {
-		return &mockStrategy{
-			root: tok,
-		}
-	})
+	Register("mock", mockStrategy)
 
 	// mock is registered
 	found := false
@@ -53,9 +43,8 @@ func TestStrategy(t *testing.T) {
 	}
 	True(t, found)
 
-	stat, err = New("mock", a)
+	stat, err = New("mock")
 	NotNil(t, stat)
-	True(t, Exactly(t, a, stat.(*mockStrategy).root))
 	Nil(t, err)
 
 	// register mock a second time
@@ -67,11 +56,7 @@ func TestStrategy(t *testing.T) {
 			}
 		}()
 
-		Register("mock", func(tok token.Token) Strategy {
-			return &mockStrategy{
-				root: tok,
-			}
-		})
+		Register("mock", mockStrategy)
 	}()
 	True(t, caught)
 
@@ -89,7 +74,7 @@ func TestStrategy(t *testing.T) {
 	True(t, caught)
 }
 
-func testStrategyLoopDetection(t *testing.T, newStrategy func(root token.Token) Strategy) {
+func testStrategyLoopDetection(t *testing.T, newStrategy Strategy) {
 	var tok *token.Token
 
 	{
@@ -102,9 +87,7 @@ func testStrategyLoopDetection(t *testing.T, newStrategy func(root token.Token) 
 			primitives.NewConstantInt(1),
 		)
 
-		s := newStrategy(o)
-
-		contin, feedback, err := s.Reduce()
+		contin, feedback, err := newStrategy(o)
 		NotNil(t, contin)
 		NotNil(t, feedback)
 		Nil(t, err)
@@ -119,9 +102,7 @@ func testStrategyLoopDetection(t *testing.T, newStrategy func(root token.Token) 
 		)
 		Nil(t, p.Set(o))
 
-		s := newStrategy(o)
-
-		contin, feedback, err := s.Reduce()
+		contin, feedback, err := newStrategy(o)
 		Nil(t, contin)
 		Nil(t, feedback)
 		Equal(t, ErrEndlessLoopDetected, err.(*Error).Type)
@@ -133,9 +114,7 @@ func testStrategyLoopDetection(t *testing.T, newStrategy func(root token.Token) 
 		)
 		Nil(t, p.Set(o))
 
-		s = newStrategy(o)
-
-		contin, feedback, err = s.Reduce()
+		contin, feedback, err = newStrategy(o)
 		Nil(t, contin)
 		Nil(t, feedback)
 		Equal(t, ErrEndlessLoopDetected, err.(*Error).Type)
@@ -159,9 +138,7 @@ func testStrategyLoopDetection(t *testing.T, newStrategy func(root token.Token) 
 		)
 		Nil(t, p.Set(o))
 
-		s := newStrategy(o)
-
-		contin, feedback, err := s.Reduce()
+		contin, feedback, err := newStrategy(o)
 		Nil(t, contin)
 		Nil(t, feedback)
 		Equal(t, ErrEndlessLoopDetected, err.(*Error).Type)

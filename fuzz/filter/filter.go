@@ -10,13 +10,10 @@ import (
 )
 
 // Filter defines a fuzzing filter
-type Filter interface {
-	// Apply applies the fuzzing filter onto the token and returns a replacement token, or nil if there is no replacement.
-	// If a fatal error is encountered the error return argument is not nil.
-	Apply(tok token.Token) (token.Token, error)
-}
+// The function applies the fuzzing filter onto the token and returns a replacement token, or nil if there is no replacement. If a fatal error is encountered the error return argument is not nil.
+type Filter func(tok token.Token) (token.Token, error)
 
-var filterLookup = make(map[string]func() Filter)
+var filterLookup = make(map[string]Filter)
 
 // New returns a new fuzzing filter instance given the registered name of the filter.
 // The error return argument is not nil, if the name does not exist in the registered fuzzing filter list.
@@ -26,7 +23,7 @@ func New(name string) (Filter, error) {
 		return nil, fmt.Errorf("unknown fuzzing filter %q", name)
 	}
 
-	return filt(), nil
+	return filt, nil
 }
 
 // List returns a list of all registered fuzzing filter names.
@@ -43,7 +40,7 @@ func List() []string {
 }
 
 // Register registers a fuzzing filter instance function with the given name.
-func Register(name string, filt func() Filter) {
+func Register(name string, filt Filter) {
 	if filt == nil {
 		panic("register fuzzing filter is nil")
 	}
@@ -83,7 +80,7 @@ func ApplyFilters(filters []Filter, root token.Token) (token.Token, error) {
 		if _, ok := known[tok]; !ok {
 			// apply filters
 			for i := range filters {
-				replacement, err := filters[i].Apply(tok)
+				replacement, err := filters[i](tok)
 				if err != nil {
 					return nil, fmt.Errorf("error in fuzzing filter %v: %s", filters[i], err)
 				}

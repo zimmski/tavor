@@ -10,12 +10,10 @@ import (
 	"github.com/zimmski/tavor/token/primitives"
 )
 
-type mockSeeFilter struct {
-	Seen map[token.Token]struct{}
-}
+var mockSeeFilter = make(map[token.Token]struct{})
 
-func (f *mockSeeFilter) Apply(tok token.Token) (token.Token, error) {
-	f.Seen[tok] = struct{}{}
+func NewMockSeeFilter(tok token.Token) (token.Token, error) {
+	mockSeeFilter[tok] = struct{}{}
 
 	return nil, nil
 }
@@ -35,11 +33,8 @@ func TestStrategySeen(t *testing.T) {
 		rep,
 	)
 
-	see := &mockSeeFilter{
-		Seen: make(map[token.Token]struct{}),
-	}
 	filters := []Filter{
-		see,
+		NewMockSeeFilter,
 	}
 
 	rootNew, err := ApplyFilters(filters, root)
@@ -47,12 +42,12 @@ func TestStrategySeen(t *testing.T) {
 	Nil(t, err)
 
 	keyExists := func(key token.Token) bool {
-		_, ok := see.Seen[key]
+		_, ok := mockSeeFilter[key]
 
 		return ok
 	}
 
-	Equal(t, 7, len(see.Seen))
+	Equal(t, 7, len(mockSeeFilter))
 	True(t, keyExists(root))
 	True(t, keyExists(one))
 	True(t, keyExists(c1))
@@ -62,21 +57,19 @@ func TestStrategySeen(t *testing.T) {
 	True(t, keyExists(c2))
 }
 
-type mockReplaceFilter struct {
-	stringSuffix string
-}
+func NewMockReplaceFilter(suffix string) Filter {
+	return func(tok token.Token) (token.Token, error) {
+		if t, ok := tok.(*primitives.ConstantString); ok {
+			return primitives.NewConstantString(t.String() + suffix), nil
+		}
 
-func (f *mockReplaceFilter) Apply(tok token.Token) (token.Token, error) {
-	if t, ok := tok.(*primitives.ConstantString); ok {
-		return primitives.NewConstantString(t.String() + f.stringSuffix), nil
+		return nil, nil
 	}
-
-	return nil, nil
 }
 
 func TestStrategyReplaces(t *testing.T) {
 	filters := []Filter{
-		&mockReplaceFilter{"b"},
+		NewMockReplaceFilter("b"),
 	}
 
 	// root replace
@@ -110,8 +103,8 @@ func TestStrategyReplaces(t *testing.T) {
 	// double the replace: only the first filter should be applied
 	{
 		filters2 := []Filter{
-			&mockReplaceFilter{"b"},
-			&mockReplaceFilter{"c"},
+			NewMockReplaceFilter("b"),
+			NewMockReplaceFilter("c"),
 		}
 		root := primitives.NewConstantString("a")
 

@@ -9,26 +9,18 @@ import (
 	"github.com/zimmski/tavor/token/primitives"
 )
 
-func TestNewPositiveBoundaryValueAnalysisFilterToBeFilter(t *testing.T) {
-	var filt *Filter
-
-	Implements(t, filt, &PositiveBoundaryValueAnalysisFilter{})
-}
-
 func TestNewPositiveBoundaryValueAnalysisFilter(t *testing.T) {
-	f := NewPositiveBoundaryValueAnalysisFilter()
-
 	// single value range
 	{
 		root := primitives.NewRangeInt(10, 10)
-		replacements, err := f.Apply(root)
+		replacements, err := NewPositiveBoundaryValueAnalysis(root)
 		Nil(t, err)
 		Equal(t, replacements, primitives.NewConstantInt(10))
 	}
 	// two value range
 	{
 		root := primitives.NewRangeInt(10, 11)
-		replacements, err := f.Apply(root)
+		replacements, err := NewPositiveBoundaryValueAnalysis(root)
 		Nil(t, err)
 		Equal(t, replacements, lists.NewOne(
 			primitives.NewConstantInt(10),
@@ -38,7 +30,7 @@ func TestNewPositiveBoundaryValueAnalysisFilter(t *testing.T) {
 	// three value range
 	{
 		root := primitives.NewRangeInt(10, 12)
-		replacements, err := f.Apply(root)
+		replacements, err := NewPositiveBoundaryValueAnalysis(root)
 		Nil(t, err)
 		Equal(t, replacements, lists.NewOne(
 			primitives.NewConstantInt(10),
@@ -49,7 +41,7 @@ func TestNewPositiveBoundaryValueAnalysisFilter(t *testing.T) {
 	// four value range
 	{
 		root := primitives.NewRangeInt(10, 13)
-		replacements, err := f.Apply(root)
+		replacements, err := NewPositiveBoundaryValueAnalysis(root)
 		Nil(t, err)
 		Equal(t, replacements, lists.NewOne(
 			primitives.NewConstantInt(10),
@@ -60,7 +52,7 @@ func TestNewPositiveBoundaryValueAnalysisFilter(t *testing.T) {
 	// five value range
 	{
 		root := primitives.NewRangeInt(10, 14)
-		replacements, err := f.Apply(root)
+		replacements, err := NewPositiveBoundaryValueAnalysis(root)
 		Nil(t, err)
 		Equal(t, replacements, lists.NewOne(
 			primitives.NewConstantInt(10),
@@ -71,7 +63,7 @@ func TestNewPositiveBoundaryValueAnalysisFilter(t *testing.T) {
 	// negative range
 	{
 		root := primitives.NewRangeInt(-14, -10)
-		replacements, err := f.Apply(root)
+		replacements, err := NewPositiveBoundaryValueAnalysis(root)
 		Nil(t, err)
 		Equal(t, replacements, lists.NewOne(
 			primitives.NewConstantInt(-14),
@@ -82,7 +74,7 @@ func TestNewPositiveBoundaryValueAnalysisFilter(t *testing.T) {
 	// negative to positive range
 	{
 		root := primitives.NewRangeInt(-5, 10)
-		replacements, err := f.Apply(root)
+		replacements, err := NewPositiveBoundaryValueAnalysis(root)
 		Nil(t, err)
 		Equal(t, replacements, lists.NewOne(
 			primitives.NewConstantInt(-5),
@@ -95,7 +87,7 @@ func TestNewPositiveBoundaryValueAnalysisFilter(t *testing.T) {
 	// three value CharacterClass
 	{
 		root := primitives.NewCharacterClass("a-z")
-		replacements, err := f.Apply(root)
+		replacements, err := NewPositiveBoundaryValueAnalysis(root)
 		Nil(t, err)
 		Equal(t, replacements, lists.NewOne(
 			primitives.NewConstantString("a"),

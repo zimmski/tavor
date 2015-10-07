@@ -8,21 +8,14 @@ import (
 
 	"github.com/zimmski/tavor/parser"
 	"github.com/zimmski/tavor/test"
-	"github.com/zimmski/tavor/token"
 	"github.com/zimmski/tavor/token/constraints"
 	"github.com/zimmski/tavor/token/lists"
 	"github.com/zimmski/tavor/token/primitives"
 	"github.com/zimmski/tavor/token/sequences"
 )
 
-func TestAlmostAllPermutationsStrategyToBeStrategy(t *testing.T) {
-	var strat *Strategy
-
-	Implements(t, strat, &AlmostAllPermutationsStrategy{})
-}
-
 func TestAlmostAllPermutationsStrategygetLevel(t *testing.T) {
-	o := NewAlmostAllPermutationsStrategy(nil)
+	o := newAlmostAllPermutations(nil)
 
 	{
 		a := primitives.NewConstantInt(1)
@@ -68,9 +61,7 @@ func TestAlmostAllPermutationsStrategy(t *testing.T) {
 	{
 		a := primitives.NewConstantInt(1)
 
-		o := NewAlmostAllPermutationsStrategy(a)
-
-		ch, err := o.Fuzz(r)
+		ch, err := NewAlmostAllPermutations(a, r)
 		Nil(t, err)
 
 		_, ok := <-ch
@@ -84,9 +75,7 @@ func TestAlmostAllPermutationsStrategy(t *testing.T) {
 	{
 		a := constraints.NewOptional(primitives.NewConstantInt(1))
 
-		o := NewAlmostAllPermutationsStrategy(a)
-
-		ch, err := o.Fuzz(r)
+		ch, err := NewAlmostAllPermutations(a, r)
 		Nil(t, err)
 
 		var got []string
@@ -109,9 +98,7 @@ func TestAlmostAllPermutationsStrategy(t *testing.T) {
 			primitives.NewConstantInt(3),
 		)
 
-		o := NewAlmostAllPermutationsStrategy(a)
-
-		ch, err := o.Fuzz(r)
+		ch, err := NewAlmostAllPermutations(a, r)
 		Nil(t, err)
 
 		var got []string
@@ -134,9 +121,7 @@ func TestAlmostAllPermutationsStrategy(t *testing.T) {
 		c := constraints.NewOptional(primitives.NewConstantInt(3))
 		abc := lists.NewAll(a, b, c)
 
-		o := NewAlmostAllPermutationsStrategy(abc)
-
-		ch, err := o.Fuzz(r)
+		ch, err := NewAlmostAllPermutations(abc, r)
 		Nil(t, err)
 
 		var got []string
@@ -170,9 +155,7 @@ func TestAlmostAllPermutationsStrategy(t *testing.T) {
 			primitives.NewConstantInt(4),
 		)
 
-		o := NewAlmostAllPermutationsStrategy(abc)
-
-		ch, err := o.Fuzz(r)
+		ch, err := NewAlmostAllPermutations(abc, r)
 		Nil(t, err)
 
 		var got []string
@@ -195,9 +178,7 @@ func TestAlmostAllPermutationsStrategy(t *testing.T) {
 		c := constraints.NewOptional(primitives.NewConstantInt(3))
 		d := lists.NewAll(a, b, c)
 
-		o := NewAlmostAllPermutationsStrategy(d)
-
-		ch, err := o.Fuzz(r)
+		ch, err := NewAlmostAllPermutations(d, r)
 		Nil(t, err)
 
 		_, ok := <-ch
@@ -224,7 +205,7 @@ func TestAlmostAllPermutationsStrategy(t *testing.T) {
 		False(t, ok)
 
 		// rerun
-		ch, err = o.Fuzz(r)
+		ch, err = NewAlmostAllPermutations(d, r)
 		Nil(t, err)
 
 		_, ok = <-ch
@@ -236,7 +217,7 @@ func TestAlmostAllPermutationsStrategy(t *testing.T) {
 		// run with range
 		var got []string
 
-		ch, err = o.Fuzz(r)
+		ch, err = NewAlmostAllPermutations(d, r)
 		Nil(t, err)
 		for i := range ch {
 			got = append(got, d.String())
@@ -259,11 +240,9 @@ func TestAlmostAllPermutationsStrategy(t *testing.T) {
 		c := lists.NewAll(a, b, primitives.NewConstantString("c"))
 		d := constraints.NewOptional(c)
 
-		o := NewAlmostAllPermutationsStrategy(d)
-
 		var got []string
 
-		ch, err := o.Fuzz(r)
+		ch, err := NewAlmostAllPermutations(d, r)
 		Nil(t, err)
 		for i := range ch {
 			got = append(got, d.String())
@@ -292,11 +271,9 @@ func TestAlmostAllPermutationsStrategy(t *testing.T) {
 		)
 		b := lists.NewRepeat(a, 0, 2)
 
-		o := NewAlmostAllPermutationsStrategy(b)
-
 		var got []string
 
-		ch, err := o.Fuzz(r)
+		ch, err := NewAlmostAllPermutations(b, r)
 		Nil(t, err)
 		for i := range ch {
 			got = append(got, b.String())
@@ -334,11 +311,9 @@ func TestAlmostAllPermutationsStrategy(t *testing.T) {
 		)
 		b := lists.NewRepeat(a, 0, 1)
 
-		o := NewAlmostAllPermutationsStrategy(b)
-
 		var got []string
 
-		ch, err := o.Fuzz(r)
+		ch, err := NewAlmostAllPermutations(b, r)
 		Nil(t, err)
 		for i := range ch {
 			got = append(got, b.String())
@@ -371,11 +346,9 @@ func TestAlmostAllPermutationsStrategy(t *testing.T) {
 		`))
 		Nil(t, err)
 
-		s := NewAlmostAllPermutationsStrategy(o)
-
 		var got []string
 
-		ch, err := s.Fuzz(r)
+		ch, err := NewAlmostAllPermutations(o, r)
 		Nil(t, err)
 		for i := range ch {
 			got = append(got, o.String())
@@ -418,11 +391,9 @@ func TestAlmostAllPermutationsStrategy(t *testing.T) {
 		`))
 		Nil(t, err)
 
-		s := NewAlmostAllPermutationsStrategy(o)
-
 		var got []string
 
-		ch, err := s.Fuzz(r)
+		ch, err := NewAlmostAllPermutations(o, r)
 		Nil(t, err)
 		for i := range ch {
 			got = append(got, o.String())
@@ -450,11 +421,9 @@ func TestAlmostAllPermutationsStrategy(t *testing.T) {
 		`))
 		Nil(t, err)
 
-		s := NewAlmostAllPermutationsStrategy(o)
-
 		var got []string
 
-		ch, err := s.Fuzz(r)
+		ch, err := NewAlmostAllPermutations(o, r)
 		Nil(t, err)
 		for i := range ch {
 			got = append(got, o.String())
@@ -476,11 +445,9 @@ func TestAlmostAllPermutationsStrategy(t *testing.T) {
 		`))
 		Nil(t, err)
 
-		s := NewAlmostAllPermutationsStrategy(o)
-
 		var got []string
 
-		ch, err := s.Fuzz(r)
+		ch, err := NewAlmostAllPermutations(o, r)
 		Nil(t, err)
 		for i := range ch {
 			got = append(got, o.String())
@@ -501,11 +468,9 @@ func TestAlmostAllPermutationsStrategy(t *testing.T) {
 		`))
 		Nil(t, err)
 
-		s := NewAlmostAllPermutationsStrategy(o)
-
 		var got []string
 
-		ch, err := s.Fuzz(r)
+		ch, err := NewAlmostAllPermutations(o, r)
 		Nil(t, err)
 		for i := range ch {
 			got = append(got, o.String())
@@ -550,11 +515,9 @@ func validateTavorAlmostAllPermutations(t *testing.T, format string, expect []st
 	o, err := parser.ParseTavor(strings.NewReader(format))
 	Nil(t, err)
 
-	s := NewAlmostAllPermutationsStrategy(o)
-
 	var got []string
 
-	ch, err := s.Fuzz(r)
+	ch, err := NewAlmostAllPermutations(o, r)
 	Nil(t, err)
 	for i := range ch {
 		got = append(got, o.String())
@@ -566,7 +529,5 @@ func validateTavorAlmostAllPermutations(t *testing.T, format string, expect []st
 }
 
 func TestAlmostAllPermutationsStrategyLoopDetection(t *testing.T) {
-	testStrategyLoopDetection(t, func(root token.Token) Strategy {
-		return NewAlmostAllPermutationsStrategy(root)
-	})
+	testStrategyLoopDetection(t, NewAlmostAllPermutations)
 }

@@ -28,24 +28,21 @@ func (err *Error) Error() string {
 	return err.Message
 }
 
-// Strategy defines a fuzzing strategy
-type Strategy interface {
-	// Fuzz starts the first iteration of the fuzzing strategy returning a channel which controls the iteration flow.
-	// The channel returns a value if the iteration is complete and waits with calculating the next iteration until a value is put in. The channel is automatically closed when there are no more iterations. The error return argument is not nil if an error occurs during the setup of the fuzzing strategy.
-	Fuzz(r rand.Rand) (chan struct{}, error)
-}
+// Strategy defines a fuzzing strategy.
+// The function starts the first iteration of the fuzzing strategy returning a channel which controls the iteration flow. The channel returns a value if the iteration is complete and waits with calculating the next iteration until a value is put in. The channel is automatically closed when there are no more iterations. The error return argument is not nil if an error occurs during the setup of the fuzzing strategy.
+type Strategy func(root token.Token, r rand.Rand) (chan struct{}, error)
 
-var strategyLookup = make(map[string]func(tok token.Token) Strategy)
+var strategyLookup = make(map[string]Strategy)
 
 // New returns a new fuzzing strategy instance given the registered name of the strategy.
 // The error return argument is not nil, if the name does not exist in the registered fuzzing strategy list.
-func New(name string, tok token.Token) (Strategy, error) {
+func New(name string) (Strategy, error) {
 	strat, ok := strategyLookup[name]
 	if !ok {
 		return nil, fmt.Errorf("unknown fuzzing strategy %q", name)
 	}
 
-	return strat(tok), nil
+	return strat, nil
 }
 
 // List returns a list of all registered fuzzing strategy names.
@@ -62,7 +59,7 @@ func List() []string {
 }
 
 // Register registers a fuzzing strategy instance function with the given name.
-func Register(name string, strat func(tok token.Token) Strategy) {
+func Register(name string, strat Strategy) {
 	if strat == nil {
 		panic("register fuzzing strategy is nil")
 	}

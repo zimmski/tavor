@@ -8,22 +8,13 @@ import (
 
 	"github.com/zimmski/tavor/parser"
 	"github.com/zimmski/tavor/test"
-	"github.com/zimmski/tavor/token"
 	"github.com/zimmski/tavor/token/constraints"
 	"github.com/zimmski/tavor/token/lists"
 	"github.com/zimmski/tavor/token/primitives"
 )
 
-func TestRandomStrategyToBeStrategy(t *testing.T) {
-	var strat *Strategy
-
-	Implements(t, strat, &RandomStrategy{})
-}
-
 func TestRandomStrategyNilRandomGenerator(t *testing.T) {
-	r := &RandomStrategy{}
-
-	ch, err := r.Fuzz(nil)
+	ch, err := NewRandom(nil, nil)
 	Nil(t, ch)
 	Equal(t, ErrNilRandomGenerator, err.(*Error).Type)
 }
@@ -36,13 +27,9 @@ func TestRandomStrategy(t *testing.T) {
 		lists.NewAll(a, b),
 	)
 
-	o, err := New("random", c)
-	NotNil(t, o)
-	Nil(t, err)
-
 	r := test.NewRandTest(1)
 
-	ch, err := o.Fuzz(r)
+	ch, err := NewRandom(c, r)
 	Nil(t, err)
 
 	_, ok := <-ch
@@ -60,7 +47,7 @@ func TestRandomStrategy(t *testing.T) {
 	// rerun
 	r.Seed(0)
 
-	ch, err = o.Fuzz(r)
+	ch, err = NewRandom(c, r)
 	Nil(t, err)
 
 	_, ok = <-ch
@@ -75,7 +62,7 @@ func TestRandomStrategy(t *testing.T) {
 	// run with range
 	r.Seed(1)
 
-	ch, err = o.Fuzz(r)
+	ch, err = NewRandom(c, r)
 	Nil(t, err)
 	for i := range ch {
 		Equal(t, "67", c.String())
@@ -97,15 +84,11 @@ func TestRandomStrategyCases(t *testing.T) {
 		`))
 		Nil(t, err)
 
-		o, err := New("random", root)
-		NotNil(t, o)
-		Nil(t, err)
-
 		// run
 		{
 			r.Seed(0)
 
-			ch, err := o.Fuzz(r)
+			ch, err := NewRandom(root, r)
 			Nil(t, err)
 
 			_, ok := <-ch
@@ -123,7 +106,7 @@ func TestRandomStrategyCases(t *testing.T) {
 		{
 			r.Seed(1)
 
-			ch, err := o.Fuzz(r)
+			ch, err := NewRandom(root, r)
 			Nil(t, err)
 
 			_, ok := <-ch
@@ -159,13 +142,9 @@ func validateTavorRandom(t *testing.T, seed int, format string, expect []string)
 	root, err := parser.ParseTavor(strings.NewReader(format))
 	Nil(t, err)
 
-	o, err := New("random", root)
-	NotNil(t, o)
-	Nil(t, err)
-
 	r := test.NewRandTest(int64(seed))
 
-	ch, err := o.Fuzz(r)
+	ch, err := NewRandom(root, r)
 	Nil(t, err)
 
 	_, ok := <-ch
@@ -183,7 +162,5 @@ func validateTavorRandom(t *testing.T, seed int, format string, expect []string)
 }
 
 func TestRandomStrategyLoopDetection(t *testing.T) {
-	testStrategyLoopDetection(t, func(root token.Token) Strategy {
-		return NewRandomStrategy(root)
-	})
+	testStrategyLoopDetection(t, NewRandom)
 }

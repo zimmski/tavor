@@ -599,11 +599,11 @@ More information regarding tokens can be found in the [extending section](#exten
 
 ### <a name="develop-fuzzing-filters"></a>Fuzzing filters [![GoDoc](https://godoc.org/github.com/zimmski/tavor?status.png)](https://godoc.org/github.com/zimmski/tavor/fuzz/filter)
 
-All officially implemented fuzzing filters can be found in the [github.com/zimmski/tavor/fuzz/filter package](https://godoc.org/github.com/zimmski/tavor/fuzz/filter). Each filter has a `New*` function which can be used to instantiate a new instance of the filter with sane default values. Additionally all filters have to implement the [Filter interface](https://godoc.org/github.com/zimmski/tavor/fuzz/filter#Filter) which specifies an `Apply` method that applies the filter onto one given token. However, the common case is to use the `ApplyFilters` function which applies one or more filters onto a whole token structure. It also handles loops in the structure and the replacement of tokens.
+All officially implemented fuzzing filters can be found in the [github.com/zimmski/tavor/fuzz/filter package](https://godoc.org/github.com/zimmski/tavor/fuzz/filter). Each filter has a `New*` function which can be used to instantiate a new instance of the filter with sane default values. Additionally all filters have to implement the [Filter interface](https://godoc.org/github.com/zimmski/tavor/fuzz/filter#Filter) which specifies a generic function that applies the filter onto one given token. However, the common case is to use the `ApplyFilters` function which applies one or more filters onto a whole token structure. It also handles loops in the structure and the replacement of tokens.
 
 ```go
 var filters = []filter.Filter{
-	filter.NewPositiveBoundaryValueAnalysisFilter(),
+	filter.NewPositiveBoundaryValueAnalysis,
 }
 
 tok, err := filter.ApplyFilters(filters, tok)
@@ -620,33 +620,31 @@ All officially implemented fuzzing strategies can be found in the [github.com/zi
 
 ```go
 import (
-	"fmt"
+  "fmt"
 
-	"github.com/zimmski/tavor/fuzz/strategy"
-	"github.com/zimmski/tavor/token"
-	"github.com/zimmski/tavor/token/lists"
-	"github.com/zimmski/tavor/token/primitives"
+  "github.com/zimmski/tavor/fuzz/strategy"
+  "github.com/zimmski/tavor/token"
+  "github.com/zimmski/tavor/token/lists"
+  "github.com/zimmski/tavor/token/primitives"
 )
 
 func main() {
-	var tok token.Token = lists.NewOnce(
-		primitives.NewConstantInt(1),
-		primitives.NewConstantInt(2),
-		primitives.NewConstantInt(3),
-	)
+  var tok token.Token = lists.NewOnce(
+    primitives.NewConstantInt(1),
+    primitives.NewConstantInt(2),
+    primitives.NewConstantInt(3),
+  )
 
-	strat := strategy.NewAllPermutationsStrategy(tok)
+  continueFuzzing, err := strategy.NewAllPermutations(tok, nil)
+  if err != nil {
+    panic(err)
+  }
 
-	continueFuzzing, err := strat.Fuzz(nil)
-	if err != nil {
-		panic(err)
-	}
+  for i := range continueFuzzing {
+    fmt.Println(tok.String())
 
-	for i := range continueFuzzing {
-		fmt.Println(tok.String())
-
-		continueFuzzing <- i
-	}
+    continueFuzzing <- i
+  }
 }
 ```
 
@@ -677,31 +675,30 @@ import (
 )
 
 func main() {
-	tok := lists.NewRepeat(primitives.NewConstantString("a"), 0, 100)
-	tok.Permutation(19)
+  tok := lists.NewRepeat(primitives.NewConstantString("a"), 0, 100)
+  tok.Permutation(19)
 
-	fmt.Println(tok.String())
+  fmt.Println(tok.String())
 
-	strat := strategy.NewLinear(tok)
+  continueFuzzing, feedbackReducing, err := strategy.NewLinear(tok)
+  if err != nil {
+    panic(err)
+  }
 
-	continueFuzzing, feedbackReducing, err := strat.Reduce()
-	if err != nil {
-		panic(err)
-	}
+  for i := range continueFuzzing {
+    out := tok.String()
 
-	for i := range continueFuzzing {
-		out := tok.String()
+    fmt.Println(out)
 
-		fmt.Println(out)
+    if len(out) == 5 {
+      feedbackReducing <- strategy.Good
+    } else {
+      feedbackReducing <- strategy.Bad
+    }
 
-		if len(out) == 5 {
-			feedbackReducing <- strategy.Good
-		} else {
-			feedbackReducing <- strategy.Bad
-		}
-
-		continueFuzzing <- i
-	}
+    continueFuzzing <- i
+  }
+}
 }
 ```
 
@@ -713,7 +710,7 @@ If the [Tavor format](#format) and the [implemented functionality of the framewo
 
 Since implementing new extensions and doing changes is trickier than using the existing framework, it is advisable to read the code documentation, which can be found in a nice representation on [https://godoc.org/github.com/zimmski/tavor/](https://godoc.org/github.com/zimmski/tavor/), and of course the actual code.
 
-Code for the Tavor framework has to be deterministic. This means that no functionality is allowed to have its own source or seed of randomness. Methods of interfaces that define a random generator have to be implemented deterministically so that the same random seed will always result in the same result. This also applies to manually written tests and code who is concurrent.
+Code for the Tavor framework has to be deterministic. This means that no functionality is allowed to have its own source or seed of randomness. Methods of interfaces that define a random generator have to be implemented deterministically so that the same random seed will always result in the same result. This also applies to manually written tests and code that is concurrent.
 
 If you are aiming to get your extensions and changes offically incorporated into the Tavor framework, please **first** [create an issue](https://github.com/zimmski/tavor/issues/new) in the issue tracker and discuss your implementation goals and plans with an outline. Note that every feature and change has to be tested with handwritten tests, so please include a test plan in your outline too.
 
@@ -723,7 +720,7 @@ If extending Tavor yourself is not for you, but you still need new features, you
 
 The fuzzing filter code and all officially implemented fuzzing filters can be found in the [github.com/zimmski/tavor/fuzz/filter package](/fuzz/filter) and its sub-packages.
 
-A fuzzing filter has to implement the `Filter` interface which is exported by the [github.com/zimmski/tavor/fuzz/filter package](/fuzz/filter). The interface defines the `Apply` method that applies the filter onto a token which is passed to the method. Therefore, the method's concern is only one token at a time. If an error is encountered during the filter execution, the error return argument is not nil. On success a replacement for the token is returned. If this replacement is not `nil`, it will replace the original token.
+A fuzzing filter has to implement the `Filter` interface which is exported by the [github.com/zimmski/tavor/fuzz/filter package](/fuzz/filter). The interface defines a function signature that applies the filter onto a token which is passed to the function. Therefore, the function's concern is only one token at a time. If an error is encountered during the filter execution, the error return argument is not nil. On success a replacement for the token is returned. If this replacement is not `nil`, it will replace the original token.
 
 Applying a filter can be done manually or using the `ApplyFilters` function exported by the [github.com/zimmski/tavor/fuzz/filter package](/fuzz/filter). `ApplyFilters` applies more than one filter, correctly traverses the graph, handles errors of filters and does not apply filters onto filter generated tokens. The last property is needed to avoid filter loops e.g. when two filter generate new tokens which trigger the generation of the other filter.
 
@@ -739,21 +736,13 @@ import (
 	"github.com/zimmski/tavor/token/primitives"
 )
 
-type SampleFilter struct{}
-
-func NewSampleFilter() *SampleFilter {
-	return &SampleFilter{}
-}
-
-func (f *SampleFilter) Apply(tok token.Token) ([]token.Token, error) {
+func NewSampleFilter(tok token.Token) (token.Token, error) {
 	c, ok := tok.(*primitives.ConstantString)
 	if !ok || c.String() != "old" {
 		return nil, nil
 	}
 
-	return []token.Token{
-		primitives.NewConstantString("new"),
-	}, nil
+	return primitives.NewConstantString("new"), nil
 }
 ```
 
@@ -777,7 +766,7 @@ func main() {
 	)
 
 	var filters = []filter.Filter{
-		NewSampleFilter(),
+		NewSampleFilter,
 	}
 
 	doc, err := filter.ApplyFilters(filters, doc)
@@ -797,9 +786,7 @@ import (
 )
 
 func init() {
-	filter.Register("SampleFilter", func() filter.Filter {
-		return NewSampleFilter()
-	})
+	filter.Register("SampleFilter", NewSampleFilter)
 }
 ```
 
@@ -809,7 +796,7 @@ The fuzzing strategy code and all officially implemented fuzzing strategies can 
 
 Each fuzzing strategy instance has to be associated on construction with exactly one token. This allows an instance to hold a dedicated state of the given token graph, which makes optimizations for multiple fuzzing operations possible.
 
-A fuzzing strategy has to implement the `Strategy` interface which is exported by the [github.com/zimmski/tavor/fuzz/strategy package](/fuzz/strategy). The interface defines the `Fuzz` method which starts the first iteration of the fuzzing strategy in a new goroutine and returns a channel which controls the fuzzing process. If an error is encountered during the initialization, the error return argument is not nil. On success a value is returned by the channel which marks the completion of the iteration. A value has to be put back in, to initiate the calculation of the next fuzzing iteration. This passing of values is needed to avoid data races within the token graph. The channel must be closed when there are no more iterations or the strategy caller wants to end the fuzzing process. Note that this can also occur right after receiving the channel. Hence when there are no iterations at all. Since the `Fuzz` method is running in its own goroutine, it can be implemented statefully without using savepoints.
+A fuzzing strategy has to implement the `Strategy` interface which is exported by the [github.com/zimmski/tavor/fuzz/strategy package](/fuzz/strategy). The interface defines a function which starts the first iteration of the fuzzing strategy in a new goroutine and returns a channel which controls the fuzzing process. If an error is encountered during the initialization, the error return argument is not nil. On success a value is returned by the channel which marks the completion of the iteration. A value has to be put back in, to initiate the calculation of the next fuzzing iteration. This passing of values is needed to avoid data races within the token graph. The channel must be closed when there are no more iterations or the strategy caller wants to end the fuzzing process. Note that this can also occur right after receiving the channel. Hence when there are no iterations at all. Since the function is running in its own goroutine, it can be implemented statefully without using savepoints.
 
 The `Register` function of the [github.com/zimmski/tavor/fuzz/strategy package](/fuzz/strategy) allows to register strategies based on an identifier which can be then used within the framework. The function `New` of the [github.com/zimmski/tavor/fuzz/strategy package](/fuzz/strategy) allows to generate a new instance of the registered strategy given the identifier. For example, this is needed for the Tavor binary, which can execute a specific strategy defined by a CLI argument.
 
@@ -826,24 +813,14 @@ import (
 	"github.com/zimmski/tavor/token/primitives"
 )
 
-type SampleStrategy struct {
-	root token.Token
-}
-
-func NewSampleStrategy(tok token.Token) *SampleStrategy {
-	return &SampleStrategy{
-		root: tok,
-	}
-}
-
-func (s *SampleStrategy) Fuzz(r rand.Rand) (chan struct{}, error) {
+func NewSampleStrategy(root token.Token, r rand.Rand) (chan struct{}, error) {
 	continueFuzzing := make(chan struct{})
 
 	go func() {
 		for {
 			found := false
 
-			err := token.Walk(s.root, func(tok token.Token) error {
+			err := token.Walk(root, func(tok token.Token) error {
 				intTok, ok := tok.(*primitives.ConstantInt)
 				if !ok {
 					return nil
@@ -884,7 +861,7 @@ func (s *SampleStrategy) Fuzz(r rand.Rand) (chan struct{}, error) {
 }
 ```
 
-One way to execute this strategy is by using the following code. Note that the implemented strategy does not need a random generator. The argument for the `Fuzz` method can be therefore just `nil`.
+One way to execute this strategy is by using the following code. Note that the implemented strategy does not need a random generator. The argument for the function can be therefore just `nil`.
 
 ```go
 import (
@@ -902,9 +879,7 @@ func main() {
 		primitives.NewConstantInt(9),
 	)
 
-	strat := NewSampleStrategy(doc)
-
-	continueFuzzing, err := strat.Fuzz(nil)
+	continueFuzzing, err := NewSampleStrategy(doc, nil)
 	if err != nil {
 		panic(err)
 	}
@@ -935,9 +910,7 @@ import (
 )
 
 func init() {
-	strategy.Register("SampleStrategy", func(tok token.Token) strategy.Strategy {
-		return NewSampleStrategy(tok)
-	})
+	strategy.Register("SampleStrategy", NewSampleStrategy)
 }
 ```
 
@@ -947,7 +920,7 @@ The reduce strategy code and all officially implemented reduce strategies can be
 
 Each reduce strategy instance has to be associated on construction with exactly one token. This allows an instance to hold a dedicated state of the given token graph, which makes optimizations for multiple reduce operations possible.
 
-A reduce strategy has to implement the `Strategy` interface which is exported by the [github.com/zimmski/tavor/reduce/strategy package](/reduce/strategy). The interface defines the `Reduce` method which starts the first step of the reduce strategy in a new goroutine and returns two channels to control the reduce process. If an error is encountered during the initialization, the error return argument is not nil. On success a value is returned by the control channel which marks the completion of the iteration. A feedback has to be given through the feedback channel as well as a value to the control channel to initiate the calculation of the next reduce step. This passing of values is needed to avoid data races within the token graph. The channels must be closed when there are no more steps or the strategy caller wants to end the reduce process. Note that this can also occur right after receiving the channels. Hence when there are no steps at all. Since the `Reduce` method is running in its own goroutine, it can be implemented statefully without using savepoints.
+A reduce strategy has to implement the `Strategy` interface which is exported by the [github.com/zimmski/tavor/reduce/strategy package](/reduce/strategy). The interface defines a function which starts the first step of the reduce strategy in a new goroutine and returns two channels to control the reduce process. If an error is encountered during the initialization, the error return argument is not nil. On success a value is returned by the control channel which marks the completion of the iteration. A feedback has to be given through the feedback channel as well as a value to the control channel to initiate the calculation of the next reduce step. This passing of values is needed to avoid data races within the token graph. The channels must be closed when there are no more steps or the strategy caller wants to end the reduce process. Note that this can also occur right after receiving the channels. Hence when there are no steps at all. Since the function is running in its own goroutine, it can be implemented statefully without using savepoints.
 
 Currently only two different feedback answers can be given. They are defined by the `ReduceFeedbackType` type which is exported by the [github.com/zimmski/tavor/reduce/strategy package](/reduce/strategy). One feedback answer is `Good` which communicates to the reduce strategy that the current step produced a successful result. This can mean for example that the result has the right syntax or is better than the last good result. The meaning of the feedback and the response of the strategy to the feedback are purely dependent on the application. Responses could be for example to proceed with a given optimization path or to simply end the whole reducing process, since it is often enough to find one solution. The second feedback answer is `Bad` which communicates exactly the opposite of `Good` to the strategy. This answer is often more complicated to handle since it means that in some scenarios a revert of the current step to the last good step has to occur before the reduce process can continue.
 
@@ -970,24 +943,14 @@ import (
 	"github.com/zimmski/tavor/token/primitives"
 )
 
-type SampleStrategy struct {
-	root token.Token
-}
-
-func NewSampleStrategy(tok token.Token) *SampleStrategy {
-	return &SampleStrategy{
-		root: tok,
-	}
-}
-
-func (s *SampleStrategy) Reduce() (chan struct{}, chan<- strategy.ReduceFeedbackType, error) {
+func NewSampleStrategy(root token.Token) (chan struct{}, chan<- strategy.ReduceFeedbackType, error) {
 	continueReducing := make(chan struct{})
 	feedbackReducing := make(chan strategy.ReduceFeedbackType)
 
 	go func() {
 		done := errors.New("done")
 
-		err := token.Walk(s.root, func(tok token.Token) error {
+		err := token.Walk(root, func(tok token.Token) error {
 			repeat, ok := tok.(*lists.Repeat)
 			if !ok || repeat.InternalLen() != 1 {
 				return nil
@@ -1001,26 +964,26 @@ func (s *SampleStrategy) Reduce() (chan struct{}, chan<- strategy.ReduceFeedback
 				return nil
 			}
 
-      for i := repeat.Reduces() - 1; i >= 0; {
-        found := false
-        l := len(repeat.String())
-        for {
-          if err := repeat.Reduce(i); err != nil {
-            return err
-          }
+			for i := repeat.Reduces() - 1; i >= 0; {
+				found := false
+				l := len(repeat.String())
+				for {
+					if err := repeat.Reduce(i); err != nil {
+						return err
+					}
 
-          if l-1 == len(repeat.String()) {
-            found = true
+					if l-1 == len(repeat.String()) {
+						found = true
 
-            break
-          }
+						break
+					}
 
-          if i == 0 {
-            break
-          }
+					if i == 0 {
+						break
+					}
 
-          i--
-        }
+					i--
+				}
 
 				if !found {
 					break
@@ -1087,9 +1050,7 @@ func main() {
 
 	fmt.Println(doc.String())
 
-	strat := NewSampleStrategy(doc)
-
-	continueFuzzing, feedbackReducing, err := strat.Reduce()
+	continueFuzzing, feedbackReducing, err := NewSampleStrategy(doc)
 	if err != nil {
 		panic(err)
 	}
@@ -1143,9 +1104,7 @@ import (
 )
 
 func init() {
-	strategy.Register("SampleStrategy", func(tok token.Token) strategy.Strategy {
-		return NewSampleStrategy(tok)
-	})
+	strategy.Register("SampleStrategy", NewSampleStrategy)
 }
 ```
 

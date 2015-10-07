@@ -8,24 +8,13 @@ import (
 	"github.com/zimmski/tavor/token/primitives"
 )
 
-// PositiveBoundaryValueAnalysisFilter implements a fuzzing filter for positive boundary-value analysis.
-// This filter searches the token graph for range tokens which will be transformed to a most 5 values: the lower and high boundaries as well as the middle values of the range. Using this filter reduces for example integer ranges of 1-100 to the integers 1, 50 and 100, which reduces permutations dramatically. A range of 1-2 will be reduces to the integers 1 and 2. A range of 1 will be reduced to the integer 1. Resulting integers of this filter therefore do not overlap. As a special case, integer ranges where the signs of the two boundaries are different are reduced to a maximum of 5 non-overlapping values. For instance, the integer range [-5, 10] is reduced to the integers -5, -1, 0, 1 and 10.
-type PositiveBoundaryValueAnalysisFilter struct{}
-
-// NewPositiveBoundaryValueAnalysisFilter returns a new instance of the positive boundary-value analysis fuzzing filter
-func NewPositiveBoundaryValueAnalysisFilter() *PositiveBoundaryValueAnalysisFilter {
-	return &PositiveBoundaryValueAnalysisFilter{}
-}
-
 func init() {
-	Register("PositiveBoundaryValueAnalysis", func() Filter {
-		return NewPositiveBoundaryValueAnalysisFilter()
-	})
+	Register("PositiveBoundaryValueAnalysis", NewPositiveBoundaryValueAnalysis)
 }
 
-// Apply applies the fuzzing filter onto the token and returns a replacement token, or nil if there is no replacement.
-// If a fatal error is encountered the error return argument is not nil.
-func (f *PositiveBoundaryValueAnalysisFilter) Apply(tok token.Token) (token.Token, error) {
+// NewPositiveBoundaryValueAnalysis implements a fuzzing filter for positive boundary-value analysis.
+// This filter searches the token graph for range tokens which will be transformed to a most 5 values: the lower and high boundaries as well as the middle values of the range. Using this filter reduces for example integer ranges of 1-100 to the integers 1, 50 and 100, which reduces permutations dramatically. A range of 1-2 will be reduces to the integers 1 and 2. A range of 1 will be reduced to the integer 1. Resulting integers of this filter therefore do not overlap. As a special case, integer ranges where the signs of the two boundaries are different are reduced to a maximum of 5 non-overlapping values. For instance, the integer range [-5, 10] is reduced to the integers -5, -1, 0, 1 and 10.
+func NewPositiveBoundaryValueAnalysis(tok token.Token) (token.Token, error) {
 	var replacements []token.Token
 
 	switch tok := tok.(type) {

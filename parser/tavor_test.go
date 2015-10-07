@@ -570,8 +570,7 @@ func TestTavorParserTokenAttributes(t *testing.T) {
 			aggregates.NewLen(list),
 		)))
 
-		strat := strategy.NewRandomStrategy(tok)
-		ch, err := strat.Fuzz(test.NewRandTest(1))
+		ch, err := strategy.NewRandom(tok, test.NewRandTest(1))
 		Nil(t, err)
 
 		for i := range ch {
@@ -588,8 +587,7 @@ func TestTavorParserTokenAttributes(t *testing.T) {
 		`))
 		Nil(t, err)
 
-		strat := strategy.NewRandomStrategy(tok)
-		ch, err := strat.Fuzz(test.NewRandTest(1))
+		ch, err := strategy.NewRandom(tok, test.NewRandTest(1))
 		Nil(t, err)
 
 		for i := range ch {
@@ -903,8 +901,7 @@ func TestTavorParserAndCuriousCaseOfFuzzing(t *testing.T) {
 		`))
 		Nil(t, err)
 
-		strat := strategy.NewRandomStrategy(tok)
-		ch, err := strat.Fuzz(test.NewRandTest(1))
+		ch, err := strategy.NewRandom(tok, test.NewRandTest(1))
 		Nil(t, err)
 
 		for i := range ch {
@@ -923,8 +920,7 @@ func TestTavorParserAndCuriousCaseOfFuzzing(t *testing.T) {
 		`))
 		Nil(t, err)
 
-		strat := strategy.NewRandomStrategy(tok)
-		ch, err := strat.Fuzz(test.NewRandTest(1))
+		ch, err := strategy.NewRandom(tok, test.NewRandTest(1))
 		Nil(t, err)
 
 		for i := range ch {

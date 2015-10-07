@@ -13,28 +13,15 @@ type allPermutationsLevel struct {
 	children []allPermutationsLevel
 }
 
-// AllPermutationsStrategy implements a fuzzing strategy that generates all possible permutations of a token graph.
-// Every iteration of the strategy generates a new permutation. The generation is deterministic. Since this strategy really produces every possible permutation of a token graph, it is advised to only use the strategy on graphs with few states since the state explosion problem manifests itself quite fast.
-type AllPermutationsStrategy struct {
+type allPermutations struct {
 	root token.Token
 }
 
-// NewAllPermutationsStrategy returns a new instance of the All Permutations fuzzing strategy
-func NewAllPermutationsStrategy(tok token.Token) *AllPermutationsStrategy {
-	s := &AllPermutationsStrategy{
-		root: tok,
-	}
-
-	return s
-}
-
 func init() {
-	Register("AllPermutations", func(tok token.Token) Strategy {
-		return NewAllPermutationsStrategy(tok)
-	})
+	Register("AllPermutations", NewAllPermutations)
 }
 
-func (s *AllPermutationsStrategy) getTree(root token.Token, fromChildren bool) []allPermutationsLevel {
+func (s *allPermutations) getTree(root token.Token, fromChildren bool) []allPermutationsLevel {
 	var tree []allPermutationsLevel
 
 	add := func(tok token.Token) {
@@ -68,7 +55,7 @@ func (s *AllPermutationsStrategy) getTree(root token.Token, fromChildren bool) [
 	return tree
 }
 
-func (s *AllPermutationsStrategy) setPermutation(tok token.Token, permutation uint) {
+func (s *allPermutations) setPermutation(tok token.Token, permutation uint) {
 	log.Debugf("set %#v(%p) to permutation %d", tok, tok, permutation)
 
 	if err := tok.Permutation(permutation); err != nil {
@@ -76,9 +63,9 @@ func (s *AllPermutationsStrategy) setPermutation(tok token.Token, permutation ui
 	}
 }
 
-// Fuzz starts the first iteration of the fuzzing strategy returning a channel which controls the iteration flow.
-// The channel returns a value if the iteration is complete and waits with calculating the next iteration until a value is put in. The channel is automatically closed when there are no more iterations. The error return argument is not nil if an error occurs during the setup of the fuzzing strategy.
-func (s *AllPermutationsStrategy) Fuzz(r rand.Rand) (chan struct{}, error) {
+// NewAllPermutations implements a fuzzing strategy that generates all possible permutations of a token graph.
+// Every iteration of the strategy generates a new permutation. The generation is deterministic. Since this strategy really produces every possible permutation of a token graph, it is advised to only use the strategy on graphs with few states since the state explosion problem manifests itself quite fast.
+func NewAllPermutations(root token.Token, r rand.Rand) (chan struct{}, error) {
 	if r == nil {
 		return nil, &Error{
 			Message: "random generator is nil",
@@ -86,11 +73,15 @@ func (s *AllPermutationsStrategy) Fuzz(r rand.Rand) (chan struct{}, error) {
 		}
 	}
 
-	if token.LoopExists(s.root) {
+	if token.LoopExists(root) {
 		return nil, &Error{
 			Message: "found endless loop in graph. Cannot proceed.",
 			Type:    ErrEndlessLoopDetected,
 		}
+	}
+
+	s := &allPermutations{
+		root: root,
 	}
 
 	continueFuzzing := make(chan struct{})
@@ -114,7 +105,7 @@ func (s *AllPermutationsStrategy) Fuzz(r rand.Rand) (chan struct{}, error) {
 	return continueFuzzing, nil
 }
 
-func (s *AllPermutationsStrategy) fuzz(continueFuzzing chan struct{}, tree []allPermutationsLevel, justastep bool) (bool, bool) {
+func (s *allPermutations) fuzz(continueFuzzing chan struct{}, tree []allPermutationsLevel, justastep bool) (bool, bool) {
 	log.Debugf("fuzzing level %d->%#v", len(tree), tree)
 
 STEP:
@@ -230,7 +221,7 @@ STEP:
 	return true, false
 }
 
-func (s *AllPermutationsStrategy) nextStep(continueFuzzing chan struct{}) bool {
+func (s *allPermutations) nextStep(continueFuzzing chan struct{}) bool {
 	token.ResetCombinedScope(s.root)
 	token.ResetResetTokens(s.root)
 	token.ResetCombinedScope(s.root)
