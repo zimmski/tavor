@@ -1,0 +1,83 @@
+v0.5
+- Complete documentation
+- Require Go 1.4
+- Do not allow empty strings
+- Remove Least, Many and Most token
+- Remove Fuzz and FuzzAll
+- Rename special token to typed token
+- Rename the reduce strategy BinarySearch to Linear
+- Replace RandomInt with RangeInt
+- Fix reducing by making it work in general
+- Fix another unrolling bug by regenerating the whole structure
+- Fix resets of sequences and scopes
+- Fix combinations of Repeat
+- Workaround for zero repeat parsing
+- Fix UniqueItem permutation which fixes some resets
+- Fix release of Unique
+- Fix EOF in character classes
+
+v0.4
+- (Almost) complete documentation
+- Passing gofmt, golint, go vet and errcheck is now required by all code
+- 32bit on Linux is now supported
+- Added ranges, hex and some other escapes for character classes
+- Added permutations groups to the Tavor format
+- Allow infinite loops in the Tavor format
+- Allow "if" in Tavor format to have no "else" branch
+- Added token attribute "Count" to variables
+- Make "to" and "from" optional for special token "Int"
+- Switched default exec-argument-types to STDIN
+- Fixed goroutine leak in repeat reduction
+- Converted a lot of the API from int to uint
+- Setup TravisCI and Coveralls
+- Only write temporary files if they are needed
+- Fixed some permutation cornercases
+- Fixed corner case of unrolling
+- Replaced test.Rand with rand.IncrementRand
+- Make minimizing phase independent
+- Cleanup the Tavor package
+- Even more small things and of course even more tests
+
+v0.3
+- Added Reduction of repeats
+- Forward usage of attributes
+- Arguments to automate delta debugging by executing external binaries
+- Arguments to automate fuzzing by executing external binaries
+- Added "Variables" with scopes
+- Added conditions "if", "if else" and "else"
+- Added operator "defined"
+- Added operator "not in"
+- Added "character class"
+- Added "Index" and "Unique" attributes
+- Added fuzzing filter for Negative boundary value analysis
+- Redone pointer unrolling (fixed a lot of cases)
+- Argument to define maximum repeats
+- Argument to print AST
+- Argument to not remove tmp files on error
+- Added IncrementRand and use it everywhere instead of ConstantRand this leads to more divers results
+- First draft to fix the mess that is the fuzzing of ExistingSequenceItems
+- Lots of old outstanding test cases and many many new ones
+
+v0.2
+- Refactored binary to have commands
+- Able to read in files validated through a format file (fuzzing output -> read back into Tavor is now possible!)
+- Basic delta debugging (reduction)
+- Fuzzing filters
+- Graphing of internal representation
+- Bash completion support
+- Logger
+- Fixed special tokens
+- More verbose and debugging logs
+- Additional API for tokens (like InternalGet and InternalLen)
+- Go 1.3 is required
+- Even more tests
+
+v0.1
+- A working framework to create fuzzers and additional fuzzer heuristics
+- Import Tavor format files into the internal token structure
+- Fuzzer heuristics
+- Random - fuzz once at random
+- AllPermutations - generate all possibilities for the given format
+- PermuteOptionals - generate all possibilities for optional tokens (enable/disable them)
+- A working binary to validate and fuzz Tavor format files
+- Automated tests for all major functionality
