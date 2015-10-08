@@ -4,7 +4,7 @@ This example provides a complete overview of Tavor. It does not utilize every si
 
 ![Basic states and actions](/examples/complete/fsm.png "Basic states and actions")
 
-The example uses the *Tavor format* to define this state machine and the *Tavor binary* to generate key-driven test files. An *executor* translates keys of a file into actions for the implementation under test. After successfully testing the original implementation, some bugs will be introduced to show the failure of some tests as well as automatically delta-debugging the failed key-driven test files.
+The example uses the *Tavor format* to define this state machine and the *Tavor binary* to generate keyword-driven test files. An *executor* translates keys of a file into actions for the implementation under test. After successfully testing the original implementation, some bugs will be introduced to show the failure of some tests as well as automatically delta-debugging the failed keyword-driven test files.
 
 > **Note:** The implementation of this example has intentional concurrency and other problems. Future versions of Tavor will help to identify, test and resolve such flaws. As Tavor evolves this example will also evolve. This also concerns the given state machine and Tavor format definition. Both could be defined much more efficiently with the help of state variables which are common in model-based testing but not yet fully implemented in the Tavor format. However, this could be easily implemented via code using the Tavor framework.
 
@@ -13,8 +13,8 @@ The following components will be defined and described in the following sections
 - [Tavor format](/examples/complete/vending.tavor)
 - [Executor](/examples/complete/executor.go)
 - [Implementation](/examples/complete/implementation/vending.go)
-- [Bash script to run all key-driven files](/examples/complete/run.sh)
-- [Bash script to run all key-driven files and reduce failed ones](/examples/complete/run-and-reduce.sh)
+- [Bash script to run all keyword-driven files](/examples/complete/run.sh)
+- [Bash script to run all keyword-driven files and reduce failed ones](/examples/complete/run-and-reduce.sh)
 
 ## <a name="table-of-content"></a>Table of content
 
@@ -26,7 +26,7 @@ The following components will be defined and described in the following sections
 
 ## <a name="tavor-format-and-fuzzing"></a>Tavor format and fuzzing
 
-The following Tavor format, saved as [vending.tavor](/examples/complete/vending.tavor), defines a model of all possible valid states of the given state machine. Since this model should generate key-driven files, a set of keys and a key-driven format have to be defined.
+The following Tavor format, saved as [vending.tavor](/examples/complete/vending.tavor), defines a model of all possible valid states of the given state machine. Since this model should generate keyword-driven files, a set of keys and a keyword-driven format have to be defined.
 
 The following keys will be used:
 
@@ -34,7 +34,7 @@ The following keys will be used:
 - **coin** invokes the action to insert a coin. It uses the integer argument as the coin credit.
 - **vend** invokes the action to vend.
 
-The key-driven format is defined as followed:
+The keyword-driven format is defined as followed:
 
 - Every line holds exactly one key
 - A line begins with a key word
@@ -42,7 +42,7 @@ The key-driven format is defined as followed:
 - Each argument prepends a tab character
 - A line ends with the new line character
 
-Putting the given state machine, the defined keys and the rules for the key-driven format together, results in the following Tavor format:
+Putting the given state machine, the defined keys and the rules for the keyword-driven format together, results in the following Tavor format:
 
 ```tavor
 START = Credit0 *( Coin25 Credit25 | Coin50 Credit50 )
@@ -122,7 +122,7 @@ This command results into exactly **31** files created in the folder `testset` a
 
 ## <a name="executor"></a>Implementing an executor
 
-The executor connects the key-driven test files with the implementation under test. It reads, parses and validates one key-driven file, executes sequentially each key with its arguments by invoking actions of the implementation and validates these actions. A test passes if each key executes without any problem. We will first define the groundwork of the executor since it is not yet defined how the implementation can be contacted. The executor will be written in Go, since all Tavor examples are written in Go. However, the generated key-driven test files are independent of the programming language which means that the executor could be implemented in any language.
+The executor connects the keyword-driven test files with the implementation under test. It reads, parses and validates one keyword-driven file, executes sequentially each key with its arguments by invoking actions of the implementation and validates these actions. A test passes if each key executes without any problem. We will first define the groundwork of the executor since it is not yet defined how the implementation can be contacted. The executor will be written in Go, since all Tavor examples are written in Go. However, the generated keyword-driven test files are independent of the programming language which means that the executor could be implemented in any language.
 
 ```go
 import (
@@ -171,7 +171,7 @@ func initExecutor() *keydriven.Executor {
 }
 ```
 
-This program reads a file given as CLI argument, parses it according to our key-driven format rules and then executes it. Since we did not define the executor actions yet, every key-driven file will fail. However, the groundwork of the executor is hereby done and we can move on to define the actions for our keys. Since this example should be kept simple, we will use an additional package as our implementation. It should be noted that the same mechanisms could be used to test implementations of external processes, web APIs or any other implementation as long as an interface can be used.
+This program reads a file given as CLI argument, parses it according to our keyword-driven format rules and then executes it. Since we did not define the executor actions yet, every keyword-driven file will fail. However, the groundwork of the executor is hereby done and we can move on to define the actions for our keys. Since this example should be kept simple, we will use an additional package as our implementation. It should be noted that the same mechanisms could be used to test implementations of external processes, web APIs or any other implementation as long as an interface can be used.
 
 The following code introduces the implementation of the given state machine which we will declare in its own package.
 
@@ -324,7 +324,7 @@ Since we have now defined all components for testing the given state machine, we
 
 ## <a name="test-execution"></a>Test execution
 
-Since all components have been defined and the test set has been generated we can execute single key-driven files via the executor.
+Since all components have been defined and the test set has been generated we can execute single keyword-driven files via the executor.
 
 ```bash
 go run executor.go testset/fba58bb35d28010b61c8004fadcb88a3
@@ -366,7 +366,7 @@ go build executor.go
 
 This will create a binary called `executor` which we will use in the following examples.
 
-Executing each key-driven file is tedious. A solution would be to extend the executor but this would also mean more restrictions and more flaw possibilities in the executor code. Alternatively a simple bash script which executes each key-driven file of the `testset` folder and immediately exits if a file fails can be used.
+Executing each keyword-driven file is tedious. A solution would be to extend the executor but this would also mean more restrictions and more flaw possibilities in the executor code. Alternatively a simple bash script which executes each keyword-driven file of the `testset` folder and immediately exits if a file fails can be used.
 
 ```bash
 #!/bin/bash
@@ -428,7 +428,7 @@ This bug can be introduced easily with one of the following code replacements fo
 	}
 	```
 
-Running our script to execute all key-driven files will immediately result in an failed test. For example with the file `testset/1f6b08c8273b8e46128e4d84e4e7e621.test`:
+Running our script to execute all keyword-driven files will immediately result in an failed test. For example with the file `testset/1f6b08c8273b8e46128e4d84e4e7e621.test`:
 
 ```
 Test testset/1f6b08c8273b8e46128e4d84e4e7e621.test
@@ -468,7 +468,7 @@ Similar to the previous example we can modify the code to leave the `credit` mem
 	}
 	```
 
-Running our script to execute all key-driven files will immediately result in an failed test. For example with the file `testset/1f6b08c8273b8e46128e4d84e4e7e621.test`:
+Running our script to execute all keyword-driven files will immediately result in an failed test. For example with the file `testset/1f6b08c8273b8e46128e4d84e4e7e621.test`:
 
 ```
 Test testset/1f6b08c8273b8e46128e4d84e4e7e621.test
@@ -520,7 +520,7 @@ func (v *VendingMachine) Coin(credit int) error {
 }
 ```
 
-Running our script to execute all key-driven files will immediately result in an failed test. For example with the file `testset/1f6b08c8273b8e46128e4d84e4e7e621.test`:
+Running our script to execute all keyword-driven files will immediately result in an failed test. For example with the file `testset/1f6b08c8273b8e46128e4d84e4e7e621.test`:
 
 ```
 Test testset/1f6b08c8273b8e46128e4d84e4e7e621.test
@@ -535,7 +535,7 @@ Error: Credit should be 100 but was 75
 Error detected, will exit loop
 ```
 
-This especially interesting with a long running key-driven file which inserts two 25 coins in a second or third vending loop. For example the file `testset/fba58bb35d28010b61c8004fadcb88a3.test` triggers the bug in the second loop.
+This especially interesting with a long running keyword-driven file which inserts two 25 coins in a second or third vending loop. For example the file `testset/fba58bb35d28010b61c8004fadcb88a3.test` triggers the bug in the second loop.
 
 ```
 credit [0]
@@ -558,9 +558,9 @@ This is an interesting test case since the first iteration of the vending loop i
 
 ## <a name="delta-debugging"></a>Delta-debugging of inputs
 
-**Delta-debugging** or in general **reducing** is a method to reduce data to ideally its minimum while still complying to defined constraints. In our example the data is a key-driven test file which fails and the constraint is that the reduced test case should still fail. Therefore the final result of the delta-debugging process should be a minimal test case which still triggers the same bug as the original test case. This can be automatically or semi-automatically done by the `reduce` command of the Tavor binary. The binary uses our Tavor format file to parse and validate the given key-driven file and tries to reduce its data according to rules defined by the format file. For instance optional content like repetitions can be reduced to a minimal repetition. In our example we can reduce the iterations of the vending loop.
+**Delta-debugging** or in general **reducing** is a method to reduce data to ideally its minimum while still complying to defined constraints. In our example the data is a keyword-driven test file which fails and the constraint is that the reduced test case should still fail. Therefore the final result of the delta-debugging process should be a minimal test case which still triggers the same bug as the original test case. This can be automatically or semi-automatically done by the `reduce` command of the Tavor binary. The binary uses our Tavor format file to parse and validate the given keyword-driven file and tries to reduce its data according to rules defined by the format file. For instance optional content like repetitions can be reduced to a minimal repetition. In our example we can reduce the iterations of the vending loop.
 
-We will use the bug and the key-driven test file `testset/fba58bb35d28010b61c8004fadcb88a3.test` which were introduced in [one of the subsections of "Introducing bugs"](#bugs-second-25-coin). The file has the following content.
+We will use the bug and the keyword-driven test file `testset/fba58bb35d28010b61c8004fadcb88a3.test` which were introduced in [one of the subsections of "Introducing bugs"](#bugs-second-25-coin). The file has the following content.
 
 ```
 credit	0
@@ -580,7 +580,7 @@ vend
 credit	0
 ```
 
-The introduced bug will be triggered in the second vending iteration. Every second 25 coin does not increase the machine's credit counter. This can be easily tested with our generated test set but the given file shows that there are key-driven files for this bug that could be reduced because of unnecessary loops.
+The introduced bug will be triggered in the second vending iteration. Every second 25 coin does not increase the machine's credit counter. This can be easily tested with our generated test set but the given file shows that there are keyword-driven files for this bug that could be reduced because of unnecessary loops.
 
 We will first use the semi-automatic method of the Tavor `reduce` command. The given format file will be used to reduce the given input. Every reduction step displays the question "Do the constraints of the original input still hold for this generation?" to the user. The user's task is to inspect and validate the reduced output of the original data and decide by giving feedback if the bug is triggered (**yes**) or not (**no**). The following command starts this process.
 
@@ -630,7 +630,7 @@ credit  0
 
 The last reduction output is the minimum which still triggers the same bug as the original test case. Additionally it is shown that the default reduce strategy of the Tavor `reduce` command tries to output the smallest generation first which is simply the `credit  0` command.
 
-This semi-automatic process can be tedious for big data especially because of the manual validation. The Tavor binary does therefore provide several methods to reduce completely automatically. Since we already have a executor which tests key-driven files we can use it in this process. This is additionally aided by the executor which exits with different exit status codes on success or failure. We can therefore conclude that a reduced generation of our original failing key-driven file has to have the same exit status code as the original one. This can be automatically done by the following command. Which uses the executor to validate reduced data which is temporary written to a file. Each exit status code of the executor is compared to the original exit status code. If it is not equal, the reduction process will try an alternative reduction step until a reduction path is found which leads to the minimum.
+This semi-automatic process can be tedious for big data especially because of the manual validation. The Tavor binary does therefore provide several methods to reduce completely automatically. Since we already have a executor which tests keyword-driven files we can use it in this process. This is additionally aided by the executor which exits with different exit status codes on success or failure. We can therefore conclude that a reduced generation of our original failing keyword-driven file has to have the same exit status code as the original one. This can be automatically done by the following command. Which uses the executor to validate reduced data which is temporary written to a file. Each exit status code of the executor is compared to the original exit status code. If it is not equal, the reduction process will try an alternative reduction step until a reduction path is found which leads to the minimum.
 
 ```bash
 tavor --format-file vending.tavor reduce --input-file testset/fba58bb35d28010b61c8004fadcb88a3.test --exec "./executor TAVOR_DD_FILE" --exec-argument-type argument --exec-exact-exit-code
@@ -650,9 +650,9 @@ vend
 credit  0
 ```
 
-As you can see this is the minimum which still triggers the same bug as the original key-driven file.
+As you can see this is the minimum which still triggers the same bug as the original keyword-driven file.
 
-Reducing key-driven test files allows developers to always debug with the minimum set of actions to trigger a bug which can save a lot of debugging time. It is therefore a handy addition to the execution of a test suite. We can modify our bash script to automatically reduce failed files.
+Reducing keyword-driven test files allows developers to always debug with the minimum set of actions to trigger a bug which can save a lot of debugging time. It is therefore a handy addition to the execution of a test suite. We can modify our bash script to automatically reduce failed files.
 
 ```bash
 #!/bin/bash
@@ -679,7 +679,7 @@ do
 done
 ```
 
-This script will run the executor with every key-driven test file of the `testset` folder and stop at the first failed file. The failed file will be then reduced to its minimum which will be saved next to the original file with the extension `.reduced`.
+This script will run the executor with every keyword-driven test file of the `testset` folder and stop at the first failed file. The failed file will be then reduced to its minimum which will be saved next to the original file with the extension `.reduced`.
 
 Executing this script with the introduced bug will for example result in the following output.
 

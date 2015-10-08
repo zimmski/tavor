@@ -1,5 +1,5 @@
 v0.6
-- Add a simple key-driven executor to make model-based testing usage clearer
+- Add a simple keyword-driven executor to make model-based testing usage clearer
 - Add support for negative values in integer ranges
 - Add support for negative values in the positive boundary filter
 - Add token attribute "Reference" to variable tokens
