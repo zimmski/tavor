@@ -1,3 +1,36 @@
+v0.6
+- Add a simple key-driven executor to make model-based testing usage clearer
+- Add support for negative values in integer ranges
+- Add support for negative values in the positive boundary filter
+- Add token attribute "Reference" to variable tokens
+- Add token attribute "Item" to list tokens
+- Allow list tokens for the "no in" operator
+- Add "path" operator as first experimental graph operator
+- Allow tokens in expressions
+- Allow token attributes in expressions
+- Allow variable forward usage
+- Accepting states in the DOT format are now double ellipses
+- Make the whole Tavor installation easier
+- Write temporary files for fuzzing with the "argument" exec type
+- Double escape escaped characters for the DOT format
+- Fix missing --list-exec-argument-types argument for the "fuzz" command
+- Fix typed token were not correctly used in early-usage list and variable scopes
+- Fix do not remove temporary files if there is an result folder
+- Fix wrong range for data-left error message in the internal parser
+- Fix endless loop in "Sequence.existing"
+- Fix internal/external mix-up in LoopExists
+- Fix "graph" command did not handle scopes
+- Fix the "random" fuzzing strategy should check for a nil random generator
+- Fix if multiple fuzzing filters can be applied only the first one is applied
+- Fix variables should be usable as normal tokens
+- Make it clear that the Tavor format is not final
+- Typed tokens can now be defined outside the Tavor parser
+- Introduce the term "expression list"
+- Add new token interfaces "Follow", InternalReplace", "Resolve" and "Scoping"
+- Do not make Go-generate mandatory
+- Permutations are now 0-based in Tavor
+- Refine all strategy and filter interfaces so that they can be directly applied to a token
+
 v0.5
 - Complete documentation
 - Require Go 1.4
