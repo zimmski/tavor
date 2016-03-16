@@ -29,11 +29,8 @@ script:
   - echo "$GOLINT"
   - $(exit $(echo -n "$GOLINT" | wc -l))
 
-  # project
-  - make testverbose
-
-  # code coverage
-  - ginkgo -r -cover -skipPackage="testdata"
+  # test and do code coverage
+  - ginkgo -r -cover -race -skipPackage="testdata"
   - gover
   - if [ "$TRAVIS_SECURE_ENV_VARS" = "true" ]; then goveralls -coverprofile=gover.coverprofile -service=travis-ci -repotoken $COVERALLS_TOKEN; fi
 
