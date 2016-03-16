@@ -1384,7 +1384,7 @@ func (p *tavorParser) parseTokenDefinition(variableScope *token.VariableScope) (
 		return zeroRune, err
 	}
 
-	log.Debugf("back to token definition with c=%c", c)
+	log.Debugf("back to token definition with c=%q", c)
 
 	// we always want a new line at the end of the file
 	if c == scanner.EOF {
