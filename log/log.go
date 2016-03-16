@@ -2,11 +2,13 @@ package log
 
 import (
 	"os"
+	"strings"
 
 	"github.com/zimmski/logrus"
 )
 
 var log = logrus.New()
+var logIndentation int
 
 func init() {
 	log.Formatter = &TextFormatter{}
@@ -40,124 +42,142 @@ func LevelError() {
 	Level(logrus.ErrorLevel)
 }
 
+// indentation functions
+
+func indentation() string {
+	return strings.Repeat("  ", logIndentation)
+}
+
+func IncreaseIndentation() {
+	logIndentation++
+}
+
+func DecreaseIndentation() {
+	logIndentation--
+
+	if logIndentation < 0 {
+		panic("Log indentation is negative")
+	}
+}
+
 // logging functions
 
 // Debugf logs a message at level Debug on the standard logger.
 func Debugf(format string, args ...interface{}) {
-	log.Debugf(format, args...)
+	log.Debugf(indentation()+format, args...)
 }
 
 // Infof logs a message at level Info on the standard logger.
 func Infof(format string, args ...interface{}) {
-	log.Infof(format, args...)
+	log.Infof(indentation()+format, args...)
 }
 
 // Printf logs a message at level Info on the standard logger.
 func Printf(format string, args ...interface{}) {
-	log.Printf(format, args...)
+	log.Printf(indentation()+format, args...)
 }
 
 // Warnf logs a message at level Warn on the standard logger.
 func Warnf(format string, args ...interface{}) {
-	log.Warnf(format, args...)
+	log.Warnf(indentation()+format, args...)
 }
 
 // Warningf logs a message at level Warn on the standard logger.
 func Warningf(format string, args ...interface{}) {
-	log.Warnf(format, args...)
+	log.Warnf(indentation()+format, args...)
 }
 
 // Errorf logs a message at level Error on the standard logger.
 func Errorf(format string, args ...interface{}) {
-	log.Errorf(format, args...)
+	log.Errorf(indentation()+format, args...)
 }
 
 // Fatalf logs a message at level Fatal on the standard logger.
 func Fatalf(format string, args ...interface{}) {
-	log.Fatalf(format, args...)
+	log.Fatalf(indentation()+format, args...)
 }
 
 // Panicf logs a message at level Panic on the standard logger.
 func Panicf(format string, args ...interface{}) {
-	log.Panicf(format, args...)
+	log.Panicf(indentation()+format, args...)
 }
 
 // Debug logs a message at level Debug on the standard logger.
 func Debug(args ...interface{}) {
-	log.Debug(args...)
+	log.Debug(append([]interface{}{indentation()}, args...)...)
 }
 
 // Info logs a message at level Info on the standard logger.
 func Info(args ...interface{}) {
-	log.Info(args...)
+	log.Info(append([]interface{}{indentation()}, args...)...)
 }
 
 // Print logs a message at level Info on the standard logger.
 func Print(args ...interface{}) {
-	log.Info(args...)
+	log.Info(append([]interface{}{indentation()}, args...)...)
 }
 
 // Warn logs a message at level Warn on the standard logger.
 func Warn(args ...interface{}) {
-	log.Warn(args...)
+	log.Warn(append([]interface{}{indentation()}, args...)...)
 }
 
 // Warning logs a message at level Warn on the standard logger.
 func Warning(args ...interface{}) {
-	log.Warn(args...)
+	log.Warn(append([]interface{}{indentation()}, args...)...)
 }
 
 // Error logs a message at level Error on the standard logger.
 func Error(args ...interface{}) {
-	log.Error(args...)
+	log.Error(append([]interface{}{indentation()}, args...)...)
 }
 
 // Fatal logs a message at level Fatal on the standard logger.
 func Fatal(args ...interface{}) {
-	log.Fatal(args...)
+	log.Fatal(append([]interface{}{indentation()}, args...)...)
 }
 
 // Panic logs a message at level Panic on the standard logger.
 func Panic(args ...interface{}) {
-	log.Panic(args...)
+	log.Panic(append([]interface{}{indentation()}, args...)...)
 }
 
 // Debugln logs a message at level Debug on the standard logger.
 func Debugln(args ...interface{}) {
-	log.Debugln(args...)
+	log.Debugln(append([]interface{}{indentation()}, args...)...)
 }
 
 // Infoln logs a message at level Info on the standard logger.
 func Infoln(args ...interface{}) {
-	log.Infoln(args...)
+	log.Infoln(append([]interface{}{indentation()}, args...)...)
 }
 
 // Println logs a message at level Info on the standard logger.
 func Println(args ...interface{}) {
-	log.Println(args...)
+	log.Println(append([]interface{}{indentation()}, args...)...)
 }
 
 // Warnln logs a message at level Warn on the standard logger.
 func Warnln(args ...interface{}) {
-	log.Warnln(args...)
+	log.Warnln(append([]interface{}{indentation()}, args...)...)
 }
 
 // Warningln logs a message at level Warn on the standard logger.
 func Warningln(args ...interface{}) {
-	log.Warnln(args...)
+	log.Warnln(append([]interface{}{indentation()}, args...)...)
 }
 
 // Errorln logs a message at level Error on the standard logger.
 func Errorln(args ...interface{}) {
-	log.Errorln(args...)
+	log.Errorln(append([]interface{}{indentation()}, args...)...)
 }
 
 // Fatalln logs a message at level Fatal on the standard logger.
 func Fatalln(args ...interface{}) {
-	log.Fatalln(args...)
+	log.Fatalln(append([]interface{}{indentation()}, args...)...)
 }
 
 // Panicln logs a message at level Panic on the standard logger.
 func Panicln(args ...interface{}) {
-	log.Panicln(args...)
+	log.Panicln(append([]interface{}{indentation()}, args...)...)
 }

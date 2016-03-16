@@ -338,7 +338,8 @@ OUT:
 
 			addToken(primitives.NewConstantString(s))
 		case '(':
-			log.Debug("NEW group")
+			log.Debug("Group:")
+			log.IncreaseIndentation()
 
 			c = p.scan.Scan()
 			log.Debugf("parseTerm Group %d:%v -> %v", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
@@ -362,9 +363,10 @@ OUT:
 				addToken(lists.NewAll(toks...))
 			}
 
-			log.Debug("END group")
+			log.DecreaseIndentation()
 		case '?':
-			log.Debug("NEW optional")
+			log.Debug("Optional:")
+			log.IncreaseIndentation()
 
 			_, err = p.expectScanRune('(')
 			if err != nil {
@@ -393,9 +395,10 @@ OUT:
 				addToken(constraints.NewOptional(lists.NewAll(toks...)))
 			}
 
-			log.Debug("END optional")
+			log.DecreaseIndentation()
 		case '+', '*':
-			log.Debug("NEW repeat")
+			log.Debug("Repeat:")
+			log.IncreaseIndentation()
 
 			sym := c
 
@@ -505,9 +508,10 @@ OUT:
 				addToken(lists.NewRepeatWithTokens(lists.NewAll(toks...), from, to))
 			}
 
-			log.Debug("END repeat")
+			log.DecreaseIndentation()
 		case '@':
-			log.Debug("NEW once")
+			log.Debug("Once")
+			log.IncreaseIndentation()
 
 			_, err = p.expectScanRune('(')
 			if err != nil {
@@ -544,7 +548,7 @@ OUT:
 				addToken(lists.NewOnce(toks...))
 			}
 
-			log.Debug("END once")
+			log.DecreaseIndentation()
 		case '$':
 			c = p.scan.Scan()
 			log.Debugf("parseTerm after $ ( %d:%v -> %v", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
@@ -575,7 +579,8 @@ OUT:
 
 			continue
 		case '[':
-			log.Debug("NEW character class")
+			log.Debug("Character class:")
+			log.IncreaseIndentation()
 
 			var pattern bytes.Buffer
 
@@ -601,9 +606,10 @@ OUT:
 
 			addToken(primitives.NewCharacterClass(pattern.String()))
 
-			log.Debug("END character class")
+			log.DecreaseIndentation()
 		case '<':
-			log.Debug("NEW variable")
+			log.Debug("Variable:")
+			log.IncreaseIndentation()
 
 			c = p.scan.Scan()
 
@@ -654,7 +660,7 @@ OUT:
 
 			p.variableUsages = append(p.variableUsages, variable)
 
-			log.Debug("END variable")
+			log.DecreaseIndentation()
 		case ',': // multi line token
 			if _, err := p.expectScanRune('\n'); err != nil {
 				return zeroRune, nil, err
@@ -673,7 +679,6 @@ OUT:
 
 			continue
 		default:
-			log.Debug("break out parseTerm")
 			break OUT
 		}
 
@@ -685,7 +690,8 @@ OUT:
 }
 
 func (p *tavorParser) parseExpression(definitionName string, variableScope *token.VariableScope) (rune, token.Token, error) {
-	log.Debug("START expression")
+	log.Debug("Expression")
+	log.IncreaseIndentation()
 
 	c := p.scan.Scan()
 	log.Debugf("parseExpression %d:%v -> %v", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
@@ -701,7 +707,7 @@ func (p *tavorParser) parseExpression(definitionName string, variableScope *toke
 		}
 	}
 
-	log.Debug("END expression")
+	log.DecreaseIndentation()
 
 	return c, tok, nil
 }
@@ -1155,7 +1161,8 @@ SCOPE:
 	for {
 		switch c {
 		case '|':
-			log.Debug("NEW or")
+			log.Debug("Or:")
+			log.IncreaseIndentation()
 
 			var orTerms []token.Token
 			optional := false
@@ -1196,10 +1203,8 @@ SCOPE:
 				tokens = []token.Token{or}
 			}
 
-			log.Debug("END or")
+			log.DecreaseIndentation()
 		case '{': // TODO make conditions work with ORs...
-			log.Debug("NEW condition")
-
 			c = p.scan.Scan()
 			condition := p.scan.TokenText()
 
@@ -1207,7 +1212,8 @@ SCOPE:
 
 			switch condition {
 			case "if":
-				log.Debug("found IF")
+				log.Debug("If:")
+				log.IncreaseIndentation()
 
 				c, conditionExpression, err = p.parseConditionExpression(definitionName, variableScope)
 				if err != nil {
@@ -1221,19 +1227,22 @@ SCOPE:
 				c = p.scan.Scan()
 
 				if p.scan.TokenText() == "if" {
-					log.Debug("found ELSEIF")
+					log.Debug("Elseif")
+					log.IncreaseIndentation()
 
 					c, conditionExpression, err = p.parseConditionExpression(definitionName, variableScope)
 					if err != nil {
 						return zeroRune, nil, err
 					}
 				} else {
-					log.Debug("found ELSE")
+					log.Debug("Else:")
+					log.IncreaseIndentation()
 
 					conditionExpression = conditions.NewBooleanTrue()
 				}
 			case "endif":
-				log.Debug("found ENDIF")
+				log.Debug("Endif:")
+				log.IncreaseIndentation()
 
 				if len(ifPairs) == 0 {
 					panic("TODO endif without if")
@@ -1293,7 +1302,7 @@ SCOPE:
 				tokens = append(tokens, toks...)
 			}
 
-			log.Debug("END condition")
+			log.DecreaseIndentation()
 
 			continue SCOPE
 		}
@@ -1340,10 +1349,7 @@ func (p *tavorParser) parseConditionExpression(definitionName string, variableSc
 	return c, conditions.NewBooleanEqual(a, b), nil
 }
 
-func (p *tavorParser) parseTokenDefinition(variableScope *token.VariableScope) (rune, error) {
-	var c rune
-	var err error
-
+func (p *tavorParser) parseTokenDefinition(variableScope *token.VariableScope) (c rune, err error) {
 	name := p.scan.TokenText()
 
 	if use, ok := p.lookup[name]; ok {
@@ -1377,7 +1383,11 @@ func (p *tavorParser) parseTokenDefinition(variableScope *token.VariableScope) (
 
 	// start reading definition
 	c = p.scan.Scan()
-	log.Debugf("parseTokenDefinition after = %d:%v -> %v", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
+	log.Debugf("parseTokenDefinition after = %d:%v -> %v:", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
+	log.IncreaseIndentation()
+	defer func() {
+		log.DecreaseIndentation()
+	}()
 
 	c, tokens, err := p.parseScope(name, c, variableScope)
 	if err != nil {
@@ -1472,7 +1482,8 @@ func (p *tavorParser) parseTypedTokenDefinition(variableScope *token.VariableSco
 	var c rune
 	var err error
 
-	log.Debug("START typed token")
+	log.Debug("Typed token")
+	log.IncreaseIndentation()
 
 	c = p.scan.Scan()
 	log.Debugf("parseTypedTokenDefinition after $ %d:%v -> %v", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
@@ -1599,7 +1610,7 @@ func (p *tavorParser) parseTypedTokenDefinition(variableScope *token.VariableSco
 	c = p.scan.Scan()
 	log.Debugf("parseTypedTokenDefinition after newline %d:%v -> %v", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
 
-	log.Debug("END typed token")
+	log.DecreaseIndentation()
 
 	return c, nil
 }
