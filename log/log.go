@@ -53,6 +53,7 @@ func indentation() string {
 	return strings.Repeat("  ", logIndentation)
 }
 
+// IncreaseIndentation increase the log indentation.
 func IncreaseIndentation() {
 	logIndentationLock.Lock()
 	defer logIndentationLock.Unlock()
@@ -61,6 +62,7 @@ func IncreaseIndentation() {
 
 }
 
+// DecreaseIndentation decrease the log indentation.
 func DecreaseIndentation() {
 	logIndentationLock.Lock()
 	defer logIndentationLock.Unlock()
