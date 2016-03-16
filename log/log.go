@@ -3,12 +3,14 @@ package log
 import (
 	"os"
 	"strings"
+	"sync"
 
 	"github.com/zimmski/logrus"
 )
 
 var log = logrus.New()
 var logIndentation int
+var logIndentationLock sync.RWMutex
 
 func init() {
 	log.Formatter = &TextFormatter{}
@@ -45,14 +47,24 @@ func LevelError() {
 // indentation functions
 
 func indentation() string {
+	logIndentationLock.RLock()
+	defer logIndentationLock.RUnlock()
+
 	return strings.Repeat("  ", logIndentation)
 }
 
 func IncreaseIndentation() {
+	logIndentationLock.Lock()
+	defer logIndentationLock.Unlock()
+
 	logIndentation++
+
 }
 
 func DecreaseIndentation() {
+	logIndentationLock.Lock()
+	defer logIndentationLock.Unlock()
+
 	logIndentation--
 
 	if logIndentation < 0 {
