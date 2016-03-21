@@ -2,7 +2,9 @@ package parser
 
 import (
 	"fmt"
+	"io/ioutil"
 	"math"
+	"os"
 	"strings"
 	"testing"
 
@@ -1669,4 +1671,19 @@ func TestTavorParserIfElseIfElsedd(t *testing.T) {
 		Equal(t, "abcvar is definedvar is not defined", tok.String())
 		Equal(t, 1, tok.Permutations())
 	}
+}
+
+func TestParseTavorExpressionOperatorInclude(t *testing.T) {
+	tmpfile, err := ioutil.TempFile("", "")
+	Nil(t, err)
+	defer os.Remove(tmpfile.Name())
+
+	_, err = tmpfile.WriteString("START = 123\n")
+	Nil(t, err)
+
+	Nil(t, tmpfile.Close())
+
+	tok, err := ParseTavor(strings.NewReader(fmt.Sprintf("START = ${include %q}\n", tmpfile.Name())))
+	Nil(t, err)
+	Equal(t, tok, primitives.NewScope(primitives.NewConstantInt(123)))
 }
