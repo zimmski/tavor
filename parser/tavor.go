@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"os"
 	"reflect"
 	"strconv"
 	"text/scanner"
@@ -733,6 +734,11 @@ func (p *tavorParser) parseExpressionTerm(definitionName string, c rune, variabl
 			c = p.scan.Scan()
 
 			return c, conditions.NewVariableDefined(name, variableScope), nil
+		case "include":
+			c, tok, err = p.parseExpressionOperatorInclude()
+			if err != nil {
+				return zeroRune, nil, err
+			}
 		default:
 			if p.scan.Peek() == '.' {
 				c, tok, err = p.parseTokenAttribute(definitionName, c, variableScope)
@@ -852,8 +858,9 @@ func (p *tavorParser) parseExpressionGroup(definitionName string, variableScope 
 }
 
 func (p *tavorParser) parseExpressionOperatorNotIn(tok *sequences.Sequence, definitionName string, c rune, variableScope *token.VariableScope) (rune, token.Token, error) {
-	log.Debugf("Start not in operator")
-	defer log.Debugf("End not in operator")
+	log.Debug("Not in operator:")
+	log.IncreaseIndentation()
+	defer log.DecreaseIndentation()
 
 	_, err := p.expectText("not", c)
 	if err != nil {
@@ -875,9 +882,45 @@ func (p *tavorParser) parseExpressionOperatorNotIn(tok *sequences.Sequence, defi
 	return c, tok.ExistingItem(expectToks), nil
 }
 
+func (p *tavorParser) parseExpressionOperatorInclude() (c rune, tok token.Token, err error) {
+	log.Debug("Include operator:")
+	log.IncreaseIndentation()
+	defer log.DecreaseIndentation()
+
+	_, err = p.expectScanRune(scanner.String)
+	if err != nil {
+		return zeroRune, nil, err
+	}
+
+	filepath, err := strconv.Unquote(p.scan.TokenText())
+	if err != nil {
+		return zeroRune, nil, err
+	}
+
+	f, err := os.Open(filepath)
+	if err != nil {
+		return zeroRune, nil, fmt.Errorf("cannot open tavor file %q: %v", filepath, err)
+	}
+	defer func() {
+		if e := f.Close(); err == nil {
+			err = e
+		}
+	}()
+
+	tok, err = ParseTavor(f)
+	if err != nil {
+		return zeroRune, nil, fmt.Errorf("%s: %#v", filepath, err)
+	}
+
+	c = p.scan.Scan()
+
+	return c, tok, nil
+}
+
 func (p *tavorParser) parseExpressionOperatorPath(tok token.Token, definitionName string, c rune, variableScope *token.VariableScope) (rune, token.Token, error) {
-	log.Debug("Start path operator")
-	defer log.Debug("End path operator")
+	log.Debug("Path operator:")
+	log.IncreaseIndentation()
+	defer log.DecreaseIndentation()
 
 	listPosition := p.scan.Pos()
 	/*l, ok := tok.(token.ListToken)
@@ -1385,9 +1428,7 @@ func (p *tavorParser) parseTokenDefinition(variableScope *token.VariableScope) (
 	c = p.scan.Scan()
 	log.Debugf("parseTokenDefinition after = %d:%v -> %v:", p.scan.Line, scanner.TokenString(c), p.scan.TokenText())
 	log.IncreaseIndentation()
-	defer func() {
-		log.DecreaseIndentation()
-	}()
+	defer log.DecreaseIndentation()
 
 	c, tokens, err := p.parseScope(name, c, variableScope)
 	if err != nil {

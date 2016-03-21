@@ -640,6 +640,18 @@ START = ${9 + 8 + 7} "\n",
         ${10 / 2} "\n"
 ```
 
+### <a name="expressions-include"></a>Include operator
+
+The include operator parses an external Tavor format file and includes its `START` token. It takes a constant string as its one operand which defines the filepath of the to be included Tavor format file. The filepath can be absolute or relative.
+
+The following example includes the Tavor format file "number.tavor":
+
+```tavor
+START = Number<x> " + " Number<y> " = " {x + y}
+
+Number = ${include "number.tavor"}
+```
+
 ### <a name="expressions-graph"></a>Graph operators (experimental)
 
 Graph operators are currently experimental since only a specific case has been implemented. The `path` operator traverses a list token based on the described structure. The structure defines the starting value of the traversal, the value which identifies each entry of the list token, how the entries are connected and which values are ending values for the traversal.
