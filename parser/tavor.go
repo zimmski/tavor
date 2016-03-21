@@ -882,6 +882,8 @@ func (p *tavorParser) parseExpressionOperatorNotIn(tok *sequences.Sequence, defi
 	return c, tok.ExistingItem(expectToks), nil
 }
 
+var includeCache = map[string]token.Token{}
+
 func (p *tavorParser) parseExpressionOperatorInclude() (c rune, tok token.Token, err error) {
 	log.Debug("Include operator:")
 	log.IncreaseIndentation()
@@ -895,6 +897,14 @@ func (p *tavorParser) parseExpressionOperatorInclude() (c rune, tok token.Token,
 	filepath, err := strconv.Unquote(p.scan.TokenText())
 	if err != nil {
 		return zeroRune, nil, err
+	}
+
+	if tok, ok := includeCache[filepath]; ok {
+		tok = tok.Clone()
+
+		c = p.scan.Scan()
+
+		return c, tok, nil
 	}
 
 	f, err := os.Open(filepath)
@@ -911,6 +921,8 @@ func (p *tavorParser) parseExpressionOperatorInclude() (c rune, tok token.Token,
 	if err != nil {
 		return zeroRune, nil, fmt.Errorf("%s: %#v", filepath, err)
 	}
+
+	includeCache[filepath] = tok
 
 	c = p.scan.Scan()
 
