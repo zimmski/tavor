@@ -1676,7 +1676,9 @@ func TestTavorParserIfElseIfElsedd(t *testing.T) {
 func TestParseTavorExpressionOperatorInclude(t *testing.T) {
 	tmpfile, err := ioutil.TempFile("", "")
 	Nil(t, err)
-	defer os.Remove(tmpfile.Name())
+	defer func() {
+		NoError(t, os.Remove(tmpfile.Name()))
+	}()
 
 	_, err = tmpfile.WriteString("START = 123\n")
 	Nil(t, err)
