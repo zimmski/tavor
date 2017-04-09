@@ -16,19 +16,7 @@ script:
   # build all test imports
   - go test -i ./...
 
-  # linting
-  - export GOFMT=$(gofmt -l .)
-  - echo "$GOFMT"
-  - $(exit $(echo -n "$GOFMT" | wc -l))
-  - export GOERRCHECK=$(errcheck github.com/zimmski/tavor/...)
-  - echo "$GOERRCHECK"
-  - $(exit $(echo -n "$GOERRCHECK" | wc -l))
-  - export GOVET=$(go tool vet -all=true -v=true . 2>&1 | grep --invert-match -P "(Checking file|\%p of wrong type|can't check non-constant format|not compatible with reflect.StructTag.Get)")
-  - echo "$GOVET"
-  - $(exit $(echo -n "$GOVET" | wc -l))
-  - export GOLINT=$(golint ./... | grep --invert-match -P "(_string.go:)")
-  - echo "$GOLINT"
-  - $(exit $(echo -n "$GOLINT" | wc -l))
+  - make lint
 
   # test and do code coverage
   - ginkgo -r -cover -race -skipPackage="testdata"
