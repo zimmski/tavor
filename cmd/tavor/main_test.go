@@ -36,7 +36,7 @@ func TestMainCommandListingOptions(t *testing.T) {
 
 	exitCode, out := execMain(t, []string{"fuzz", "--list-exec-argument-types"})
 
-	assert.Equal(t, exitCodeOk, exitCode)
+	assert.Equal(t, exitCodeHelp, exitCode)
 	assert.Contains(t, out, strings.Join(execArgumentTypes, "\n"))
 }
 

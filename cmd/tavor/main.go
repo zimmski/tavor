@@ -214,35 +214,38 @@ func checkArguments(args []string, opts *options) (string, exitCodeType) {
 	} else if opts.General.Version {
 		fmt.Printf("Tavor v%s\n", tavor.Version)
 
-		return "", exitCodeOk
+		return "", exitCodeHelp
 	} else if opts.Fuzz.Filter.ListFilters || opts.Graph.Filter.ListFilters {
 		for _, name := range tavorFuzzFilter.List() {
 			fmt.Println(name)
 		}
 
-		return "", exitCodeOk
+		return "", exitCodeHelp
 	} else if opts.Fuzz.ListStrategies {
 		for _, name := range tavorFuzzStrategy.List() {
 			fmt.Println(name)
 		}
 
-		return "", exitCodeOk
+		return "", exitCodeHelp
 	} else if opts.Fuzz.Exec.ListExecArgumentTypes || opts.Reduce.Exec.ListExecArgumentTypes {
 		for _, name := range execArgumentTypes {
 			fmt.Println(name)
 		}
 
-		return "", exitCodeOk
+		return "", exitCodeHelp
 	} else if opts.Reduce.ListStrategies {
 		for _, name := range tavorReduceStrategy.List() {
 			fmt.Println(name)
 		}
 
-		return "", exitCodeOk
+		return "", exitCodeHelp
 	}
 
 	if err != nil {
-		return "", exitError(err.Error())
+		e, ok := err.(*flags.Error)
+		if !ok || e.Type != flags.ErrCommandRequired {
+			return "", exitError(err.Error())
+		}
 	}
 
 	if completion {
@@ -305,7 +308,12 @@ func checkArguments(args []string, opts *options) (string, exitCodeType) {
 	log.Infof("using seed %d", opts.Global.Seed)
 	log.Infof("using max repeat %d", opts.Global.MaxRepeat)
 
-	return p.Active.Name, exitCodeOk
+	var cmd string
+	if p.Active != nil {
+		cmd = p.Active.Name
+	}
+
+	return cmd, exitCodeOk
 }
 
 func exitError(format string, args ...interface{}) exitCodeType {
@@ -355,7 +363,7 @@ func mainCmd(args []string) exitCodeType {
 	var opts = new(options)
 
 	command, exitCode := checkArguments(args, opts)
-	if command == "" {
+	if exitCode != exitCodeOk {
 		return exitCode
 	}
 
@@ -384,16 +392,24 @@ func mainCmd(args []string) exitCodeType {
 		log.Info("Internal AST:")
 
 		token.PrettyPrintInternalTree(os.Stdout, doc)
+
+		return exitCodeOk
 	}
 
 	if opts.Format.Print {
 		log.Info("AST:")
 
 		token.PrettyPrintTree(os.Stdout, doc)
+
+		return exitCodeOk
 	}
 
 	if opts.Format.Check {
 		return exitCodeOk
+	}
+
+	if command == "" {
+		return exitCode
 	}
 
 	r := rand.New(rand.NewSource(opts.Global.Seed))
