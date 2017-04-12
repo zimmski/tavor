@@ -53,10 +53,10 @@ type options struct {
 	} `group:"Global options"`
 
 	Format struct {
-		Check         bool           `long:"check" description:"Just check the syntax of the format file and exit"`
-		FormatFile    flags.Filename `long:"format-file" description:"Input tavor format file" required:"true"`
-		Print         bool           `long:"print" description:"Prints the AST of the parsed format file"`
-		PrintInternal bool           `long:"print-internal" description:"Prints the internal AST of the parsed format file"`
+		Check         bool           `long:"check" description:"Checks the syntax of the format file and exits"`
+		FormatFile    flags.Filename `long:"format-file" description:"Input Tavor format file" required:"true"`
+		Print         bool           `long:"print" description:"Prints the AST of the parsed format file and exits"`
+		PrintInternal bool           `long:"print-internal" description:"Prints the internal AST of the parsed format file and exits"`
 	} `group:"Format file options"`
 
 	Fuzz struct {
