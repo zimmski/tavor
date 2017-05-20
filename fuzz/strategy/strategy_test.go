@@ -89,7 +89,7 @@ func testStrategyLoopDetection(t *testing.T, newStrategy Strategy) {
 
 		a := primitives.NewConstantInt(2)
 		p := primitives.NewPointer(a)
-		o := lists.NewAll(
+		o := lists.NewConcatenation(
 			p,
 			primitives.NewConstantInt(1),
 		)
@@ -102,7 +102,7 @@ func testStrategyLoopDetection(t *testing.T, newStrategy Strategy) {
 		// check for simple loops
 
 		p := primitives.NewEmptyPointer(tok)
-		o := lists.NewAll(
+		o := lists.NewConcatenation(
 			p,
 			primitives.NewConstantInt(1),
 		)
@@ -113,7 +113,7 @@ func testStrategyLoopDetection(t *testing.T, newStrategy Strategy) {
 		Equal(t, ErrEndlessLoopDetected, err.(*Error).Type)
 
 		p = primitives.NewEmptyPointer(tok)
-		o = lists.NewAll(
+		o = lists.NewConcatenation(
 			primitives.NewConstantInt(1),
 			p,
 		)
@@ -127,7 +127,7 @@ func testStrategyLoopDetection(t *testing.T, newStrategy Strategy) {
 		// deeper loops
 
 		p := primitives.NewEmptyPointer(tok)
-		o := lists.NewAll(
+		o := lists.NewConcatenation(
 			lists.NewOne(
 				p,
 				primitives.NewConstantInt(1),

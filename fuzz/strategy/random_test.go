@@ -24,7 +24,7 @@ func TestRandomStrategy(t *testing.T) {
 	b := primitives.NewRangeInt(5, 10)
 
 	c := constraints.NewOptional(
-		lists.NewAll(a, b),
+		lists.NewConcatenation(a, b),
 	)
 
 	r := test.NewRandTest(1)

@@ -157,14 +157,14 @@ func TestInternalParse(t *testing.T) {
 	// All
 	checkParse(
 		t,
-		lists.NewAll(
+		lists.NewConcatenation(
 			primitives.NewConstantInt(1),
 			primitives.NewConstantString("a"),
 		),
 		"1a",
 	)
 
-	errs = ParseInternal(lists.NewAll(
+	errs = ParseInternal(lists.NewConcatenation(
 		primitives.NewConstantInt(1),
 		primitives.NewConstantString("a"),
 		primitives.NewConstantInt(2),
@@ -172,7 +172,7 @@ func TestInternalParse(t *testing.T) {
 
 	Equal(t, token.ParseErrorUnexpectedEOF, errs[0].(*token.ParserError).Type)
 
-	errs = ParseInternal(lists.NewAll(
+	errs = ParseInternal(lists.NewConcatenation(
 		primitives.NewConstantInt(1),
 		primitives.NewConstantString("a"),
 	), strings.NewReader("1a2b"))
@@ -202,11 +202,11 @@ func TestInternalParse(t *testing.T) {
 
 	// combine
 	o = lists.NewOne(
-		lists.NewAll(
+		lists.NewConcatenation(
 			primitives.NewConstantInt(1),
 			primitives.NewConstantString("a"),
 		),
-		lists.NewAll(
+		lists.NewConcatenation(
 			primitives.NewConstantInt(1),
 			primitives.NewConstantString("b"),
 		),
@@ -228,7 +228,7 @@ func TestInternalParse(t *testing.T) {
 	Equal(t, token.ParseErrorUnexpectedData, errs[0].(*token.ParserError).Type)
 
 	// optional
-	o = lists.NewAll(
+	o = lists.NewConcatenation(
 		constraints.NewOptional(primitives.NewConstantInt(1)),
 		primitives.NewConstantString("a"),
 	)
@@ -252,7 +252,7 @@ func TestInternalParse(t *testing.T) {
 	Equal(t, token.ParseErrorUnexpectedData, errs[0].(*token.ParserError).Type)
 
 	// repeat
-	o = lists.NewAll(
+	o = lists.NewConcatenation(
 		primitives.NewConstantInt(1),
 		lists.NewRepeat(primitives.NewConstantInt(2), 2, 5),
 	)
@@ -275,7 +275,7 @@ func TestInternalParse(t *testing.T) {
 	errs = ParseInternal(o, strings.NewReader("1222222"))
 	Equal(t, token.ParseErrorExpectedEOF, errs[0].(*token.ParserError).Type)
 
-	o = lists.NewAll(
+	o = lists.NewConcatenation(
 		primitives.NewConstantInt(1),
 		lists.NewRepeat(primitives.NewConstantInt(2), 0, 5),
 	)
@@ -299,7 +299,7 @@ func TestInternalParse(t *testing.T) {
 	)
 
 	// complex repeat
-	o = lists.NewAll(
+	o = lists.NewConcatenation(
 		primitives.NewConstantInt(1),
 		lists.NewRepeat(lists.NewOne(
 			primitives.NewConstantInt(2),

@@ -32,7 +32,7 @@ func TestLinearStrategy(t *testing.T) {
 			primitives.NewConstantInt(2),
 		)
 		c.Activate()
-		root := lists.NewAll(
+		root := lists.NewConcatenation(
 			primitives.NewConstantInt(1),
 			c,
 		)
@@ -58,7 +58,7 @@ func TestLinearStrategy(t *testing.T) {
 			primitives.NewConstantInt(2),
 		)
 		c.Activate()
-		root := lists.NewAll(
+		root := lists.NewConcatenation(
 			primitives.NewConstantInt(1),
 			c,
 		)

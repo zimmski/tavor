@@ -36,7 +36,7 @@ func TestGraphDot(t *testing.T) {
 
 	var got bytes.Buffer
 
-	WriteDot(lists.NewAll(
+	WriteDot(lists.NewConcatenation(
 		primitives.NewConstantInt(1),
 		lists.NewOne(
 			primitives.NewConstantInt(2),

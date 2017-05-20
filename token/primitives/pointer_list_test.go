@@ -31,7 +31,7 @@ func TestPointerList(t *testing.T) {
 		NotNil(t, err)
 		Nil(t, o.Get())
 
-		l := lists.NewAll(a)
+		l := lists.NewConcatenation(a)
 
 		err = o.Set(l)
 		Nil(t, err)
