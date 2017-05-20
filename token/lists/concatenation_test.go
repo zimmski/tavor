@@ -12,14 +12,14 @@ import (
 func TestAllTokensToBeTokens(t *testing.T) {
 	var tok *token.ListToken
 
-	Implements(t, tok, &All{})
+	Implements(t, tok, &Concatenation{})
 }
 
 func TestAll(t *testing.T) {
 	a := primitives.NewConstantInt(10)
 	b := primitives.NewConstantString("abc")
 
-	o := NewAll(a, b)
+	o := NewConcatenation(a, b)
 	Equal(t, "10abc", o.String())
 	Equal(t, 2, o.Len())
 	Equal(t, 1, o.Permutations())
@@ -39,7 +39,7 @@ func TestAll(t *testing.T) {
 	Nil(t, i)
 
 	c := primitives.NewRangeInt(1, 2)
-	o = NewAll(a, b, c)
+	o = NewConcatenation(a, b, c)
 	Equal(t, "10abc1", o.String())
 	Equal(t, 3, o.Len())
 	Equal(t, 1, o.Permutations())

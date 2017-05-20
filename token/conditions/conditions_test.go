@@ -35,7 +35,7 @@ func TestVariableIf(t *testing.T) {
 
 	Equal(t, o.Permutation(1).(*token.PermutationError).Type, token.PermutationErrorIndexOutOfBound)
 
-	o = lists.NewAll(
+	o = lists.NewConcatenation(
 		NewIf(IfPair{
 			Head: NewBooleanEqual(primitives.NewConstantInt(1), primitives.NewConstantInt(2)),
 			Body: primitives.NewConstantString("a"),

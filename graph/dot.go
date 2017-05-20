@@ -72,7 +72,7 @@ func (g *dotGraph) addDot(tok token.Token) (start, next map[token.Token]bool) {
 				next[k] = v
 			}
 		}
-	case *lists.All:
+	case *lists.Concatenation:
 		var prev map[token.Token]bool
 
 		l := t.InternalLen()

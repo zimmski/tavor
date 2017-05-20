@@ -9,7 +9,7 @@ import (
 )
 
 func TestUniqueItem(t *testing.T) {
-	list := NewAll(
+	list := NewConcatenation(
 		primitives.NewConstantInt(1),
 		primitives.NewConstantInt(2),
 		primitives.NewConstantInt(3),

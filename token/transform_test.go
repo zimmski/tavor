@@ -18,7 +18,7 @@ func TestUnrollPointers(t *testing.T) {
 		var tok *token.Token
 
 		p := primitives.NewEmptyPointer(tok)
-		s := lists.NewAll(
+		s := lists.NewConcatenation(
 			primitives.NewConstantString("group"),
 			lists.NewRepeat(
 				lists.NewOne(

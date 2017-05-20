@@ -22,7 +22,7 @@ func TestPermuteOptionalsfindOptionals(t *testing.T) {
 		a := primitives.NewConstantInt(1)
 		b := constraints.NewOptional(primitives.NewConstantInt(2))
 		c := primitives.NewPointer(primitives.NewConstantInt(3))
-		d := lists.NewAll(a, b, c)
+		d := lists.NewConcatenation(a, b, c)
 
 		optionals := o.findOptionals(r, d, false)
 
@@ -33,7 +33,7 @@ func TestPermuteOptionalsfindOptionals(t *testing.T) {
 	{
 		a := constraints.NewOptional(primitives.NewConstantInt(1))
 		b := constraints.NewOptional(primitives.NewConstantInt(2))
-		c := lists.NewAll(a, b)
+		c := lists.NewConcatenation(a, b)
 		d := constraints.NewOptional(c)
 
 		optionals := o.findOptionals(r, d, false)
@@ -75,7 +75,7 @@ func TestPermuteOptionalsStrategy(t *testing.T) {
 		a := constraints.NewOptional(primitives.NewConstantInt(1))
 		b := primitives.NewConstantInt(2)
 		c := constraints.NewOptional(primitives.NewConstantInt(3))
-		d := lists.NewAll(a, b, c)
+		d := lists.NewConcatenation(a, b, c)
 
 		ch, err := NewPermuteOptionals(d, r)
 		Nil(t, err)
@@ -134,7 +134,7 @@ func TestPermuteOptionalsStrategy(t *testing.T) {
 	{
 		a := constraints.NewOptional(primitives.NewConstantInt(1))
 		b := constraints.NewOptional(primitives.NewConstantInt(2))
-		c := lists.NewAll(a, b)
+		c := lists.NewConcatenation(a, b)
 		d := constraints.NewOptional(c)
 
 		var got []string
@@ -158,9 +158,9 @@ func TestPermuteOptionalsStrategy(t *testing.T) {
 	{
 		a1 := constraints.NewOptional(primitives.NewConstantInt(1))
 		a2 := constraints.NewOptional(primitives.NewConstantInt(11))
-		a := constraints.NewOptional(lists.NewAll(a1, a2, primitives.NewConstantString("a")))
+		a := constraints.NewOptional(lists.NewConcatenation(a1, a2, primitives.NewConstantString("a")))
 		b := constraints.NewOptional(primitives.NewConstantString("b"))
-		c := lists.NewAll(a, b, primitives.NewConstantString("c"))
+		c := lists.NewConcatenation(a, b, primitives.NewConstantString("c"))
 		d := constraints.NewOptional(c)
 
 		var got []string
@@ -188,7 +188,7 @@ func TestPermuteOptionalsStrategy(t *testing.T) {
 		})
 	}
 	{
-		a := lists.NewAll(
+		a := lists.NewConcatenation(
 			constraints.NewOptional(primitives.NewConstantInt(1)),
 			constraints.NewOptional(primitives.NewConstantInt(2)),
 		)
@@ -218,7 +218,7 @@ func TestPermuteOptionalsStrategy(t *testing.T) {
 		Equal(t, 10, s.Next())
 		Equal(t, 12, s.Next())
 
-		a := lists.NewAll(
+		a := lists.NewConcatenation(
 			constraints.NewOptional(primitives.NewConstantString("a")),
 			constraints.NewOptional(primitives.NewConstantString("b")),
 			s.ResetItem(),

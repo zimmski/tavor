@@ -28,7 +28,7 @@ func TestStrategySeen(t *testing.T) {
 	)
 	c2 := primitives.NewConstantInt(2)
 	rep := lists.NewRepeat(c2, 2, 10)
-	root := lists.NewAll(
+	root := lists.NewConcatenation(
 		one,
 		rep,
 	)
@@ -90,7 +90,7 @@ func TestStrategyReplaces(t *testing.T) {
 		p := primitives.NewPointer(s1)
 		c2 := primitives.NewConstantString("2")
 		rep := lists.NewRepeat(c2, 2, 10)
-		root := lists.NewAll(
+		root := lists.NewConcatenation(
 			one,
 			p,
 			rep,

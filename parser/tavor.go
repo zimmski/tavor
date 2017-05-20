@@ -361,7 +361,7 @@ OUT:
 			case 1:
 				addToken(toks[0])
 			default:
-				addToken(lists.NewAll(toks...))
+				addToken(lists.NewConcatenation(toks...))
 			}
 
 			log.DecreaseIndentation()
@@ -393,7 +393,7 @@ OUT:
 			case 1:
 				addToken(constraints.NewOptional(toks[0]))
 			default:
-				addToken(constraints.NewOptional(lists.NewAll(toks...)))
+				addToken(constraints.NewOptional(lists.NewConcatenation(toks...)))
 			}
 
 			log.DecreaseIndentation()
@@ -506,7 +506,7 @@ OUT:
 
 				addToken(lists.NewRepeatWithTokens(toks[0], from, to))
 			default:
-				addToken(lists.NewRepeatWithTokens(lists.NewAll(toks...), from, to))
+				addToken(lists.NewRepeatWithTokens(lists.NewConcatenation(toks...), from, to))
 			}
 
 			log.DecreaseIndentation()
@@ -1232,7 +1232,7 @@ SCOPE:
 				case 1:
 					orTerms = append(orTerms, toks[0])
 				default:
-					orTerms = append(orTerms, lists.NewAll(toks...))
+					orTerms = append(orTerms, lists.NewConcatenation(toks...))
 				}
 
 				if c == '|' {
@@ -1333,7 +1333,7 @@ SCOPE:
 				case 1:
 					tok = toks[0]
 				default:
-					tok = lists.NewAll(toks...)
+					tok = lists.NewConcatenation(toks...)
 				}
 
 				ifPart := conditions.IfPair{
@@ -1474,7 +1474,7 @@ func (p *tavorParser) parseTokenDefinition(variableScope *token.VariableScope) (
 	case 1:
 		tok = tokens[0]
 	default:
-		tok = lists.NewAll(tokens...)
+		tok = lists.NewConcatenation(tokens...)
 	}
 
 	err = p.registerNamedToken(name, tok, tokenPosition, variableScope)
@@ -1920,7 +1920,7 @@ func ParseTavor(src io.Reader) (token.Token, error) {
 	if len(automaticResets) != 0 {
 		automaticResets = append(automaticResets, start)
 
-		start = lists.NewAll(automaticResets...)
+		start = lists.NewConcatenation(automaticResets...)
 	}
 
 	start, err := token.UnrollPointers(start)

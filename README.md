@@ -578,7 +578,7 @@ tok := primitives.NewConstantString("text")
 A sequence of tokens can be for example created with the following code.
 
 ```go
-tok := lists.NewAll(
+tok := lists.NewConcatenation(
 	primitives.NewConstantString("This is example number "),
 	primitives.NewConstantInt(2),
 	primitives.NewConstantString(" which is still not the last one.")
@@ -635,7 +635,7 @@ func main() {
     primitives.NewConstantInt(3),
   )
 
-  continueFuzzing, err := strategy.NewAllPermutations(tok, nil)
+  continueFuzzing, err := strategy.NewConcatenationPermutations(tok, nil)
   if err != nil {
     panic(err)
   }
@@ -759,7 +759,7 @@ import (
 )
 
 func main() {
-	var doc token.Token = lists.NewAll(
+	var doc token.Token = lists.NewConcatenation(
 		primitives.NewConstantString("old"),
 		primitives.NewConstantString(" "),
 		primitives.NewConstantString("string"),
@@ -873,7 +873,7 @@ import (
 )
 
 func main() {
-	var doc token.Token = lists.NewAll(
+	var doc token.Token = lists.NewConcatenation(
 		primitives.NewConstantInt(7),
 		primitives.NewConstantString(" "),
 		primitives.NewConstantInt(9),
@@ -1041,7 +1041,7 @@ func main() {
 	dRepeat := lists.NewRepeat(primitives.NewConstantString("d"), 1, 100)
 	dRepeat.Permutation(1)
 
-	var doc token.Token = lists.NewAll(
+	var doc token.Token = lists.NewConcatenation(
 		aRepeat,
 		bRepeat,
 		cRepeat,
@@ -1191,7 +1191,7 @@ func (s *Smiley) Clone() token.Token {
 }
 ```
 
-The `Permutation` category generates distinct permutations of a token. The method `Permutations` defines how many permutations a single token holds. The `Smiley` token has a constant number of permutations since the amount of eyes and mouths is constant. Other token like range integers depend on their initial values. The method `PermutationsAll` calculates the permutations of the token itself and all its children. Since the `Smiley` token has no children it is the same as `Permutations`. It is important to note that calculating the amount of permutations is not a straightforward task. The list tokens [All](/token/lists/all.go) and [One](/token/lists/one.go) for example can have the same amount of children but have very different permutation calculations. The `Permutation` method completes the category. It sets a distinct permutation of the token. It is a good convention to put the execution of the permutation in its own method `permutation` since the resulting state can be cached. The `Permutation` of the `Token` interface then handels the validation and meta-handling of the permutation number.
+The `Permutation` category generates distinct permutations of a token. The method `Permutations` defines how many permutations a single token holds. The `Smiley` token has a constant number of permutations since the amount of eyes and mouths is constant. Other token like range integers depend on their initial values. The method `PermutationsAll` calculates the permutations of the token itself and all its children. Since the `Smiley` token has no children it is the same as `Permutations`. It is important to note that calculating the amount of permutations is not a straightforward task. The list tokens [Concatenation](/token/lists/concatenation.go) and [One](/token/lists/one.go) for example can have the same amount of children but have very different permutation calculations. The `Permutation` method completes the category. It sets a distinct permutation of the token. It is a good convention to put the execution of the permutation in its own method `permutation` since the resulting state can be cached. The `Permutation` of the `Token` interface then handels the validation and meta-handling of the permutation number.
 
 ```go
 func (s *Smiley) Permutations() uint {

@@ -87,7 +87,7 @@ func TestExistingSequenceItem(t *testing.T) {
 
 	// Except with list token
 	{
-		a := lists.NewAll(primitives.NewConstantInt(10), primitives.NewConstantInt(12))
+		a := lists.NewConcatenation(primitives.NewConstantInt(10), primitives.NewConstantInt(12))
 		o = s.ExistingItem([]token.Token{a})
 		Equal(t, "10", o.String())
 		Nil(t, o.Permutation(0))
