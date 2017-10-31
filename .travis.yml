@@ -21,7 +21,7 @@ script:
   # test and do code coverage
   - ginkgo -r -cover -race -skipPackage="testdata"
   - gover
-  - if [ "$TRAVIS_SECURE_ENV_VARS" = "true" ] && [[ $(go version) =~ go1\.5 ]]; then goveralls -coverprofile=gover.coverprofile -service=travis-ci -repotoken $COVERALLS_TOKEN; fi
+  - if [ "$TRAVIS_SECURE_ENV_VARS" = "true" ]; then goveralls -coverprofile=gover.coverprofile -service=travis-ci -repotoken $COVERALLS_TOKEN; fi
 
 env:
   # coveralls.io
