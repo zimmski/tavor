@@ -756,17 +756,18 @@ func mainCmd(args []string) exitCodeType {
 
 			for i := range ch {
 				if folder == "" {
-					if opts.General.Debug {
-						if another {
-							fmt.Println()
-						} else {
-							another = true
-						}
+					log.Debug("result:")
+
+					if another {
+						fmt.Print(opts.Fuzz.ResultSeparator)
+					} else {
+						another = true
 					}
 
-					log.Debug("result:")
 					fmt.Print(doc.String())
-					fmt.Print(opts.Fuzz.ResultSeparator)
+					if opts.General.Debug {
+						fmt.Println()
+					}
 				} else {
 					out := doc.String()
 					sum := md5.Sum([]byte(out))

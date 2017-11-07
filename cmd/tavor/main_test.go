@@ -29,7 +29,7 @@ func TestMain(t *testing.T) {
 	exitCode, out := execMain(t, []string{"--format-file", f.Name(), "fuzz", "--strategy", "AllPermutations"})
 
 	assert.Equal(t, exitCodeOk, exitCode)
-	assert.Contains(t, out, "1\n2\n3\n")
+	assert.Contains(t, out, "1\n2\n3")
 }
 
 func TestMainCommandListingOptions(t *testing.T) {
