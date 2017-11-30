@@ -635,7 +635,7 @@ func main() {
     primitives.NewConstantInt(3),
   )
 
-  continueFuzzing, err := strategy.NewConcatenationPermutations(tok, nil)
+  continueFuzzing, err := strategy.NewAllPermutations(tok, nil)
   if err != nil {
     panic(err)
   }

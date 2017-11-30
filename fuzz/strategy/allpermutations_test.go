@@ -103,7 +103,7 @@ func TestAllPermutationsStrategy(t *testing.T) {
 	{
 		a := primitives.NewConstantInt(1)
 
-		ch, err := NewConcatenationPermutations(a, r)
+		ch, err := NewAllPermutations(a, r)
 		Nil(t, err)
 
 		_, ok := <-ch
@@ -192,7 +192,7 @@ func TestAllPermutationsStrategy(t *testing.T) {
 		c := constraints.NewOptional(primitives.NewConstantInt(3))
 		d := lists.NewConcatenation(a, b, c)
 
-		ch, err := NewConcatenationPermutations(d, r)
+		ch, err := NewAllPermutations(d, r)
 		Nil(t, err)
 
 		_, ok := <-ch
@@ -219,7 +219,7 @@ func TestAllPermutationsStrategy(t *testing.T) {
 		False(t, ok)
 
 		// rerun
-		ch, err = NewConcatenationPermutations(d, r)
+		ch, err = NewAllPermutations(d, r)
 		Nil(t, err)
 
 		_, ok = <-ch
@@ -231,7 +231,7 @@ func TestAllPermutationsStrategy(t *testing.T) {
 		// run with range
 		var got []string
 
-		ch, err = NewConcatenationPermutations(d, r)
+		ch, err = NewAllPermutations(d, r)
 		Nil(t, err)
 		for i := range ch {
 			got = append(got, d.String())
@@ -578,7 +578,7 @@ func validateTavorAllPermutations(t *testing.T, format string, expect []string) 
 
 	var got []string
 
-	ch, err := NewConcatenationPermutations(o, r)
+	ch, err := NewAllPermutations(o, r)
 	Nil(t, err)
 	for i := range ch {
 		got = append(got, o.String())
@@ -592,7 +592,7 @@ func validateTavorAllPermutations(t *testing.T, format string, expect []string) 
 func validateTokenAllPermutations(t *testing.T, tok token.Token, expect []string) {
 	r := test.NewRandTest(1)
 
-	ch, err := NewConcatenationPermutations(tok, r)
+	ch, err := NewAllPermutations(tok, r)
 	Nil(t, err)
 
 	var got []string
@@ -607,5 +607,5 @@ func validateTokenAllPermutations(t *testing.T, tok token.Token, expect []string
 }
 
 func TestAllPermutationsStrategyLoopDetection(t *testing.T) {
-	testStrategyLoopDetection(t, NewConcatenationPermutations)
+	testStrategyLoopDetection(t, NewAllPermutations)
 }

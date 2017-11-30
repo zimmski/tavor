@@ -7,7 +7,7 @@ import (
 )
 
 func init() {
-	Register("AllPermutations", NewConcatenationPermutations)
+	Register("AllPermutations", NewAllPermutations)
 }
 
 type allPermutationsLevel struct {
@@ -21,9 +21,9 @@ type allPermutations struct {
 	root token.Token
 }
 
-// NewConcatenationPermutations implements a fuzzing strategy that generates all possible permutations of a token graph.
+// NewAllPermutations implements a fuzzing strategy that generates all possible permutations of a token graph.
 // Every iteration of the strategy generates a new permutation. The generation is deterministic. Since this strategy really produces every possible permutation of a token graph, it is advised to only use the strategy on graphs with few states since the state explosion problem manifests itself quite fast.
-func NewConcatenationPermutations(root token.Token, r rand.Rand) (chan struct{}, error) {
+func NewAllPermutations(root token.Token, r rand.Rand) (chan struct{}, error) {
 	if token.LoopExists(root) {
 		return nil, &Error{
 			Message: "found endless loop in graph. Cannot proceed.",
