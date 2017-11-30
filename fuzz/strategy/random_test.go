@@ -136,6 +136,21 @@ func TestRandomStrategyCases(t *testing.T) {
 			},
 		)
 	}
+	{
+		// If a sequence item does not "exist" do not fail on the execution
+		validateTavorRandom(
+			t,
+			1,
+			`
+				$Literal Sequence
+
+				START = "test" $Literal.Existing
+			`,
+			[]string{
+				"test0", // TODO this test should not output any generation, since there is no existing item for $Literal. https://github.com/zimmski/tavor/issues/103
+			},
+		)
+	}
 }
 
 func validateTavorRandom(t *testing.T, seed int, format string, expect []string) {

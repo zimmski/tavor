@@ -169,7 +169,15 @@ func (s *permuteOptionals) findOptionals(r rand.Rand, root token.Token, fromChil
 			c := t.Get()
 
 			if c != nil {
-				err := c.Permutation(uint(r.Intn(int(c.Permutations()))))
+				p := int64(c.Permutations())
+				var rp uint
+				if p > 0 {
+					rp = uint(r.Int63n(p))
+				} else {
+					log.Errorf("No valid permutation available")
+				}
+
+				err := c.Permutation(rp)
 				if err != nil {
 					log.Panic(err)
 				}
@@ -180,7 +188,15 @@ func (s *permuteOptionals) findOptionals(r rand.Rand, root token.Token, fromChil
 			for i := t.Len() - 1; i >= 0; i-- {
 				c, _ := t.Get(i)
 
-				err := c.Permutation(uint(r.Intn(int(c.Permutations()))))
+				p := int64(c.Permutations())
+				var rp uint
+				if p > 0 {
+					rp = uint(r.Int63n(p))
+				} else {
+					log.Errorf("No valid permutation available")
+				}
+
+				err := c.Permutation(rp)
 				if err != nil {
 					log.Panic(err)
 				}
