@@ -568,6 +568,24 @@ func TestAllPermutationsStrategy(t *testing.T) {
 			},
 		)
 	}
+	{
+		// Correct next and existing behavior of sequences
+		validateTavorAllPermutations(
+			t,
+			`
+				$Literal Sequence
+
+				START = +($Literal.Next " " $Literal.Existing "\n")
+			`,
+			[]string{
+				"1 1\n",
+				"1 1\n2 1\n",
+				"1 1\n2 1\n", // TODO the number "2" is not used for the existing part https://github.com/zimmski/tavor/issues/12
+				"1 1\n2 1\n",
+				"1 1\n2 1\n",
+			},
+		)
+	}
 }
 
 func validateTavorAllPermutations(t *testing.T, format string, expect []string) {
