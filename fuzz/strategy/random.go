@@ -70,7 +70,7 @@ func (s *random) fuzz(tok token.Token, r rand.Rand, variableScope *token.Variabl
 	}
 
 	p := int64(tok.Permutations())
-	var rp uint = 0
+	var rp uint
 	if p > 0 {
 		rp = uint(r.Int63n(p))
 	} else {
