@@ -3,11 +3,12 @@ package token
 import (
 	"github.com/zimmski/container/list/linkedlist"
 
+	"github.com/zimmski/tavor"
 	"github.com/zimmski/tavor/log"
 )
 
 // ResetResetTokens resets all tokens in the token graph that fullfill the ResetToken interface
-func ResetResetTokens(root Token) {
+func ResetResetTokens(root Token) (err error) {
 	var queue = linkedlist.New()
 
 	queue.Unshift(root)
@@ -19,7 +20,14 @@ func ResetResetTokens(root Token) {
 		case ResetToken:
 			log.Debugf("reset %#v(%p)", tok, tok)
 
-			tok.Reset()
+			e := tok.Reset()
+			if e != nil {
+				if e == tavor.ErrNoSequenceValue {
+					err = e
+				} else {
+					panic(err)
+				}
+			}
 		}
 
 		if t, ok := v.(Follow); ok && !t.Follow() {
@@ -39,6 +47,8 @@ func ResetResetTokens(root Token) {
 			}
 		}
 	}
+
+	return err
 }
 
 // ResetScope resets all scopes of tokens in the token graph that fullfill the ScopeToken interface

@@ -25,7 +25,7 @@ func TestSequence(t *testing.T) {
 	Equal(t, 12, o.Next())
 	Equal(t, 14, o.Next())
 
-	o.Reset()
+	Nil(t, o.Reset())
 
 	Equal(t, 10, o.Next())
 	Equal(t, 12, o.Next())
@@ -47,7 +47,7 @@ func TestSequenceItem(t *testing.T) {
 
 	Equal(t, 1, o.Permutations())
 
-	o.Reset()
+	Nil(t, o.Reset())
 	Equal(t, "16", o.String())
 }
 

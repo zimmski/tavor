@@ -12,7 +12,7 @@ func PrettyPrintTree(w io.Writer, root Token) {
 }
 
 func prettyPrintTreeRek(w io.Writer, tok Token, level int) {
-	fmt.Fprintf(w, "%s(%p)%#v\n", strings.Repeat("\t", level), tok, tok)
+	fmt.Fprintf(w, "%s(%p)%#v %d Permutations\n", strings.Repeat("\t", level), tok, tok, tok.Permutations())
 
 	switch t := tok.(type) {
 	case ForwardToken:

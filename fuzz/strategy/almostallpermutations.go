@@ -76,7 +76,7 @@ func NewAlmostAllPermutations(root token.Token, r rand.Rand) (chan struct{}, err
 		}
 
 		token.ResetCombinedScope(s.root)
-		token.ResetResetTokens(s.root)
+		_ = token.ResetResetTokens(s.root)
 		token.ResetCombinedScope(s.root)
 
 		log.Debug("done with fuzzing step")
@@ -171,7 +171,7 @@ STEP:
 
 		if !s.overextended {
 			token.ResetCombinedScope(s.root)
-			token.ResetResetTokens(s.root)
+			_ = token.ResetResetTokens(s.root)
 			token.ResetCombinedScope(s.root)
 
 			log.Debug("done with fuzzing step")

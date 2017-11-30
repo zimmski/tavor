@@ -103,7 +103,7 @@ func TestAllPermutationsStrategy(t *testing.T) {
 	{
 		a := primitives.NewConstantInt(1)
 
-		ch, err := NewConcatenationPermutations(a, r)
+		ch, err := NewAllPermutations(a, r)
 		Nil(t, err)
 
 		_, ok := <-ch
@@ -192,7 +192,7 @@ func TestAllPermutationsStrategy(t *testing.T) {
 		c := constraints.NewOptional(primitives.NewConstantInt(3))
 		d := lists.NewConcatenation(a, b, c)
 
-		ch, err := NewConcatenationPermutations(d, r)
+		ch, err := NewAllPermutations(d, r)
 		Nil(t, err)
 
 		_, ok := <-ch
@@ -219,7 +219,7 @@ func TestAllPermutationsStrategy(t *testing.T) {
 		False(t, ok)
 
 		// rerun
-		ch, err = NewConcatenationPermutations(d, r)
+		ch, err = NewAllPermutations(d, r)
 		Nil(t, err)
 
 		_, ok = <-ch
@@ -231,7 +231,7 @@ func TestAllPermutationsStrategy(t *testing.T) {
 		// run with range
 		var got []string
 
-		ch, err = NewConcatenationPermutations(d, r)
+		ch, err = NewAllPermutations(d, r)
 		Nil(t, err)
 		for i := range ch {
 			got = append(got, d.String())
@@ -554,6 +554,38 @@ func TestAllPermutationsStrategy(t *testing.T) {
 			},
 		)
 	}
+	{
+		// If a sequence item does not "exist" do not fail on the execution
+		validateTavorAllPermutations(
+			t,
+			`
+				$Literal Sequence
+
+				START = "test" $Literal.Existing
+			`,
+			[]string{
+				"test0", // TODO this test should not output any generation, since there is no existing item for $Literal. https://github.com/zimmski/tavor/issues/103
+			},
+		)
+	}
+	{
+		// Correct next and existing behavior of sequences
+		validateTavorAllPermutations(
+			t,
+			`
+				$Literal Sequence
+
+				START = +($Literal.Next " " $Literal.Existing "\n")
+			`,
+			[]string{
+				"1 1\n",
+				"1 1\n2 1\n",
+				"1 1\n2 1\n", // TODO the number "2" is not used for the existing part https://github.com/zimmski/tavor/issues/12
+				"1 1\n2 1\n",
+				"1 1\n2 1\n",
+			},
+		)
+	}
 }
 
 func validateTavorAllPermutations(t *testing.T, format string, expect []string) {
@@ -564,7 +596,7 @@ func validateTavorAllPermutations(t *testing.T, format string, expect []string) 
 
 	var got []string
 
-	ch, err := NewConcatenationPermutations(o, r)
+	ch, err := NewAllPermutations(o, r)
 	Nil(t, err)
 	for i := range ch {
 		got = append(got, o.String())
@@ -572,13 +604,13 @@ func validateTavorAllPermutations(t *testing.T, format string, expect []string) 
 		ch <- i
 	}
 
-	Equal(t, got, expect)
+	Equal(t, expect, got)
 }
 
 func validateTokenAllPermutations(t *testing.T, tok token.Token, expect []string) {
 	r := test.NewRandTest(1)
 
-	ch, err := NewConcatenationPermutations(tok, r)
+	ch, err := NewAllPermutations(tok, r)
 	Nil(t, err)
 
 	var got []string
@@ -589,9 +621,9 @@ func validateTokenAllPermutations(t *testing.T, tok token.Token, expect []string
 		ch <- i
 	}
 
-	Equal(t, got, expect)
+	Equal(t, expect, got)
 }
 
 func TestAllPermutationsStrategyLoopDetection(t *testing.T) {
-	testStrategyLoopDetection(t, NewConcatenationPermutations)
+	testStrategyLoopDetection(t, NewAllPermutations)
 }

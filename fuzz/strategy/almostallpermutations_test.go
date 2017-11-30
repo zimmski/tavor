@@ -525,7 +525,7 @@ func validateTavorAlmostAllPermutations(t *testing.T, format string, expect []st
 		ch <- i
 	}
 
-	Equal(t, got, expect)
+	Equal(t, expect, got)
 }
 
 func TestAlmostAllPermutationsStrategyLoopDetection(t *testing.T) {

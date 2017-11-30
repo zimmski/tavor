@@ -127,7 +127,7 @@ func (l *Repeat) Parse(pars *token.InternalParser, cur int) (int, []error) {
 	return cur, nil
 }
 
-func (l *Repeat) permutation(i uint) {
+func (l *Repeat) permutation(i uint) error {
 	toks := make([]token.Token, int(i)+int(l.From()))
 
 	token.ReleaseTokens(l)
@@ -137,6 +137,8 @@ func (l *Repeat) permutation(i uint) {
 	}
 
 	l.value = toks
+
+	return nil
 }
 
 // Permutation sets a specific permutation for this token
@@ -149,9 +151,7 @@ func (l *Repeat) Permutation(i uint) error {
 		}
 	}
 
-	l.permutation(i)
-
-	return nil
+	return l.permutation(i)
 }
 
 // Permutations returns the number of permutations for this token
@@ -493,17 +493,25 @@ func (l *Repeat) Reduces() uint {
 
 // ResetToken interface methods
 
-// Reset resets the (internal) state of this token and its dependences
-func (l *Repeat) Reset() {
+// Reset resets the (internal) state of this token and its dependences, returns an error if the reseted state should not be used for a generation.
+func (l *Repeat) Reset() error {
 	// TODO reset the list if we depend on something else. this could and should be done in another way...
 	_, okFrom := l.from.(*primitives.ConstantInt)
 	_, okTo := l.to.(*primitives.ConstantInt)
 
 	if !okFrom || !okTo {
 		for _, tok := range l.value {
-			token.ResetResetTokens(tok)
+			err := token.ResetResetTokens(tok)
+			if err != nil {
+				return err
+			}
 		}
 
-		l.permutation(l.Permutations() - 1)
+		err := l.permutation(l.Permutations() - 1)
+		if err != nil {
+			return err
+		}
 	}
+
+	return nil
 }

@@ -106,11 +106,7 @@ func WalkInternalTail(root Token, walkFunc func(tok Token) error) error {
 		}
 	}
 
-	if err := walkFunc(root); err != nil {
-		return err
-	}
-
-	return nil
+	return walkFunc(root)
 }
 
 // ReleaseTokens traverses the token graph and calls Release for every release token

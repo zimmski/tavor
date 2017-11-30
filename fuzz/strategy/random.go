@@ -69,7 +69,15 @@ func (s *random) fuzz(tok token.Token, r rand.Rand, variableScope *token.Variabl
 		variableScope = variableScope.Push()
 	}
 
-	err := tok.Permutation(uint(r.Int63n(int64(tok.Permutations()))))
+	p := int64(tok.Permutations())
+	var rp uint
+	if p > 0 {
+		rp = uint(r.Int63n(p))
+	} else {
+		log.Errorf("No valid permutation available")
+	}
+
+	err := tok.Permutation(rp)
 	if err != nil {
 		log.Panic(err)
 	}
@@ -101,7 +109,7 @@ func (s *random) fuzzYADDA(root token.Token, r rand.Rand) {
 	// especially the fuzz again part is tricky. the whole reason is because of dynamic repeats that clone during a reset. so the "reset" or regenerating of new child tokens has to be done better
 
 	token.ResetCombinedScope(root)
-	token.ResetResetTokens(root)
+	_ = token.ResetResetTokens(root)
 	token.ResetCombinedScope(root)
 
 	err := token.Walk(root, func(tok token.Token) error {
@@ -109,7 +117,15 @@ func (s *random) fuzzYADDA(root token.Token, r rand.Rand) {
 		case *sequences.SequenceExistingItem:
 			log.Debugf("Fuzz again %p(%#v)", tok, tok)
 
-			err := tok.Permutation(uint(r.Int63n(int64(tok.Permutations()))))
+			p := int64(tok.Permutations())
+			var rp uint
+			if p > 0 {
+				rp = uint(r.Int63n(p))
+			} else {
+				log.Errorf("No valid permutation available")
+			}
+
+			err := tok.Permutation(rp)
 			if err != nil {
 				log.Panic(err)
 			}
