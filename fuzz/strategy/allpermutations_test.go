@@ -603,7 +603,7 @@ func validateTokenAllPermutations(t *testing.T, tok token.Token, expect []string
 		ch <- i
 	}
 
-	Equal(t, got, expect)
+	Equal(t, expect, got)
 }
 
 func TestAllPermutationsStrategyLoopDetection(t *testing.T) {

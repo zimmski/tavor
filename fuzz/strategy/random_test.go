@@ -173,7 +173,7 @@ func validateTavorRandom(t *testing.T, seed int, format string, expect []string)
 	_, ok = <-ch
 	False(t, ok)
 
-	Equal(t, got, expect)
+	Equal(t, expect, got)
 }
 
 func TestRandomStrategyLoopDetection(t *testing.T) {
