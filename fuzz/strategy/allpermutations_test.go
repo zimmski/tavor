@@ -554,6 +554,20 @@ func TestAllPermutationsStrategy(t *testing.T) {
 			},
 		)
 	}
+	{
+		// If a sequence item does not "exist" do not fail on the execution
+		validateTavorAllPermutations(
+			t,
+			`
+				$Literal Sequence
+
+				START = "test" $Literal.Existing
+			`,
+			[]string{
+				"test0", // TODO this test should not output any generation, since there is no existing item for $Literal. https://github.com/zimmski/tavor/issues/103
+			},
+		)
+	}
 }
 
 func validateTavorAllPermutations(t *testing.T, format string, expect []string) {
@@ -572,7 +586,7 @@ func validateTavorAllPermutations(t *testing.T, format string, expect []string) 
 		ch <- i
 	}
 
-	Equal(t, got, expect)
+	Equal(t, expect, got)
 }
 
 func validateTokenAllPermutations(t *testing.T, tok token.Token, expect []string) {

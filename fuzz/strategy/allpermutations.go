@@ -174,7 +174,7 @@ STEP:
 
 func (s *allPermutations) nextStep(continueFuzzing chan struct{}) bool {
 	token.ResetCombinedScope(s.root)
-	token.ResetResetTokens(s.root)
+	_ = token.ResetResetTokens(s.root)
 	token.ResetCombinedScope(s.root)
 
 	log.Debug("done with fuzzing step")

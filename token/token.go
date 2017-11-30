@@ -144,8 +144,8 @@ type InternalReplace interface {
 
 // Reset defines a reset token which can reset its (internal) state
 type Reset interface {
-	// Reset resets the (internal) state of this token and its dependences
-	Reset()
+	// Reset resets the (internal) state of this token and its dependences, returns an error if the reseted state should not be used for a generation.
+	Reset() error
 }
 
 // ResetToken combines the Token and Index interface

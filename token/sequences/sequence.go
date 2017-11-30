@@ -1,9 +1,9 @@
 package sequences
 
 import (
-	"fmt"
 	"strconv"
 
+	"github.com/zimmski/tavor"
 	"github.com/zimmski/tavor/token"
 	"github.com/zimmski/tavor/token/lists"
 	"github.com/zimmski/tavor/token/primitives"
@@ -39,20 +39,17 @@ func init() {
 	})
 }
 
-// TODO this must be handled without panics
-var errNoSequenceValue = fmt.Sprintf("There is no sequence value to choose from")
-
-func (s *Sequence) existing(r uint, except []token.Token) int {
+func (s *Sequence) existing(r uint, except []token.Token) (int, error) {
 	n := s.value - s.start
 
 	if n == 0 {
-		panic(errNoSequenceValue)
+		return 0, tavor.ErrNoSequenceValue
 	}
 
 	n /= s.step
 
 	if len(except) == 0 {
-		return int(r)*s.step + s.start
+		return int(r)*s.step + s.start, nil
 	}
 
 	checked := make(map[int]struct{})
@@ -104,11 +101,11 @@ func (s *Sequence) existing(r uint, except []token.Token) int {
 		checked[i] = struct{}{}
 
 		if _, ok := exceptLookup[i]; !ok {
-			return i
+			return i, nil
 		}
 	}
 
-	panic(errNoSequenceValue)
+	return 0, tavor.ErrNoSequenceValue
 }
 
 // ExistingItem returns a new instance of a SequenceExistingItem token referencing the sequence and holding the starting value of the sequence as its current value
@@ -145,9 +142,11 @@ func (s *Sequence) Next() int {
 
 // ResetToken interface methods
 
-// Reset resets the (internal) state of this token and its dependences
-func (s *Sequence) Reset() {
+// Reset resets the (internal) state of this token and its dependences, returns an error if the reseted state should not be used for a generation.
+func (s *Sequence) Reset() error {
 	s.value = s.start
+
+	return nil
 }
 
 // ResetItem returns a new intsance of a SequenceResetItem token referencing the sequence
@@ -200,8 +199,10 @@ func (s *SequenceItem) Parse(pars *token.InternalParser, cur int) (int, []error)
 	panic("TODO implement")
 }
 
-func (s *SequenceItem) permutation(i uint) {
+func (s *SequenceItem) permutation(i uint) error {
 	s.value = s.sequence.Next()
+
+	return nil
 }
 
 // Permutation sets a specific permutation for this token
@@ -214,9 +215,7 @@ func (s *SequenceItem) Permutation(i uint) error {
 		}
 	}
 
-	s.permutation(i)
-
-	return nil
+	return s.permutation(i)
 }
 
 // Permutations returns the number of permutations for this token
@@ -235,9 +234,9 @@ func (s *SequenceItem) String() string {
 
 // ResetToken interface methods
 
-// Reset resets the (internal) state of this token and its dependences
-func (s *SequenceItem) Reset() {
-	s.permutation(0)
+// Reset resets the (internal) state of this token and its dependences, returns an error if the reseted state should not be used for a generation.
+func (s *SequenceItem) Reset() error {
+	return s.permutation(0)
 }
 
 // SequenceExistingItem implements a sequence item token which holds one existing value of the sequence
@@ -269,9 +268,12 @@ func (s *SequenceExistingItem) Parse(pars *token.InternalParser, cur int) (int, 
 	panic("TODO implement")
 }
 
-func (s *SequenceExistingItem) permutation(i uint) {
+func (s *SequenceExistingItem) permutation(i uint) error {
 	s.value = -1 // TODO set this token to a default value so we do not get confused when it is looked up
-	s.value = s.sequence.existing(i, s.except)
+	v, err := s.sequence.existing(i, s.except)
+	s.value = v
+
+	return err
 }
 
 // Permutation sets a specific permutation for this token
@@ -289,9 +291,7 @@ func (s *SequenceExistingItem) Permutation(i uint) error {
 		}
 	}
 
-	s.permutation(i)
-
-	return nil
+	return s.permutation(i)
 }
 
 // Permutations returns the number of permutations for this token
@@ -369,9 +369,9 @@ func (s *SequenceExistingItem) InternalReplace(oldToken, newToken token.Token) e
 
 // ResetToken interface methods
 
-// Reset resets the (internal) state of this token and its dependences
-func (s *SequenceExistingItem) Reset() {
-	s.permutation(0)
+// Reset resets the (internal) state of this token and its dependences, returns an error if the reseted state should not be used for a generation.
+func (s *SequenceExistingItem) Reset() error {
+	return s.permutation(0)
 }
 
 // ScopeToken interface methods
@@ -405,8 +405,8 @@ func (s *SequenceResetItem) Parse(pars *token.InternalParser, cur int) (int, []e
 	panic("TODO implement")
 }
 
-func (s *SequenceResetItem) permutation(i uint) {
-	s.sequence.Reset()
+func (s *SequenceResetItem) permutation(i uint) error {
+	return s.sequence.Reset()
 }
 
 // Permutation sets a specific permutation for this token
@@ -419,9 +419,7 @@ func (s *SequenceResetItem) Permutation(i uint) error {
 		}
 	}
 
-	s.permutation(i)
-
-	return nil
+	return s.permutation(i)
 }
 
 // Permutations returns the number of permutations for this token
@@ -440,7 +438,7 @@ func (s *SequenceResetItem) String() string {
 
 // ResetToken interface methods
 
-// Reset resets the (internal) state of this token and its dependences
-func (s *SequenceResetItem) Reset() {
-	s.permutation(0)
+// Reset resets the (internal) state of this token and its dependences, returns an error if the reseted state should not be used for a generation.
+func (s *SequenceResetItem) Reset() error {
+	return s.permutation(0)
 }

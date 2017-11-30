@@ -115,7 +115,7 @@ func (s *linearStrategy) reduce(continueReducing chan struct{}, feedbackReducing
 
 func (s *linearStrategy) nextStep(continueReducing chan struct{}, feedbackReducing <-chan ReduceFeedbackType) (bool, ReduceFeedbackType) {
 	token.ResetScope(s.root)
-	token.ResetResetTokens(s.root)
+	_ = token.ResetResetTokens(s.root)
 	token.ResetScope(s.root)
 
 	log.Debug("done with reducing step")

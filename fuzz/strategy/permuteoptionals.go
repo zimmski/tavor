@@ -46,7 +46,7 @@ func NewPermuteOptionals(root token.Token, r rand.Rand) (chan struct{}, error) {
 		}
 
 		token.ResetScope(s.root)
-		token.ResetResetTokens(s.root)
+		_ = token.ResetResetTokens(s.root)
 		token.ResetScope(s.root)
 
 		log.Debug("done with fuzzing step")
@@ -107,7 +107,7 @@ func (s *permuteOptionals) fuzz(r rand.Rand, continueFuzzing chan struct{}, opti
 		}
 
 		token.ResetScope(s.root)
-		token.ResetResetTokens(s.root)
+		_ = token.ResetResetTokens(s.root)
 		token.ResetScope(s.root)
 
 		log.Debug("done with fuzzing step")
