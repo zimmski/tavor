@@ -246,7 +246,7 @@ func (s *almostAllPermutations) setTokenPermutation(tok token.Token, permutation
 	log.Debugf("set %#v(%p) to permutation %d of max permutations %d", tok, tok, permutation, tok.Permutations())
 
 	if err := tok.Permutation(permutation); err != nil {
-		panic(err)
+		log.Errorf("Unknown permutation, ERROR: %s", err.Error())
 	}
 
 	s.resetedLookup[tok] = permutation
