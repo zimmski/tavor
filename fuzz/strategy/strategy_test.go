@@ -13,10 +13,6 @@ import (
 	"github.com/zimmski/tavor/token/primitives"
 )
 
-type mockStrategy struct {
-	root token.Token
-}
-
 func newMockStrategy(root token.Token, r rand.Rand) (chan struct{}, error) {
 	// do nothing
 

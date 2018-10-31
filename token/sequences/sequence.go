@@ -209,7 +209,7 @@ func (s *SequenceItem) permutation(i uint) error {
 func (s *SequenceItem) Permutation(i uint) error {
 	permutations := s.Permutations()
 
-	if i < 0 || i >= permutations {
+	if i >= permutations {
 		return &token.PermutationError{
 			Type: token.PermutationErrorIndexOutOfBound,
 		}
@@ -285,7 +285,7 @@ func (s *SequenceExistingItem) Permutation(i uint) error {
 		return nil
 	}
 
-	if i < 0 || i >= permutations {
+	if i >= permutations {
 		return &token.PermutationError{
 			Type: token.PermutationErrorIndexOutOfBound,
 		}
@@ -413,7 +413,7 @@ func (s *SequenceResetItem) permutation(i uint) error {
 func (s *SequenceResetItem) Permutation(i uint) error {
 	permutations := s.Permutations()
 
-	if i < 0 || i >= permutations {
+	if i >= permutations {
 		return &token.PermutationError{
 			Type: token.PermutationErrorIndexOutOfBound,
 		}

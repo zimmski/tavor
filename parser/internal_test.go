@@ -15,10 +15,8 @@ import (
 )
 
 func TestInternalParseErrors(t *testing.T) {
-	var errs []error
-
 	// nil root token
-	errs = ParseInternal(nil, strings.NewReader(""))
+	var errs = ParseInternal(nil, strings.NewReader(""))
 	Equal(t, len(errs), 1)
 	Equal(t, token.ParseErrorRootIsNil, errs[0].(*token.ParserError).Type)
 

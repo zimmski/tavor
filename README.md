@@ -1205,7 +1205,7 @@ func (s *Smiley) PermutationsAll() uint {
 func (s *Smiley) Permutation(i uint) error {
 	permutations := s.Permutations()
 
-	if i < 0 || i >= permutations {
+	if i >= permutations {
 		return &token.PermutationError{
 			Type: token.PermutationErrorIndexOutOfBound,
 		}

@@ -35,7 +35,7 @@ func (p *Scope) Parse(pars *token.InternalParser, cur int) (int, []error) {
 func (p *Scope) Permutation(i uint) error {
 	permutations := p.Permutations()
 
-	if i < 0 || i >= permutations {
+	if i >= permutations {
 		return &token.PermutationError{
 			Type: token.PermutationErrorIndexOutOfBound,
 		}

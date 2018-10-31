@@ -51,7 +51,7 @@ func (e *FuncExpression) Parse(pars *token.InternalParser, cur int) (int, []erro
 func (e *FuncExpression) Permutation(i uint) error {
 	permutations := e.Permutations()
 
-	if i < 0 || i >= permutations {
+	if i >= permutations {
 		return &token.PermutationError{
 			Type: token.PermutationErrorIndexOutOfBound,
 		}

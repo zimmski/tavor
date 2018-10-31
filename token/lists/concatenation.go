@@ -57,7 +57,7 @@ func (l *Concatenation) Parse(pars *token.InternalParser, cur int) (int, []error
 func (l *Concatenation) Permutation(i uint) error {
 	permutations := l.Permutations()
 
-	if i < 0 || i >= permutations {
+	if i >= permutations {
 		return &token.PermutationError{
 			Type: token.PermutationErrorIndexOutOfBound,
 		}

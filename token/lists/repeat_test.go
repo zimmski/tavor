@@ -374,7 +374,7 @@ func TestRepeatReduce(t *testing.T) {
 		err := o.Reduce(reduces)
 		NotNil(t, err)
 
-		if reduces >= 0 {
+		if reduces > 0 {
 			var actual []string
 
 			for i := uint(0); i < o.Reduces(); i++ {

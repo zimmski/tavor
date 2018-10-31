@@ -42,9 +42,7 @@ func (l *Once) Clone() token.Token {
 		c.tokens[i] = tok.Clone()
 	}
 
-	for i, v := range l.values {
-		c.values[i] = v
-	}
+	copy(c.values, l.values)
 
 	return &c
 }
@@ -87,7 +85,7 @@ func (l *Once) permutation(i uint) {
 func (l *Once) Permutation(i uint) error {
 	permutations := l.Permutations()
 
-	if i < 0 || i >= permutations {
+	if i >= permutations {
 		return &token.PermutationError{
 			Type: token.PermutationErrorIndexOutOfBound,
 		}

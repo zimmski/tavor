@@ -40,6 +40,7 @@ tools:
 	# linting
 	go get -u -v golang.org/x/lint/golint/...
 	go get -u -v github.com/kisielk/errcheck/...
+	go get -u -v honnef.co/go/tools/cmd/megacheck
 
 	# code coverage
 	go get -u -v golang.org/x/tools/cmd/cover

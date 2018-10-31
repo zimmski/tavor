@@ -349,7 +349,7 @@ func (c *CharacterClass) permutation(i uint) {
 func (c *CharacterClass) Permutation(i uint) error {
 	permutations := c.Permutations()
 
-	if i < 0 || i >= permutations {
+	if i >= permutations {
 		return &token.PermutationError{
 			Type: token.PermutationErrorIndexOutOfBound,
 		}

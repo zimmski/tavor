@@ -372,18 +372,6 @@ func NotEmpty(t TestingT, object interface{}, msgAndArgs ...interface{}) bool {
 
 }
 
-// getLen try to get length of object.
-// return (false, 0) if impossible.
-func getLen(x interface{}) (ok bool, length int) {
-	v := reflect.ValueOf(x)
-	defer func() {
-		if e := recover(); e != nil {
-			ok = false
-		}
-	}()
-	return true, v.Len()
-}
-
 // True asserts that the specified value is true.
 //
 //    assert.True(t, myBool, "myBool should be true")
@@ -391,7 +379,7 @@ func getLen(x interface{}) (ok bool, length int) {
 // Returns whether the assertion was successful (true) or not (false).
 func True(t TestingT, value bool, msgAndArgs ...interface{}) bool {
 
-	if value != true {
+	if !value {
 		return Fail(t, "Should be true", msgAndArgs...)
 	}
 
@@ -406,7 +394,7 @@ func True(t TestingT, value bool, msgAndArgs ...interface{}) bool {
 // Returns whether the assertion was successful (true) or not (false).
 func False(t TestingT, value bool, msgAndArgs ...interface{}) bool {
 
-	if value != false {
+	if value {
 		return Fail(t, "Should be false", msgAndArgs...)
 	}
 

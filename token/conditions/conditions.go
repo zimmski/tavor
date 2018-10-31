@@ -133,7 +133,7 @@ func (c *If) Parse(pars *token.InternalParser, cur int) (int, []error) {
 func (c *If) Permutation(i uint) error {
 	permutations := c.Permutations()
 
-	if i < 0 || i >= permutations {
+	if i >= permutations {
 		return &token.PermutationError{
 			Type: token.PermutationErrorIndexOutOfBound,
 		}
