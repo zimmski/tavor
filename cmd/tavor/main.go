@@ -317,7 +317,7 @@ func checkArguments(args []string, opts *options) (string, exitCodeType) {
 }
 
 func exitError(format string, args ...interface{}) exitCodeType {
-	fmt.Fprintf(os.Stderr, format+"\n", args...)
+	_, _ = fmt.Fprintf(os.Stderr, format+"\n", args...)
 
 	return exitCodeError
 }

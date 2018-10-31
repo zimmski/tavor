@@ -50,7 +50,7 @@ func (f *TextFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 			levelColor = red
 		}
 
-		fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m %-44s ", levelColor, levelText, entry.Data["msg"])
+		_, _ = fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m %-44s ", levelColor, levelText, entry.Data["msg"])
 
 		var keys []string
 		for k := range entry.Data {
@@ -61,7 +61,7 @@ func (f *TextFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 		sort.Strings(keys)
 		for _, k := range keys {
 			v := entry.Data[k]
-			fmt.Fprintf(b, " \x1b[%dm%s\x1b[0m=%v", levelColor, k, v)
+			_, _ = fmt.Fprintf(b, " \x1b[%dm%s\x1b[0m=%v", levelColor, k, v)
 		}
 	} else {
 		appendKeyValue(b, "level", entry.Data["level"].(string))
@@ -83,9 +83,9 @@ func (f *TextFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 
 func appendKeyValue(b *bytes.Buffer, key, value interface{}) {
 	if _, ok := value.(string); ok {
-		fmt.Fprintf(b, "%v=%q ", key, value)
+		_, _ = fmt.Fprintf(b, "%v=%q ", key, value)
 	} else {
-		fmt.Fprintf(b, "%v=%v ", key, value)
+		_, _ = fmt.Fprintf(b, "%v=%v ", key, value)
 	}
 }
 

@@ -250,76 +250,76 @@ func WriteDot(root token.Token, dst io.Writer) {
 		}
 	}
 
-	fmt.Fprintf(dst, "digraph Graphing {\n")
+	_, _ = fmt.Fprintf(dst, "digraph Graphing {\n")
 
-	fmt.Fprintf(dst, "\tnode [peripheries = 2];")
+	_, _ = fmt.Fprintf(dst, "\tnode [peripheries = 2];")
 	for tok := range next {
-		fmt.Fprintf(dst, " %s", nodeUID(tok))
+		_, _ = fmt.Fprintf(dst, " %s", nodeUID(tok))
 	}
-	fmt.Fprintf(dst, "; node [peripheries = 1];\n")
+	_, _ = fmt.Fprintf(dst, "; node [peripheries = 1];\n")
 
-	fmt.Fprintf(dst, "\tnode [shape = point] START;\n")
+	_, _ = fmt.Fprintf(dst, "\tnode [shape = point] START;\n")
 
 	for tok, vertice := range g.vertices {
 		if vertice.typ != "" {
-			fmt.Fprintf(dst, "\tnode [shape = %s] %s;\n", vertice.typ, nodeUID(tok))
+			_, _ = fmt.Fprintf(dst, "\tnode [shape = %s] %s;\n", vertice.typ, nodeUID(tok))
 		}
 	}
 
-	fmt.Fprintf(dst, "\tnode [shape = ellipse];\n")
+	_, _ = fmt.Fprintf(dst, "\tnode [shape = ellipse];\n")
 
-	fmt.Fprintln(dst)
+	_, _ = fmt.Fprintln(dst)
 
 	for tok, vertice := range g.vertices {
 		// Double escape the labels so that graphviz display the special sequences (\n, \t, ...)
 		label := strings.Replace(fmt.Sprintf("%q", vertice.label), "\\", "\\\\", -1)
-		fmt.Fprintf(dst, "\t%s [label=%s]\n", nodeUID(tok), label)
+		_, _ = fmt.Fprintf(dst, "\t%s [label=%s]\n", nodeUID(tok), label)
 	}
 
-	fmt.Fprintln(dst)
+	_, _ = fmt.Fprintln(dst)
 
 	found := false
 
 	for tok, opt := range start {
-		fmt.Fprintf(dst, "\tSTART -> %s", nodeUID(tok))
+		_, _ = fmt.Fprintf(dst, "\tSTART -> %s", nodeUID(tok))
 
 		if opt {
-			fmt.Fprintf(dst, " [style=dotted]")
+			_, _ = fmt.Fprintf(dst, " [style=dotted]")
 
 			found = true
 		}
 
-		fmt.Fprintf(dst, ";\n")
+		_, _ = fmt.Fprintf(dst, ";\n")
 	}
 
 	if found {
 		for _, edge := range g.edges {
 			if edge.optional {
-				fmt.Fprintf(dst, "\tSTART -> %s;\n", nodeUID(edge.to))
+				_, _ = fmt.Fprintf(dst, "\tSTART -> %s;\n", nodeUID(edge.to))
 			}
 		}
 	}
 
 	for _, edge := range g.edges {
-		fmt.Fprintf(dst, "\t%s -> %s", nodeUID(edge.from), nodeUID(edge.to))
+		_, _ = fmt.Fprintf(dst, "\t%s -> %s", nodeUID(edge.from), nodeUID(edge.to))
 
 		if edge.optional || edge.label != "" {
-			fmt.Fprint(dst, "[")
+			_, _ = fmt.Fprint(dst, "[")
 
 			if edge.optional {
-				fmt.Fprintf(dst, " style=dotted")
+				_, _ = fmt.Fprintf(dst, " style=dotted")
 			}
 			if edge.label != "" {
-				fmt.Fprintf(dst, " label=%q", edge.label)
+				_, _ = fmt.Fprintf(dst, " label=%q", edge.label)
 			}
 
-			fmt.Fprint(dst, "]")
+			_, _ = fmt.Fprint(dst, "]")
 		}
 
-		fmt.Fprintf(dst, ";\n")
+		_, _ = fmt.Fprintf(dst, ";\n")
 	}
 
-	fmt.Fprintf(dst, "}\n")
+	_, _ = fmt.Fprintf(dst, "}\n")
 
 	/*
 		digraph graphname {
