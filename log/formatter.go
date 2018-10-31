@@ -17,11 +17,10 @@ import (
 */
 
 const (
-	nocolor = 0
-	red     = 31
-	green   = 32
-	yellow  = 33
-	blue    = 34
+	red    = 31
+	green  = 32
+	yellow = 33
+	blue   = 34
 )
 
 // TextFormatter implements a text formatter for logrus

@@ -145,7 +145,7 @@ func (l *Repeat) permutation(i uint) error {
 func (l *Repeat) Permutation(i uint) error {
 	permutations := l.Permutations()
 
-	if i < 0 || i >= permutations {
+	if i >= permutations {
 		return &token.PermutationError{
 			Type: token.PermutationErrorIndexOutOfBound,
 		}
@@ -381,7 +381,7 @@ func (l *Repeat) Reduce(i uint) error {
 		count += uint(le)
 	}
 
-	if count <= 1 || i < 0 || i >= count {
+	if count <= 1 || i >= count {
 		return &token.ReduceError{
 			Type: token.ReduceErrorIndexOutOfBound,
 		}

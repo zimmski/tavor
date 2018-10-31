@@ -55,7 +55,7 @@ func (c *Optional) permutation(i uint) {
 func (c *Optional) Permutation(i uint) error {
 	permutations := c.Permutations()
 
-	if i < 0 || i >= permutations {
+	if i >= permutations {
 		return &token.PermutationError{
 			Type: token.PermutationErrorIndexOutOfBound,
 		}
@@ -135,7 +135,7 @@ func (c *Optional) Deactivate() { c.value = true }
 func (c *Optional) Reduce(i uint) error {
 	reduces := c.Permutations()
 
-	if reduces == 0 || i < 0 || i >= reduces {
+	if reduces == 0 || i >= reduces {
 		return &token.ReduceError{
 			Type: token.ReduceErrorIndexOutOfBound,
 		}

@@ -80,7 +80,7 @@ func (e *Path) path() []string {
 		return nil
 	}
 
-	connects := make(map[string][]string, 0)
+	connects := map[string][]string{}
 
 	for i := 0; i < l.Len(); i++ {
 		el, _ := l.Get(i)
@@ -170,7 +170,7 @@ func (e *Path) Parse(pars *token.InternalParser, cur int) (int, []error) {
 func (e *Path) Permutation(i uint) error {
 	permutations := e.Permutations()
 
-	if i < 0 || i >= permutations {
+	if i >= permutations {
 		return &token.PermutationError{
 			Type: token.PermutationErrorIndexOutOfBound,
 		}

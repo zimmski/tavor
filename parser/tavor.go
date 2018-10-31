@@ -801,7 +801,7 @@ func (p *tavorParser) parseExpressionTerm(definitionName string, c rune, variabl
 	case scanner.Ident:
 		switch op := p.scan.TokenText(); op {
 		case "path":
-			c, tok, err = p.parseExpressionOperatorPath(tok, definitionName, c, variableScope)
+			c, tok, err = p.parseExpressionOperatorPath(tok, definitionName, variableScope)
 			if err != nil {
 				return zeroRune, nil, err
 			}
@@ -929,7 +929,7 @@ func (p *tavorParser) parseExpressionOperatorInclude() (c rune, tok token.Token,
 	return c, tok, nil
 }
 
-func (p *tavorParser) parseExpressionOperatorPath(tok token.Token, definitionName string, c rune, variableScope *token.VariableScope) (rune, token.Token, error) {
+func (p *tavorParser) parseExpressionOperatorPath(tok token.Token, definitionName string, variableScope *token.VariableScope) (rune, token.Token, error) {
 	log.Debug("Path operator:")
 	log.IncreaseIndentation()
 	defer log.DecreaseIndentation()
@@ -996,7 +996,7 @@ func (p *tavorParser) parseExpressionOperatorPath(tok token.Token, definitionNam
 		return zeroRune, nil, err
 	}
 
-	c = p.scan.Scan()
+	c := p.scan.Scan()
 
 	tok, err = expressions.NewPath(tok, from, over, connects, withouts)
 	if err != nil {
@@ -1260,7 +1260,7 @@ SCOPE:
 
 			log.DecreaseIndentation()
 		case '{': // TODO make conditions work with ORs...
-			c = p.scan.Scan()
+			_ = p.scan.Scan()
 			condition := p.scan.TokenText()
 
 			var conditionExpression conditions.BooleanExpression
@@ -1555,7 +1555,7 @@ func (p *tavorParser) parseTypedTokenDefinition(variableScope *token.VariableSco
 
 	tokenPosition := p.scan.Position
 
-	c, err = p.expectScanRune(scanner.Ident)
+	_, err = p.expectScanRune(scanner.Ident)
 	if err != nil {
 		return zeroRune, &token.ParserError{
 			Message:  "typed token has no type",
@@ -1571,12 +1571,12 @@ func (p *tavorParser) parseTypedTokenDefinition(variableScope *token.VariableSco
 	c = p.scan.Scan()
 
 	if c == '=' {
-		if c, err = p.expectRune('=', c); err != nil {
+		if _, err = p.expectRune('=', c); err != nil {
 			return zeroRune, err
 		}
 
 		for {
-			c, err = p.expectScanRune(scanner.Ident)
+			_, err = p.expectScanRune(scanner.Ident)
 			if err != nil {
 				return zeroRune, err
 			}
@@ -1620,7 +1620,7 @@ func (p *tavorParser) parseTypedTokenDefinition(variableScope *token.VariableSco
 				break
 			}
 
-			if c, err = p.expectScanRune('\n'); err != nil {
+			if _, err = p.expectScanRune('\n'); err != nil {
 				return zeroRune, err
 			}
 		}
@@ -1635,7 +1635,7 @@ func (p *tavorParser) parseTypedTokenDefinition(variableScope *token.VariableSco
 		}
 	}
 
-	if c, err = p.expectRune('\n', c); err != nil {
+	if _, err = p.expectRune('\n', c); err != nil {
 		return zeroRune, err
 	}
 

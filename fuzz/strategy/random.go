@@ -99,7 +99,7 @@ func (s *random) fuzz(tok token.Token, r rand.Rand, variableScope *token.Variabl
 	}
 
 	if t, ok := tok.(token.Scoping); ok && t.Scoping() {
-		variableScope = variableScope.Pop()
+		_ = variableScope.Pop()
 	}
 }
 
